@@ -64,6 +64,10 @@ func _run() -> void:
 	var jogo := current_scene
 	# O povoado se apresenta aos poucos na chegada (#155): este portão fala com moradores de longe.
 	await PovoadoLiberado.todos(self, jogo)
+	# O ACEITE É AUTOMÁTICO AQUI (08/10): este portão abre filas pelo E e segue; a tela de aceite
+	# pausaria o vale no meio da medida (a tela tem portão próprio, tests/missao_a_vista.gd).
+	if jogo.get("aceite") != null:
+		jogo.aceite.automatico = true
 	var jogador = jogo.get("player")
 	var inv := root.get_node("/root/Inventario")
 	var energia := root.get_node("/root/Energia")

@@ -15,6 +15,7 @@ const Lapides = preload("res://scripts/prototipo_3d/lapides.gd")
 const TeclaDasBancadas = preload("res://scripts/prototipo_3d/tecla_das_bancadas.gd")
 const TeclaDosMoradores = preload("res://scripts/prototipo_3d/tecla_dos_moradores.gd")
 const FocoDoE = preload("res://scripts/prototipo_3d/foco_do_e.gd")
+const AceiteDeMissao = preload("res://scripts/prototipo_3d/aceite_de_missao.gd")
 const FilaDeFalas = preload("res://scripts/prototipo_3d/fila_de_falas.gd")
 const FalasDoViajante = preload("res://scripts/prototipo_3d/falas_do_viajante.gd")
 const DicasDosMoradores = preload("res://scripts/prototipo_3d/dicas_dos_moradores.gd")
@@ -170,6 +171,9 @@ var fazenda: Node3D
 var curral: Node3D
 ## O capítulo 7, o revoar das asas negras: as ruínas, a torre, a fera e a estátua (`revoar_vale.gd`, #31).
 var revoar: Node3D
+## AS CENAS DOS DADOS (cena_vale.gd, data/cenas.json): a chegada apresenta o Tonho, mostra a
+## praça e chega à casa do tio.
+var cenas: CenaVale
 ## A voz do mundo, sem nome, sobre o escuro (`narracao_do_vale.gd`).
 var narracao: CanvasLayer
 ## As plaquinhas de nome dos moradores; somem com tela aberta (placas_nomes.gd).
@@ -188,6 +192,8 @@ var pesca	# pesca_vale.gd — a vara na mão e o E na beira da água
 var tecla_das_bancadas: Node
 ## O E nos moradores: conversar e cumprir passo (`tecla_dos_moradores.gd`).
 var tecla_dos_moradores: Node
+## A tela de aceite da missão (aceite_de_missao.gd): o E na fila por abrir passa por ela.
+var aceite: Node
 ## Quem leva o E entre tudo o que o aceita (`foco_do_e.gd`).
 var foco_do_e: Node
 ## Uma fala de cada vez no vale (`fila_de_falas.gd`).
@@ -400,6 +406,17 @@ func _ready() -> void:
 		func() -> bool: return Mochila.aberta,
 		func() -> void: Mochila.abrir(),
 		func() -> void: Mochila.fechar())
+	# A TELA DE ACEITE DA MISSÃO (08/10): tela do vale sem tecla própria — o E no morador com
+	# fila por abrir a pede (`tecla_dos_moradores.usar`); o Esc recusa.
+	aceite = AceiteDeMissao.new()
+	aceite.name = "AceiteDeMissao"
+	add_child(aceite)
+	aceite.configurar(telas)
+	telas.registrar("aceite",
+		func(_e: InputEvent) -> bool: return false,
+		func() -> bool: return aceite.aberto,
+		func() -> void: pass,
+		func() -> void: aceite.recusar())
 	_ajustar_as_telas_do_2d()
 	get_viewport().size_changed.connect(_ajustar_as_telas_do_2d)
 	# O BONECO DA MOCHILA: "ao lado dos itens equipados, coloque o 3D do boneco
@@ -790,6 +807,11 @@ func _ready() -> void:
 	revoar.name = "Revoar"
 	add_child(revoar)
 	revoar.configurar(world, self)
+	# AS CENAS PELOS DADOS (07/10, cena_vale.gd): a fila que fecha um passo com `cena` as toca.
+	cenas = CenaVale.new()
+	cenas.name = "Cenas"
+	add_child(cenas)
+	cenas.configurar(self)
 	interiores.entrou.connect(_ao_mudar_de_lado.unbind(1))
 	interiores.saiu.connect(_ao_mudar_de_lado.unbind(1))
 	# O E NOS MORADORES (tecla_dos_moradores.gd): conversar, cumprir o passo que
@@ -809,6 +831,7 @@ func _ready() -> void:
 	# árvore, lápide, alvo de trabalho, bancada, marco, lavoura, casa, pesca e
 	# luta —, só um leva a tecla e acende a dica: o da frente do jogador, e mais
 	# perto. Antes quem levava era o último nó posto no vale.
+	tecla_dos_moradores.aceite = aceite
 	foco_do_e = FocoDoE.new()
 	foco_do_e.name = "FocoDoE"
 	add_child(foco_do_e)
@@ -816,7 +839,9 @@ func _ready() -> void:
 	# A FESTA DA MISSÃO E A VOZ DO MUNDO cobrem o vale por baixo do HUD sem parar a
 	# árvore: as dicas do E se calam enquanto elas duram, como as plaquinhas.
 	foco_do_e.coberto = func() -> bool:
-		return (conquista != null and conquista.ativa()) or (narracao != null and narracao.tocando())
+		# E A CENA (cena_vale.gd): com ela tocando, nenhuma dica do E fica acesa.
+		var em_cena: bool = cenas != null and bool(cenas.em_cena())
+		return (conquista != null and conquista.ativa()) or (narracao != null and narracao.tocando()) or em_cena
 	# O AVISO DA PRIMEIRA VEZ (aviso_da_primeira_vez.gd): o primeiro cordel e a
 	# primeira árvore dizem onde ficam guardados. É instrução, e segura o vale e o
 	# relógio como a caixa de fala.
@@ -1359,10 +1384,13 @@ func _montar_moradores(spawn: Vector3) -> void:
 		# limpeza pela fila. Duplicá-la no rodapé deixava o recado após a fala.
 		# O QUE A CHEGADA PAGA é dito no HUD, como nas filas dos moradores.
 		pedro.pagou.connect(func(texto: String) -> void: hud.set_notice(texto))
+		pedro._cadeia.passo_cumprido.connect(hud.tarefa_concluida)
+		# AS CENAS DA CHEGADA (data/cenas.json): a apresentação do Tonho, a vista da praça, a casa.
+		pedro._cadeia.cena.connect(_tocar_a_cena.bind(pedro._cadeia))
 		pedro.entregou.connect(func(texto: String) -> void: hud.set_notice(texto))
 		# QUEM FICOU PARA TRÁS NA CONDUÇÃO vê, no alto da tela, o aviso de voltar.
 		pedro.esperando_quem_ficou.connect(func(esperando: bool) -> void:
-			hud.set_aviso_de_espera(tr("%s está esperando você: volte para perto para seguir.") % str(pedro.dados.get("nome", "Pedro")) if esperando else ""))
+			hud.set_aviso_de_espera(tr("%s voltou para te buscar: siga com ele.") % str(pedro.dados.get("nome", "Pedro")) if esperando else ""))
 	placas = PlacasNomes.new()
 	placas.name = "PlacasNomes"
 	add_child(placas)
@@ -1582,6 +1610,14 @@ func _on_missao_mudou(texto: String, _alvo: Vector3, indice: int, total: int) ->
 	_mostrar_a_acompanhada()
 
 
+## Alguma fila do vale abriu e ainda não acabou?
+func _alguma_fila_em_andamento() -> bool:
+	for cadeia in get_tree().get_nodes_in_group(CadeiaDeMissoes.GRUPO):
+		if cadeia.has_method("em_andamento") and bool(cadeia.em_andamento()):
+			return true
+	return false
+
+
 ## O HUD, A SETA E A BÚSSOLA SEGUEM A MISSÃO ACOMPANHADA.
 ##
 ## "No MENU J, de missões, eu tô clicando para trocar a missão de resumo, mas
@@ -1598,6 +1634,11 @@ func _mostrar_a_acompanhada() -> void:
 		return
 	var acompanhada: Dictionary = CadernoDoVale.atual()
 	if acompanhada.is_empty():
+		# ENTRE UM PASSO E O SEGUINTE da mesma fila o caderno fica um instante sem atual (o
+		# cumprido saiu, o próximo ainda não foi anunciado), e o HUD piscava "fale com Pedro:
+		# ele veio te esperar no píer" (07/10). Com uma fila andando, fica como está.
+		if _alguma_fila_em_andamento():
+			return
 		hud.set_objective(_objetivo_sem_missao)
 		hud.set_mission_step(0, 0)
 		_seta.limpar()
@@ -2663,10 +2704,18 @@ func _achar_morador(quem: String) -> Node3D:
 	return null
 
 
+## AS CENAS ESCRITAS À MÃO, por nome: as da chapada, da fazenda e do revoar. O que não está
+## aqui é cena dos dados (`CenaVale`, data/cenas.json) — o portão `cenas_do_vale` confere que
+## toda cena pedida por um passo está num lugar ou no outro.
+const CENAS_ESCRITAS_A_MAO := ["luz_dourada", "cabra_desce", "portao_se_abre", "chegou_ao_patio",
+	"chamado_aos_corajosos", "porta_estreita", "o_quarto", "a_fuga", "o_relato", "a_fera_vem",
+	"a_pedra", "o_amanhecer"]
+
+
 ## AS CENAS DOS PASSOS (`cena` no dado da missão, `CadeiaDeMissoes.cena`): a luz
 ## dourada da chegada à chapada, a cabra que desce da lombada, o portão da fazenda,
 ## o pé da escadaria, o chamado aos corajosos e a porta estreita (#114).
-func _tocar_a_cena(nome: String) -> void:
+func _tocar_a_cena(nome: String, cadeia: Node = null) -> void:
 	match nome:
 		"luz_dourada":
 			if luz_dourada != null:
@@ -2705,6 +2754,10 @@ func _tocar_a_cena(nome: String) -> void:
 		"o_amanhecer":
 			if revoar != null:
 				revoar.o_amanhecer()
+		_:
+			# As cenas dos dados (cena_vale.gd): a fila que pediu fica segura até o `anuncia`.
+			if cenas != null:
+				cenas.tocar(nome, cadeia)
 
 
 func _pendurar_cadeia(morador: Node3D, arquivo: String, perto: float, chave: String = "") -> Node:
@@ -2722,9 +2775,13 @@ func _pendurar_cadeia(morador: Node3D, arquivo: String, perto: float, chave: Str
 		missao_do_vale_mudou.emit(t, a, i, n))
 	# A RECOMPENSA DO PASSO (#48) é dita no HUD, como no 2D.
 	cadeia.pagou.connect(func(texto: String) -> void: hud.set_notice(texto))
+	# A RESPOSTA DA OFERENDA é narração, e não fala do dono (que está longe): só o aviso.
+	cadeia.narrou.connect(func(texto: String) -> void: hud.set_notice(texto))
+	# A TAREFA CUMPRIDA no meio da missão: o quadro pulsa, o risco desce, o sinete soa.
+	cadeia.passo_cumprido.connect(hud.tarefa_concluida)
 	# A FERRAMENTA ENTREGUE fica na barra, e o HUD diz o número que a põe na mão.
 	cadeia.entregou.connect(func(texto: String) -> void: hud.set_notice(texto))
-	cadeia.cena.connect(_tocar_a_cena)
+	cadeia.cena.connect(_tocar_a_cena.bind(cadeia))
 	morador.add_child(cadeia)
 	_cadeias[chave if chave != "" else str(morador.dados.get("id", ""))] = cadeia
 	return cadeia

@@ -1177,6 +1177,10 @@ func _desenhar_o_diario(missao: Dictionary) -> void:
 				figura.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS if str(chave) in ["reis", "xp"] else CanvasItem.TEXTURE_FILTER_NEAREST
 				item.add_child(figura)
 			var conta := _texto_do_diario(_nome_da_recompensa(str(chave), int(recompensa[chave])), 15, COR_TEXTO)
+			conta.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+			# NA HORIZONTAL (07/10: "o texto das recompensas tá escrito na vertical"): o rótulo de
+			# quebra automática, dentro da linha de ícones, encolhia a zero de largura e empilhava
+			# uma letra por linha. Sem quebra, no tamanho do texto.
 			conta.autowrap_mode = TextServer.AUTOWRAP_OFF
 			conta.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 			item.add_child(conta)

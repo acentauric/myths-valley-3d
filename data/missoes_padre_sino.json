@@ -68,9 +68,9 @@
       "lugar": "casa_do_padre",
       "raio": 6,
       "audio": "",
-      "texto": "Conte ao padre a sua madrugada.",
-      "texto_en": "Tell the priest about your night.",
-      "texto_es": "Cuéntale al cura tu madrugada.",
+      "texto": "Me conte a sua madrugada, meu filho.",
+      "texto_en": "Tell me about your night, my son.",
+      "texto_es": "Cuéntame tu madrugada, hijo mío.",
       "recompensa": {
         "xp": 15
       },

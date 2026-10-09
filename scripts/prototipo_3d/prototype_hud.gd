@@ -501,10 +501,11 @@ func _atualizar_vida() -> void:
 ## o passo encurta e a corrida não responde (ver `Energia.cansou`), e sem o
 ## aviso quem joga pensa que o jogo travou.
 ##
-## NA ÁGUA a mesma barra vira o FÔLEGO DO NADO, azul ("a azul, a do meio, é o
-## fôlego: o ar de quem nada"): o ar do corpo, que o jogador guarda
-## (`folego_atual`). O nado gasta o vigor primeiro e depois o fôlego, e sem
-## fôlego a água tira da vida ("afogamento"). Ao sair da água a barra volta à
+## NA ÁGUA a mesma barra vira o AR DO NADO, azul ("a azul, a do meio, é o ar de
+## quem nada"; até 08/10 o rótulo dizia "Fôlego", o nome da reserva, e o jogador
+## recém-ensinado confundia os dois): o ar do corpo, que o jogador guarda
+## (`folego_atual`). O nado gasta o vigor primeiro e depois o ar, e sem
+## ar a água tira da vida ("afogamento"). Ao sair da água a barra volta à
 ## reserva (`nado_mudou`).
 ##
 ## A BARRA DE BAIXO é o VIGOR, o fôlego curto do corpo (`vigor_atual`): corrida,
@@ -939,6 +940,56 @@ func set_objective(value: String, missao: String = "") -> void:
 	if is_instance_valid(_objective_label):
 		_objective_label.text = value
 		_fit_heading()
+
+
+## A TAREFA CONCLUÍDA (07/10: "precisamos evidenciar melhor que o jogador concluiu uma
+## tarefa da missão... talvez um efeito brilhante no balão de missão demonstrando que
+## atualizou"). A festa de tela inteira é só do fim da missão (`conquista_da_missao.gd`);
+## cada passo do meio ganha o que os RPGs dão: o quadro da missão PULSA em ouro, um risco
+## "✓ tarefa" desce dele e se apaga, e um sinete curto soa (`tarefa_concluida`, dois sinos
+## sintetizados em `gerar_som_tarefa.js`). Nada que pare o jogo.
+const PULSO_DA_TAREFA := 0.9
+const RISCO_DA_TAREFA := 2.2
+const OURO_DO_PULSO := Color(1.55, 1.38, 0.95, 1.0)
+var _risco_da_tarefa: Label
+var _pulso_da_tarefa: Tween
+var _risco_tween: Tween
+
+
+func tarefa_concluida(texto: String) -> void:
+	if not is_instance_valid(_heading):
+		return
+	Audio.efeito("tarefa_concluida")
+	if _pulso_da_tarefa != null:
+		_pulso_da_tarefa.kill()
+	_heading.modulate = Color(1, 1, 1, 1)
+	_pulso_da_tarefa = create_tween()
+	_pulso_da_tarefa.tween_property(_heading, "modulate", OURO_DO_PULSO, PULSO_DA_TAREFA * 0.25).set_trans(Tween.TRANS_SINE)
+	_pulso_da_tarefa.tween_property(_heading, "modulate", Color(1, 1, 1, 1), PULSO_DA_TAREFA * 0.75).set_trans(Tween.TRANS_SINE)
+	if _risco_da_tarefa == null:
+		_risco_da_tarefa = _label("", 14, GOLD)
+		_risco_da_tarefa.name = "TarefaConcluida"
+		_risco_da_tarefa.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TITULO, 600, 1))
+		_risco_da_tarefa.clip_text = true
+		_risco_da_tarefa.z_index = 100
+		Identidade.sombra_texto(_risco_da_tarefa)
+		_place(_risco_da_tarefa, Vector2(_heading.position.x + 15.0, _heading.position.y + _heading.size.y + 6.0), Vector2(HEADING_WIDTH - 30.0, 22.0))
+	if _risco_tween != null:
+		_risco_tween.kill()
+	_risco_da_tarefa.text = "✓  " + texto
+	_risco_da_tarefa.position = Vector2(_heading.position.x + 15.0, _heading.position.y + _heading.size.y + 6.0)
+	_risco_da_tarefa.modulate = Color(1, 1, 1, 0)
+	_risco_da_tarefa.visible = true
+	_risco_tween = create_tween()
+	_risco_tween.tween_property(_risco_da_tarefa, "modulate:a", 1.0, 0.25)
+	_risco_tween.tween_interval(RISCO_DA_TAREFA)
+	_risco_tween.tween_property(_risco_da_tarefa, "modulate:a", 0.0, 0.6)
+	_risco_tween.tween_callback(func() -> void: _risco_da_tarefa.visible = false)
+
+
+## Para o portão: o risco da tarefa concluída que está à vista ("" sem nenhum).
+func tarefa_concluida_a_vista() -> String:
+	return str(_risco_da_tarefa.text) if _risco_da_tarefa != null and _risco_da_tarefa.visible else ""
 
 
 ## O ALTO DA TELA DIZ A TAREFA (#83), e só ela: o nome da missão, o resumo do

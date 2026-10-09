@@ -1063,6 +1063,187 @@ O teste passa a cobrar Candinha, Filo, Tonho, Zefa, arraial e recursos, incluind
   cada quatro golpes, e a dica conta o trabalho ("Lajedo 12/96"); a seta de "junte
   pedras" não aponta a pedra grande a quem só tem a picareta de ferro. As árvores já
   seguiam a regra (madeira branca, de lei e dura, com nível e aço).
+- **O documento das falas** (08/10: "um documento estruturando todas as falas dos
+  personagens, de diálogo e de missão, para validar e de referência para a geração de áudio;
+  depois, analise a linha do tempo de cada fala contra a história e a mecânica").
+  `docs/falas/FALAS.xlsx` (e `.csv`) reúne as 1.291 falas — 659 que tocam no 3D e 632
+  herdadas do 2D, marcadas como "não toca" — na ordem da história, com 39 colunas: fase e
+  quando abre, quem diz e como toca, o passo e a mecânica dele, os quatro idiomas, a voz, o
+  arquivo e o TTS, checagens automáticas (tradução, teclas, números contra a meta, hora do
+  dia, recém-chegado, áudio) e a análise. Abas de problemas, alertas, personagens (o tamanho
+  do que falta gravar), missões na ordem em que abrem e áudios sem fala. O gerador é
+  `tools/falas/gerar_documento_das_falas.js`, que lê as falas de onde o jogo as lê e escreve
+  o .xlsx sem dependência; a revisão mora em `docs/falas/analise_das_falas.json`, por ID, e
+  o hash do texto diz quando uma fala revisada mudou. A revisão apontou 87 falas (8 de
+  prioridade alta: a pedra do poço e da carroça no lajedo que pede aço, o cercado do
+  cemitério que não diz que corda é lenha, a dívida do Tonho que zera sem pagamento e é paga
+  duas vezes, o Cosme que embarca num saveiro de amanhã e não sai do vale); o resumo está em
+  `docs/falas/README.md`.
+- **As falas que pediam código** (08/10: "faça todas as correções, tanto na tabela quanto no
+  jogo"). A entrega de um passo `levar` aceita réis (`CadeiaDeMissoes.REIS`): a carga "reis"
+  sai da bolsa (`Jogo.dinheiro`), e o resumo diz "1900 réis" — é como a conta do Tonho passa a
+  ser paga de verdade. A resposta de uma oferenda (a ostra que a onda leva, a toalha aberta na
+  mesa) vira aviso do HUD, sem nome nem balão (`narrou`), e não fala do dono da fila, que está
+  longe dali. As três broncas do Damião em cima da cova saem do código para
+  `data/lapides_3d.json`, nos três idiomas e com o áudio de cada uma.
+- **As correções das falas, primeira leva: a travessia e as lições do Pedro.** A travessia
+  atravessa a noite — o saveiro sai com a maré da meia-noite e chega com o dia clareando,
+  que é quando o jogo começa (6h30) —, e o desembarque fala de "uma noite inteira em pé num
+  saveiro". Na água, a barra do meio é o **ar** de quem nada (o rótulo do HUD, o aviso da
+  água funda e a explicação do corpo): "fôlego" é a reserva do dia, e o jogador recém-ensinado
+  confundia os dois. O Tonho é apresentado "de linha na mão" (a rede é o pedido dele); a pedra
+  do poço e a da carroça vêm das pedras soltas, e o lajedo fica para a picareta de aço e o
+  braço treinado; a farinha se torra no E da fogueira; a ponte ensina o E além do J; a casa
+  do Pedro é "pra lá da igreja"; o mungunzá é da avó dele, e a força dele acaba no
+  dia seguinte (não "cobra"); os avós não contam que o povo chegou à fazenda; a lombada fica a
+  poente da chapada, e a chuva foi na semana antes de chegar; o curral manda ao K sem dizer
+  que ele já foi mostrado; a Dona Zefa fica na casa dela, ao lado da do jogador; e a chapada
+  do Seu Benedito não promete compra de terra, que o vale não tem.
+- **As correções das falas, segunda leva: as filas dos moradores.** A Dona Filó, a Dona Zefa, a Dona
+  Candinha, o Tonho e o começo do Damião ganham inglês e espanhol (o portão dos idiomas passa a cobrá-los).
+  O Cosme fica: a Dona Zefa deixa a escolha com ele, e o último passo é falar com o mestre Quirino no píer no
+  dia do saveiro (o dia 14), que conta que o menino lhe deu uma carta para o primo e ficou — antes o passo
+  fechava no píer a qualquer dia, sem barco, e o arremate o punha num "saveiro das seis" que não existe. A
+  conta do Tonho se paga de verdade: o passo do livro é levar 1.900 réis da bolsa ao Seu Nicolau, que risca
+  o nome, e o fim é o primeiro peixe da rede nova (um robalo), e não a terra do outro lado da estrada, que o
+  vale não tem. O livro de fiado do Nicolau passa a ter o Damião como devedor, e a dívida do Tonho deixa de
+  ser paga duas vezes. A Dona Zefa, a Dona Candinha e o Damião só oferecem a foice a quem não tem; o
+  cercado do cemitério diz que são doze lenhas (seis viram as duas cordas) e ensina o E; a Santa Casa paga
+  o cercado; e o resumo do pedido da Dona Filó é o pedido, e não a casa. Os portões do Tonho e da Zefa jogam
+  o pagamento e o dia do saveiro; o que joga tudo do começo ao fim põe na bolsa os réis que faltarem, como
+  atalho anotado. Nenhuma dessas falas tinha voz gravada; a resposta nova do mestre Quirino toca sem
+  voz, como as outras dele.
+- **As correções das falas, terceira leva: os favores e os arcos dos moradores.** Os nove favores que
+  abriam como narrador ("Zacarias toca o sino...") falam na primeira pessoa, e os anúncios curtos também
+  ("Me diga o que ouviu", dito pelo guarda). A Sá Rita diz o que ela vê na água do rio grande, sem pôr a
+  cor na boca do jogador; a pedra do papel e o selo do convite valem antes e depois do capítulo 7; o Tonico
+  manda à "pedra pintada", e não à lapa que o jogador já rachou; a roda da praia é de noite, antes da
+  meia-noite, sem a maré, que o passo não confere; e o mirante do Pedro ganha inglês e espanhol.
+- **As correções das falas, quarta leva: a fazenda e o revoar.** O convite estava preso na porta, e não
+  no mural; quem mais apareceu na fazenda foi homem (a Dona Zefa e a Dona Filó foram); são sete com o
+  jogador; o Pedro chama o jogador para dentro ("Vem logo atrás de mim. Se eu travar, me puxa."); a moça
+  sorriu para o Pedro a manhã inteira, que é quando eles entraram na casa;
+  e a conta da Matinta fica como coisa que se diz ("e dizem que ela cobra").
+- **As correções das falas, quinta leva: as conversas dos moradores.** Dezoito falas de conversa e de
+  cumprimento deixam de envelhecer ou de chegar antes da hora, nos quatro idiomas e com o TTS de mesma
+  marca: o Tonho de linha na mão e sem a dívida (que se paga), a Dona Filó e o Seu Nicolau sem ela, o
+  convite sem assinatura virando "papel sem assinatura", a fazenda sem dono no lugar do convite que ainda não
+  chegou, o Damião e o sacristão sem o "sem foice", a Sá Rita agradecendo o mutirão do poço que já houve, a
+  garapa fresquinha (gelo não havia no arraial de 1887), e o Benedito, a Dona Zefa, o Cosme, o padre e a
+  Mariinha sem se apresentar de novo a cada conversa. Todas tinham voz gravada: o áudio continua apontado
+  para o arquivo de antes (a voz antiga toca com o texto novo até a regravação), e o documento das falas as
+  lista em "Áudios a regravar".
+- **O documento das falas depois das correções.** Cada fala apontada pela revisão ganhou o status
+  (83 corrigidas, 3 mantidas, 1 com o autor — o "mangue é a cozinha de Iemanjá" da Dona Rosa) e a
+  observação do que se fez, com o problema e a correção sugerida guardados como histórico; as falas que
+  mudaram foram relidas e marcadas como revisadas. O `docs/falas/README.md` conta as correções, as
+  decisões assumidas para o autor confirmar (o Cosme fica, o vale sem terras, a conta do Tonho paga em
+  réis, o Damião devedor do Nicolau), o que ainda é dele (as vozes do Quirino, das cenas e da fé; a roda e
+  a cor do rio que o mundo não mostra) e as 22 gravações a refazer, com o jeito de regravar só elas.
+- **O resumo do passo conta o material** (07–08/10: "na parte de levar tábuas e pedras ao
+  Damião não informou o quantitativo; mesmo que o jogador já tenha no inventário, esse dado
+  deve ser informado"; "a missão continuou indicando para construir a cerca como se eu
+  tivesse o material; é importante ter o contador de material independente do status da
+  missão"). A entrega diz quanto de cada item ("corda de piaçava ×5, tábua serrada ×3 ...
+  (0/8)"; no resumo escrito à mão, "tábua 2/2, pedra 4/4"), e o passo de obra diz o que há
+  na mochila do que a obra pede ("lenha 0/6, corda 2/2") — a conta é da mochila, agora, e
+  não do passo: as seis lenhas que viraram as duas cordas aparecem como lenha 0/6.
+- **A recompensa do diário se lê na horizontal** (07/10: "o texto das recompensas das
+  missões tá escrito na vertical"). O rótulo de cada parte da recompensa, na linha de ícones
+  do detalhe da missão (J), tinha quebra automática e largura a preencher dentro de uma linha
+  que encolhe ao conteúdo: ficava com zero de largura e uma letra por linha. Sem quebra, no
+  tamanho do texto; o portão `painel` abre uma missão com recompensa e confere.
+- **Em cima da ponte não se nada** (07/10: "depois de consertar a ponte, ao atravessá-la, o
+  boneco começou a nadar no ar"). O nado olhava a lâmina do rio no ponto — funda debaixo do
+  tabuleiro — e não se havia água sobre os pés. Agora só se nada com água acima dos pés
+  (0,15 u); o portão `ponte` põe o jogador em cima do tabuleiro feito e confere que ele fica
+  de pé.
+- **O Pedro só se apresenta no primeiro encontro** (07/10: "do nada, em algum momento
+  aleatório, o áudio do Pedro do início do jogo — 'chegou, homem, o mestre do saveiro...' —
+  foi reproduzido sem nexo"). As falas do píer só valiam até a chegada começar pela
+  aproximação, mas o E nele voltava a elas entre o último passo e a despedida; desde que a
+  chegada começou, o E no Pedro usa as falas de quem já conhece o jogador.
+- **A lenha da ponte não é a do cemitério, e a árvore grossa rende mais** (07/10: "na missão
+  da ponte do rio grande não deve mandar cortar as árvores do cemitério, só na missão do
+  cemitério"; "equilibre a quantidade de madeira: tem árvores maiores, que consomem muita
+  stamina e vigor, mas dão o mesmo quantitativo que uma árvore pequena"). A seta de "junte
+  lenha" apontava a embaúba do Damião, que rende lenha: o que é peça de missão (grupo) não
+  é fonte para a seta de ninguém. E a lenha de uma árvore é a da madeira dela vezes o
+  tamanho do tronco (0,6 a 2 vezes uma árvore comum), e os golpes crescem com a raiz do
+  tamanho (até 1,6×), para o pau-brasil mais grosso ainda caber no fôlego de um dia: a
+  embaúba fina cai em dois golpes e dá uma lenha, a mangueira grossa pede quatro e dá três.
+  Portões `cadeia_do_coveiro`
+  e `corte_das_arvores` conferem.
+- **A missão à vista: o "!" sobre a cabeça e a tela de aceite** (08/10: "continuo sem
+  missões depois da introdução à vila; eu preciso falar com o NPC para destravar, mas isso
+  não é óbvio para o jogador. Precisa seguir boas práticas de jogos de RPG e colocar uma
+  exclamação em cima da cabeça do NPC com quest disponível. Também deve ter uma tela resumo
+  sobre a missão para o jogador aceitar ela ou não"). Quem tem fila por abrir no E leva um
+  "!" dourado sobre a cabeça (`npc._marcador`, um Label3D que acompanha e balança); quem o
+  passo de agora manda procurar, com a carga na mochila, leva um "?". E o E na fila por
+  abrir não a começa na hora: abre a tela de aceite (`aceite_de_missao.gd`), com o vale
+  parado — o nome da missão, quem pede, o que ele diz, o primeiro passo, quantos passos e a
+  recompensa somada —, com Aceitar [E] e Agora não [Esc]; recusar não começa nada e o "!"
+  fica. Nos três idiomas. Portão novo `missao_a_vista`. E a cena (cena_vale.gd) não desliga
+  mais a tecla dos moradores nem o foco do E — o E já fica travado pela física do jogador
+  parada, e o foco apaga toda dica enquanto a cena toca.
+- **As cenas do vale, pelos dados** (07/10, à noite: "implementar a mesma lógica de cutscene
+  que fizemos no 2D: travando a tela e comandos do jogador e a própria engine conduzindo os
+  personagens para uma interação com fala; explorar a vista, o cenário, aproximar dos
+  personagens, mexer os braços"). `cena_vale.gd` toca cenas escritas em `data/cenas.json`
+  como listas de comandos — segura (jogador parado, sem E, tarjas, fila segura), camera
+  (olha / vista / aproxima), anda, encara, gesto (acenar, apontar, chamar...), fala,
+  anuncia (a fala do passo seguinte é a fala da cena), espera, solta —, com teto em tudo;
+  o passo que declara `cena` a toca ao fechar, e a fila que pediu fica segura até o
+  `anuncia`. Moradores ganham `assumir_cena`/`liberar_cena`/`encarar`/`gesto`, e o Pedro
+  obedece à cena antes da chegada e da condução. A chegada ganha três: a apresentação do
+  Tonho (o Pedro chama, vai na frente e aponta), a vista da praça (a câmera varre do Pedro
+  à igreja) e a casa do tio (a câmera chega à casa de taipa). Portão novo `cenas_do_vale`.
+- **Os moradores andam com folga das paredes e das árvores** (07/10, à noite: "muito NPC
+  andando colado na parede, batendo em árvore; o deslocamento entre esses objetos deve
+  ser suave"). Uma segunda malha de navegação, LARGA (raio 0,6, num mapa só dela, assada
+  logo depois da estreita), para o passeio ao ar livre: o caminho dela passa a meio corpo
+  das paredes, dos troncos e das cercas. A estreita (0,2) fica para onde a larga não passa
+  — a porta da igreja, o tabuado do píer, o vão entre duas casas: `caminho` vai pela
+  larga e emenda pela estreita as pontas que ela não alcança (e, se a emenda sai comprida
+  demais, vale a estreita inteira). E o passo suaviza nas curvas: perto do ponto da vez o
+  rumo já se mistura com o trecho seguinte, e o corpo vira com calma. Portão novo
+  `folga_dos_moradores`.
+- **O Pedro volta por quem ficou sem trancos** (07/10, à noite). No caminho de volta o ponto
+  da vez só avança: recomeçar do primeiro a cada quadro o mandava de volta ao ponto que
+  acabara de passar, e ele vinha a 1,2 u por segundo com passo de 2,1. Quem fica antes do
+  começo da linha (o caminho acabara de ser refeito) conta como atraso. O portão `chegada`
+  põe o jogador para trás na linha do percurso, num ponto que a malha alcança (doze passos
+  em linha reta, da praça para o píer, caíam no mar).
+- **A tarefa concluída se vê e se ouve** (07/10, à noite: "precisamos evidenciar melhor
+  que o jogador concluiu uma tarefa da missão... talvez um efeito brilhante no balão de
+  missão"). A festa de tela inteira continua só no fim da missão; cada passo do meio
+  pulsa o quadro da missão em ouro, desce dele um risco "✓ tarefa" que se apaga sozinho,
+  e soa um sinete curto (`tarefa_concluida.mp3`, dois sinos sintetizados, originais). A
+  fila avisa pelo sinal `passo_cumprido`; portão novo `tarefa_concluida`.
+- **O Pedro conduz pela estrada e pela ponte, e volta por quem ficou** (07/10, à noite:
+  "ao sair da praça, o Pedro tá correndo por trás da casa ao invés de pegar a estrada; o
+  mesmo na água do rio, ao invés de passar na ponte"; "o Pedro tem que andar já na
+  direção do jogador"). O caminho da condução passa a ser o da rua
+  (`Navegacao.caminho_pela_estrada`: as linhas das ruas da região viram um grafo ligado
+  nos cruzamentos, e o Pedro entra na rua pelo ponto mais perto e sai dela perto da
+  chegada — da praça à casa da Zefa, 87% do caminho na rua, contra 23% da malha; o rio só
+  pela ponte). E a linha do percurso é a régua da companhia: com o jogador à frente, ele
+  não espera ninguém; com o jogador para trás mais de cinco passos, ele VOLTA pelo caminho
+  até ele em vez de parar no meio da estrada; os marcos de parada saíram. E o HUD não
+  pisca mais "fale com Pedro: ele veio te esperar no píer" entre um passo e o seguinte da
+  mesma fila. Portão novo `pedro_pela_estrada`.
+- **As cercas das roças, segunda passada, pelas fotos do jogo** (07/10, à noite; "as
+  cercas continuam desalinhadas"). Fotografado de dentro do jogo, o cercado tinha
+  buracos ao longo da estrada e cunhas abertas nos cantos: as reservas das plantas
+  (a copa da árvore, o círculo do cemitério, a faixa da rua) derrubavam lances de
+  cerca — a roça do caminho da chapada ficava com 22 lances de 67. Agora um lance só
+  cai na água, EM CIMA da rua ou dentro de uma construção; cada lado estende meio
+  corpo para fora dos cantos, para os dois lados se cruzarem em vez de abrir a cunha;
+  os lances são do molde natural (até um décimo esticados, ou sobrepostos por igual);
+  a divisa entre duas roças fecha em T; e o portão `cercas` cobra que TODA ponta
+  encoste em outro lance — salvo a que para na rua, na porteira, na água ou numa
+  construção. 267 lances em pé, contra 173.
 - **As missões secundárias dos moradores, fase 3: as pontes entre moradores e as
   missões de ação** (docs/projeto/MISSOES_SECUNDARIAS.md). Nove filas, abertas pelo
   favor feito e a afinidade (a do Tonico pede "Amigo"): a roda na praia (Mariinha e a

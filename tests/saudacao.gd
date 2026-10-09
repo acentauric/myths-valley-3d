@@ -51,6 +51,10 @@ func _run() -> void:
 	await _frames(3)
 
 	var jogo := current_scene
+	# O ACEITE É AUTOMÁTICO AQUI (08/10): este portão abre filas pelo E e segue; a tela de aceite
+	# pausaria o vale no meio da medida (a tela tem portão próprio, tests/missao_a_vista.gd).
+	if jogo.get("aceite") != null:
+		jogo.aceite.automatico = true
 	var jogador = jogo.get("player")
 	var pedro = jogo.get("pedro")
 	var moradores: Array = jogo.get("moradores")
@@ -172,6 +176,16 @@ func _run() -> void:
 		for chave in ["texto", "texto_en", "texto_es"]:
 			if str((fala as Dictionary).get(chave, "")) != "":
 				do_encontro.append(str(fala[chave]))
+	# ENTRE O ÚLTIMO PASSO E A DESPEDIDA ele também não se apresenta de novo (07/10: o "chegou,
+	# homem! O mestre do saveiro jurou que trazia você hoje" tocava sem nexo nessa janela).
+	pedro.set("_iniciado", true)
+	pedro.missao = pedro.MISSOES.size()
+	pedro.set("_despedida_feita", false)
+	_conferir(not pedro.terminou_o_tutorial(), "a janela entre o último passo e a despedida não se montou")
+	for vez in 3:
+		var dita_antes: String = str(pedro._escolher_a_fala().get("texto", ""))
+		_conferir(not do_encontro.has(dita_antes) and de_depois.has(dita_antes),
+			"antes da despedida o Pedro ainda se apresentava de novo: '%s'" % dita_antes)
 	pedro.missao = pedro.MISSOES.size()
 	pedro.set("_despedida_feita", true)
 	_conferir(pedro.terminou_o_tutorial(), "não consegui dar a chegada do Pedro por acabada")

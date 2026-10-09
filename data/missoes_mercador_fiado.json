@@ -1,5 +1,5 @@
 {
-  "observacao": "O LIVRO DE FIADO (fase 3 de docs/projeto/MISSOES_SECUNDARIAS.md, 07/10/2026): a ponte entre a venda e o Tonho, dos ganchos de aldeoes.json ('O Tonho me deve, é verdade'; 'Meu livro de fiado tem mais nome que o livro do padre') e da fila do Tonho (a dívida do armazém). Pagar a conta do Tonho em peixe e ir dizer a ele. Abre com o favor das tábuas feito e o Nicolau 'Gente boa'.",
+  "observacao": "O LIVRO DE FIADO (fase 3 de docs/projeto/MISSOES_SECUNDARIAS.md, 07/10/2026): a ponte entre a venda e o Tonho, dos ganchos de aldeoes.json ('O Tonho me deve, é verdade'; 'Meu livro de fiado tem mais nome que o livro do padre') e da fila do Tonho (a dívida do armazém). Pagar a conta de um devedor em peixe e ir dizer a ele. O DEVEDOR É O DAMIÃO (08/10, docs/falas): era o Tonho, e a dívida dele também se paga na fila dele — o jogador a pagava duas vezes, de dois jeitos. O zelador do cemitério, que ganhou do intendente 'um papel com meu nome e mais nada', é quem vive de fiado. Abre com o favor das tábuas feito e o Nicolau 'Gente boa'.",
   "dono": "mercador",
   "nome": "O livro de fiado",
   "nome_en": "The credit book",
@@ -11,18 +11,18 @@
   "passos": [
     {
       "id": "fiado_livro",
-      "titulo": "O nome do Tonho",
-      "titulo_en": "Tonho's name",
-      "titulo_es": "El nombre de Tonho",
+      "titulo": "O nome do Damião",
+      "titulo_en": "Damião's name",
+      "titulo_es": "El nombre de Damião",
       "resumo": "Veja o livro de fiado com o Seu Nicolau",
       "resumo_en": "See the credit book with Seu Nicolau",
       "resumo_es": "Mira el libro de fiado con el Señor Nicolau",
       "lugar": "bar",
       "raio": 6,
       "audio": "",
-      "texto": "Olhe o livro. Este nome aqui, três linhas: o Tonho. Deve desde março — farinha, sal e querosene, do mês em que a rede ficou no rio. Eu não cobro pescador em maré ruim. Mas a conta não some. Três peixes bons e eu risco o nome. Se você quiser pagar por ele, é problema seu e do Tonho.",
-      "texto_en": "Look at the book. This name here, three lines: Tonho. In debt since March — flour, salt and kerosene, from the month the net stayed in the river. I don't collect from a fisherman in a bad tide. But the debt doesn't vanish. Three good fish and I cross the name out. If you want to pay for him, that's between you and Tonho.",
-      "texto_es": "Mira el libro. Este nombre aquí, tres líneas: Tonho. Debe desde marzo — harina, sal y queroseno, del mes en que la red se quedó en el río. No le cobro a un pescador en marea mala. Pero la cuenta no desaparece. Tres buenos pescados y tacho el nombre. Si quieres pagar por él, es asunto tuyo y de Tonho.",
+      "texto": "Olhe o livro. Este nome aqui, três linhas: o Damião, do cemitério. Deve desde março — farinha, sal e querosene, que zelador de cemitério ganha papel com o nome e mais nada. Eu não cobro quem não tem de onde tirar. Mas a conta não some. Três peixes bons e eu risco o nome. Se você quiser pagar por ele, é problema seu e do Damião.",
+      "texto_en": "Look at the book. This name here, three lines: Damião, from the cemetery. In debt since March — flour, salt and kerosene, since a cemetery keeper gets a paper with his name and nothing else. I don't collect from someone who has nowhere to take it from. But the debt doesn't vanish. Three good fish and I cross the name out. If you want to pay for him, that's between you and Damião.",
+      "texto_es": "Mira el libro. Este nombre aquí, tres líneas: Damião, el del cementerio. Debe desde marzo — harina, sal y queroseno, que al cuidador del cementerio le dan un papel con su nombre y nada más. No le cobro a quien no tiene de dónde sacar. Pero la cuenta no desaparece. Tres buenos pescados y tacho el nombre. Si quieres pagar por él, es asunto tuyo y de Damião.",
       "recompensa": {
         "xp": 10
       },
@@ -33,15 +33,15 @@
       "titulo": "Três peixes pela conta",
       "titulo_en": "Three fish for the account",
       "titulo_es": "Tres pescados por la cuenta",
-      "resumo": "Leve três peixes ao Seu Nicolau pela conta do Tonho",
-      "resumo_en": "Take three fish to Seu Nicolau for Tonho's account",
-      "resumo_es": "Lleva tres pescados al Señor Nicolau por la cuenta de Tonho",
+      "resumo": "Leve três peixes ao Seu Nicolau pela conta do Damião",
+      "resumo_en": "Take three fish to Seu Nicolau for Damião's account",
+      "resumo_es": "Lleva tres pescados al Señor Nicolau por la cuenta de Damião",
       "lugar": "bar",
       "raio": 6,
       "audio": "",
-      "texto": "Três peixes bons, e o nome do Tonho sai do livro.",
-      "texto_en": "Three good fish, and Tonho's name comes out of the book.",
-      "texto_es": "Tres buenos pescados, y el nombre de Tonho sale del libro.",
+      "texto": "Três peixes bons, e o nome do Damião sai do livro.",
+      "texto_en": "Three good fish, and Damião's name comes out of the book.",
+      "texto_es": "Tres buenos pescados, y el nombre de Damião sale del libro.",
       "recompensa": {
         "xp": 10
       },
@@ -51,9 +51,9 @@
         "quantos": 3,
         "a_quem": "mercador",
         "raio": 3.4,
-        "resposta": "Três peixes. Risco o nome. Pronto — o Tonho não deve mais nada a mim. Deve a você, mas isso o livro não escreve. Vá contar a ele antes que a Sá Joaquina conte.",
-        "resposta_en": "Three fish. I cross the name out. There — Tonho owes me nothing now. He owes you, but the book doesn't write that. Go tell him before Sá Joaquina does.",
-        "resposta_es": "Tres pescados. Tacho el nombre. Listo — Tonho ya no me debe nada. Te debe a ti, pero eso el libro no lo escribe. Ve a contárselo antes de que Sá Joaquina lo haga."
+        "resposta": "Três peixes. Risco o nome. Pronto — o Damião não deve mais nada a mim. Deve a você, mas isso o livro não escreve. Vá contar a ele antes que a Sá Joaquina conte.",
+        "resposta_en": "Three fish. I cross the name out. There — Damião owes me nothing now. He owes you, but the book doesn't write that. Go tell him before Sá Joaquina does.",
+        "resposta_es": "Tres pescados. Tacho el nombre. Listo — Damião ya no me debe nada. Te debe a ti, pero eso el libro no lo escribe. Ve a contárselo antes de que Sá Joaquina lo haga."
       }
     },
     {
@@ -61,33 +61,32 @@
       "titulo": "A conta paga",
       "titulo_en": "The account settled",
       "titulo_es": "La cuenta pagada",
-      "resumo": "Diga ao Tonho que a conta está paga",
-      "resumo_en": "Tell Tonho the account is settled",
-      "resumo_es": "Dile a Tonho que la cuenta está pagada",
-      "lugar": "pier",
+      "resumo": "Diga ao Damião que a conta está paga",
+      "resumo_en": "Tell Damião the account is settled",
+      "resumo_es": "Dile a Damião que la cuenta está pagada",
+      "lugar": "cemiterio",
       "raio": 10,
       "audio": "",
-      "texto": "Conte ao Tonho que o nome dele saiu do livro do Nicolau.",
-      "texto_en": "Tell Tonho his name is out of Nicolau's book.",
-      "texto_es": "Cuéntale a Tonho que su nombre salió del libro de Nicolau.",
+      "texto": "Conte ao Damião que o nome dele saiu do meu livro.",
+      "texto_en": "Tell Damião his name is out of my book.",
+      "texto_es": "Cuéntale a Damião que su nombre salió de mi libro.",
       "recompensa": {
-        "xp": 15,
-        "peixe": 1
+        "xp": 15
       },
       "meta": {
         "tipo": "falar",
-        "a_quem": "tonho",
+        "a_quem": "damiao",
         "raio": 3.4,
-        "resposta": "Você pagou o Nicolau por mim? Sem me perguntar? ... É. Meu pai faria o mesmo, e eu ia ficar com raiva dele também. Agora eu devo a você, e isso eu pago: na primeira maré boa, o primeiro peixe é seu. Não discuta.",
-        "resposta_en": "You paid Nicolau for me? Without asking? ... Yes. My father would've done the same, and I'd have been angry at him too. Now I owe you, and that I pay: on the first good tide, the first fish is yours. Don't argue.",
-        "resposta_es": "¿Le pagaste a Nicolau por mí? ¿Sin preguntarme? ... Sí. Mi padre habría hecho lo mismo, y yo también me habría enojado con él. Ahora te debo a ti, y eso lo pago: en la primera marea buena, el primer pescado es tuyo. No discutas."
+        "resposta": "Você pagou o Nicolau por mim? Sem me perguntar? ... Moço, eu passo o dia cuidando do nome de quem já foi, e fazia tempo que ninguém cuidava do meu. Agora eu devo ao senhor, e isso eu pago, nem que seja devagar. Não discuta.",
+        "resposta_en": "You paid Nicolau for me? Without asking me? ... Mister, I spend my days looking after the names of those who are gone, and it's been a long time since anyone looked after mine. Now I owe you, and that I'll pay, even if slowly. Don't argue.",
+        "resposta_es": "¿Le pagaste a Nicolau por mí? ¿Sin preguntarme? ... Joven, me paso el día cuidando el nombre de los que ya se fueron, y hacía tiempo que nadie cuidaba el mío. Ahora le debo a usted, y eso lo pago, aunque sea despacio. No discuta."
       }
     }
   ],
   "arremate": {
-    "texto": "A conta do Tonho no livro do Nicolau está riscada — paga em peixe, por você. O Tonho agora deve a você, e disse que isso ele paga.",
-    "texto_en": "Tonho's account in Nicolau's book is crossed out — paid in fish, by you. Tonho now owes you, and said that debt he pays.",
-    "texto_es": "La cuenta de Tonho en el libro de Nicolau está tachada — pagada en pescado, por ti. Tonho ahora te debe a ti, y dijo que eso sí lo paga.",
+    "texto": "A conta do Damião no livro do Nicolau está riscada — paga em peixe, por você. O Damião agora deve a você, e disse que isso ele paga.",
+    "texto_en": "Damião's account in Nicolau's book is crossed out — paid in fish, by you. Damião now owes you, and said that debt he'll pay.",
+    "texto_es": "La cuenta de Damião en el libro de Nicolau está tachada — pagada en pescado, por ti. Damião ahora te debe a ti, y dijo que eso sí lo paga.",
     "narra": false
   }
 }

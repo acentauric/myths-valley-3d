@@ -128,6 +128,26 @@ func _run() -> void:
 		return
 	_conferir(arvores._recusa(branca) == "", "a mangueira, madeira branca, recusou o machado de ferro: '%s'" % arvores._recusa(branca))
 	_conferir(arvores._texto_do_corte(branca).contains("Mangueira"), "a dica do corte não diz a árvore: '%s'" % arvores._texto_do_corte(branca))
+	# A ÁRVORE GROSSA PEDE MAIS GOLPES E DÁ MAIS LENHA que a fina da mesma madeira (07/10: "tem
+	# árvores maiores, que consomem muita stamina e vigor, mas dão o mesmo quantitativo").
+	var fina := -1
+	var grossa := -1
+	for i in arvores._cortaveis.size():
+		var arvore: Dictionary = arvores._cortaveis[i]
+		if bool(arvore.get("cortado", false)) or str(arvores.madeira_de(str(arvore["especie"])).get("classe", "")) != "branca":
+			continue
+		if fina < 0 or float(arvore["raio"]) < float(arvores._cortaveis[fina]["raio"]):
+			fina = i
+		if grossa < 0 or float(arvore["raio"]) > float(arvores._cortaveis[grossa]["raio"]):
+			grossa = i
+	_conferir(fina >= 0 and grossa >= 0 and fina != grossa, "não achei duas árvores de madeira branca de tamanhos diferentes")
+	if fina >= 0 and grossa >= 0:
+		print("  madeira branca: a fina (raio %.2f) pede %d golpes e dá %d; a grossa (raio %.2f) pede %d e dá %d" % [
+			float(arvores._cortaveis[fina]["raio"]), arvores.golpes_da(fina), arvores.rendimento_da(fina),
+			float(arvores._cortaveis[grossa]["raio"]), arvores.golpes_da(grossa), arvores.rendimento_da(grossa)])
+		_conferir(arvores.golpes_da(grossa) > arvores.golpes_da(fina) and arvores.rendimento_da(grossa) > arvores.rendimento_da(fina),
+			"a árvore grossa não pede mais golpes nem dá mais lenha que a fina")
+		_conferir(arvores.rendimento_da(fina) >= 1 and arvores.golpes_da(fina) >= 1, "a árvore fina não rende nem cai")
 	energia.encher()
 	var lenha_antes: int = inventario.quantidade("lenha")
 	var folego_antes: float = energia.atual
@@ -141,14 +161,19 @@ func _run() -> void:
 	arvores._parar_golpe(true)
 	var cortou_em := await _golpear_ate_cair(arvores, jogador, branca)
 	_conferir(bool(arvores._cortaveis[branca]["cortado"]), "a mangueira não caiu nos golpes da madeira branca")
-	_conferir(cortou_em == 3, "a mangueira caiu com %d golpes, e a madeira branca pede 3" % cortou_em)
-	_conferir(inventario.quantidade("lenha") == lenha_antes + 2, "a mangueira caiu e rendeu %d de lenha, e devia render 2" % (inventario.quantidade("lenha") - lenha_antes))
+	# OS GOLPES E A LENHA SÃO DO TAMANHO DA ÁRVORE (07/10): a madeira branca pede 3 e dá 2 numa
+	# árvore comum, vezes o tamanho desta (`tamanho_da`).
+	var golpes_esperados: int = arvores.golpes_da(branca)
+	var lenha_esperada: int = arvores.rendimento_da(branca)
+	print("  a mangueira (raio %.2f, tamanho %.2f) pede %d golpes e dá %d de lenha" % [float(arvores._cortaveis[branca]["raio"]), arvores.tamanho_da(branca), golpes_esperados, lenha_esperada])
+	_conferir(cortou_em == golpes_esperados, "a mangueira caiu com %d golpes, e o tamanho dela pede %d" % [cortou_em, golpes_esperados])
+	_conferir(inventario.quantidade("lenha") == lenha_antes + lenha_esperada, "a mangueira caiu e rendeu %d de lenha, e devia render %d" % [inventario.quantidade("lenha") - lenha_antes, lenha_esperada])
 	# O golpe cobra o vigor do braço ("golpe", com o "bater" dentro) e o corpo descansa
 	# entre um e outro: o gasto fica entre o fôlego do dia e o golpe inteiro, os dois
 	# lidos de Energia — mudar o balanço em Ajustes → Esforço não reprova o portão.
-	_conferir(_gasto_coerente(energia, folego_antes - energia.atual, 3, 1.0),
-		"três golpes de madeira branca custaram %.1f, fora de [%.1f, %.1f]" % [folego_antes - energia.atual, 3.0 * energia.custo("bater", 1.0), 3.0 * maxf(energia.custo("golpe"), energia.custo("bater", 1.0))])
-	_conferir(is_equal_approx(_xp_ganho, 15.0), "três golpes de madeira branca ensinaram %.0f de XP, e são 15 (bater)" % _xp_ganho)
+	_conferir(_gasto_coerente(energia, folego_antes - energia.atual, golpes_esperados, 1.0),
+		"%d golpes de madeira branca custaram %.1f, fora de [%.1f, %.1f]" % [golpes_esperados, folego_antes - energia.atual, float(golpes_esperados) * energia.custo("bater", 1.0), float(golpes_esperados) * maxf(energia.custo("golpe"), energia.custo("bater", 1.0))])
+	_conferir(is_equal_approx(_xp_ganho, 5.0 * golpes_esperados), "%d golpes de madeira branca ensinaram %.0f de XP, e são %d (bater)" % [golpes_esperados, _xp_ganho, 5 * golpes_esperados])
 	var nomeada: Dictionary = _nomeada_em(mundo, arvores._cortaveis[branca]["pos"])
 	_conferir(not nomeada.is_empty() and not (nomeada["visual"] as Node3D).visible, "a mangueira cortada continua de pé no mundo")
 	_conferir(is_instance_valid(nomeada.get("toco")), "a mangueira cortada não deixou toco")
@@ -206,12 +231,13 @@ func _run() -> void:
 		energia.encher()
 		folego_antes = energia.atual
 		_xp_ganho = 0.0
+		energia.encher()
 		var golpes_de_lei := await _golpear_ate_cair(arvores, jogador, de_lei)
 		_conferir(bool(arvores._cortaveis[de_lei]["cortado"]), "com o talento, a jaqueira não caiu")
-		_conferir(golpes_de_lei == 4, "a jaqueira caiu com %d golpes, e a madeira de lei pede 4" % golpes_de_lei)
+		_conferir(golpes_de_lei == arvores.golpes_da(de_lei), "a jaqueira caiu com %d golpes, e o tamanho dela pede %d" % [golpes_de_lei, arvores.golpes_da(de_lei)])
 		_conferir(_gasto_coerente(energia, folego_antes - energia.atual, 4, 2.0),
 			"quatro golpes de madeira de lei custaram %.1f, fora de [%.1f, %.1f]" % [folego_antes - energia.atual, 4.0 * energia.custo("bater", 2.0), 4.0 * maxf(energia.custo("golpe"), energia.custo("bater", 2.0))])
-		_conferir(is_equal_approx(_xp_ganho, 48.0), "quatro golpes de madeira de lei ensinaram %.0f de XP, e são 48 (bater_duro)" % _xp_ganho)
+		_conferir(is_equal_approx(_xp_ganho, 12.0 * golpes_de_lei), "%d golpes de madeira de lei ensinaram %.0f de XP, e são %d (bater_duro)" % [golpes_de_lei, _xp_ganho, 12 * golpes_de_lei])
 
 	# --- 4. A MADEIRA DE LEI DURA PEDE O AÇO ----------------------------------
 	var dura: int = await _escolher(arvores, mundo, jogador, "pau_brasil", true)
@@ -230,9 +256,11 @@ func _run() -> void:
 		_conferir(jogador.machado_na_mao(), "o machado de aço na mão não conta como machado")
 		_conferir(arvores._recusa(dura) == "", "com o talento e o machado de aço, o pau-brasil recusa: '%s'" % arvores._recusa(dura))
 		energia.encher()
-		var golpes_duros := await _golpear_ate_cair(arvores, jogador, dura)
-		_conferir(bool(arvores._cortaveis[dura]["cortado"]) and golpes_duros == 5,
-			"o pau-brasil, de machado de aço, caiu=%s em %d golpes (a lei dura pede 5)" % [str(arvores._cortaveis[dura]["cortado"]), golpes_duros])
+		energia.encher()
+		print("  antes do pau-brasil: fôlego %.1f de %.1f, golpe %.1f de vigor %.1f, bater×3 %.1f" % [energia.atual, energia.maximo(), energia.custo("golpe"), float(jogador.vigor_atual()), energia.custo("bater", 3.0)])
+		var golpes_duros := await _golpear_ate_cair(arvores, jogador, dura, true)
+		_conferir(bool(arvores._cortaveis[dura]["cortado"]) and golpes_duros == arvores.golpes_da(dura),
+			"o pau-brasil, de machado de aço, caiu=%s em %d golpes (o tamanho dele pede %d)" % [str(arvores._cortaveis[dura]["cortado"]), golpes_duros, arvores.golpes_da(dura)])
 		_por_na_mao("machado")
 
 	# --- 5. A GAMELEIRA NÃO SE CORTA ------------------------------------------
@@ -295,7 +323,8 @@ func _run() -> void:
 	_por_na_mao("machado")
 	await _ir_para(arvores, jogador, branca)
 	energia.encher()
-	_conferir(await _golpear_ate_cair(arvores, jogador, branca) == 3 and bool(arvores._cortaveis[branca]["cortado"]), "a mangueira adulta não se cortou de novo")
+	energia.encher()
+	_conferir(await _golpear_ate_cair(arvores, jogador, branca, true) == arvores.golpes_da(branca) and bool(arvores._cortaveis[branca]["cortado"]), "a mangueira adulta não se cortou de novo")
 
 	# --- 7. A PARTIDA SALVA LEMBRA ------------------------------------------------
 	var salvo: Array = arvores.estado_para_salvar()
@@ -471,10 +500,12 @@ func _ir_para(arvores, jogador, indice: int) -> void:
 ## Golpe a golpe até cair, pelo mesmo `_ao_golpe_concluido` que a animação
 ## chama: o braço é do jogador, e a conta é o que se mede. Devolve com quantos
 ## golpes ela caiu, contando os que a tecla já tinha dado (0 se não caiu).
-func _golpear_ate_cair(arvores, jogador, indice: int) -> int:
+func _golpear_ate_cair(arvores, jogador, indice: int, encher_o_folego: bool = false) -> int:
 	for i in 12:
 		if bool(arvores._cortaveis[indice]["cortado"]):
 			break
+		if encher_o_folego:
+			root.get_node("/root/Energia").encher()
 		jogador.set("_vigor", 100.0)
 		arvores._stamina = 100.0
 		arvores._em_golpe = indice

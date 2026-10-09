@@ -20,9 +20,9 @@
       "lugar": "casa_da_quituteira",
       "raio": 6,
       "audio": "",
-      "texto": "Você quer aprender a roda? Então escuta: é na praia, de noite, quando a maré tá cheia. A Dona Rosa puxa o canto. Quem não bate palma não entra — e quem chega de dia não acha ninguém.",
-      "texto_en": "You want to learn the circle dance? Then listen: it's on the beach, at night, when the tide is high. Dona Rosa leads the song. Whoever doesn't clap doesn't get in — and whoever comes by day finds no one.",
-      "texto_es": "¿Quieres aprender la rueda? Entonces escucha: es en la playa, de noche, cuando la marea está alta. Doña Rosa lleva el canto. Quien no aplaude no entra — y quien llega de día no encuentra a nadie.",
+      "texto": "Você quer aprender a roda? Então escuta: é na praia, de noite, antes da meia-noite. A Dona Rosa puxa o canto. Quem não bate palma não entra — e quem chega de dia não acha ninguém.",
+      "texto_en": "You want to learn the circle dance? Then listen: it's on the beach, at night, before midnight. Dona Rosa leads the song. Whoever doesn't clap doesn't get in — and whoever comes by day finds no one.",
+      "texto_es": "¿Quieres aprender la rueda? Entonces escucha: es en la playa, de noche, antes de la medianoche. Doña Rosa lleva el canto. Quien no aplaude no entra — y quien llega de día no encuentra a nadie.",
       "recompensa": {
         "xp": 10
       },
@@ -78,16 +78,16 @@
         "tipo": "falar",
         "a_quem": "marisqueira",
         "raio": 3.4,
-        "resposta": "Você bateu palma certo e entrou torto, como todo mundo na primeira vez. A roda é de Iemanjá antes de ser nossa: por isso é na maré cheia. Volte na próxima — a Mariinha disse que você quase acertou o passo.",
-        "resposta_en": "You clapped right and stepped in crooked, like everyone the first time. The circle belongs to Iemanjá before it's ours: that's why it's at high tide. Come back next time — Mariinha said you almost got the step.",
-        "resposta_es": "Aplaudiste bien y entraste torcido, como todos la primera vez. La rueda es de Iemanjá antes de ser nuestra: por eso es con marea alta. Vuelve la próxima — Mariinha dijo que casi acertaste el paso."
+        "resposta": "Você bateu palma certo e entrou torto, como todo mundo na primeira vez. A roda é de Iemanjá antes de ser nossa. Volte na próxima — a Mariinha disse que você quase acertou o passo.",
+        "resposta_en": "You clapped right and stepped in crooked, like everyone the first time. The circle belongs to Iemanjá before it's ours. Come back next time — Mariinha said you almost got the step.",
+        "resposta_es": "Aplaudiste bien y entraste torcido, como todos la primera vez. La rueda es de Iemanjá antes de ser nuestra. Vuelve la próxima — Mariinha dijo que casi acertaste el paso."
       }
     }
   ],
   "arremate": {
-    "texto": "Você bateu palma, entrou na roda e a Dona Rosa puxou o canto. A maré estava cheia, e a Mariinha dançou melhor que você.",
-    "texto_en": "You clapped, joined the circle and Dona Rosa led the song. The tide was high, and Mariinha danced better than you.",
-    "texto_es": "Aplaudiste, entraste en la rueda y Doña Rosa llevó el canto. La marea estaba alta, y Mariinha bailó mejor que tú.",
+    "texto": "Você bateu palma, entrou na roda e a Dona Rosa puxou o canto. A Mariinha dançou melhor que você.",
+    "texto_en": "You clapped, joined the circle and Dona Rosa led the song. Mariinha danced better than you.",
+    "texto_es": "Aplaudiste, entraste en la rueda y Doña Rosa llevó el canto. Mariinha bailó mejor que tú.",
     "narra": false
   }
 }

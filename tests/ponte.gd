@@ -49,6 +49,10 @@ func _run() -> void:
 	await _mundo_pronto()
 	await _quadros(8)
 	vale = current_scene
+	# O ACEITE É AUTOMÁTICO AQUI (08/10): este portão abre filas pelo E e segue; a tela de aceite
+	# pausaria o vale no meio da medida (a tela tem portão próprio, tests/missao_a_vista.gd).
+	if vale.get("aceite") != null:
+		vale.aceite.automatico = true
 	tecla = vale.get("tecla_dos_moradores")
 	jogador = vale.player
 	pedro = vale.get("pedro")
@@ -233,6 +237,17 @@ func _run() -> void:
 		var tabuleiro: Dictionary = _tabuleiro(vale, dados["centro"])
 		_conferir(not tabuleiro.is_empty() and (modelos["de_pe"] as Node).is_ancestor_of(tabuleiro["collider"]),
 			"feita a obra, o tabuleiro não voltou: o raio %s" % ("não bateu em nada" if tabuleiro.is_empty() else "bateu em " + str(tabuleiro["collider"])))
+		# ATRAVESSAR É ANDAR, NÃO NADAR (07/10: "ao atravessá-la, o boneco começou a nadar no
+		# ar"): em cima do tabuleiro, com o rio fundo lá embaixo, o jogador fica de pé no chão.
+		if not tabuleiro.is_empty():
+			var em_cima: Vector3 = tabuleiro["position"]
+			jogador.teleportar(em_cima + Vector3.UP * 0.3, 0.0)
+			for i in 40:
+				await physics_frame
+			_conferir(not jogador.is_swimming(), "em cima do tabuleiro da ponte o jogador está nadando no ar")
+			_conferir(jogador.is_on_floor(), "em cima do tabuleiro o jogador não está de pé no chão")
+			_conferir(jogador.global_position.y >= em_cima.y - 0.5,
+				"o jogador atravessou o tabuleiro e caiu no rio (y %.2f, tabuleiro %.2f)" % [jogador.global_position.y, em_cima.y])
 	_conferir(await _ate(func() -> bool: return ponte.missao >= 6, 8.0), "a obra feita não fechou o passo da ponte")
 	_conferir(inv.quantidade("pirao") == piroes + 2 and inv.quantidade("cocada") == cocadas + 2,
 		"a ponte não pagou os dois pirões e as duas cocadas")

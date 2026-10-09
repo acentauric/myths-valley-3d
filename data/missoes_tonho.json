@@ -1,5 +1,5 @@
 {
-  "observacao": "A REDE, A CONTA E A TERRA DO TONHO, trazida do jogo 2D (data/dialogos/arraial.json, passos pescador_ver / pescador_rede / tonho_divida / tonho_terra e os respectivos _fim). É A HISTÓRIA INTEIRA DE UM MORADOR, na ordem de lá, e a ordem é o sentido: a rede é o que paga o armazém ('Com rede eu tiro em uma manhã o que a linha me dá em cinco. Isso paga o armazém antes do inverno'), e a dívida paga é o que solta a terra ('Eu só não queria entregar terra devendo'). Importar a dívida sem a rede, como esta cadeia começou, era ficar com o fim sem o começo. É também a única cadeia do vale que ATRAVESSA o arraial: o píer, a oficina do roçado, o armazém, e o píer de novo. NO 2D A DÍVIDA SE PAGA no baú do livro de fiado ou pela rede ao longo de semanas; o vale não tem o livro nem a espera de semanas (#21), então o passo do armazém é A IDA, que é a instrução literal do objetivo de lá ('Entre no armazém'). CORDA E TÁBUA NASCEM SABIDAS na oficina, e o comentário do Oficina.RECEITAS já dizia que era por causa desta rede. O PASSO DA REDE APONTA O ROÇADO, e não a oficina: oficina está na lista FALTAM_NO_VALE do Lugares (a âncora é da Fase 7), e passo cujo lugar não resolve o correr PULA EM SILÊNCIO — apontá-la teria apagado o meio da cadeia sem ninguém saber. A bancada é provisória na beira do roçado, como diz o BancadasVale. AS AS RECOMPENSAS DO 2D VIERAM (#48), no campo 'recompensa' de cada passo, com os números do arraial.json de lá: o pirão do pontal, os pirões e a cocada da rede, os 2 peixes assados da dívida paga e os 2 pirões e 2 cocadas da terra. 'abre_em' é nota de leitura: quem decide onde a fila abre é o _pendurar_cadeia do Prototype. TRADUÇÃO: só em português neste primeiro momento; inglês e espanhol são do Ramon. ATUALIZAÇÃO #68: o livro está no baú montado do armazém; a leitura e a quitação reais agora são obrigatórias. A rede abate 130 por dia e o livro aceita até 500 por confirmação, limitados pelo dinheiro e pelo saldo. A nota anterior sobre ausência do livro é histórica.",
+  "observacao": "A REDE, A CONTA E A TERRA DO TONHO, trazida do jogo 2D (data/dialogos/arraial.json, passos pescador_ver / pescador_rede / tonho_divida / tonho_terra e os respectivos _fim). É A HISTÓRIA INTEIRA DE UM MORADOR, na ordem de lá, e a ordem é o sentido: a rede é o que paga o armazém ('Com rede eu tiro em uma manhã o que a linha me dá em cinco. Isso paga o armazém antes do inverno'), e a dívida paga é o que solta a terra ('Eu só não queria entregar terra devendo'). Importar a dívida sem a rede, como esta cadeia começou, era ficar com o fim sem o começo. É também a única cadeia do vale que ATRAVESSA o arraial: o píer, a oficina do roçado, o armazém, e o píer de novo. NO 2D A DÍVIDA SE PAGA no baú do livro de fiado ou pela rede ao longo de semanas; o vale não tem o livro nem a espera de semanas (#21), então o passo do armazém é A IDA, que é a instrução literal do objetivo de lá ('Entre no armazém'). CORDA E TÁBUA NASCEM SABIDAS na oficina, e o comentário do Oficina.RECEITAS já dizia que era por causa desta rede. O PASSO DA REDE APONTA O ROÇADO, e não a oficina: oficina está na lista FALTAM_NO_VALE do Lugares (a âncora é da Fase 7), e passo cujo lugar não resolve o correr PULA EM SILÊNCIO — apontá-la teria apagado o meio da cadeia sem ninguém saber. A bancada é provisória na beira do roçado, como diz o BancadasVale. AS AS RECOMPENSAS DO 2D VIERAM (#48), no campo 'recompensa' de cada passo, com os números do arraial.json de lá: o pirão do pontal, os pirões e a cocada da rede, os 2 peixes assados da dívida paga e os 2 pirões e 2 cocadas da terra. 'abre_em' é nota de leitura: quem decide onde a fila abre é o _pendurar_cadeia do Prototype. TRADUÇÃO: nos três idiomas desde 08/10 (docs/falas). A CONTA E O FIM, CORRIGIDOS EM 08/10 (docs/falas) e juntados com o #68: a dívida não zera sem ninguém pagar. O livro de fiado do Seu Nicolau está no baú montado do armazém (FiadoTonho, data/fiado_tonho.json): a leitura e a quitação reais são obrigatórias — o livro aceita até 500 réis por confirmação, limitados pela bolsa e pelo saldo, e a rede nova abate 130 por dia. As falas do passo são as corrigidas da equipe (os 1.900 réis, o nome que sai da página), e o fim não dá terra, que não existe no vale: dá o primeiro peixe da rede nova, que é de quem fez a rede.",
   "dono": "tonho",
   "nome": "A dívida do Tonho",
   "nome_en": "Tonho's debt",
@@ -9,11 +9,12 @@
   "trancada_es": "Ahora no, joven. Vuelve cuando Pedro te haya enseñado el oficio y te dé el hacha, que la red es de madera.",
   "principal": true,
   "abre_em": "pier",
-  "traducao": "pendente",
   "passos": [
     {
       "id": "pescador_ver",
       "titulo": "A maré, lida do pontal",
+      "titulo_en": "The tide, read from the point",
+      "titulo_es": "La marea, leída desde la punta",
       "resumo": "Vá ao píer ler a maré com o Tonho",
       "resumo_en": "Go to the pier to read the tide with Tonho",
       "resumo_es": "Ve al muelle a leer la marea con Tonho",
@@ -21,16 +22,22 @@
       "raio": 11.0,
       "audio": "",
       "texto": "Senta aí. Olha a água e não fala nada por um minuto. Viu? Ali na curva ela corre mais escura — é fundo, e peixe grande dorme no fundo de dia. Quando a maré está enchendo o peixe entra com ela; quando está vazando, ele encosta na pedra e espera. Meu pai me ensinou a ler maré aos nove: é a única herança que não deu pra penhorar.",
+      "texto_en": "Sit down there. Look at the water and don't say anything for a minute. See? There at the bend it runs darker — it's deep, and big fish sleep in the deep by day. When the tide is rising the fish come in with it; when it's ebbing, they lean against the rock and wait. My father taught me to read the tide at nine: it's the only inheritance that couldn't be pawned.",
+      "texto_es": "Siéntate ahí. Mira el agua y no digas nada por un minuto. ¿Ves? Ahí en la curva corre más oscura — es hondo, y el pez grande duerme en el fondo de día. Cuando la marea está subiendo el pez entra con ella; cuando está bajando, se arrima a la piedra y espera. Mi padre me enseñó a leer la marea a los nueve: es la única herencia que no se pudo empeñar.",
       "recompensa": {"xp": 10,  "pirao": 1 },
       "meta": {}
     },
     {
       "id": "pescador_rede",
       "titulo": "A rede do Tonho",
+      "titulo_en": "Tonho's net",
+      "titulo_es": "La red de Tonho",
       "lugar": "rocado",
       "raio": 9.0,
       "audio": "",
       "texto": "Agora eu vou te pedir uma coisa, e não é peixe — peixe eu pego. Minha rede ficou do outro lado do rio numa noite de março, e desde então eu pesco de linha, um por um: dá pra comer, não dá pra pagar o armazém. Rede não se compra aqui, se faz. Você tem a bancada na beira do roçado: torce cinco cordas lá e traz. Traz três tábuas também, que a bancada onde eu amarrava apodreceu.",
+      "texto_en": "Now I'm going to ask you for something, and it isn't fish — fish I catch. My net stayed on the other side of the river one night in March, and since then I've fished with a line, one by one: enough to eat, not enough to pay the store. A net isn't bought here, it's made. You've got the workbench at the edge of the field: twist five ropes there and bring them. Bring three planks too, since the bench where I used to tie it rotted.",
+      "texto_es": "Ahora te voy a pedir una cosa, y no es pescado — pescado lo pesco yo. Mi red se quedó del otro lado del río una noche de marzo, y desde entonces pesco con sedal, uno por uno: da para comer, no da para pagar el almacén. Red no se compra aquí, se hace. Tienes el banco a la orilla del sembrado: tuerce cinco cuerdas allí y tráelas. Trae también tres tablas, que el banco donde yo la ataba se pudrió.",
       "diario": "Minha rede ficou do outro lado do rio numa noite de março, e desde então eu pesco de linha, um por um: dá pra comer, não dá pra pagar o armazém. Rede aqui não se compra, se faz.",
       "diario_en": "My net stayed on the far side of the river one March night, and since then I fish by line, one by one: enough to eat, not enough to pay the store. Nets aren't bought here, they're made.",
       "diario_es": "Mi red se quedó al otro lado del río una noche de marzo, y desde entonces pesco con línea, uno por uno: alcanza para comer, no para pagar el almacén. Aquí la red no se compra, se hace.",
@@ -43,12 +50,16 @@
         },
         "a_quem": "tonho",
         "raio": 3.4,
-        "resposta": "Pronto. Deixa aí no chão mesmo. Olha — eu ia dizer obrigado e ficar quieto, que é o meu jeito, mas você merece a conta certa: com rede eu tiro em uma manhã o que a linha me dá em cinco, e isso paga o armazém antes do inverno. Agora vai, que eu tenho malha pra amarrar e o joelho não espera."
+        "resposta": "Pronto. Deixa aí no chão mesmo. Olha — eu ia dizer obrigado e ficar quieto, que é o meu jeito, mas você merece a conta certa: com rede eu tiro em uma manhã o que a linha me dá em cinco, e isso paga o armazém antes do inverno. Agora vai, que eu tenho malha pra amarrar e o joelho não espera.",
+        "resposta_en": "There. Just leave it on the ground. Look — I was going to say thanks and keep quiet, that's my way, but you deserve the right sum: with a net I pull in one morning what the line gives me in five, and that pays the store before winter. Now go, I've got mesh to tie and my knee won't wait.",
+        "resposta_es": "Listo. Déjalo ahí en el suelo nomás. Mira — iba a decir gracias y quedarme callado, que es mi manera, pero tú mereces la cuenta exacta: con red saco en una mañana lo que el sedal me da en cinco, y eso paga el almacén antes del invierno. Ahora vete, que tengo malla que atar y la rodilla no espera."
       }
     },
     {
       "id": "tonho_divida",
       "titulo": "A conta do Tonho",
+      "titulo_en": "Tonho's account",
+      "titulo_es": "La cuenta de Tonho",
       "resumo": "Ouça o Tonho no píer",
       "resumo_en": "Hear Tonho out at the pier",
       "resumo_es": "Escucha a Tonho en el muelle",
@@ -56,19 +67,25 @@
       "raio": 11.0,
       "audio": "",
       "texto": "Uma coisa, antes de você ir — e eu falo porque você merece ouvir de mim, não do armazém. Mil e novecentos. É o que eu devo lá, e eu sei de cabeça: acordo sabendo. Com a rede eu pago. Vai levar umas semanas, mas pago, e eu prefiro assim.",
+      "texto_en": "One thing, before you go — and I'm telling you because you deserve to hear it from me, not from the store. One thousand nine hundred. That's what I owe there, and I know it by heart: I wake up knowing it. With the net I'll pay. It'll take a few weeks, but I'll pay, and I'd rather it that way.",
+      "texto_es": "Una cosa, antes de que te vayas — y te lo digo porque mereces oírlo de mí, no del almacén. Mil novecientos. Es lo que debo allá, y lo sé de memoria: me despierto sabiéndolo. Con la red pago. Va a llevar unas semanas, pero pago, y prefiero que sea así.",
       "recompensa": {"xp": 10,  "peixe_assado": 2 },
       "meta": {}
     },
     {
       "id": "tonho_livro",
       "titulo": "O livro de fiado",
+      "titulo_en": "The credit book",
+      "titulo_es": "El libro de fiado",
       "resumo": "Leia o livro no baú do armazém e quite a dívida: pague ou espere a rede abater 130 réis por dia",
       "resumo_en": "Read the store's credit book and settle the debt: pay or let the net pay off 130 réis per day",
       "resumo_es": "Lee el libro del almacén y salda la deuda: paga o espera que la red descuente 130 réis por día",
       "lugar": "venda",
       "raio": 8.0,
       "audio": "",
-      "texto": "Se você quiser apressar, o livro de fiado fica no baú do armazém e aceita o dinheiro de qualquer um. Não precisa me pedir licença. Entre lá e veja a página.",
+      "texto": "Se você quiser apressar, a conta fica no livro do Seu Nicolau, no baú do armazém, e ele aceita réis de qualquer mão. Não precisa me pedir licença. Mil e novecentos, e o nome sai da página.",
+      "texto_en": "If you want to hurry it up, the account is in Seu Nicolau's book, in the store's chest, and he takes réis from any hand. You don't need my permission. One thousand nine hundred, and the name comes off the page.",
+      "texto_es": "Si quieres apurarlo, la cuenta está en el libro del señor Nicolau, en el baúl del almacén, y él acepta réis de cualquier mano. No necesitas pedirme permiso. Mil novecientos, y el nombre sale de la página.",
       "meta": {
         "tipo": "evento",
         "eventos": [
@@ -79,23 +96,30 @@
     },
     {
       "id": "tonho_terra",
-      "titulo": "A terra do Tonho",
+      "titulo": "O primeiro lanço da rede",
+      "titulo_en": "The net's first cast",
+      "titulo_es": "El primer lance de la red",
       "lugar": "venda",
       "raio": 8.0,
       "audio": "",
-      "texto": "Zerou. Eu passei lá e o homem virou o livro pra eu ver — dois anos naquela página, e agora é só papel velho. Volte ao pontal, que eu quero te entregar uma coisa na mão.",
-      "recompensa": {"xp": 10,  "pirao": 2, "cocada": 2 },
+      "texto": "Zerou. O Seu Nicolau virou o livro pra eu ver — dois anos naquela página, e agora é só papel velho. Eu sei que foi você. Volte ao pontal, que eu quero te entregar uma coisa na mão.",
+      "texto_en": "It's cleared. Seu Nicolau turned the book around for me to see — two years on that page, and now it's just old paper. I know it was you. Come back to the point, I want to put something in your hand.",
+      "texto_es": "Quedó en cero. El señor Nicolau me dio vuelta el libro para que lo viera — dos años en esa página, y ahora es solo papel viejo. Sé que fuiste tú. Vuelve a la punta, que quiero entregarte algo en la mano.",
+      "recompensa": {"xp": 10,  "robalo": 1, "pirao": 2, "cocada": 2 },
       "meta": {
         "tipo": "falar",
         "a_quem": "tonho",
         "raio": 3.4,
-        "resposta": "Senta aqui um minuto. Aquele chão do outro lado da estrada é seu. Eu falo com o padre no domingo e a gente assina na frente dele, que é como se faz aqui. Não é gratidão, e eu não quero que você entenda como gratidão: é que eu disse o preço e o preço era esse. Eu só não queria entregar terra devendo. Minha mãe ainda senta na porta olhando a curva da estrada — mas agora, quando ela pergunta como estão as contas, eu respondo sem mudar de assunto. Planta o que você quiser lá. Eu cuido, se você mandar, e dessa vez eu cuido de terra que não me deve nada."
+        "resposta": "Senta aqui um minuto. Hoje de manhã a rede nova saiu pela primeira vez, e o primeiro peixe dela é seu: aqui o primeiro lanço é de quem fez a rede, e quem torceu aquelas cordas foi você. Não é gratidão, e eu não quero que você entenda como gratidão: é que eu disse que pagava, e quem pagou foi você. Isso eu te devolvo em peixe, uma maré de cada vez. Minha mãe ainda senta na porta olhando a curva da estrada — mas agora, quando ela pergunta como estão as contas, eu respondo sem mudar de assunto.",
+        "resposta_en": "Sit here a minute. This morning the new net went out for the first time, and its first fish is yours: here the first cast belongs to whoever made the net, and the one who twisted those ropes was you. It isn't gratitude, and I don't want you to take it as gratitude: it's that I said I'd pay, and the one who paid was you. That I'll give back to you in fish, one tide at a time. My mother still sits at the door watching the bend in the road — but now, when she asks how the accounts are, I answer without changing the subject.",
+        "resposta_es": "Siéntate aquí un minuto. Esta mañana la red nueva salió por primera vez, y su primer pescado es tuyo: aquí el primer lance es de quien hizo la red, y quien torció esas cuerdas fuiste tú. No es gratitud, y no quiero que lo entiendas como gratitud: es que yo dije que pagaba, y quien pagó fuiste tú. Eso te lo devuelvo en pescado, una marea a la vez. Mi madre todavía se sienta en la puerta mirando la curva del camino — pero ahora, cuando pregunta cómo van las cuentas, respondo sin cambiar de tema."
       }
     }
   ],
   "arremate": {
-    "texto": "A rede do Tonho está no mar, o livro do armazém é papel velho, e a terra do outro lado da estrada é sua.",
-    "narra": false,
-    "traducao": "pendente"
+    "texto": "A rede do Tonho está no mar, e a conta do armazém está paga — por você. O primeiro peixe da rede nova foi seu.",
+    "texto_en": "Tonho's net is in the sea, and the store account is paid — by you. The first fish of the new net was yours.",
+    "texto_es": "La red de Tonho está en el mar, y la cuenta del almacén está pagada — por ti. El primer pescado de la red nueva fue tuyo.",
+    "narra": false
   }
 }

@@ -8,17 +8,16 @@ const DicaTecla = preload("res://scripts/prototipo_3d/dica_tecla.gd")
 const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
 const FocoDoE = preload("res://scripts/prototipo_3d/foco_do_e.gd")
 const DADOS := "res://data/lapides_3d.json"
+const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
 ## Distância (no chão) para a tecla E aparecer e para o painel fechar sozinho.
 const ALCANCE := 2.2
 const ALCANCE_FECHAR := 4.0
 const ALTURA_DICA := 1.5
 ## Broncas do coveiro, cada vez mais bravas, com a voz dele (ElevenLabs, a mesma do
 ## Damião). Na terceira ele derruba o jogador da laje.
-const BRONCAS := [
-	["Ô, moço! Desce daí, que aí embaixo tem gente descansando.", "res://assets/audio/vozes/damiao_bronca_1.mp3"],
-	["Moço, eu já pedi! Em cima da cova, não! Respeite quem já foi!", "res://assets/audio/vozes/damiao_bronca_2.mp3"],
-	["Chega! Falei duas vezes! Desce daí agora!", "res://assets/audio/vozes/damiao_bronca_3.mp3"],
-]
+## AS BRONCAS moram em data/lapides_3d.json ("broncas": texto nos três idiomas e o áudio), e não
+## mais aqui: no código elas eram só português (08/10).
+var _broncas: Array = []
 ## Folga depois de cada fala antes da próxima bronca, em segundos.
 const FOLGA_BRONCA := 1.5
 ## Sem subir em túmulo por esse tempo, o coveiro esquece e volta à primeira bronca.
@@ -58,6 +57,7 @@ func configurar(world: Node3D, jogador: Node3D, hud, hud_layer: Control) -> void
 	var dados = JSON.parse_string(FileAccess.get_file_as_string(DADOS))
 	if dados is Dictionary:
 		_historias = dados.get("lapides", [])
+		_broncas = dados.get("broncas", [])
 	_dica = DicaTecla.criar(hud_layer, Atalhos.letra("interagir"), "Ler lápide")
 	add_to_group(FocoDoE.GRUPO)
 
@@ -160,19 +160,22 @@ func _coveiro_por_perto() -> bool:
 ## Próxima bronca da escada (1 → 2 → 3, e a 3 se repete): balão, aviso e voz. Na
 ## terceira, depois da fala, o coveiro derruba o jogador da laje.
 func _dar_bronca() -> void:
-	var nivel := mini(broncas_dadas, BRONCAS.size() - 1)
+	if _broncas.is_empty():
+		return
+	var nivel := mini(broncas_dadas, _broncas.size() - 1)
 	broncas_dadas += 1
-	var texto: String = BRONCAS[nivel][0]
+	var bronca: Dictionary = _broncas[nivel]
+	var texto := str(IdiomaMenu.campo(bronca, "texto", ""))
 	var nome := String(coveiro.get("dados").get("nome", "Coveiro"))
 	coveiro.mostrar_balao(texto, 5.0)
 	_hud.set_notice("%s: %s" % [nome, texto])
-	var duracao := _falar(String(BRONCAS[nivel][1]))
+	var duracao := _falar(str(bronca.get("audio", "")))
 	# A bronca entra na fila de falas: ninguém narra por cima do coveiro.
 	coveiro._tomar_palavra(duracao)
 	_espera_bronca = duracao + FOLGA_BRONCA
 	if coveiro.get("animador") != null and coveiro.animador.has_method("play_gesture"):
 		coveiro.animador.play_gesture(int(coveiro.dados.get("gesto_saudacao", 0)))
-	if nivel == BRONCAS.size() - 1:
+	if nivel == _broncas.size() - 1:
 		# Terceira bronca: ele vem até o túmulo enquanto fala e só empurra ao chegar.
 		_indo_empurrar = true
 		_tempo_indo = 0.0

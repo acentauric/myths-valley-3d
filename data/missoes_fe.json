@@ -20,9 +20,9 @@
       "lugar": "casa_de_taipa",
       "raio": 7.0,
       "audio": "",
-      "texto": "A Dona Zefa mandou te chamar. Ela é benzedeira: quando alguém aqui adoece, vai nela antes de ir no padre — e o padre sabe, e não diz nada. De manhã e de noite ela fica na casa de taipa; de tarde, no poço. Vá lá.",
-      "texto_en": "Dona Zefa sent for you. She is a healer: when someone here falls ill, they go to her before the priest — and the priest knows, and says nothing. Mornings and nights she stays at the rammed-earth house; afternoons, at the well. Go see her.",
-      "texto_es": "Doña Zefa mandó a llamarte. Es curandera: cuando alguien aquí se enferma, va con ella antes que con el cura, y el cura lo sabe y no dice nada. Por la mañana y por la noche está en la casa de tapia; por la tarde, en el pozo. Ve a verla.",
+      "texto": "A Dona Zefa mandou te chamar. Ela é benzedeira: quando alguém aqui adoece, vai nela antes de ir no padre — e o padre sabe, e não diz nada. De manhã e de noite ela fica na casa dela, ao lado da sua; de tarde, no poço. Vá lá.",
+      "texto_en": "Dona Zefa sent for you. She is a healer: when someone here falls ill, they go to her before the priest — and the priest knows, and says nothing. Mornings and nights she stays at her house, next to yours; afternoons, at the well. Go see her.",
+      "texto_es": "Doña Zefa mandó a llamarte. Es curandera: cuando alguien aquí se enferma, va con ella antes que con el cura, y el cura lo sabe y no dice nada. Por la mañana y por la noche está en su casa, al lado de la tuya; por la tarde, en el pozo. Ve a verla.",
       "meta": {
         "tipo": "falar",
         "a_quem": "zefa",

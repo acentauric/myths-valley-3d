@@ -75,16 +75,16 @@
         "tipo": "falar",
         "a_quem": "sacristao",
         "raio": 3.4,
-        "resposta": "Não? Então ainda dá tempo. Guarde o papel. E se alguém da fazenda perguntar pela pedra, ela nunca esteve solta.",
-        "resposta_en": "No? Then there's still time. Keep the paper. And if anyone from the farm asks about the stone, it was never loose.",
-        "resposta_es": "¿No? Entonces todavía hay tiempo. Guarda el papel. Y si alguien de la hacienda pregunta por la piedra, nunca estuvo suelta."
+        "resposta": "Não? Então ainda dá tempo. Guarde o papel. E se alguém perguntar pela pedra, ela nunca esteve solta.",
+        "resposta_en": "No? Then there's still time. Keep the paper. And if anyone asks about the stone, it was never loose.",
+        "resposta_es": "¿No? Entonces todavía hay tiempo. Guarda el papel. Y si alguien pregunta por la piedra, nunca estuvo suelta."
       }
     }
   ],
   "arremate": {
-    "texto": "Os nomes do papel são os que o convite chama à fazenda. O do seu tio está lá, riscado. O seu não está — ainda.",
-    "texto_en": "The names on the paper are the ones the invitation calls to the farm. Your uncle's is there, crossed out. Yours isn't — yet.",
-    "texto_es": "Los nombres del papel son los que la invitación llama a la hacienda. El de tu tío está ahí, tachado. El tuyo no está — todavía.",
+    "texto": "Os nomes do papel são os que o convite chama à fazenda. O do seu tio está lá, riscado. O seu não está.",
+    "texto_en": "The names on the paper are the ones the invitation calls to the farm. Your uncle's is there, crossed out. Yours isn't.",
+    "texto_es": "Los nombres del papel son los que la invitación llama a la hacienda. El de tu tío está ahí, tachado. El tuyo no está.",
     "narra": false
   }
 }

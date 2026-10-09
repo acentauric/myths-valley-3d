@@ -19,7 +19,7 @@ extends SceneTree
 ##      do almanaque.
 ##   4. A SEGUNDA NÃO: outra espécie abre só a ficha.
 ##   5. O PRIMEIRO MERGULHO AVISA (#96): o corpo entrando no nado abre o cartão
-##      da água funda — parar é boiar, e o fôlego volta —, com o vale parado.
+##      da água funda — parar é boiar, e o ar volta —, com o vale parado.
 ##   6. O SEGUNDO NÃO, E O SAVE LEMBRA: sair e voltar ao nado não repete o
 ##      cartão, e `estado_para_salvar` guarda a marca.
 
@@ -147,8 +147,8 @@ func _run() -> void:
 	if aviso.aberto():
 		var dito_na_agua: String = aviso.texto()
 		_conferir(aviso.qual == "agua_funda", "o aviso do primeiro nado é o de '%s'" % aviso.qual)
-		_conferir(dito_na_agua.contains("boiar") and dito_na_agua.contains("fôlego"),
-			"o aviso da água funda não diz que parar é boiar e que o fôlego volta: '%s'" % dito_na_agua)
+		_conferir(dito_na_agua.contains("boiar") and dito_na_agua.contains("o ar volta"),
+			"o aviso da água funda não diz que parar é boiar e que o ar volta: '%s'" % dito_na_agua)
 		_conferir(paused and dia.parado(), "com o aviso da água funda aberto, o vale (%s) ou o relógio (%s) seguiu andando" % [str(paused), str(dia.parado())])
 	await _guardar_tudo()
 	# --- 6. O SEGUNDO NÃO, E O SAVE LEMBRA ---------------------------------------------------

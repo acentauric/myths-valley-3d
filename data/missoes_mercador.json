@@ -20,9 +20,9 @@
       "lugar": "bar",
       "raio": 6,
       "audio": "",
-      "texto": "Nicolau não pede fiado, cobra. Mas hoje peço: a prateleira do fundo cedeu com o peso do sal, e tábua boa só sai da sua bancada. Duas tábuas e eu abato na conta — e lhe dou um lampião, que a Estefânia vive pedindo e nunca compra.",
-      "texto_en": "Nicolau doesn't ask for credit, he collects it. But today I'm asking: the back shelf gave way under the weight of the salt, and good planks only come off your workbench. Two planks and I'll knock it off your account — and give you a lamp, the one Estefânia keeps asking for and never buys.",
-      "texto_es": "Nicolau no pide fiado, lo cobra. Pero hoy pido: el estante del fondo cedió con el peso de la sal, y tabla buena solo sale de tu banco. Dos tablas y te lo descuento de la cuenta — y te doy un farol, el que Estefânia vive pidiendo y nunca compra.",
+      "texto": "Eu não peço favor, eu cobro. Mas hoje peço: a prateleira do fundo cedeu com o peso do sal, e tábua boa só sai da sua bancada. Duas tábuas e eu abato na conta — e lhe dou um lampião, que a Estefânia vive pedindo e nunca compra.",
+      "texto_en": "I don't ask favors, I collect. But today I'm asking: the back shelf gave way under the weight of the salt, and good planks only come off your workbench. Two planks and I'll knock it off your account — and give you a lamp, the one Estefânia keeps asking for and never buys.",
+      "texto_es": "Yo no pido favores, cobro. Pero hoy pido: el estante del fondo cedió con el peso de la sal, y tabla buena solo sale de tu banco. Dos tablas y te lo descuento de la cuenta — y te doy un farol, el que Estefânia vive pidiendo y nunca compra.",
       "recompensa": {
         "xp": 15,
         "lampiao": 1

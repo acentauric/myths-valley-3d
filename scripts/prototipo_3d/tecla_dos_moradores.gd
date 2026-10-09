@@ -43,6 +43,8 @@ var _jogador: Node3D
 var _quem_mora: Callable
 ## Pode usar o E agora? (Ninguém lendo, nenhuma tela aberta: `Prototype`.)
 var _livre: Callable
+## A tela de aceite da missão (aceite_de_missao.gd), posta pelo vale; sem ela a fila abre na hora.
+var aceite: Node
 var _dica: PanelContainer
 ## Quem está ao alcance agora, ou null.
 var _perto: Node3D = null
@@ -250,6 +252,16 @@ func usar(morador: Node3D) -> void:
 		if (faz == "falar" or faz == "entregar") and cadeia.interagir(morador):
 			_registrar_conversa(morador)
 			return
+	# A MISSÃO SE ACEITA (08/10: "deve ter uma tela resumo sobre a missão para o jogador
+	# aceitar ela ou não"): a fila que o E abriria neste morador passa pela tela de aceite
+	# (`AceiteDeMissao`). Quem aceita vê a fila começar como antes; quem recusa fica com o "!"
+	# sobre a cabeça dele, e nada começa.
+	for cadeia in cadeias:
+		if cadeia.has_method("o_que_o_e_faz") and str(cadeia.o_que_o_e_faz(morador)) == "abrir":
+			if aceite != null and aceite.has_method("propor"):
+				aceite.propor(cadeia, morador, func() -> void: cadeia.interagir(morador))
+				return
+			break
 	for cadeia in cadeias:
 		if cadeia.has_method("interagir") and cadeia.interagir(morador):
 			_registrar_conversa(morador)

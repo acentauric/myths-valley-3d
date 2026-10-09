@@ -1,0 +1,921 @@
+{
+  "_sobre": "O texto (em português) que cada fala tinha quando o áudio dela foi gravado, por arquivo. O gerador do documento das falas compara com o texto de hoje: diferente é 'regravar'. Atualize com --fotografar-audios depois de regravar.",
+  "audios": {
+    "assets/audio/narracao/travessia/trecho_01.mp3": {
+      "hash": "75161f9eed",
+      "texto": "Salvador, 1887. Numa gaveta do cartório, uma carta esperou três meses por alguém que a quisesse."
+    },
+    "assets/audio/narracao/travessia/trecho_02.mp3": {
+      "hash": "1567f9a001",
+      "texto": "Um tio que você mal conheceu morreu no Recôncavo e deixou o que tinha: uma casa de taipa, um roçado cercado e nenhuma dívida."
+    },
+    "assets/audio/narracao/travessia/trecho_03.mp3": {
+      "hash": "f106b5f2b7",
+      "texto": "Os outros herdeiros riram. Terra de fundo de baía não vale a passagem, disseram. E não foram."
+    },
+    "assets/audio/narracao/travessia/trecho_04.mp3": {
+      "hash": "22688d10b6",
+      "texto": "Você foi."
+    },
+    "assets/audio/narracao/travessia/trecho_05.mp3": {
+      "hash": "b6baec0c06",
+      "texto": "O saveiro saiu da Rampa do Mercado com a maré da madrugada, carregado de telha, sal e três passageiros."
+    },
+    "assets/audio/narracao/travessia/trecho_06.mp3": {
+      "hash": "0fdc08cf79",
+      "texto": "A Baía de Todos os Santos é maior do que parece no mapa: levou a manhã inteira para o outro lado virar mais que uma linha escura."
+    },
+    "assets/audio/narracao/travessia/trecho_07.mp3": {
+      "hash": "736c432d6a",
+      "texto": "Ao meio-dia o mestre apontou uma fresta de areia entre os coqueiros e disse o nome do lugar: Bom Jesus dos Pobres."
+    },
+    "assets/audio/narracao/travessia/trecho_08.mp3": {
+      "hash": "c802b786d0",
+      "texto": "Disse também, sem tirar a mão do leme, que ali a gente aprende a não andar na mata depois que escurece."
+    },
+    "assets/audio/narracao/travessia/trecho_09.mp3": {
+      "hash": "817209bd25",
+      "texto": "Você achou graça. Ele não."
+    },
+    "assets/audio/vozes/pedro_saudacao_1.mp3": {
+      "hash": "f635e5b795",
+      "texto": "Opa! É você o moço da capital, né? O sobrinho do finado. Me chamo Pedro, pescador aqui do arraial."
+    },
+    "assets/audio/vozes/pedro_saudacao_2.mp3": {
+      "hash": "f89465c78b",
+      "texto": "Eita, gente nova no píer! Só pode ser quem veio pela casa de taipa. Sou Pedro. Aqui todo mundo se conhece, e agora vão querer te conhecer."
+    },
+    "assets/audio/vozes/pedro_saudacao_3.mp3": {
+      "hash": "a01ec9ab06",
+      "texto": "Chegou, homem! O mestre do saveiro jurou que trazia você hoje. Pedro, pescador, às suas ordens. A baía foi boa com você?"
+    },
+    "assets/audio/vozes/pedro_corpo_respiro.mp3": {
+      "hash": "343319fd1a",
+      "texto": "Para um instante e respira. Olha as três barras lá em cima, que eu te explico."
+    },
+    "assets/audio/vozes/pedro_corpo_vida.mp3": {
+      "hash": "2162c7847a",
+      "texto": "A vermelha, a de cima, é a vida. Bicho e peçonha tiram dela. Se acabar, você apaga, e alguém te leva pra casa — acorda no outro dia."
+    },
+    "assets/audio/vozes/pedro_corpo_folego.mp3": {
+      "hash": "3d19590b9f",
+      "texto": "A do meio, só com o número, é o fôlego: a reserva do dia. Enxada, machado e picareta gastam dele, e só comida, cama e desmaio devolvem. No fim dele o corpo fica cansado, o passo encurta e não dá pra correr."
+    },
+    "assets/audio/vozes/pedro_corpo_vigor_cansado.mp3": {
+      "hash": "5483b977d4",
+      "texto": "E a de baixo é o vigor, o fôlego curto: correr, pular e bater gastam, e ele volta sozinho, parado ou andando. Foi ele que você gastou agora — por isso a perna pesou. Anda um pouco, que ele volta."
+    },
+    "assets/audio/vozes/pedro_corpo_vigor.mp3": {
+      "hash": "1cc863814b",
+      "texto": "E a de baixo é o vigor, o fôlego curto: correr, pular e bater gastam, e ele volta sozinho, parado ou andando. Quando ele acaba, a corrida para, e é só andar um pouco que ele volta."
+    },
+    "assets/audio/vozes/pedro_corpo_nado.mp3": {
+      "hash": "b1c6b88def",
+      "texto": "A azul, a do meio, é o fôlego: o ar de quem nada. Nadando, o corpo gasta primeiro o vigor; quando ele acaba, é o fôlego que vai, e sem fôlego a água tira da vida. Parou de nadar, ou achou chão, ele volta sozinho."
+    },
+    "assets/audio/vozes/pedro_anoitecer.mp3": {
+      "hash": "b5bbe0a45b",
+      "texto": "Daqui a pouco escurece. Quando terminar, volte pra cama. Apagar no chão não descansa igual."
+    },
+    "assets/audio/vozes/pedro_convite_arremate.mp3": {
+      "hash": "14d6d62f12",
+      "texto": "Só isso? \"Haverá um grande evento\" — e nem quem assina. É da fazenda do outro lado do rio, que ninguém nunca viu o dono. Meus avós já decidiram que vão, e eu vou junto. Até lá, cuide do que é seu: a roça cresce um palmo por dia regado. Eu volto pro píer — é lá que você me acha, e agora o arraial te conhece."
+    },
+    "assets/audio/vozes/pedro_depois_1.mp3": {
+      "hash": "96301e6cc6",
+      "texto": "Ê, meu amigo! A maré hoje tá mansa, boa pra rede. Se quiser aprender a pescar de vara, é só chegar no píer."
+    },
+    "assets/audio/vozes/pedro_depois_2.mp3": {
+      "hash": "4c80581b8a",
+      "texto": "Já se acostumou com o arraial? Aqui o povo repara em tudo, mas quem trabalha direito logo vira de casa."
+    },
+    "assets/audio/vozes/pedro_depois_3.mp3": {
+      "hash": "3c700cb86d",
+      "texto": "De tardinha a praça enche. Tem garapa da Dona Candinha e prosa até o lampião acender."
+    },
+    "assets/audio/vozes/pedro_depois_4.mp3": {
+      "hash": "abe110500a",
+      "texto": "O Tonho jura que o peixe grande só morde de madrugada. Eu acho é que ele gosta de acordar cedo pra contar vantagem."
+    },
+    "assets/audio/vozes/pedro_depois_5.mp3": {
+      "hash": "9295db166b",
+      "texto": "Cuidado na beira da baía quando a água escurece. Tem tubarão que entra atrás dos cardumes."
+    },
+    "assets/audio/vozes/pedro_depois_6.mp3": {
+      "hash": "546a6af91b",
+      "texto": "Dia catorze o saveiro do mestre Quirino encosta no píer. Quem tem piaçava pra vender não perde a viagem."
+    },
+    "assets/audio/vozes/pedro_depois_7.mp3": {
+      "hash": "e0a17ea341",
+      "texto": "Se cansar, descansa. Ninguém aqui corre atrás do sol, que ele volta todo dia do mesmo jeito."
+    },
+    "assets/audio/vozes/benedito_fala_1.mp3": {
+      "hash": "d2db04085e",
+      "texto": "Ah, o moço da capital. Pode me chamar de Benedito, que aqui todo mundo chama assim."
+    },
+    "assets/audio/vozes/benedito_fala_2.mp3": {
+      "hash": "87351e16cf",
+      "texto": "Quarenta e duas safras nessa chapada, meu filho. A terra cansa, e a gente também."
+    },
+    "assets/audio/vozes/benedito_fala_3.mp3": {
+      "hash": "c3efe3caf4",
+      "texto": "Meu avô cortava pau do outro lado do rio. Um dia parou de ir. Nunca disse por quê."
+    },
+    "assets/audio/vozes/zefa_fala_1.mp3": {
+      "hash": "a3057cccdf",
+      "texto": "Chegou o da capital, né? O arraial todo já sabe. Se a febre pegar, é só vir aqui."
+    },
+    "assets/audio/vozes/zefa_fala_2.mp3": {
+      "hash": "3fdd12309f",
+      "texto": "Esse chão era da minha mãe. Vender, eu não vendo. Mas prosa, eu dou."
+    },
+    "assets/audio/vozes/zefa_fala_3.mp3": {
+      "hash": "49e7152646",
+      "texto": "Arruda, alecrim e um pouco de fé. O resto, meu filho, quem cura é Deus."
+    },
+    "assets/audio/vozes/cosme_fala_1.mp3": {
+      "hash": "fd197b12f1",
+      "texto": "Opa! Sou neto da Dona Zefa. Precisando de braço, é só chamar."
+    },
+    "assets/audio/vozes/cosme_fala_2.mp3": {
+      "hash": "348fbeb5ba",
+      "texto": "Vó diz que Salvador engole a gente. Eu digo que ainda vou ver com meus olhos."
+    },
+    "assets/audio/vozes/cosme_fala_3.mp3": {
+      "hash": "3028bc17bf",
+      "texto": "Pego na enxada desde menino. Mão calejada não mente, não."
+    },
+    "assets/audio/vozes/tonho_fala_1.mp3": {
+      "hash": "222854e441",
+      "texto": "Opa, tudo certo? Passa aqui de tarde, que a gente conversa com a rede no colo."
+    },
+    "assets/audio/vozes/tonho_fala_2.mp3": {
+      "hash": "688b806137",
+      "texto": "Tô devendo no armazém, todo mundo sabe. Mas mãe ficou boa, e isso não tem preço."
+    },
+    "assets/audio/vozes/tonho_fala_3.mp3": {
+      "hash": "eed7584ba2",
+      "texto": "Vi uma luz parada no mato, de madrugada. Na altura do peito. Vaga-lume não era."
+    },
+    "assets/audio/vozes/filo_fala_1.mp3": {
+      "hash": "5b07bf3d62",
+      "texto": "Chega mais, meu filho. Daqui da porta eu vejo quem vem e quem vai pela estrada."
+    },
+    "assets/audio/vozes/filo_fala_2.mp3": {
+      "hash": "037c879980",
+      "texto": "O Tonho acha que a dívida valeu a pena. Eu acho que não. A gente briga por isso toda semana."
+    },
+    "assets/audio/vozes/filo_fala_3.mp3": {
+      "hash": "59ae1f8fbb",
+      "texto": "Na minha idade a gente não corre mais atrás de nada. Espera, que a estrada traz."
+    },
+    "assets/audio/vozes/candinha_fala_1.mp3": {
+      "hash": "05c0699755",
+      "texto": "Garapa geladinha, moço? Vendo nessa praça desde antes de o senhor nascer."
+    },
+    "assets/audio/vozes/candinha_fala_2.mp3": {
+      "hash": "871cb4ae5f",
+      "texto": "Quer saber das coisas do arraial? Senta aqui, que tudo passa por esta praça."
+    },
+    "assets/audio/vozes/candinha_fala_3.mp3": {
+      "hash": "0a06d57c3b",
+      "texto": "Dizem que chegou convite da fazenda do outro lado do rio. Sem assinatura... sei não."
+    },
+    "assets/audio/vozes/damiao_fala_1.mp3": {
+      "hash": "59476a510b",
+      "texto": "Sou o zelador daqui. Quem sobe o morro, sobe por alguém. Fique à vontade."
+    },
+    "assets/audio/vozes/damiao_fala_2.mp3": {
+      "hash": "c255426028",
+      "texto": "O intendente me deu um papel com meu nome e mais nada. Nem foice, nem enxada."
+    },
+    "assets/audio/vozes/damiao_fala_3.mp3": {
+      "hash": "ed10c218a0",
+      "texto": "Mato de cemitério só sai na foice. E quem limpa não leva nada pra casa."
+    },
+    "assets/audio/vozes/padre_saudacao_1.mp3": {
+      "hash": "bee565dab9",
+      "texto": "A paz de Deus, meu filho."
+    },
+    "assets/audio/vozes/padre_saudacao_2.mp3": {
+      "hash": "05142bebca",
+      "texto": "Deus lhe abençoe e lhe guarde."
+    },
+    "assets/audio/vozes/padre_saudacao_3.mp3": {
+      "hash": "ae10fadc0c",
+      "texto": "Entre sem pressa, a casa é de todos."
+    },
+    "assets/audio/vozes/padre_saudacao_4.mp3": {
+      "hash": "af7c10c358",
+      "texto": "Que bom ver gente nova no arraial."
+    },
+    "assets/audio/vozes/padre_fala_1.mp3": {
+      "hash": "757ffe2573",
+      "texto": "Esta igreja tem mais de duzentos anos, meu filho. A cal descasca, mas a fé nunca precisou de reboco."
+    },
+    "assets/audio/vozes/padre_fala_2.mp3": {
+      "hash": "a73c1832fd",
+      "texto": "O cemitério é da Santa Casa, e a Santa Casa mora longe. O mato, esse, mora aqui e cresce depressa."
+    },
+    "assets/audio/vozes/padre_fala_3.mp3": {
+      "hash": "ed11c520d4",
+      "texto": "Quando o sino toca ao entardecer, eu rezo a Ave-Maria no cruzeiro. Quem passa e para, reza comigo."
+    },
+    "assets/audio/vozes/padre_fala_4.mp3": {
+      "hash": "d0cf8c73af",
+      "texto": "Cada um cuida da alma como aprendeu com os seus. Eu cuido da minha e rezo pela de todo mundo."
+    },
+    "assets/audio/vozes/padre_fala_5.mp3": {
+      "hash": "db3b4542ed",
+      "texto": "Remédio vem da botica, vem do quintal, vem da reza. De Deus vêm os três. É só o que eu digo."
+    },
+    "assets/audio/vozes/padre_fala_6.mp3": {
+      "hash": "70878c5ada",
+      "texto": "Batizei muita criança e enterrei muito velho nesta freguesia. A gente aprende a falar baixo e ouvir muito."
+    },
+    "assets/audio/vozes/padre_fala_7.mp3": {
+      "hash": "6e8546e8cf",
+      "texto": "Convite sem assinatura eu não respondo. Quem convida de verdade assina, meu filho, e dá a cara."
+    },
+    "assets/audio/vozes/padre_fala_8.mp3": {
+      "hash": "7e1936b0bf",
+      "texto": "De manhã subo ao cemitério para benzer. Pouca gente sobe o morro, mas lá em cima também é freguesia."
+    },
+    "assets/audio/vozes/padre_fala_9.mp3": {
+      "hash": "78f55b3192",
+      "texto": "O pavão da igreja já estava aqui quando eu cheguei. Ninguém sabe de quem foi. Aprendi a não perguntar e a dar milho."
+    },
+    "assets/audio/vozes/sacristao_saudacao_1.mp3": {
+      "hash": "0a455c52a6",
+      "texto": "Limpe os pés, moço, que acabei de varrer."
+    },
+    "assets/audio/vozes/sacristao_saudacao_2.mp3": {
+      "hash": "11a38e181c",
+      "texto": "Igreja tem ouvido, moço. Fale baixo."
+    },
+    "assets/audio/vozes/sacristao_saudacao_3.mp3": {
+      "hash": "ff5fd3df0f",
+      "texto": "Não mexa nas velas, hein? Deus lhe guarde."
+    },
+    "assets/audio/vozes/sacristao_saudacao_4.mp3": {
+      "hash": "e1ab4e3c3b",
+      "texto": "Veio rezar? A porta está aberta."
+    },
+    "assets/audio/vozes/sacristao_saudacao_noite_1.mp3": {
+      "hash": "994a4bda12",
+      "texto": "Já vou trancar a porta, moço. Chegue cedo amanhã."
+    },
+    "assets/audio/vozes/sacristao_fala_1.mp3": {
+      "hash": "239f1978d0",
+      "texto": "Varro a igreja com piaçava, que é fibra boa e dura anos. Mas a poeira, moço, a poeira volta toda manhã."
+    },
+    "assets/audio/vozes/sacristao_fala_2.mp3": {
+      "hash": "1cefad0ef9",
+      "texto": "Tenho a chave da igreja, a do sino e a da sacristia. Três chaves, e o padre ainda pergunta onde elas estão."
+    },
+    "assets/audio/vozes/sacristao_fala_3.mp3": {
+      "hash": "90fc39d013",
+      "texto": "O sino tem uma rachadura fina, mas ainda dá o recado. Quem escuta direito sabe se é missa ou é morte."
+    },
+    "assets/audio/vozes/sacristao_fala_4.mp3": {
+      "hash": "48c095ede2",
+      "texto": "À tarde vou capinar o cemitério. O Damião capina também, só que sem foice. O mato ganha de nós dois."
+    },
+    "assets/audio/vozes/sacristao_fala_5.mp3": {
+      "hash": "92c5e40e04",
+      "texto": "O pavão da igreja come mais milho que muito cristão. E ainda reclama quando atrasa."
+    },
+    "assets/audio/vozes/sacristao_fala_6.mp3": {
+      "hash": "4d3e112f33",
+      "texto": "Vela de cera é cara. Eu apago as que sobram, e o padre finge que não vê."
+    },
+    "assets/audio/vozes/sacristao_fala_7.mp3": {
+      "hash": "5121870d04",
+      "texto": "Quando chove tem goteira bem em cima do padre. Ele diz que é bênção. Eu chamo de telha fora do lugar."
+    },
+    "assets/audio/vozes/sacristao_fala_8.mp3": {
+      "hash": "9dd1a7413a",
+      "texto": "Divido a casa com a Sá Joaquina. Quando eu acordo, ela já rezou o terço duas vezes."
+    },
+    "assets/audio/vozes/sacristao_fala_noite_1.mp3": {
+      "hash": "e9d0ea4389",
+      "texto": "De noite a igreja respira diferente. Eu só vou tranquilo pra casa depois de conferir cada vela."
+    },
+    "assets/audio/vozes/beata_saudacao_1.mp3": {
+      "hash": "1de0e62e90",
+      "texto": "Louvado seja Nosso Senhor Jesus Cristo!"
+    },
+    "assets/audio/vozes/beata_saudacao_2.mp3": {
+      "hash": "ee0fc2442e",
+      "texto": "Deus lhe dê juízo e saúde, meu filho."
+    },
+    "assets/audio/vozes/beata_saudacao_3.mp3": {
+      "hash": "35f00566c8",
+      "texto": "Eita, quem é vivo sempre aparece!"
+    },
+    "assets/audio/vozes/beata_saudacao_4.mp3": {
+      "hash": "3f5dfc720a",
+      "texto": "Chegue aqui, moço, que o terço pode esperar."
+    },
+    "assets/audio/vozes/beata_fala_1.mp3": {
+      "hash": "b259da4e08",
+      "texto": "Rezo o terço três vezes ao dia e mesmo assim sei de tudo que acontece no arraial. Deus dá o ouvido que a gente merece."
+    },
+    "assets/audio/vozes/beata_fala_2.mp3": {
+      "hash": "4632b0c3a2",
+      "texto": "Dona Candinha acha que a praça é dela. Mas o que passa pela praça passa primeiro por mim, na saída da missa."
+    },
+    "assets/audio/vozes/beata_fala_3.mp3": {
+      "hash": "e1c1743991",
+      "texto": "Luz parada no mato, de madrugada? É alma pedindo reza, meu filho. Eu rezo, mas não vou lá perguntar o nome."
+    },
+    "assets/audio/vozes/beata_fala_4.mp3": {
+      "hash": "0ab516f711",
+      "texto": "Olho o poço todo dia de manhã. Poço velho tem fundo que a gente não vê, e fundo sempre tem o que contar."
+    },
+    "assets/audio/vozes/beata_fala_5.mp3": {
+      "hash": "e5ca51f019",
+      "texto": "O Padre Anselmo é um santo. Só fala baixo demais, e quem tem o ouvido cansado como o meu perde a metade do sermão."
+    },
+    "assets/audio/vozes/beata_fala_6.mp3": {
+      "hash": "0a9187069d",
+      "texto": "Divido o teto com o Zacarias, que tem a chave de tudo e a paciência de nada."
+    },
+    "assets/audio/vozes/beata_fala_7.mp3": {
+      "hash": "d8880a35a2",
+      "texto": "Quem vem de fora sempre acha que aqui não acontece nada. Mal sabe que a gente só conta o que acontece depois da missa."
+    },
+    "assets/audio/vozes/beata_fala_8.mp3": {
+      "hash": "ba02827874",
+      "texto": "No cruzeiro, ao fim da tarde, a gente reza por quem está no mar. Em Bom Jesus, todo mundo tem alguém lá."
+    },
+    "assets/audio/vozes/mercador_saudacao_1.mp3": {
+      "hash": "93ee1ee1e1",
+      "texto": "Entre, freguês, que a venda está aberta."
+    },
+    "assets/audio/vozes/mercador_saudacao_2.mp3": {
+      "hash": "e8972509e1",
+      "texto": "Precisando de alguma coisa, é só pedir."
+    },
+    "assets/audio/vozes/mercador_saudacao_3.mp3": {
+      "hash": "3ebc81eb8f",
+      "texto": "Pode olhar à vontade, olhar não cobra."
+    },
+    "assets/audio/vozes/mercador_saudacao_4.mp3": {
+      "hash": "54d43575fe",
+      "texto": "Que Deus lhe dê bons negócios, freguês!"
+    },
+    "assets/audio/vozes/mercador_saudacao_noite_1.mp3": {
+      "hash": "de3815e720",
+      "texto": "Estou fechando, freguês, mas pra você abro um pouco."
+    },
+    "assets/audio/vozes/mercador_fala_1.mp3": {
+      "hash": "b28a5dc455",
+      "texto": "Fiado eu dou, mas anoto no caderno. Caderno não tem memória ruim, e eu também não."
+    },
+    "assets/audio/vozes/mercador_fala_2.mp3": {
+      "hash": "3dee0849f1",
+      "texto": "Fiado de pescador é como maré: vai embora, mas volta. O Tonho que o diga."
+    },
+    "assets/audio/vozes/mercador_fala_3.mp3": {
+      "hash": "a9600f143f",
+      "texto": "O que o arraial não faz vem de Salvador no saveiro: ferro, corda, tábua serrada, sal. Por isso custa mais, moço."
+    },
+    "assets/audio/vozes/mercador_fala_4.mp3": {
+      "hash": "ed2e3f9d5a",
+      "texto": "Farinha, milho e lenha eu compro barato, porque o arraial tem de sobra. É assim em todo canto: quem tem demais, vende por pouco."
+    },
+    "assets/audio/vozes/mercador_fala_5.mp3": {
+      "hash": "606845c5e9",
+      "texto": "Em tempo de seca a farinha sobe de preço. Em tempo de chuva, é a lenha seca que vale ouro. Guarde um pouco de cada."
+    },
+    "assets/audio/vozes/mercador_fala_6.mp3": {
+      "hash": "43f6d824ef",
+      "texto": "O jumento lá dos fundos é mais velho que eu na venda. Carrega saco, carrega freguês bêbado e nunca pede aumento."
+    },
+    "assets/audio/vozes/mercador_fala_7.mp3": {
+      "hash": "0c50a3074f",
+      "texto": "Esse gato amarelo é o único que cuida do estoque de verdade. Rato aqui tem medo dele, e eu, do prejuízo."
+    },
+    "assets/audio/vozes/mercador_fala_8.mp3": {
+      "hash": "96188d5ace",
+      "texto": "A notícia chega na venda antes de chegar na praça. Quem compra sal conta o que viu, quem compra pinga conta o que ouviu."
+    },
+    "assets/audio/vozes/mercador_fala_noite_1.mp3": {
+      "hash": "91b71a79d7",
+      "texto": "De noite eu confiro o caixa e o caderno. O caixa pesa pouco, o caderno pesa muito, e os dois me dão insônia."
+    },
+    "assets/audio/vozes/guarda_saudacao_1.mp3": {
+      "hash": "74a9b8d30e",
+      "texto": "Tudo em ordem por aqui, moço."
+    },
+    "assets/audio/vozes/guarda_saudacao_2.mp3": {
+      "hash": "973a6459fb",
+      "texto": "Paz no arraial, graças a Deus."
+    },
+    "assets/audio/vozes/guarda_saudacao_3.mp3": {
+      "hash": "de4dcd8f40",
+      "texto": "Aristides, guarda da vila, às ordens."
+    },
+    "assets/audio/vozes/guarda_saudacao_4.mp3": {
+      "hash": "64e4374245",
+      "texto": "Com licença, moço: viu algo estranho?"
+    },
+    "assets/audio/vozes/guarda_saudacao_noite_1.mp3": {
+      "hash": "dcc305dd54",
+      "texto": "Boa noite, moço, candeeiro aceso e arraial em paz."
+    },
+    "assets/audio/vozes/guarda_saudacao_noite_2.mp3": {
+      "hash": "d5736992a5",
+      "texto": "Anda tarde, moço? Eu faço a ronda. Vá com Deus."
+    },
+    "assets/audio/vozes/guarda_fala_1.mp3": {
+      "hash": "c8e15ca8f4",
+      "texto": "Arma eu não carrego. O intendente diz que guarda de verdade vigia, não prende. Levo só o candeeiro e a cara de severo."
+    },
+    "assets/audio/vozes/guarda_fala_2.mp3": {
+      "hash": "e49de24830",
+      "texto": "De dia fico na praça, à tarde na igreja, e de noite rodo de candeeiro na mão. Quem me vê sabe que alguém está de olho."
+    },
+    "assets/audio/vozes/guarda_fala_3.mp3": {
+      "hash": "22bb802234",
+      "texto": "Gente de madrugada na rua sem candeeiro eu paro e pergunto. Não é pra proibir, é pra saber quem vai se perder."
+    },
+    "assets/audio/vozes/guarda_fala_4.mp3": {
+      "hash": "6c623b78a1",
+      "texto": "O convite da fazenda do outro lado do rio não traz nome de quem convida. Em trinta anos de guarda, nunca vi coisa boa sem assinatura."
+    },
+    "assets/audio/vozes/guarda_fala_5.mp3": {
+      "hash": "a70a79c18b",
+      "texto": "O intendente me nomeou e esqueceu. Ordem eu tenho; salário, só a promessa. Mas o arraial dorme em paz, e isso paga."
+    },
+    "assets/audio/vozes/guarda_fala_6.mp3": {
+      "hash": "f61f8f4ab7",
+      "texto": "A briga mais séria que apartei foi por causa de uma galinha. Os dois juravam que era deles. Era de um terceiro."
+    },
+    "assets/audio/vozes/guarda_fala_7.mp3": {
+      "hash": "69dad185ca",
+      "texto": "Se vir fumaça perto do mato, avisa. Fogo aqui anda mais depressa que eu, e olha que eu corro bem."
+    },
+    "assets/audio/vozes/guarda_fala_8.mp3": {
+      "hash": "ecebd09f61",
+      "texto": "O cachorro malhado lá de casa vigia melhor que eu. Late pra quem chega, e eu só pergunto o nome."
+    },
+    "assets/audio/vozes/guarda_fala_9.mp3": {
+      "hash": "418be2dd36",
+      "texto": "Quem anda de noite pela igreja ouve o vento nas telhas e jura que é gente. Já fui conferir mais de vinte vezes. Era vento."
+    },
+    "assets/audio/vozes/guarda_fala_noite_1.mp3": {
+      "hash": "8d0241a53c",
+      "texto": "De noite o arraial fala baixo: o mar, os grilos, um cachorro longe. Quando tudo cala de repente, é aí que eu levanto o candeeiro."
+    },
+    "assets/audio/vozes/guarda_fala_noite_2.mp3": {
+      "hash": "cc774a04fb",
+      "texto": "Dizem que tem luz parada no mato, na altura do peito. Minha ronda vai só até a última casa. Dali pra frente, é com Deus."
+    },
+    "assets/audio/vozes/pescador_saudacao_1.mp3": {
+      "hash": "c3496c3e7a",
+      "texto": "Que a maré lhe seja boa, moço."
+    },
+    "assets/audio/vozes/pescador_saudacao_2.mp3": {
+      "hash": "613521afa8",
+      "texto": "Shh... fale baixo, que o peixe escuta."
+    },
+    "assets/audio/vozes/pescador_saudacao_3.mp3": {
+      "hash": "9178e1e383",
+      "texto": "Aí, moço! Já pescou hoje?"
+    },
+    "assets/audio/vozes/pescador_saudacao_4.mp3": {
+      "hash": "644e0abeb3",
+      "texto": "Vá com calma, que quem corre assusta o peixe."
+    },
+    "assets/audio/vozes/pescador_fala_1.mp3": {
+      "hash": "4ce26fc9ab",
+      "texto": "Pesco de linha, de um anzol só. Rede pega muito, mas linha pega o que a gente quer, e com paciência."
+    },
+    "assets/audio/vozes/pescador_fala_2.mp3": {
+      "hash": "9e5ae5603f",
+      "texto": "Robalo gosta de boca de rio, onde a água doce encontra a salgada. Traíra mora em água parada e não perdoa isca ruim."
+    },
+    "assets/audio/vozes/pescador_fala_3.mp3": {
+      "hash": "e3ad5f0898",
+      "texto": "Maré de lua cheia puxa o peixe pra beira. Mas lua cheia clareia a água, e peixe esperto vê o anzol."
+    },
+    "assets/audio/vozes/pescador_fala_4.mp3": {
+      "hash": "efab1b3d4d",
+      "texto": "O Tonho puxa rede no pontal, o Pedro joga vara no píer. Peixe grande sabe de quem desviar."
+    },
+    "assets/audio/vozes/pescador_fala_5.mp3": {
+      "hash": "0b4738ac98",
+      "texto": "Semana passada vi barbatana na boca da barra. Tubarão entra atrás do cardume. Quando o mar escurece, eu volto pra terra."
+    },
+    "assets/audio/vozes/pescador_fala_6.mp3": {
+      "hash": "d581b16521",
+      "texto": "De tarde remendo anzol e linha em casa. Linha velha parte na hora errada, e a hora errada é sempre a do peixe grande."
+    },
+    "assets/audio/vozes/pescador_fala_7.mp3": {
+      "hash": "4bbb741cc7",
+      "texto": "O céu avisa o tempo: vermelho de manhã, chuva de tarde. E vento sul traz frio e mar picado. Aprendi com meu pai, de olhar."
+    },
+    "assets/audio/vozes/pescador_fala_8.mp3": {
+      "hash": "109c72961a",
+      "texto": "Na praça, de tardinha, eu conto vantagem de peixe que não pesquei. Todo pescador faz isso. Quem diz que não, mente mais ainda."
+    },
+    "assets/audio/vozes/marisqueira_saudacao_1.mp3": {
+      "hash": "320226ce8b",
+      "texto": "Olha a ostra fresquinha, freguês!"
+    },
+    "assets/audio/vozes/marisqueira_saudacao_2.mp3": {
+      "hash": "28f870329c",
+      "texto": "Chega mais, moço, que o cesto é farto."
+    },
+    "assets/audio/vozes/marisqueira_saudacao_3.mp3": {
+      "hash": "ead601786e",
+      "texto": "Deus lhe guie, meu filho."
+    },
+    "assets/audio/vozes/marisqueira_saudacao_4.mp3": {
+      "hash": "ea8edb0769",
+      "texto": "Cuidado com o pé, que o mangue morde."
+    },
+    "assets/audio/vozes/marisqueira_fala_1.mp3": {
+      "hash": "2ba0cb1d1d",
+      "texto": "Mariscar é com a maré. Quando a água baixa, o mangue abre a mesa: ostra, siri, sururu. Quando sobe, a gente sai e agradece."
+    },
+    "assets/audio/vozes/marisqueira_fala_2.mp3": {
+      "hash": "f14697e533",
+      "texto": "A ostra gruda na pedra e na raiz do mangue. Tem que bater com cuidado, que a concha corta mais que faca."
+    },
+    "assets/audio/vozes/marisqueira_fala_3.mp3": {
+      "hash": "be0688dcde",
+      "texto": "Minhas mãos são todas cicatriz. Cada risco é uma ostra que me ensinou a não ter pressa."
+    },
+    "assets/audio/vozes/marisqueira_fala_4.mp3": {
+      "hash": "b2b83fe398",
+      "texto": "Maré de lua nova é a melhor: a água vai longe e mostra pedra que ninguém viu o mês inteiro."
+    },
+    "assets/audio/vozes/marisqueira_fala_5.mp3": {
+      "hash": "0e21240163",
+      "texto": "Vendo na praça de cesto na cabeça. O peso não é nada, o difícil é aguentar freguês que quer pechinchar."
+    },
+    "assets/audio/vozes/marisqueira_fala_6.mp3": {
+      "hash": "3557bc09ff",
+      "texto": "Meu avô dizia que o mangue é a barriga da terra. Quem cuida dele não passa fome, e quem estraga, passa."
+    },
+    "assets/audio/vozes/marisqueira_fala_7.mp3": {
+      "hash": "c8b8bf0851",
+      "texto": "De tarde descanso em casa e deixo o gato preto vigiar minhas mãos. Dói tudo, mas é dor de quem trabalhou."
+    },
+    "assets/audio/vozes/marisqueira_fala_8.mp3": {
+      "hash": "2100e10b90",
+      "texto": "Siri bom a gente reconhece pelo peso. Leve é velho, pesado é cheio de carne. Fruta e bicho se parecem nisso."
+    },
+    "assets/audio/vozes/lavadeira_saudacao_1.mp3": {
+      "hash": "badcd57149",
+      "texto": "Cuidado com a roupa no varal, moço!"
+    },
+    "assets/audio/vozes/lavadeira_saudacao_2.mp3": {
+      "hash": "ef1365afe4",
+      "texto": "Falando de você agorinha mesmo!"
+    },
+    "assets/audio/vozes/lavadeira_saudacao_3.mp3": {
+      "hash": "ee630c166f",
+      "texto": "Deus mande sol, que reza não seca roupa."
+    },
+    "assets/audio/vozes/lavadeira_saudacao_4.mp3": {
+      "hash": "2f521a164e",
+      "texto": "Venha, sente, que a prosa é de graça."
+    },
+    "assets/audio/vozes/lavadeira_fala_1.mp3": {
+      "hash": "5dc3655c42",
+      "texto": "Lavo na pedra, perto da ponte, onde o rio corre limpo. Sabão de coco e muito braço: não tem segredo."
+    },
+    "assets/audio/vozes/lavadeira_fala_2.mp3": {
+      "hash": "82452b2a22",
+      "texto": "Roupa conta a vida de quem veste. A camisa do Cosme vem sempre com terra de roça, a toalha da igreja, com cheiro de vela."
+    },
+    "assets/audio/vozes/lavadeira_fala_3.mp3": {
+      "hash": "1704df977b",
+      "texto": "Os lençóis da Dona Zefa cheiram a arruda. Cheiram tão bem que a gente quase adoece só pra ser tratado por ela."
+    },
+    "assets/audio/vozes/lavadeira_fala_4.mp3": {
+      "hash": "43d7748311",
+      "texto": "Quarar é estender o linho na grama ao sol e molhar de novo. Fica branco que dói na vista. Branco de verdade só assim."
+    },
+    "assets/audio/vozes/lavadeira_fala_5.mp3": {
+      "hash": "9acde50fc6",
+      "texto": "Os patos da ponte já me conhecem. Comem o pão que sobra da minha merenda e não me deixam sozinha nem pra rezar."
+    },
+    "assets/audio/vozes/lavadeira_fala_6.mp3": {
+      "hash": "e911ccf4d1",
+      "texto": "Bato roupa na pedra e o vento traz a conversa de todo mundo. Eu não conto, mas escuto de graça."
+    },
+    "assets/audio/vozes/lavadeira_fala_7.mp3": {
+      "hash": "d0f992c2b3",
+      "texto": "De tarde, no poço, a gente troca novidade. O poço anda cansado, moço: a corda gasta, o balde pesa. Um mutirão resolvia."
+    },
+    "assets/audio/vozes/lavadeira_fala_8.mp3": {
+      "hash": "145fd01f09",
+      "texto": "Barra de vestido manchada de massapê é de quem andou na estrada depois da chuva. Massapê é teimoso: pede três lavadas."
+    },
+    "assets/audio/vozes/rendeira_saudacao_1.mp3": {
+      "hash": "7d27fbb861",
+      "texto": "Fale baixinho, moço, que eu conto os bilros."
+    },
+    "assets/audio/vozes/rendeira_saudacao_2.mp3": {
+      "hash": "dcfd611f0f",
+      "texto": "Que Deus lhe dê vista boa, meu filho."
+    },
+    "assets/audio/vozes/rendeira_saudacao_3.mp3": {
+      "hash": "5a1ac7b8b5",
+      "texto": "Sente aí um minuto, a linha não foge."
+    },
+    "assets/audio/vozes/rendeira_saudacao_4.mp3": {
+      "hash": "3579e4d680",
+      "texto": "Olha só quem apareceu, e eu aqui no ponto!"
+    },
+    "assets/audio/vozes/rendeira_fala_1.mp3": {
+      "hash": "7eafa87e1b",
+      "texto": "Renda de bilro é paciência com música: o estalo dos bilros marca o ritmo. Um palmo leva dias, e eu rezo enquanto faço."
+    },
+    "assets/audio/vozes/rendeira_fala_2.mp3": {
+      "hash": "44425c7f62",
+      "texto": "O desenho vem do pique, um papel furado que a gente prende com alfinete. O pique da minha avó eu uso até hoje."
+    },
+    "assets/audio/vozes/rendeira_fala_3.mp3": {
+      "hash": "1faa54fc19",
+      "texto": "A vista já não é a de antes, moço. Faço renda mais pelo dedo que pelo olho. O dedo não cansa."
+    },
+    "assets/audio/vozes/rendeira_fala_4.mp3": {
+      "hash": "6f90758ab2",
+      "texto": "Renda boa vai pra Salvador. Tem moça rica que paga caro e nem imagina quantos dias cabem num palmo."
+    },
+    "assets/audio/vozes/rendeira_fala_5.mp3": {
+      "hash": "a49d26cf5c",
+      "texto": "Todo dia, perto do meio-dia, vou ao poço com o balde. Ali descanso a vista e ouço as novidades que as outras trazem."
+    },
+    "assets/audio/vozes/rendeira_fala_6.mp3": {
+      "hash": "d6a5a6baa3",
+      "texto": "Na praça eu conto os pontos da conversa: um aqui, um ali. Fofoca bem tecida vale mais que renda mal feita."
+    },
+    "assets/audio/vozes/rendeira_fala_7.mp3": {
+      "hash": "85047b12e8",
+      "texto": "Meu gato malhado dorme em cima da almofada. Já derrubou três bilros e nunca pediu desculpa."
+    },
+    "assets/audio/vozes/rendeira_fala_8.mp3": {
+      "hash": "6cfa784b25",
+      "texto": "A toalha de renda do altar fui eu que fiz. Levou um ano. O padre diz que Deus vê cada ponto, e eu torço pra Ele não ver o torto."
+    },
+    "assets/audio/vozes/quituteira_saudacao_1.mp3": {
+      "hash": "26ecaa409e",
+      "texto": "Olha o acarajé quentinho, freguês!"
+    },
+    "assets/audio/vozes/quituteira_saudacao_2.mp3": {
+      "hash": "0281f83f37",
+      "texto": "Beiju fresquinho, tapioca na hora!"
+    },
+    "assets/audio/vozes/quituteira_saudacao_3.mp3": {
+      "hash": "3dd28904a5",
+      "texto": "Chega, meu rei, que o dendê tá no ponto!"
+    },
+    "assets/audio/vozes/quituteira_saudacao_4.mp3": {
+      "hash": "d844192c26",
+      "texto": "Experimenta, moço, e depois me diz se eu minto."
+    },
+    "assets/audio/vozes/quituteira_fala_1.mp3": {
+      "hash": "9f776fb988",
+      "texto": "O acarajé nasce do feijão-fradinho ralado e batido, frito em dendê bem quente. Feijão batido com raiva, moço, não cresce."
+    },
+    "assets/audio/vozes/quituteira_fala_2.mp3": {
+      "hash": "79319a7e3d",
+      "texto": "Acarajé é comida de santo antes de ser comida de rua. Quem faz com respeito vende melhor, e eu faço pelos dois."
+    },
+    "assets/audio/vozes/quituteira_fala_3.mp3": {
+      "hash": "12a1cd476e",
+      "texto": "Vendo na praça de manhã e na porta da igreja depois do meio-dia. A fome não escolhe santo, e o freguês nem pergunta o meu."
+    },
+    "assets/audio/vozes/quituteira_fala_4.mp3": {
+      "hash": "8c6adfd33a",
+      "texto": "A Candinha vende garapa gelada, eu vendo comida quente. Brigamos pela esquina da praça, mas é ela que me guarda o tabuleiro."
+    },
+    "assets/audio/vozes/quituteira_fala_5.mp3": {
+      "hash": "5bec6fa277",
+      "texto": "Beiju é farinha de tapioca na chapa quente, enrolada com coco. Barato, e enche barriga de criança, que é o que importa."
+    },
+    "assets/audio/vozes/quituteira_fala_6.mp3": {
+      "hash": "adf0156c9b",
+      "texto": "Dendê vem de longe e sobe de preço toda estação. Se o azeite sobe, o acarajé sobe, e freguês resmunga como se a culpa fosse minha."
+    },
+    "assets/audio/vozes/quituteira_fala_7.mp3": {
+      "hash": "89e1a4b6c4",
+      "texto": "Minha Mariinha só quer saber de brincar. Saiu a mim: tem fogo no pé e boca que não para."
+    },
+    "assets/audio/vozes/quituteira_fala_8.mp3": {
+      "hash": "c7c4f911e4",
+      "texto": "Meu tabuleiro leva duas horas pra arrumar e dez minutos pra esvaziar. Quando esvazia cedo, a praça sabe que o dia foi bom."
+    },
+    "assets/audio/vozes/carpinteiro_saudacao_1.mp3": {
+      "hash": "f24f2c4c2f",
+      "texto": "Cuidado com o cavaco, moço, que voa."
+    },
+    "assets/audio/vozes/carpinteiro_saudacao_2.mp3": {
+      "hash": "ead670bbc4",
+      "texto": "Chegue sem medo, o machado só corta pau."
+    },
+    "assets/audio/vozes/carpinteiro_saudacao_3.mp3": {
+      "hash": "6cbd573a2d",
+      "texto": "Boa canoa começa em boa conversa, moço."
+    },
+    "assets/audio/vozes/carpinteiro_saudacao_4.mp3": {
+      "hash": "3e73a57376",
+      "texto": "Deus lhe dê braço forte e pau de lei."
+    },
+    "assets/audio/vozes/carpinteiro_fala_1.mp3": {
+      "hash": "9f64a7f6fe",
+      "texto": "Canoa boa sai de um tronco só, sem emenda. A gente escolhe o pau pela casca, pelo som e até pelo cheiro."
+    },
+    "assets/audio/vozes/carpinteiro_fala_2.mp3": {
+      "hash": "6404aa5efb",
+      "texto": "Primeiro eu racho o pau no machado, depois afino com a enxó, e por fim o fogo ajuda a abrir o bojo. Canoa é paciência."
+    },
+    "assets/audio/vozes/carpinteiro_fala_3.mp3": {
+      "hash": "f76923387d",
+      "texto": "Madeira de lei é dura de cortar, mas dura a vida inteira. Madeira mole corta fácil e apodrece no primeiro inverno."
+    },
+    "assets/audio/vozes/carpinteiro_fala_4.mp3": {
+      "hash": "40eb5f90f0",
+      "texto": "O avô do Seu Benedito tirava madeira boa do outro lado do rio. Parou, e ninguém me conta por quê. Quem sabe, cala."
+    },
+    "assets/audio/vozes/carpinteiro_fala_5.mp3": {
+      "hash": "f264aae40b",
+      "texto": "Estou fazendo uma canoa pra aguentar a baía grossa. Ela fica nos fundos de casa, esperando a maré e o resto da minha paciência."
+    },
+    "assets/audio/vozes/carpinteiro_fala_6.mp3": {
+      "hash": "c6a26dad57",
+      "texto": "Meu Tonico quer ser mestre de canoa antes de saber segurar a enxó. Eu deixo ele tentar, mas fico de olho nos dedos."
+    },
+    "assets/audio/vozes/carpinteiro_fala_7.mp3": {
+      "hash": "0eb1524971",
+      "texto": "Canoa de pescador é leve e rápida. Canoa de carga é pesada e teimosa. Cada uma tem o seu tamanho de mar."
+    },
+    "assets/audio/vozes/carpinteiro_fala_8.mp3": {
+      "hash": "4c4ff70e01",
+      "texto": "Madeira verde empena, madeira seca racha. O segredo é saber o ponto, e o pau diz quando a gente aprende a escutar."
+    },
+    "assets/audio/vozes/menino_saudacao_1.mp3": {
+      "hash": "ac2fe30024",
+      "texto": "Oi, moço! Quer brincar de pega-pega?"
+    },
+    "assets/audio/vozes/menino_saudacao_2.mp3": {
+      "hash": "f55ddc9990",
+      "texto": "Ei, moço! Adivinha o que eu sei!"
+    },
+    "assets/audio/vozes/menino_saudacao_3.mp3": {
+      "hash": "87ed4e8059",
+      "texto": "Moço! Vem cá, vem ver!"
+    },
+    "assets/audio/vozes/menino_saudacao_4.mp3": {
+      "hash": "ec09c32dfb",
+      "texto": "Já viu a onça? Eu ainda não!"
+    },
+    "assets/audio/vozes/menino_fala_1.mp3": {
+      "hash": "8b8ad5300c",
+      "texto": "Painho tá fazendo uma canoa de um pau só, a maior do mundo! Ele diz que é pra pescar baleia."
+    },
+    "assets/audio/vozes/menino_fala_2.mp3": {
+      "hash": "26ba9259e9",
+      "texto": "Mainha disse que na mata tem onça. Eu não tenho medo, não. Só tenho um pouquinho. Só quando escurece."
+    },
+    "assets/audio/vozes/menino_fala_3.mp3": {
+      "hash": "60fea3e0d5",
+      "texto": "No cemitério eu não vou nem pagando. Dizem que lá em cima os mortos escutam tudo."
+    },
+    "assets/audio/vozes/menino_fala_4.mp3": {
+      "hash": "311a4d8d64",
+      "texto": "Uma noite vi uma luz parada no mato, lá longe. Fechei a janela e fingi que dormia."
+    },
+    "assets/audio/vozes/menino_fala_5.mp3": {
+      "hash": "5c610319b3",
+      "texto": "Eu corro mais que a Mariinha, mais que o cachorro e quase mais que o Pedro. Só não corro mais que mainha com a chinela."
+    },
+    "assets/audio/vozes/menino_fala_6.mp3": {
+      "hash": "3029e84be4",
+      "texto": "O poço tem eco. Se você gritar o seu nome lá dentro, ele responde. Mas responde diferente, e isso dá arrepio."
+    },
+    "assets/audio/vozes/menino_fala_7.mp3": {
+      "hash": "a3a21e0eaa",
+      "texto": "Eu vou ser pescador, não, mestre de canoa, não, vou ser guarda! Aí eu mando todo mundo dormir cedo."
+    },
+    "assets/audio/vozes/menina_saudacao_1.mp3": {
+      "hash": "c085527260",
+      "texto": "Oi, moço! Quer ver um segredo?"
+    },
+    "assets/audio/vozes/menina_saudacao_2.mp3": {
+      "hash": "769c4df2f5",
+      "texto": "Psiu! Vem cá, mas não conta pra ninguém."
+    },
+    "assets/audio/vozes/menina_saudacao_3.mp3": {
+      "hash": "4987971567",
+      "texto": "Mainha faz o acarajé mais gostoso do mundo!"
+    },
+    "assets/audio/vozes/menina_saudacao_4.mp3": {
+      "hash": "cd77b920a4",
+      "texto": "Eu sou Mariinha, e você é o moço novo!"
+    },
+    "assets/audio/vozes/menina_fala_1.mp3": {
+      "hash": "476bb55108",
+      "texto": "Mainha vende acarajé na praça. Eu ajudo a contar o troco, mas só até dez, que depois eu me perco."
+    },
+    "assets/audio/vozes/menina_fala_2.mp3": {
+      "hash": "a6951ffa7f",
+      "texto": "O pavão da igreja abre o rabo quando eu passo. Acho que ele gosta de mim, mas o sacristão diz que é só mau humor."
+    },
+    "assets/audio/vozes/menina_fala_3.mp3": {
+      "hash": "7f38949212",
+      "texto": "Nosso gato amarelo se chama Beiju. Come mais que eu e dorme mais que eu, e ninguém dá bronca nele."
+    },
+    "assets/audio/vozes/menina_fala_4.mp3": {
+      "hash": "2d7b5647dd",
+      "texto": "No poço eu jogo uma pedrinha e escuto: plim. Fico imaginando quem mora lá no fundo, esperando a gente."
+    },
+    "assets/audio/vozes/menina_fala_5.mp3": {
+      "hash": "8355aa1fcd",
+      "texto": "Eu e o Tonico juramos segredo de mindinho. Mas ele é fraco: já me contou o dele duas vezes."
+    },
+    "assets/audio/vozes/menina_fala_6.mp3": {
+      "hash": "c63fb00356",
+      "texto": "Mainha disse que, se eu for boazinha, ganho um beiju com coco no domingo. Estou sendo boazinha desde ontem."
+    },
+    "assets/audio/vozes/menina_fala_7.mp3": {
+      "hash": "f2144f2ff9",
+      "texto": "Quando a Sá Rita estende lençol, eu me escondo atrás e finjo que sou fantasma. Ela finge que se assusta."
+    },
+    "assets/audio/vozes/mestre_saveiro_saudacao_1.mp3": {
+      "hash": "fb4a91bdd6",
+      "texto": "Boa viagem, moço, por terra ou por mar."
+    },
+    "assets/audio/vozes/mestre_saveiro_saudacao_2.mp3": {
+      "hash": "b61aff7f2d",
+      "texto": "Vento bom, maré boa e Deus no leme!"
+    },
+    "assets/audio/vozes/mestre_saveiro_saudacao_3.mp3": {
+      "hash": "ed0a24afca",
+      "texto": "Ô de casa! Ou melhor, ô de terra firme!"
+    },
+    "assets/audio/vozes/mestre_saveiro_saudacao_4.mp3": {
+      "hash": "c2131cf1fe",
+      "texto": "Chegou na hora, moço: a maré tá virando."
+    },
+    "assets/audio/vozes/mestre_saveiro_saudacao_noite_1.mp3": {
+      "hash": "aae9c82f85",
+      "texto": "Boa noite, moço: a maré dorme, eu ainda não."
+    },
+    "assets/audio/vozes/mestre_saveiro_fala_1.mp3": {
+      "hash": "d134d1d3ad",
+      "texto": "Sou da tripulação do Mestre Quirino. Ele manda no saveiro, eu mando nas cordas, e o vento manda em nós dois."
+    },
+    "assets/audio/vozes/mestre_saveiro_fala_2.mp3": {
+      "hash": "1d643a1778",
+      "texto": "A travessia até Salvador leva meio dia, com vento bom. Com vento ruim, leva o dia inteiro e mais uma reza."
+    },
+    "assets/audio/vozes/mestre_saveiro_fala_3.mp3": {
+      "hash": "47373ce396",
+      "texto": "Saveiro bom carrega farinha, piaçava, peixe seco e gente com pressa. Só não carrega gente de má vontade: vira lastro."
+    },
+    "assets/audio/vozes/mestre_saveiro_fala_4.mp3": {
+      "hash": "ea4a6d4421",
+      "texto": "Dia catorze de cada estação a gente encosta no píer. Quem tem carga pronta, eu levo. Quem perde a hora, espera a estação seguinte."
+    },
+    "assets/audio/vozes/mestre_saveiro_fala_5.mp3": {
+      "hash": "61ac1334e9",
+      "texto": "A boca da barra tem banco de areia que muda de lugar. Quem não conhece, encalha. Eu conheço cada um pelo nome."
+    },
+    "assets/audio/vozes/mestre_saveiro_fala_6.mp3": {
+      "hash": "8bc0549508",
+      "texto": "Já vi o Recôncavo todo da água: Santo Amaro, São Félix, Cachoeira. De longe tudo parece perto, até a saudade."
+    },
+    "assets/audio/vozes/mestre_saveiro_fala_7.mp3": {
+      "hash": "ad9d3b0b45",
+      "texto": "Espero o dia catorze no rio, de linha na mão, só pra ninguém dizer que estou parado. Peixe pego, vendo; peixe perdido, culpo o vento."
+    },
+    "assets/audio/vozes/mestre_saveiro_fala_8.mp3": {
+      "hash": "b126b33814",
+      "texto": "No Bar, de tardinha, a prosa é de cachaça e de mar. Quem conta história de naufrágio sempre naufragou mais longe do que diz."
+    },
+    "assets/audio/vozes/mestre_saveiro_fala_noite_1.mp3": {
+      "hash": "551099d0a7",
+      "texto": "De noite o mar tem outra voz. Quem navega aprende a ouvir, e quem ouve aprende a ter respeito."
+    },
+    "assets/audio/vozes/damiao_bronca_1.mp3": {
+      "hash": "fe0a8b3c77",
+      "texto": "Ô, moço! Desce daí, que aí embaixo tem gente descansando."
+    },
+    "assets/audio/vozes/damiao_bronca_2.mp3": {
+      "hash": "16013d5467",
+      "texto": "Moço, eu já pedi! Em cima da cova, não! Respeite quem já foi!"
+    },
+    "assets/audio/vozes/damiao_bronca_3.mp3": {
+      "hash": "3169420ff1",
+      "texto": "Chega! Falei duas vezes! Desce daí agora!"
+    }
+  }
+}

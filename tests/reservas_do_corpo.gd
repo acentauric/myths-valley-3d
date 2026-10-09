@@ -112,13 +112,13 @@ func _run() -> void:
 	_conferir(hud._stamina_preenchimento.bg_color == hud.COR_VIGOR and hud._stamina_texto.text == "100/100",
 		"a barra de vigor não voltou ao verde com o nome: '%s'" % hud._stamina_texto.text)
 
-	# --- 2. NA ÁGUA, A BARRA DO MEIO VIRA O FÔLEGO DO NADO --------------------
+	# --- 2. NA ÁGUA, A BARRA DO MEIO VIRA O AR DO NADO ("Ar"; até 08/10, "Fôlego") ---
 	var reserva_antes: float = energia.atual
 	jogador._definir_nado(true)
 	_conferir(jogador.is_swimming(), "o corpo não entrou no nado")
 	_conferir(hud.barra_folego.value == 100.0 and hud._folego_texto.text == "100/100"
 		and hud._folego_preenchimento.bg_color == hud.COR_FOLEGO,
-		"nadando, a barra do meio não virou o fôlego do nado: '%s'" % hud._folego_texto.text)
+		"nadando, a barra do meio não virou o ar do nado: '%s'" % hud._folego_texto.text)
 	var timer_afogamento: Timer = jogador.get_node("DanoSemFolego")
 	timer_afogamento.wait_time = 0.05
 	jogador.velocity = Vector3(1, 0, 0)
@@ -228,8 +228,8 @@ func _conferir_apresentacao(hud, jogador) -> void:
 	_conferir(hud.barra_folego.max_value == 120.0, "o HUD perdeu o teto da reserva ao progredir")
 	var idioma = load("res://scripts/prototipo_3d/idioma_menu.gd")
 	# Em terra: a vida e o vigor com o nome; a reserva só com o número. Na água, o
-	# fôlego do nado com o nome.
-	var rotulos := [["Vida", "Vigor", "Fôlego"], ["Health", "Stamina", "Breath"], ["Salud", "Resistencia", "Aliento"]]
+	# ar do nado com o nome ("Ar": até 08/10 era "Fôlego", o nome da reserva).
+	var rotulos := [["Vida", "Vigor", "Ar"], ["Health", "Stamina", "Air"], ["Salud", "Resistencia", "Aire"]]
 	for indice in range(3):
 		idioma.definir(indice)
 		hud._atualizar_vida()
@@ -239,7 +239,7 @@ func _conferir_apresentacao(hud, jogador) -> void:
 		_conferir(hud.barra_stamina.tooltip_text == rotulos[indice][1] and hud._stamina_texto.text.contains("/"), "o vigor perdeu o nome traduzido: '%s'" % hud._stamina_texto.text)
 		_conferir(hud._folego_texto.text.is_valid_int(), "em terra a barra do meio tem mais que o número: '%s'" % hud._folego_texto.text)
 		hud._ao_mudar_o_nado(true)
-		_conferir(hud.barra_folego.tooltip_text == rotulos[indice][2] and hud._folego_texto.text.contains("/"), "nadando, a barra do meio não diz o fôlego traduzido: '%s'" % hud._folego_texto.text)
+		_conferir(hud.barra_folego.tooltip_text == rotulos[indice][2] and hud._folego_texto.text.contains("/"), "nadando, a barra do meio não diz o ar traduzido: '%s'" % hud._folego_texto.text)
 		var textos: Array[Label] = [hud._vida_texto, hud._folego_texto, hud._stamina_texto]
 		for texto in textos:
 			var fonte: Font = texto.get_theme_font("font")

@@ -314,10 +314,10 @@
       },
       "falas": [
         {
-          "texto": "Ah, o moço da capital. Pode me chamar de Benedito, que aqui todo mundo chama assim.",
-          "texto_en": "Ah, the young man from the capital. You can call me Benedito, that's what everyone here calls me.",
-          "texto_es": "Ah, el muchacho de la capital. Puede llamarme Benedito, que aquí todos me llaman así.",
-          "texto_zh": "啊，省城来的小伙子。叫我贝内迪托就行，这儿的人都这么叫我。",
+          "texto": "Ô, moço da capital! Já tá com cara de daqui.",
+          "texto_en": "Hey, young man from the capital! You already look like you're from here.",
+          "texto_es": "¡Eh, muchacho de la capital! Ya tienes cara de ser de aquí.",
+          "texto_zh": "哟，省城来的小伙子！你已经有点像本地人了。",
           "audio": "benedito_fala_1"
         },
         {
@@ -393,11 +393,11 @@
       },
       "falas": [
         {
-          "texto": "Chegou o da capital, né? O arraial todo já sabe. Se a febre pegar, é só vir aqui.",
-          "texto_en": "So the one from the capital has arrived, huh? The whole village already knows. If a fever takes hold, just come here.",
-          "texto_es": "Llegó el de la capital, ¿no? Todo el caserío ya lo sabe. Si te agarra la fiebre, solo ven aquí.",
-          "texto_zh": "省城来的那位到了，是吧？全村都知道啦。要是发起烧来，只管上我这儿来。",
-          "tts": "[warmly] Chegou o da capital, né? O arraial todo já sabe. Se a febre pegar, é só vir aqui.",
+          "texto": "Febre, quebranto, dor de dente: é só vir aqui, meu filho.",
+          "texto_en": "Fever, evil eye, toothache: just come here, my son.",
+          "texto_es": "Fiebre, mal de ojo, dolor de muelas: solo ven aquí, hijo mío.",
+          "texto_zh": "发烧、中邪、牙疼：只管上我这儿来，孩子。",
+          "tts": "[warmly] Febre, quebranto, dor de dente: é só vir aqui, meu filho.",
           "audio": "zefa_fala_1"
         },
         {
@@ -471,10 +471,10 @@
       },
       "falas": [
         {
-          "texto": "Opa! Sou neto da Dona Zefa. Precisando de braço, é só chamar.",
-          "texto_en": "Hey! I'm Dona Zefa's grandson. If you need a hand, just call.",
-          "texto_es": "¡Opa! Soy nieto de doña Zefa. Si necesitas un brazo, solo llama.",
-          "texto_zh": "嘿！我是泽法大妈的孙子。要是缺人手，喊我一声就行。",
+          "texto": "Opa! Precisando de braço, é só chamar.",
+          "texto_en": "Hey! If you need a hand, just call.",
+          "texto_es": "¡Opa! Si necesitas un brazo, solo llama.",
+          "texto_zh": "嘿！要是缺人手，喊我一声就行。",
           "audio": "cosme_fala_1"
         },
         {
@@ -549,17 +549,17 @@
       },
       "falas": [
         {
-          "texto": "Opa, tudo certo? Passa aqui de tarde, que a gente conversa com a rede no colo.",
-          "texto_en": "Hey, all good? Come by in the afternoon and we'll chat with the net on our laps.",
-          "texto_es": "Opa, ¿todo bien? Pásate por aquí por la tarde, que charlamos con la red en el regazo.",
-          "texto_zh": "哟，一切都好吧？下午来我这儿坐坐，咱们抱着渔网聊聊天。",
+          "texto": "Opa, tudo certo? Passa aqui de tarde, que a gente conversa com a linha na mão.",
+          "texto_en": "Hey, all good? Come by in the afternoon and we'll chat with a line in hand.",
+          "texto_es": "Opa, ¿todo bien? Pásate por aquí por la tarde, que charlamos con el sedal en la mano.",
+          "texto_zh": "哟，一切都好吧？下午来我这儿坐坐，咱们手里拿着鱼线聊聊天。",
           "audio": "tonho_fala_1"
         },
         {
-          "texto": "Tô devendo no armazém, todo mundo sabe. Mas mãe ficou boa, e isso não tem preço.",
-          "texto_en": "I owe money at the store, everyone knows. But Mom got better, and that's priceless.",
-          "texto_es": "Debo en el almacén, todo el mundo lo sabe. Pero mamá se curó, y eso no tiene precio.",
-          "texto_zh": "我在杂货铺欠着账，谁都知道。可我妈病好了，这可是花多少钱都换不来的。",
+          "texto": "Mãe ficou boa daquela febre, e isso não tem preço. O resto a gente paga com peixe.",
+          "texto_en": "Mom got over that fever, and that's priceless. The rest we pay with fish.",
+          "texto_es": "Mamá se curó de aquella fiebre, y eso no tiene precio. Lo demás lo pagamos con pescado.",
+          "texto_zh": "我妈那场烧好了，这可是花多少钱都换不来的。剩下的，咱们用鱼来还。",
           "audio": "tonho_fala_2"
         },
         {
@@ -635,11 +635,11 @@
           "audio": "filo_fala_1"
         },
         {
-          "texto": "O Tonho acha que a dívida valeu a pena. Eu acho que não. A gente briga por isso toda semana.",
-          "texto_en": "Tonho thinks the debt was worth it. I don't. We fight about it every week.",
-          "texto_es": "Tonho cree que la deuda valió la pena. Yo creo que no. Peleamos por eso cada semana.",
-          "texto_zh": "通尼奥觉得那笔债欠得值，我觉得不值。为这事，我们每个礼拜都要吵上一回。",
-          "tts": "[sighs] O Tonho acha que a dívida valeu a pena. Eu acho que não. A gente briga por isso toda semana.",
+          "texto": "O Tonho acha que tudo se paga com peixe. Eu acho que não. A gente briga por isso toda semana.",
+          "texto_en": "Tonho thinks everything can be paid with fish. I don't. We fight about it every week.",
+          "texto_es": "Tonho cree que todo se paga con pescado. Yo creo que no. Peleamos por eso cada semana.",
+          "texto_zh": "通尼奥觉得什么都能用鱼来还，我觉得不行。为这事，我们每个礼拜都要吵上一回。",
+          "tts": "[sighs] O Tonho acha que tudo se paga com peixe. Eu acho que não. A gente briga por isso toda semana.",
           "audio": "filo_fala_2"
         },
         {
@@ -706,10 +706,10 @@
       },
       "falas": [
         {
-          "texto": "Garapa geladinha, moço? Vendo nessa praça desde antes de o senhor nascer.",
-          "texto_en": "Nice cold cane juice, young man? I've been selling in this square since before you were born.",
+          "texto": "Garapa fresquinha, moço? Vendo nessa praça desde antes de o senhor nascer.",
+          "texto_en": "Nice fresh cane juice, young man? I've been selling in this square since before you were born.",
           "texto_es": "¿Guarapo fresquito, muchacho? Vendo en esta plaza desde antes de que usted naciera.",
-          "texto_zh": "来碗冰凉的甘蔗汁吧，小伙子？我在这广场上卖了多少年，你还没出生呢。",
+          "texto_zh": "来碗新鲜的甘蔗汁吧，小伙子？我在这广场上卖了多少年，你还没出生呢。",
           "audio": "candinha_fala_1"
         },
         {
@@ -720,11 +720,11 @@
           "audio": "candinha_fala_2"
         },
         {
-          "texto": "Dizem que chegou convite da fazenda do outro lado do rio. Sem assinatura... sei não.",
-          "texto_en": "They say an invitation came from the farm across the river. No signature... I don't know.",
-          "texto_es": "Dicen que llegó una invitación de la hacienda al otro lado del río. Sin firma... no sé yo.",
-          "texto_zh": "听说河对岸的庄园送来了请帖。没有署名……我心里可不踏实。",
-          "tts": "[whispers] Dizem que chegou convite da fazenda do outro lado do rio. Sem assinatura... sei não.",
+          "texto": "Dizem que naquela fazenda do outro lado do rio ninguém nunca viu o dono. Sem dono... sei não.",
+          "texto_en": "They say no one has ever seen the owner of that farm across the river. No owner... I don't know.",
+          "texto_es": "Dicen que en esa hacienda al otro lado del río nadie vio nunca al dueño. Sin dueño... no sé yo.",
+          "texto_zh": "听说河对岸那座庄园，从来没人见过主人。没有主人……我心里可不踏实。",
+          "tts": "[whispers] Dizem que naquela fazenda do outro lado do rio ninguém nunca viu o dono. Sem dono... sei não.",
           "audio": "candinha_fala_3"
         }
       ]
@@ -791,10 +791,10 @@
           "audio": "damiao_fala_1"
         },
         {
-          "texto": "O intendente me deu um papel com meu nome e mais nada. Nem foice, nem enxada.",
-          "texto_en": "The intendant gave me a paper with my name and nothing more. No scythe, no hoe.",
-          "texto_es": "El intendente me dio un papel con mi nombre y nada más. Ni hoz, ni azada.",
-          "texto_zh": "镇长给了我一张写着我名字的纸，再没别的了。既没镰刀，也没锄头。",
+          "texto": "O intendente me deu um papel com meu nome e mais nada. Zelador aqui se arruma com o que tem.",
+          "texto_en": "The intendant gave me a paper with my name and nothing more. A keeper here makes do with what he has.",
+          "texto_es": "El intendente me dio un papel con mi nombre y nada más. Aquí el cuidador se las arregla con lo que tiene.",
+          "texto_zh": "镇长给了我一张写着我名字的纸，再没别的了。在这儿当看守的，有什么就将就着用什么。",
           "audio": "damiao_fala_2"
         },
         {
@@ -877,10 +877,10 @@
           "audio": "padre_saudacao_3"
         },
         {
-          "texto": "Que bom ver gente nova no arraial.",
-          "texto_en": "Good to see a new face in the village.",
-          "texto_es": "Qué bueno ver gente nueva en el caserío.",
-          "texto_zh": "村里来了新人，真好。",
+          "texto": "Que bom ver o senhor por aqui.",
+          "texto_en": "Good to see you around here.",
+          "texto_es": "Qué gusto verlo por acá.",
+          "texto_zh": "见到您来这儿，真好。",
           "audio": "padre_saudacao_4"
         }
       ],
@@ -928,10 +928,10 @@
           "audio": "padre_fala_6"
         },
         {
-          "texto": "Convite sem assinatura eu não respondo. Quem convida de verdade assina, meu filho, e dá a cara.",
-          "texto_en": "I don't answer an unsigned invitation. Whoever truly invites signs, my son, and shows their face.",
-          "texto_es": "No respondo a una invitación sin firma. Quien invita de verdad firma, hijo mío, y da la cara.",
-          "texto_zh": "没有署名的请帖，我是不回的。真心邀请的人会署上名字，孩子，会亮出自己的脸。",
+          "texto": "Papel sem assinatura eu não respondo. Quem pede de verdade assina, meu filho, e dá a cara.",
+          "texto_en": "I don't answer an unsigned paper. Whoever truly asks signs it, my son, and shows their face.",
+          "texto_es": "No respondo a un escrito sin firma. Quien ruega en serio firma, hijo mío, y da la cara.",
+          "texto_zh": "没有署名的纸条，我是不回的。真心相求的人会署上名字，孩子，会亮出自己的脸。",
           "audio": "padre_fala_7"
         },
         {
@@ -1143,11 +1143,11 @@
           "audio": "sacristao_fala_3"
         },
         {
-          "texto": "À tarde vou capinar o cemitério. O Damião capina também, só que sem foice. O mato ganha de nós dois.",
-          "texto_en": "In the afternoon I go weed the cemetery. Damião weeds too, only without a scythe. The weeds beat us both.",
-          "texto_es": "Por la tarde voy a desmalezar el cementerio. Damião también, solo que sin hoz. La maleza nos gana a los dos.",
-          "texto_zh": "下午我要去墓地除草。达米昂也在除，只是他连镰刀都没有。野草把我们俩都赢了。",
-          "tts": "[sighs] À tarde vou capinar o cemitério. O Damião capina também, só que sem foice. O mato ganha de nós dois.",
+          "texto": "À tarde ajudo o Damião no cemitério. Mato de cemitério nasce de novo toda semana, e a gente arranca de novo.",
+          "texto_en": "In the afternoon I help Damião at the cemetery. Cemetery weeds grow back every week, and we pull them out again.",
+          "texto_es": "Por la tarde ayudo a Damião en el cementerio. La maleza del camposanto rebrota cada semana, y la arrancamos otra vez.",
+          "texto_zh": "下午我去墓地给达米昂帮忙。墓地的野草每个礼拜都重新长出来，我们就再拔一遍。",
+          "tts": "[sighs] À tarde ajudo o Damião no cemitério. Mato de cemitério nasce de novo toda semana, e a gente arranca de novo.",
           "audio": "sacristao_fala_4"
         },
         {
@@ -1598,10 +1598,10 @@
           "audio": "mercador_fala_1"
         },
         {
-          "texto": "Fiado de pescador é como maré: vai embora, mas volta. O Tonho que o diga.",
-          "texto_en": "A fisherman's credit is like the tide: it goes out, but it comes back. Ask Tonho.",
-          "texto_es": "El fiado de un pescador es como la marea: se va, pero vuelve. Pregúntale a Tonho.",
-          "texto_zh": "渔夫的赊账就像潮水：退下去了，还会涨回来。不信问通尼奥。",
+          "texto": "Fiado de pescador é como maré: vai embora, mas volta. Pescador sabe disso melhor que eu.",
+          "texto_en": "A fisherman's credit is like the tide: it goes out, but it comes back. Fishermen know that better than I do.",
+          "texto_es": "El crédito de un pescador es como la marea: se va, pero regresa. Los pescadores lo saben mejor que yo.",
+          "texto_zh": "渔夫的赊账就像潮水：退下去了，还会涨回来。这个道理，渔夫比我更清楚。",
           "audio": "mercador_fala_2"
         },
         {
@@ -1844,10 +1844,10 @@
           "audio": "guarda_fala_3"
         },
         {
-          "texto": "O convite da fazenda do outro lado do rio não traz nome de quem convida. Em trinta anos de guarda, nunca vi coisa boa sem assinatura.",
-          "texto_en": "The invitation from the farm across the river carries no name of who invites. In thirty years as watchman I've never seen anything good without a signature.",
-          "texto_es": "La invitación de la hacienda al otro lado del río no trae el nombre de quien invita. En treinta años de guardia nunca vi nada bueno sin firma.",
-          "texto_zh": "河对岸庄园的请帖，上头没写邀请人的名字。我当了三十年守卫，没见过哪件好事是不署名的。",
+          "texto": "Em trinta anos de guarda, nunca vi coisa boa vir sem assinatura. Do outro lado do rio, então, nem se fala.",
+          "texto_en": "In thirty years as watchman I've never seen anything good come without a signature. From across the river, even less so.",
+          "texto_es": "En treinta años de vigilancia jamás vi llegar nada bueno sin firma. Del otro lado del río, ni hablar.",
+          "texto_zh": "我当了三十年守卫，没见过哪件好事是不署名就送来的。河对岸来的，那就更别提了。",
           "audio": "guarda_fala_4"
         },
         {
@@ -2110,10 +2110,10 @@
           "audio": "pescador_fala_3"
         },
         {
-          "texto": "O Tonho puxa rede no pontal, o Pedro joga vara no píer. Peixe grande sabe de quem desviar.",
-          "texto_en": "Tonho hauls the net at the point, Pedro casts a rod from the pier. A big fish knows who to dodge.",
-          "texto_es": "Tonho jala la red en la punta, Pedro lanza la caña desde el muelle. El pez grande sabe de quién esquivarse.",
-          "texto_zh": "通尼奥在岬角拉网，佩德罗在码头甩竿。大鱼知道该躲着谁。",
+          "texto": "O Tonho pesca no pontal, o Pedro joga vara no píer. Peixe grande sabe de quem desviar.",
+          "texto_en": "Tonho fishes at the point, Pedro casts a rod from the pier. A big fish knows who to dodge.",
+          "texto_es": "Tonho tira el sedal en la punta, Pedro lanza la caña desde el muelle. El pez gordo sabe a quién esquivar.",
+          "texto_zh": "通尼奥在岬角钓鱼，佩德罗在码头甩竿。大鱼知道该躲着谁。",
           "audio": "pescador_fala_4"
         },
         {
@@ -2517,10 +2517,10 @@
           "audio": "lavadeira_fala_6"
         },
         {
-          "texto": "De tarde, no poço, a gente troca novidade. O poço anda cansado, moço: a corda gasta, o balde pesa. Um mutirão resolvia.",
-          "texto_en": "In the afternoon at the well we swap news. The well is tired, young man: the rope is worn, the bucket heavy. A work party would fix it.",
-          "texto_es": "Por la tarde, en el pozo, intercambiamos novedades. El pozo anda cansado, muchacho: la soga gastada, el balde pesado. Una faena de vecinos lo arreglaría.",
-          "texto_zh": "下午在井边，我们互相交换新鲜事。可这口井也累了，小伙子：绳子磨损了，水桶也沉。大伙儿一起动手就能解决。",
+          "texto": "No poço a gente troca novidade. Desde o mutirão a corda é nova e o balde sobe leve — a gente agradece ao senhor.",
+          "texto_en": "At the well we swap news. Since the work party the rope is new and the bucket comes up light — we thank you for it.",
+          "texto_es": "En el pozo intercambiamos chismes. Desde la faena de vecinos la soga es nueva y el balde sube liviano: se lo agradecemos.",
+          "texto_zh": "我们在井边交换新鲜事。自从大伙儿一起修了井，绳子换了新的，水桶提上来也轻了——这得谢谢您。",
           "audio": "lavadeira_fala_7"
         },
         {
@@ -2914,10 +2914,10 @@
           "audio": "quituteira_fala_3"
         },
         {
-          "texto": "A Candinha vende garapa gelada, eu vendo comida quente. Brigamos pela esquina da praça, mas é ela que me guarda o tabuleiro.",
-          "texto_en": "Candinha sells cold cane juice, I sell hot food. We fight over the corner of the square, but she's the one who watches my tray.",
-          "texto_es": "Candinha vende guarapo helado, yo vendo comida caliente. Peleamos por la esquina de la plaza, pero es ella quien me cuida la bandeja.",
-          "texto_zh": "坎迪尼亚卖冰甘蔗汁，我卖热食。我们为广场的拐角吵过架，可替我看摊子的还是她。",
+          "texto": "A Candinha vende garapa, eu vendo comida quente. Brigamos pela esquina da praça, mas é ela que me guarda o tabuleiro.",
+          "texto_en": "Candinha sells cane juice, I sell hot food. We fight over the corner of the square, but she's the one who watches my tray.",
+          "texto_es": "Candinha vende guarapo, yo vendo comida caliente. Peleamos por la esquina de la plaza, pero es ella quien me cuida la bandeja.",
+          "texto_zh": "坎迪尼亚卖甘蔗汁，我卖热食。我们为广场的拐角吵过架，可替我看摊子的还是她。",
           "audio": "quituteira_fala_4"
         },
         {
@@ -3473,11 +3473,11 @@
           "audio": "menina_saudacao_3"
         },
         {
-          "texto": "Eu sou Mariinha, e você é o moço novo!",
-          "texto_en": "I'm Mariinha, and you're the new mister!",
-          "texto_es": "¡Yo soy Mariinha, y tú eres el señor nuevo!",
-          "texto_zh": "我是玛丽妮亚，你就是新来的大哥哥！",
-          "tts": "[cheerfully] Eu sou Mariinha, e você é o moço novo!",
+          "texto": "Eu sou Mariinha! Lembra de mim?",
+          "texto_en": "I'm Mariinha! Remember me?",
+          "texto_es": "¡Soy Mariinha! ¿Te acuerdas de mí?",
+          "texto_zh": "我是玛丽妮亚！还记得我吗？",
+          "tts": "[cheerfully] Eu sou Mariinha! Lembra de mim?",
           "audio": "menina_saudacao_4"
         }
       ],

@@ -39,9 +39,9 @@
       "lugar": "areia",
       "raio": 8,
       "audio": "",
-      "texto": "Uma ostra na areia, onde a onda chega. Em nome dela.",
-      "texto_en": "An oyster on the sand, where the wave reaches. In her name.",
-      "texto_es": "Una ostra en la arena, donde llega la ola. En su nombre.",
+      "texto": "Uma ostra na areia, onde a onda chega. Em meu nome.",
+      "texto_en": "An oyster on the sand, where the wave reaches. In my name.",
+      "texto_es": "Una ostra en la arena, donde llega la ola. En mi nombre.",
       "recompensa": {
         "xp": 10
       },
@@ -67,9 +67,9 @@
       "lugar": "casa_da_beata",
       "raio": 6,
       "audio": "",
-      "texto": "Diga a Sá Joaquina que a ostra foi.",
-      "texto_en": "Tell Sá Joaquina the oyster went.",
-      "texto_es": "Dile a Sá Joaquina que la ostra se fue.",
+      "texto": "Venha me dizer se a ostra foi.",
+      "texto_en": "Come and tell me if the oyster went.",
+      "texto_es": "Ven a decirme si la ostra se fue.",
       "recompensa": {
         "xp": 15,
         "beiju": 2

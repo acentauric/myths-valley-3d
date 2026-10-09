@@ -120,6 +120,10 @@ func _run() -> void:
 	var jogo := current_scene
 	# O povoado se apresenta aos poucos na chegada (#155): este portão fala com moradores de longe.
 	await PovoadoLiberado.todos(self, jogo)
+	# O ACEITE É AUTOMÁTICO AQUI (08/10): este portão abre filas pelo E e segue; a tela de aceite
+	# pausaria o vale no meio da medida (a tela tem portão próprio, tests/missao_a_vista.gd).
+	if jogo.get("aceite") != null:
+		jogo.aceite.automatico = true
 	var jogador = jogo.get("player")
 	var recursos := jogo.get_node_or_null("Recursos3D")
 	var inv := root.get_node("/root/Inventario")
@@ -163,6 +167,18 @@ func _run() -> void:
 	_conferir(mato >= MATO, "o grupo '%s' tem %d alvo(s), e o passo do mato pede sete" % [GRUPO_DO_MATO, mato])
 	_conferir(recursos.mais_perto_da_peca(GRUPO_DO_MATO, jogador.global_position) != Lugares.NENHUM,
 		"o marcador não acha o mato pelo grupo: o passo apontaria para o nada")
+	# A SETA DE "JUNTE LENHA" DE OUTRA MISSÃO NÃO APONTA O MATO DO CEMITÉRIO (07/10: "na missão
+	# da ponte não deve mandar cortar as árvores do cemitério"): perguntada do próprio cemitério,
+	# a fonte de lenha mais perta não é nenhuma embaúba nem tronco caído do Damião.
+	var lugares_do_vale = root.get_node("/root/Lugares")
+	var no_cemiterio: Vector3 = lugares_do_vale.ponto("cemiterio")
+	var fonte_de_lenha: Vector3 = recursos.mais_perto_que_rende("lenha", no_cemiterio)
+	_conferir(fonte_de_lenha != Lugares.NENHUM, "não há fonte de lenha para a seta de 'junte lenha'")
+	for id in recursos._alvos:
+		var alvo: Dictionary = recursos._alvos[id]
+		if str((alvo["ficha"] as Dictionary).get("grupo", "")) == GRUPO_DO_MATO:
+			_conferir(fonte_de_lenha.distance_to(alvo["pos"]) > 0.5,
+				"a seta de 'junte lenha' aponta o mato do cemitério ('%s')" % str(id))
 	# O TRONCO CAÍDO NO LUGAR DA LENHA EMPILHADA ("Substitua as madeiras empilhadas
 	# na missão do cemitério por esse tronco caído"): o mato que não é embaúba é
 	# tronco caído, que sai no machado e rende lenha — e, no estilo Tripo, é o

@@ -6,6 +6,7 @@ extends CharacterBody3D
 ## humanoide procedural ou o modelo do Tripo, conforme o estilo escolhido em AJUSTAR.
 
 const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
+const Identidade = preload("res://scripts/prototipo_3d/identidade.gd")
 const BalaoFala = preload("res://scripts/prototipo_3d/balao_fala.gd")
 const EspumaAgua = preload("res://scripts/prototipo_3d/espuma_agua.gd")
 const Vestimenta3D = preload("res://scripts/prototipo_3d/vestimenta_3d.gd")
@@ -172,6 +173,9 @@ var _caminho_da_festa := false
 ## O CAMINHO PELA MALHA (`navegacao_vale.gd`): os pontos até o destino, o da
 ## vez, para onde ele foi feito e quando refazer. Sem malha, anda-se reto.
 var _caminho: PackedVector3Array = PackedVector3Array()
+## O CAMINHO PELA ESTRADA (07/10): quem conduz o jogador (o Pedro) pede à malha o caminho que
+## vai pela rua e pela ponte (`Navegacao.caminho_pela_estrada`), e não o mais curto.
+var _prefere_a_estrada := false
 var _ponto_da_vez := 0
 var _caminho_ate := Vector3.INF
 var _refazer_em := 0.0
@@ -181,6 +185,12 @@ var _refazer_em := 0.0
 ## seguinte e raspar nela.
 const REFAZER_CAMINHO := 4.0
 const PONTO_ALCANCADO := 0.35
+## O PASSO SUAVE NAS CURVAS (07/10): a menos de SUAVIZA_DESDE do ponto da vez, o rumo já se
+## mistura com o do trecho seguinte — a curva vira arco, e não a quina. A mistura mira no
+## máximo ESPIA_ADIANTE para dentro do trecho seguinte: mais que isso cortava a quina para
+## dentro da folga que a malha larga dá da parede.
+const SUAVIZA_DESDE := 0.8
+const ESPIA_ADIANTE := 0.6
 ## CAMINHO VAZIO: a malha acabou de mudar (reassou) e ainda não respondeu, ou o corpo está
 ## num ponto que ela não cobre. Refaz em `REFAZER_SEM_CAMINHO`, e enquanto espera FICA
 ## PARADO (`_esperando_a_malha`): andar reto até o destino era andar para dentro da água, do
@@ -240,6 +250,65 @@ func ir_ate(ponto: Vector3, velocidade: float = 2.6) -> void:
 ## Volta ao posto do período.
 func liberar() -> void:
 	_destino_avulso = Vector3.INF
+
+
+## EM CENA (cena_vale.gd, 07/10): a cena manda — `ir_ate` leva, `encarar` vira, `gesto` mexe
+## os braços — e a rotina, o posto, o seguir o jogador e o dar passagem esperam. É o
+## `_em_cena` do Pedro do 2D (`assumir_cena`/`liberar_cena`).
+var _em_cena := false
+var _encarando := Vector3.INF
+## O gesto pelo nome, nos dois animadores: [autoral (GESTURES), procedural (GESTOS)].
+const GESTOS_DA_CENA := {
+	"acenar": [0, 0], "tchau": [1, 0], "concordar": [2, 1], "apontar": [3, 2],
+	"olhar_em_volta": [3, 7], "chamar": [0, 5], "medo": [4, 3], "bracos_cruzados": [5, 4],
+	"reverencia": [2, 6],
+}
+
+
+func assumir_cena() -> void:
+	_em_cena = true
+
+
+func liberar_cena() -> void:
+	_em_cena = false
+	_encarando = Vector3.INF
+
+
+func em_cena() -> bool:
+	return _em_cena
+
+
+## Fica virado para `ponto` enquanto estiver parado em cena.
+func encarar(ponto: Vector3) -> void:
+	_encarando = ponto
+
+
+## Um gesto dos braços pelo nome (`GESTOS_DA_CENA`); devolve o rótulo do gesto, ou "".
+func gesto(nome: String) -> String:
+	if animador == null or not animador.has_method("play_gesture") or not GESTOS_DA_CENA.has(nome):
+		return ""
+	var par: Array = GESTOS_DA_CENA[nome]
+	var autoral: bool = animador.has_method("is_using_authored_clips")
+	return str(animador.play_gesture(int(par[0] if autoral else par[1])))
+
+
+## O pulso de quem está em cena: vai ao destino avulso pela malha, ou fica parado encarando.
+func _passo_da_cena(delta: float) -> void:
+	var direcao := Vector3.ZERO
+	if _destino_avulso.is_finite():
+		var deslocamento := _destino_avulso - global_position
+		deslocamento.y = 0.0
+		var distancia := deslocamento.length()
+		if distancia > 0.2:
+			var rumo := _ponto_do_caminho(_destino_avulso, delta) - global_position
+			rumo.y = 0.0
+			if not _esperando_a_malha:
+				direcao = rumo.normalized() if rumo.length() > 0.05 else deslocamento / distancia
+	_mover(direcao, _velocidade_avulsa, delta)
+	if direcao == Vector3.ZERO and _encarando.is_finite():
+		_olhar_para(_encarando, delta)
+	_atualizar_animacao(delta)
+	_atualizar_interacao(delta)
 
 
 ## Já no posto do período, sem andar até ele: a carga de uma partida põe cada
@@ -348,6 +417,7 @@ func _ready() -> void:
 	balao = BalaoFala.new()
 	camada_balao.add_child(balao)
 	balao.configurar(self, altura + 0.45, String(dados.get("nome", "Morador")))
+	_montar_o_marcador()
 	voz = AudioStreamPlayer3D.new()
 	voz.name = "Voz"
 	voz.max_distance = 30.0
@@ -438,6 +508,10 @@ func _corpo_provisorio() -> Node3D:
 
 
 func _physics_process(delta: float) -> void:
+	# EM CENA, a cena manda (cena_vale.gd).
+	if _em_cena:
+		_passo_da_cena(delta)
+		return
 	if _andar_dando_passagem(delta):
 		_atualizar_animacao(delta)
 		_atualizar_interacao(delta)
@@ -815,6 +889,7 @@ func _atualizar_animacao(delta: float) -> void:
 
 
 func _atualizar_interacao(delta: float) -> void:
+	_atualizar_o_marcador(delta)
 	# Sem a fila no vale, o balão conta o próprio tempo; com ela, quem conta é a
 	# fila, em relógio de parede (`_tique_da_fala`).
 	if _balao_tempo > 0.0 and _fila() == null:
@@ -859,6 +934,79 @@ func _so_cumprimento_no_ar() -> bool:
 ## O MORADOR TEM MISSÃO COM O JOGADOR AGORA? Pergunta a toda cadeia viva — a dele
 ## e a dos outros, que podem mandar o jogador até ele. Ver
 ## `CadeiaDeMissoes.envolve`.
+## O "!" SOBRE A CABEÇA (08/10: "colocar uma exclamação ou algo parecido em cima da cabeça do
+## NPC com quest disponível", como nos RPGs): "!" para a fila que o E abre neste morador
+## (`CadeiaDeMissoes.o_que_o_e_faz` == "abrir"), "?" para quem o passo de agora manda procurar
+## (falar, entregar — com a carga na mochila). Um Label3D que acompanha a cabeça e balança
+## devagar; a pergunta às filas é a cada MARCADOR_A_CADA s, que são muitas filas para perguntar
+## a cada quadro. Some com o morador recolhido e a mais de MARCADOR_ATE do jogador.
+const MARCADOR_A_CADA := 0.4
+const MARCADOR_ACIMA := 0.95
+const MARCADOR_ATE := 55.0
+var _marcador: Label3D
+var _marcador_em := 0.0
+var _marcador_texto := ""
+var _marcador_t := 0.0
+
+
+## O que o marcador diz agora: "!", "?" ou "".
+func marcador_de_missao() -> String:
+	return _marcador_texto
+
+
+func _montar_o_marcador() -> void:
+	if _marcador != null:
+		return
+	_marcador = Label3D.new()
+	_marcador.name = "MarcadorDeMissao"
+	_marcador.text = ""
+	_marcador.font = Identidade.fonte(Identidade.FONTE_TITULO, 700)
+	_marcador.font_size = 96
+	_marcador.pixel_size = 0.0055
+	_marcador.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	_marcador.no_depth_test = true
+	_marcador.modulate = Identidade.OURO
+	_marcador.outline_size = 14
+	_marcador.outline_modulate = Color(0.1, 0.07, 0.02, 0.9)
+	_marcador.visibility_range_end = MARCADOR_ATE
+	_marcador.position = Vector3(0.0, altura + MARCADOR_ACIMA, 0.0)
+	_marcador.visible = false
+	add_child(_marcador)
+
+
+func _o_que_as_filas_pedem_aqui() -> String:
+	if not is_inside_tree():
+		return ""
+	var pede := ""
+	for cadeia in get_tree().get_nodes_in_group(GRUPO_DAS_CADEIAS):
+		if not cadeia.has_method("o_que_o_e_faz"):
+			continue
+		match str(cadeia.o_que_o_e_faz(self)):
+			"abrir":
+				return "!"
+			"falar", "entregar":
+				pede = "?"
+	return pede
+
+
+func _atualizar_o_marcador(delta: float) -> void:
+	_marcador_em -= delta
+	if _marcador_em <= 0.0:
+		_marcador_em = MARCADOR_A_CADA
+		_marcador_texto = "" if _recolhido else _o_que_as_filas_pedem_aqui()
+	if _marcador == null:
+		return
+	var a_vista := _marcador_texto != "" and not _recolhido
+	if _marcador.visible != a_vista:
+		_marcador.visible = a_vista
+	if not a_vista:
+		return
+	if _marcador.text != _marcador_texto:
+		_marcador.text = _marcador_texto
+	_marcador_t += delta
+	_marcador.position.y = altura + MARCADOR_ACIMA + sin(_marcador_t * 2.4) * 0.06
+
+
 func tem_missao() -> bool:
 	if not is_inside_tree():
 		return false
@@ -1528,7 +1676,8 @@ func _ponto_do_caminho(destino: Vector3, delta: float) -> Vector3:
 	if _caminho_ate.distance_to(destino) > 0.3 or _refazer_em <= 0.0 or _preso > TEMPO_PRESO * 0.9:
 		if _caminho_ate.distance_to(destino) > 0.3:
 			_sem_caminho_s = 0.0
-		_caminho = navegacao.caminho(global_position, destino)
+		_caminho = navegacao.caminho_pela_estrada(global_position, destino) if _prefere_a_estrada and navegacao.has_method("caminho_pela_estrada") \
+			else navegacao.caminho(global_position, destino)
 		_ponto_da_vez = 1 if _caminho.size() > 1 else 0
 		_caminho_ate = destino
 		_refazer_em = REFAZER_CAMINHO if not _caminho.is_empty() else REFAZER_SEM_CAMINHO
@@ -1541,7 +1690,17 @@ func _ponto_do_caminho(destino: Vector3, delta: float) -> Vector3:
 	while _ponto_da_vez < _caminho.size() - 1 \
 			and Vector2(_caminho[_ponto_da_vez].x - global_position.x, _caminho[_ponto_da_vez].z - global_position.z).length() < PONTO_ALCANCADO:
 		_ponto_da_vez += 1
-	return destino if _ponto_da_vez >= _caminho.size() - 1 else _caminho[_ponto_da_vez]
+	if _ponto_da_vez >= _caminho.size() - 1:
+		return destino
+	var alvo: Vector3 = _caminho[_ponto_da_vez]
+	var falta := Vector2(alvo.x - global_position.x, alvo.z - global_position.z).length()
+	if falta < SUAVIZA_DESDE:
+		var seguinte: Vector3 = _caminho[_ponto_da_vez + 1]
+		var trecho := seguinte - alvo
+		if trecho.length() > ESPIA_ADIANTE:
+			seguinte = alvo + trecho.normalized() * ESPIA_ADIANTE
+		alvo = alvo.lerp(seguinte, 1.0 - falta / SUAVIZA_DESDE)
+	return alvo
 
 
 ## Nome do posto para o período: "manha", "tarde", "entardecer", "noite" ou "madrugada".

@@ -43,6 +43,10 @@ func _run() -> void:
 	await _mundo_pronto()
 	await _quadros(8)
 	var vale = current_scene
+	# O ACEITE É AUTOMÁTICO AQUI (08/10): este portão abre filas pelo E e segue; a tela de aceite
+	# pausaria o vale no meio da medida (a tela tem portão próprio, tests/missao_a_vista.gd).
+	if vale.get("aceite") != null:
+		vale.aceite.automatico = true
 	var jogador = vale.player
 	var mundo = vale.world
 	var pedro = vale.get("pedro")

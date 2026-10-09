@@ -104,6 +104,15 @@ const TRADUZIDOS := {
 	"res://data/missoes_fe_catolica.json": ["texto", "resumo", "nome", "titulo", "resposta"],
 	"res://data/missoes_fe_candomble.json": ["texto", "resumo", "nome", "titulo", "resposta"],
 	"res://data/missoes_fe_caboclo.json": ["texto", "resumo", "nome", "titulo", "resposta"],
+	# As filas dos moradores vindas do 2D, que nasceram só em português: traduzidas em 08/10, junto
+	# com a correção das falas (docs/falas) — a Dona Filó, a Dona Zefa (o Cosme fica), a Dona Candinha
+	# e o Tonho (a conta paga em réis, e o primeiro peixe no lugar da terra).
+	"res://data/missoes_filo.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
+	"res://data/missoes_zefa.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
+	"res://data/missoes_candinha.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
+	"res://data/missoes_tonho.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
+	# E o mirante do Pedro (o povo, o canteiro e o conserto), cujas falas eram só português até 08/10.
+	"res://data/missoes_arraial.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
 	# A casa herdada (#50): a pergunta da cama e as falas do desmaio das duas.
 	# O "titulo" fica de fora da cobrança, e não da tradução: "Cama" é a mesma
 	# palavra em espanhol, e a regra da cópia reprovaria o certo.
@@ -115,16 +124,9 @@ const TRADUZIDOS := {
 	# A lenha da fogueira (07/10): a dica do E, os recados do HUD e a aba do fogão.
 	"res://data/fogueira.json": ["texto"],
 	"res://data/quintal.json": ["texto"],
-	# A missão do cemitério: os três passos do 2D declaram a pendência um a um,
-	# e o mato, o conserto, o cercado e o arremate nasceram nos três idiomas.
-	"res://data/missoes_coveiro.json": ["texto", "resumo", "nome", "titulo", "resposta"],
-	# As cadeias antigas também entram na varredura: uma entrada pendente
-	# continua declarada, sem desproteger o que já está traduzido no arquivo.
-	"res://data/missoes_arraial.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
-	"res://data/missoes_candinha.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
-	"res://data/missoes_filo.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
-	"res://data/missoes_tonho.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
-	"res://data/missoes_zefa.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
+	# A missão do cemitério: os três passos do 2D, só em português até 08/10, foram traduzidos
+	# com a correção das falas; o mato, o conserto, o cercado e o arremate nasceram nos três.
+	"res://data/missoes_coveiro.json": ["texto", "resumo", "nome", "titulo", "resposta", "trancada"],
 	"res://data/recursos_3d.json": ["nome"],
 	# O saveiro do mestre Quirino: a cadeia do Seu Benedito que o ensina, e o que o
 	# saveiro diz — a chegada, a encomenda da estação e a aba dele no painel.

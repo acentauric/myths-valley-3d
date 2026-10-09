@@ -81,6 +81,10 @@ func _run() -> void:
 	root.add_child(relogio_de_jogo)
 	relogio_de_jogo.ficar_lento()
 	vale = current_scene
+	# O ACEITE É AUTOMÁTICO AQUI (08/10): este portão abre filas pelo E e segue; a tela de aceite
+	# pausaria o vale no meio da medida (a tela tem portão próprio, tests/missao_a_vista.gd).
+	if vale.get("aceite") != null:
+		vale.aceite.automatico = true
 	jogador = vale.get("player")
 	interiores = vale.get("interiores")
 	casa = vale.get("casa")

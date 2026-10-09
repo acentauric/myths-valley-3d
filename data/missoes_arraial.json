@@ -1,5 +1,5 @@
 {
-  "observacao": "AS MISSÕES DO ARRAIAL que o Pedro dá depois do tutorial, trazidas do jogo 2D (data/dialogos/arraial.json, passos povo_conhecer, mirante_ver, mirante_material e mirante_obra, e o bloco vista_do_mirante). No 2D elas vêm 'depois que o Pedro termina de ensinar a sobreviver', e aqui também: a cadeia só abre com a do guia terminada (CadeiaDeMissoes.depois_de). ADAPTADAS AO VALE: o mirante do 3D está de pé no modelo do Tripo, então o estrago não é o assoalho que arriou do 2D, e sim o tabuado que range e o guarda-corpo podre — a obra 'mirante_levantar' é a mesma e o custo também (20 tábuas, 12 pedras, 6 cordas); ela se toca no J, na aba de obras, ao pé do mirante (bancadas_vale.gd). O CANTEIRO do 2D (canteiro_material, canteiro_obra) vem antes do mirante, como lá: a mesa do prumo é provisória, ao lado da bancada da oficina (`bancadas_vale.gd`), e a prancheta abate 10% de toda obra — por isso o material do mirante é 'da_obra', a conta de hoje. '{jogador}' saiu das falas: o vale ainda não tem o nome do jogador (#56). A recompensa é a do 2D: a vaquinha do arraial pela obra pública, e o pirão do Pedro por fora (#48). TRADUÇÃO: nome e resumos nos três idiomas; as falas em português, com inglês e espanhol pendentes e do Ramon.",
+  "observacao": "AS MISSÕES DO ARRAIAL que o Pedro dá depois do tutorial, trazidas do jogo 2D (data/dialogos/arraial.json, passos povo_conhecer, mirante_ver, mirante_material e mirante_obra, e o bloco vista_do_mirante). No 2D elas vêm 'depois que o Pedro termina de ensinar a sobreviver', e aqui também: a cadeia só abre com a do guia terminada (CadeiaDeMissoes.depois_de). ADAPTADAS AO VALE: o mirante do 3D está de pé no modelo do Tripo, então o estrago não é o assoalho que arriou do 2D, e sim o tabuado que range e o guarda-corpo podre — a obra 'mirante_levantar' é a mesma e o custo também (20 tábuas, 12 pedras, 6 cordas); ela se toca no J, na aba de obras, ao pé do mirante (bancadas_vale.gd). O CANTEIRO do 2D (canteiro_material, canteiro_obra) vem antes do mirante, como lá: a mesa do prumo é provisória, ao lado da bancada da oficina (`bancadas_vale.gd`), e a prancheta abate 10% de toda obra — por isso o material do mirante é 'da_obra', a conta de hoje. '{jogador}' saiu das falas: o vale ainda não tem o nome do jogador (#56). A recompensa é a do 2D: a vaquinha do arraial pela obra pública, e o pirão do Pedro por fora (#48). TRADUÇÃO: nos três idiomas desde 08/10 (docs/falas); o conserto do mirante passou a ensinar o E, como a ponte, além do J.",
   "dono": "pedro",
   "nome": "O mirante",
   "nome_en": "The lookout",
@@ -8,11 +8,12 @@
   "trancada_en": "The lookout comes after the bridge. Come back once the river bridge is standing.",
   "trancada_es": "El mirador viene después del puente. Vuelve cuando el puente del río esté en pie.",
   "principal": true,
-  "traducao": "pendente",
   "passos": [
     {
       "id": "povo_conhecer",
       "titulo": "Quem é quem no arraial",
+      "titulo_en": "Who's who in the village",
+      "titulo_es": "Quién es quién en el caserío",
       "resumo": "Aperte P e veja quem é quem no arraial",
       "resumo_en": "Press P to see who's who in the village",
       "resumo_es": "Pulsa P y mira quién es quién en el pueblo",
@@ -20,6 +21,8 @@
       "raio": 9,
       "audio": "",
       "texto": "Você falou com gente daqui. Reparou que ela lembra de você? Aqui todo mundo lembra: quem apareceu, quem trouxe o quê, quem passou reto. Aperte P — a letra de povo. Abre a lista de quem mora aqui, com a cara de cada um e o quanto já confia em você.",
+      "texto_en": "You've talked with people from here. Did you notice they remember you? Here everybody remembers: who showed up, who brought what, who walked past. Press P — P for people. It opens the list of who lives here, with each one's face and how much they already trust you.",
+      "texto_es": "Hablaste con gente de aquí. ¿Te diste cuenta de que se acuerdan de ti? Aquí todo el mundo se acuerda: quién apareció, quién trajo qué, quién pasó de largo. Pulsa P — la P de pueblo. Abre la lista de quienes viven aquí, con la cara de cada uno y cuánto confía ya en ti.",
       "meta": {
         "tipo": "evento",
         "evento": "abriu_arraial"
@@ -77,6 +80,8 @@
     {
       "id": "mirante_ver",
       "titulo": "O que ninguém consertou",
+      "titulo_en": "What nobody fixed",
+      "titulo_es": "Lo que nadie arregló",
       "resumo": "Suba a estrada até o mirante",
       "resumo_en": "Climb the road up to the lookout",
       "resumo_es": "Sube el camino hasta el mirador",
@@ -84,6 +89,8 @@
       "raio": 9,
       "audio": "",
       "texto": "Agora que você sabe riscar obra, tem outra coisa que eu quero te mostrar, e é subindo. Saia da praça pelo poente e pegue a estrada que serpenteia até o alto. Lá em cima tem um mirante: dali se vê a baía inteira, e no dia limpo dá pra ver saveiro chegando antes de ele chegar. Era assim que a gente sabia quem vinha. Vá ver como ele está.",
+      "texto_en": "Now that you know how to draw up a work, there's another thing I want to show you, and it's uphill. Leave the square to the west and take the road that winds up to the top. Up there there's a lookout: from it you can see the whole bay, and on a clear day you can see a saveiro coming before it arrives. That's how we used to know who was coming. Go see how it's doing.",
+      "texto_es": "Ahora que sabes trazar una obra, hay otra cosa que quiero mostrarte, y es subiendo. Sal de la plaza por el poniente y toma el camino que serpentea hasta lo alto. Allá arriba hay un mirador: desde ahí se ve la bahía entera, y en un día despejado se ve el saveiro llegando antes de que llegue. Así sabíamos quién venía. Ve a ver cómo está.",
       "diario": "Agora que você sabe riscar obra, tenho outra coisa pra te mostrar, lá no alto. Dali se vê a baía inteira, e no dia limpo o saveiro chegando antes de ele chegar.",
       "diario_en": "Now that you know how to draw up a job, there's another thing I want to show you, up high. From there you see the whole bay, and on a clear day the sailboat coming before it arrives.",
       "diario_es": "Ahora que sabes trazar obra, hay otra cosa que quiero mostrarte, allá arriba. Desde ahí se ve toda la bahía, y en un día limpio el velero llegando antes de llegar.",
@@ -92,6 +99,8 @@
     {
       "id": "mirante_material",
       "titulo": "Tabuado, pedra e corda",
+      "titulo_en": "Planking, stone and rope",
+      "titulo_es": "Tablado, piedra y cuerda",
       "resumo": "Junte tábua, pedra e corda para o mirante",
       "resumo_en": "Gather boards, stone and rope for the lookout",
       "resumo_es": "Junta tablas, piedra y cuerda para el mirador",
@@ -99,6 +108,8 @@
       "raio": 9,
       "audio": "",
       "texto": "Tá vendo? Os esteios ficaram, mas o tabuado range e o guarda-corpo apodreceu. Foi uma chuva de março, faz uns vinte anos, e ninguém subiu mais — nem consertou, que é o que a gente faz aqui: espera cair, depois espera alguém. O que falta é tabuado corrido, pedra pro calço e corda pro guarda-corpo. Vinte tábuas, doze pedras e seis cordas, menos o que a prancheta do canteiro abate; tábua e corda saem da oficina. Ponte é chão, mirante é altura: o que sustenta gente no alto tem que ser mais do que o que sustenta gente no raso.",
+      "texto_en": "See? The posts held, but the planking creaks and the railing rotted. It was a March rain, some twenty years ago, and nobody came up again — or fixed it, which is what we do here: wait for it to fall, then wait for someone. What's missing is running planks, stone for the footing and rope for the railing. Twenty boards, twelve stones and six ropes, minus what the site table's drafting board knocks off; boards and rope come from the workshop. A bridge is ground, a lookout is height: what holds people up high has to be more than what holds them in the shallows.",
+      "texto_es": "¿Ves? Los pilotes aguantaron, pero el tablado cruje y la baranda se pudrió. Fue una lluvia de marzo, hace unos veinte años, y nadie volvió a subir — ni lo arregló, que es lo que hacemos aquí: esperar a que se caiga, y después esperar a alguien. Lo que falta es tablado corrido, piedra para el calce y cuerda para la baranda. Veinte tablas, doce piedras y seis cuerdas, menos lo que descuenta la plancheta del obrador; la tabla y la cuerda salen del taller. Un puente es suelo, un mirador es altura: lo que sostiene a la gente en lo alto tiene que ser más que lo que la sostiene en lo bajo.",
       "diario": "Os esteios ficaram, mas o tabuado range e o guarda-corpo apodreceu: faz uns vinte anos que ninguém sobe nem conserta. Ponte é chão, mirante é altura, e tem de ser mais firme.",
       "diario_en": "The posts held, but the planking creaks and the railing has rotted; for twenty years nobody has climbed up or fixed it. A bridge is ground, a lookout is height: it has to be sturdier.",
       "diario_es": "Los postes quedaron, pero el tablado cruje y la baranda se pudrió; hace veinte años que nadie sube ni lo arregla. Un puente es suelo, un mirador es altura: tiene que ser más firme.",
@@ -110,13 +121,17 @@
     {
       "id": "mirante_obra",
       "titulo": "De pé, outra vez",
+      "titulo_en": "Standing, once again",
+      "titulo_es": "En pie, otra vez",
       "resumo": "Conserte o mirante: [E] ou [J] › Obras, ao pé dele",
       "resumo_en": "Fix the lookout: [E] or [J] › Works, at its foot",
       "resumo_es": "Arregla el mirador: [E] o [J] › Obras, al pie de él",
       "lugar": "mirante",
       "raio": 9,
       "audio": "",
-      "texto": "Tudo aí. Agora é botar de pé. Chegue ao pé do mirante e abra o painel, no J, na aba de obras: o conserto está na lista. Eu subo com você. Essa eu não perco.",
+      "texto": "Tudo aí. Agora é botar de pé. Chegue ao pé do mirante e aperte E — ou abra o J, na aba de obras: o conserto está na lista. Eu subo com você. Essa eu não perco.",
+      "texto_en": "All there. Now it's time to stand it up. Get to the foot of the lookout and press E — or open J, on the works tab: the repair is on the list. I'll go up with you. This one I won't miss.",
+      "texto_es": "Todo ahí. Ahora hay que ponerlo en pie. Llega al pie del mirador y pulsa E, o abre la J, en la pestaña de obras: el arreglo está en la lista. Yo subo contigo. Esta no me la pierdo.",
       "meta": {
         "tipo": "obra",
         "construcao": "mirante",
@@ -131,6 +146,7 @@
   ],
   "arremate": {
     "texto": "Olha isso. Eu nunca tinha subido aqui — nasci embaixo desse morro e nunca tinha subido aqui. Daqui de cima o arraial cabe todo numa olhada: a praça, a capela, o casario descendo até a areia, o píer onde você desembarcou no dia em que não conhecia ninguém. E toma: o povo juntou. Foi a Dona Candinha que passou o chapéu na praça, moeda por moeda. Eu botei um pirão junto, porque dinheiro do povo é do povo, mas o pirão é meu.",
-    "traducao": "pendente"
+    "texto_en": "Look at this. I'd never been up here — I was born at the foot of this hill and had never been up here. From up here the whole village fits in one glance: the square, the chapel, the houses running down to the sand, the pier where you landed the day you didn't know anyone. And here: the people chipped in. It was Dona Candinha who passed the hat around the square, coin by coin. I put in a pirão, because the people's money is the people's, but the pirão is mine.",
+    "texto_es": "Mira esto. Yo nunca había subido aquí — nací al pie de este cerro y nunca había subido aquí. Desde aquí arriba el caserío cabe entero en una mirada: la plaza, la capilla, las casas bajando hasta la arena, el muelle donde desembarcaste el día en que no conocías a nadie. Y toma: el pueblo juntó. Fue doña Candinha la que pasó el sombrero por la plaza, moneda por moneda. Yo puse un pirão aparte, porque el dinero del pueblo es del pueblo, pero el pirão es mío."
   }
 }

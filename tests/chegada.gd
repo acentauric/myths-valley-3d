@@ -46,6 +46,9 @@ extends SceneTree
 
 const RelogioDeJogo = preload("res://tests/fixtures/relogio_de_jogo.gd")
 
+## A distância a que o Pedro considera o jogador de volta (`GuiaPedro.VOLTA_A_ANDAR`).
+const VOLTA_A_ANDAR_DO_PEDRO := 3.0
+
 var falhas := 0
 var relogio
 var dia
@@ -76,6 +79,10 @@ func _run() -> void:
 	dia = root.get_node("/root/Dia")
 	dialogo = root.get_node("/root/Dialogo")
 	var vale = current_scene
+	# AS CENAS FICAM DESLIGADAS: este portão dirige a chegada na mão (teleporta, aperta o E) e mede a
+	# condução do Pedro; com a apresentação do Tonho tocando, ele anda em cena, e não conduz.
+	if vale.get("cenas") != null:
+		vale.cenas.desligadas = true
 	var jogador = vale.player
 	var mundo = vale.world
 	var pedro = vale.get("pedro")
@@ -190,34 +197,77 @@ func _run() -> void:
 				andou = true
 				break
 		_conferir(andou, "na chave o Pedro não foi na frente até a Dona Candinha (estava a %.1f e ficou a %.1f)" % [antes, _no_chao(pedro.global_position, candinha.global_position)])
-		# OS MARCOS DA ESTRADA (07/10): com o jogador a quatro passos — perto, mas sem acompanhar de
-		# colado —, o Pedro anda um trecho e para num marco até o jogador chegar a três passos.
-		var marcou := false
-		var marco_limite := Time.get_ticks_msec() + 14000
-		while Time.get_ticks_msec() < marco_limite and not marcou:
+		# A LINHA DO PERCURSO (07/10, à noite): com o jogador a quatro passos atrás, o Pedro NÃO
+		# para (os marcos de antes paravam, e o jogador não entendia o que fazer): continua até a
+		# Dona Candinha.
+		var antes_da_linha: float = _no_chao(pedro.global_position, candinha.global_position)
+		for i in 8:
 			var para_a_candinha: Vector3 = candinha.global_position - pedro.global_position
 			para_a_candinha.y = 0.0
 			var atras: Vector3 = -para_a_candinha.normalized() * 4.0 if para_a_candinha.length() > 0.1 else Vector3(4.0, 0.0, 0.0)
 			jogador.teleportar(pedro.global_position + atras + Vector3(0.0, 0.1, 0.0), 0.0)
-			await _passos_de_fisica(6)
-			marcou = bool(pedro.get("_no_marco"))
-		_conferir(marcou, "o Pedro não parou num marco da estrada com o jogador a quatro passos")
-		if marcou:
-			var no_marco_em: Vector3 = pedro.global_position
-			await _passos_de_fisica(30)
-			_conferir(_no_chao(pedro.global_position, no_marco_em) < 0.3, "no marco, o Pedro não ficou esperando")
-			jogador.teleportar(pedro.global_position + Vector3(1.0, 0.1, 1.0), 0.0)
-			_conferir(await _ate(func() -> bool: return not bool(pedro.get("_no_marco")), 3.0), "com o jogador ao lado, o Pedro não saiu do marco")
-		# Longe do jogador, ele espera.
-		jogador.teleportar(pedro.global_position + Vector3(14.0, 0.1, 0.0), 0.0)
-		await _passos_de_fisica(30)
-		var parado_em: Vector3 = pedro.global_position
-		await _passos_de_fisica(60)
-		_conferir(_no_chao(pedro.global_position, parado_em) < 0.3, "com o jogador para trás, o Pedro não parou para esperar")
+			await _passos_de_fisica(8)
+		_conferir(_no_chao(pedro.global_position, candinha.global_position) < antes_da_linha - 1.0,
+			"com o jogador a quatro passos atrás, o Pedro parou no caminho (estava a %.1f da Candinha e ficou a %.1f)" % [antes_da_linha, _no_chao(pedro.global_position, candinha.global_position)])
+		# COM O JOGADOR À FRENTE, ele não espera ninguém: segue.
+		var a_frente: Vector3 = candinha.global_position - pedro.global_position
+		a_frente.y = 0.0
+		if a_frente.length() > 9.0:
+			jogador.teleportar(pedro.global_position + a_frente.normalized() * 7.0 + Vector3(0.0, 0.1, 0.0), 0.0)
+			var antes_da_frente: float = _no_chao(pedro.global_position, candinha.global_position)
+			await _passos_de_fisica(40)
+			_conferir(not bool(pedro.get("_esperando_quem_ficou")), "com o jogador à frente no caminho, o Pedro ficou 'esperando' quem ficou")
+			_conferir(_no_chao(pedro.global_position, candinha.global_position) < antes_da_frente - 1.0,
+				"com o jogador à frente, o Pedro parou (estava a %.1f da Candinha e ficou a %.1f)" % [antes_da_frente, _no_chao(pedro.global_position, candinha.global_position)])
+		# COM O JOGADOR PARA TRÁS, ele volta a buscá-lo em vez de ficar parado. "Para trás" é NA
+		# LINHA DO PERCURSO (doze passos atrás no caminho do Pedro, em terra), e não doze passos
+		# em linha reta — que, da praça para o píer, caem no mar, onde ninguém vai buscar ninguém
+		# e o Pedro vinha pela beira, desviando da água a cada passo (07/10).
+		var atras_na_linha := Vector3.INF
+		for tanto in [12.0, 10.0, 8.0, 7.0]:
+			var candidato: Vector3 = _atras_na_linha(vale.world, pedro.get("_caminho"), pedro.global_position, tanto)
+			if not candidato.is_finite():
+				var para_tras: Vector3 = candinha.global_position - pedro.global_position
+				para_tras.y = 0.0
+				candidato = vale.world.ground_position(pedro.global_position - para_tras.normalized() * tanto, 0.0)
+			# EM TERRA E NA MALHA: o ponto tem de ser alcançável a pé (o do píer, por cima da água, não é).
+			var alcance: PackedVector3Array = vale.navegacao.caminho_estreito(pedro.global_position, candidato)
+			if alcance.size() >= 2 and _no_chao(alcance[alcance.size() - 1], candidato) < 1.0:
+				atras_na_linha = candidato
+				break
+			if not atras_na_linha.is_finite() and alcance.size() >= 2 and _no_chao(alcance[alcance.size() - 1], pedro.global_position) >= 7.0:
+				atras_na_linha = alcance[alcance.size() - 1]
+		if not atras_na_linha.is_finite():
+			atras_na_linha = pedro.global_position + Vector3(0.0, 0.0, 12.0)
+		print("  o jogador para trás em %s, a %.1f do Pedro" % [str(Vector2(atras_na_linha.x, atras_na_linha.z)), _no_chao(atras_na_linha, pedro.global_position)])
+		jogador.teleportar(atras_na_linha + Vector3(0.0, 0.1, 0.0), 0.0)
+		await _passos_de_fisica(20)
+		var longe_antes: float = _no_chao(pedro.global_position, jogador.global_position)
+		var de_onde: Vector3 = pedro.global_position
+		var serie: Array[String] = []
+		for i in 6:
+			await _passos_de_fisica(10)
+			serie.append("%s %.2f v%.2f" % ["E" if bool(pedro.get("_esperando_quem_ficou")) else "-", _no_chao(pedro.global_position, jogador.global_position), Vector2(pedro.velocity.x, pedro.velocity.z).length()])
+		print("  a série (a cada 10 passos: esperando, distância, velocidade): ", " | ".join(serie))
+		var longe_depois: float = _no_chao(pedro.global_position, jogador.global_position)
+		# O caminho da volta, para o diagnóstico: o composto (larga + emendas), o estreito e o largo cru.
+		var nav = vale.get("navegacao")
+		var volta: PackedVector3Array = pedro.get("_volta")
+		print("  a volta: %d pontos (%.1f u); de %s a %s; estreito %.1f u, largo cru %.1f u (sai a %.2f, chega a %.2f); andou %.2f em 60 passos" % [
+			volta.size(), _comprimento(volta), str(Vector2(de_onde.x, de_onde.z)), str(Vector2(jogador.global_position.x, jogador.global_position.z)),
+			_comprimento(nav.caminho_estreito(de_onde, jogador.global_position)) if nav.has_method("caminho_estreito") else -1.0,
+			_comprimento(nav.caminho_largo(de_onde, jogador.global_position)) if nav.has_method("caminho_largo") else -1.0,
+			_no_chao(nav.caminho_largo(de_onde, jogador.global_position)[0], de_onde) if nav.has_method("caminho_largo") and nav.caminho_largo(de_onde, jogador.global_position).size() > 0 else -1.0,
+			_no_chao(nav.caminho_largo(de_onde, jogador.global_position)[-1], jogador.global_position) if nav.has_method("caminho_largo") and nav.caminho_largo(de_onde, jogador.global_position).size() > 0 else -1.0,
+			_no_chao(pedro.global_position, de_onde)])
+		_conferir(bool(pedro.get("_esperando_quem_ficou")) or longe_depois < VOLTA_A_ANDAR_DO_PEDRO,
+			"com o jogador doze passos para trás, o Pedro não foi buscá-lo")
+		_conferir(longe_depois < longe_antes - 1.5 or longe_depois < VOLTA_A_ANDAR_DO_PEDRO,
+			"com o jogador para trás, o Pedro não veio na direção dele (estava a %.1f e ficou a %.1f)" % [longe_antes, longe_depois])
 		# E A TELA DIZ QUE ELE PAROU: "deve aparecer um aviso em tela informando para
 		# se reaproximar do NPC". Voltando para perto, o aviso sai.
-		_conferir(str(vale.hud.aviso_de_espera()).contains("esperando"),
-			"o Pedro parou à espera de quem ficou para trás e a tela não avisou: '%s'" % str(vale.hud.aviso_de_espera()))
+		_conferir(str(vale.hud.aviso_de_espera()).contains("buscar") or longe_depois < VOLTA_A_ANDAR_DO_PEDRO,
+			"o Pedro voltou por quem ficou para trás e a tela não avisou: '%s'" % str(vale.hud.aviso_de_espera()))
 		jogador.teleportar(pedro.global_position + Vector3(1.0, 0.1, 1.0), 0.0)
 		_conferir(await _ate(func() -> bool: return str(vale.hud.aviso_de_espera()) == "", 3.0),
 			"o jogador voltou para perto do Pedro e o aviso de voltar continuou na tela")
@@ -335,6 +385,53 @@ func _tocar_o_shift(jogador) -> void:
 	tecla.physical_keycode = KEY_SHIFT
 	tecla.pressed = true
 	jogador._input(tecla)
+
+
+## O ponto `quanto` unidades ATRÁS de `posicao` na linha `caminho` (projetando `posicao` nela).
+## Linha curta demais: segue para trás na direção do primeiro trecho, encurtando até cair em
+## terra. Sem linha, INF.
+static func _atras_na_linha(mundo, caminho: PackedVector3Array, posicao: Vector3, quanto: float) -> Vector3:
+	if caminho.size() < 2:
+		return Vector3.INF
+	var q := Vector2(posicao.x, posicao.z)
+	var melhor := INF
+	var progresso := 0.0
+	var andado := 0.0
+	for i in range(caminho.size() - 1):
+		var a := Vector2(caminho[i].x, caminho[i].z)
+		var b := Vector2(caminho[i + 1].x, caminho[i + 1].z)
+		var proj := Geometry2D.get_closest_point_to_segment(q, a, b)
+		if q.distance_to(proj) < melhor:
+			melhor = q.distance_to(proj)
+			progresso = andado + a.distance_to(proj)
+		andado += a.distance_to(b)
+	for tanto in [quanto, quanto * 0.75, quanto * 0.6]:
+		var ponto := Vector3.INF
+		var alvo: float = progresso - tanto
+		if alvo >= 0.0:
+			andado = 0.0
+			for i in range(caminho.size() - 1):
+				var trecho := Vector2(caminho[i].x - caminho[i + 1].x, caminho[i].z - caminho[i + 1].z).length()
+				if andado + trecho >= alvo and trecho > 0.0:
+					ponto = caminho[i].lerp(caminho[i + 1], (alvo - andado) / trecho)
+					break
+				andado += trecho
+		else:
+			var rumo: Vector3 = caminho[0] - caminho[1]
+			rumo.y = 0.0
+			ponto = caminho[0] + (rumo.normalized() if rumo.length() > 0.05 else Vector3.BACK) * -alvo
+		if ponto.is_finite():
+			ponto = mundo.ground_position(ponto, 0.0)
+			if not mundo.has_method("water_depth_at") or float(mundo.water_depth_at(ponto)) < 0.2:
+				return ponto
+	return Vector3.INF
+
+
+static func _comprimento(pontos: PackedVector3Array) -> float:
+	var total := 0.0
+	for i in range(1, pontos.size()):
+		total += Vector2(pontos[i].x - pontos[i - 1].x, pontos[i].z - pontos[i - 1].z).length()
+	return total
 
 
 func _no_chao(a: Vector3, b: Vector3) -> float:

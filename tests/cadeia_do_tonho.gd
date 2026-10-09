@@ -1,16 +1,21 @@
 extends SceneTree
-## JOGA A HISTÓRIA INTEIRA DO TONHO — a rede, a conta e a terra.
+## JOGA A HISTÓRIA INTEIRA DO TONHO — a rede, a conta e o primeiro peixe.
 ##
 ##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/cadeia_do_tonho.gd
 ##
 ## Veio do jogo 2D (`data/dialogos/arraial.json`, passos pescador_ver /
 ## pescador_rede / tonho_divida / tonho_terra). Ele mostra a água, pede corda e
 ## tábua para refazer a rede que perdeu no rio, conta que deve mil e novecentos
-## no armazém, e na volta entrega a terra do outro lado da estrada.
+## no armazém; o jogador paga a conta ao Seu Nicolau, e na volta o Tonho lhe dá o
+## primeiro peixe da rede nova.
 ##
-## A ORDEM É O SENTIDO, e é a de lá: a rede é o que paga o armazém, e a dívida
-## paga é o que solta a terra ("eu só não queria entregar terra devendo"). Esta
-## cadeia começou só com a dívida e a terra — o fim sem o começo.
+## A ORDEM É O SENTIDO, e é a de lá: a rede é o que paga o armazém. No 2D a dívida
+## paga soltava a terra do outro lado da estrada; o vale não tem terras nem o livro
+## de fiado, e até 08/10 a dívida zerava sem ninguém pagar (o passo do armazém era
+## só a ida). Desde o #68 o livro de fiado do Seu Nicolau está no baú do armazém e se paga
+## de verdade — 1.900 réis, até 500 por confirmação, e a rede nova abate 130 por dia —, e,
+## desde a correção das falas (docs/falas), o fim é o primeiro lanço da rede, "que é de
+## quem fez a rede".
 ##
 ##
 ## AS DUAS COISAS NOVAS
@@ -37,18 +42,23 @@ extends SceneTree
 ##   4. A REDE NÃO SE FECHA COM MEIA CARGA. Com as cinco cordas e só duas
 ##      tábuas, ao lado dele, o passo não fecha e nada sai da mochila.
 ##   5. COM AS DUAS COISAS FECHA, E AS DUAS SAEM na conta certa.
-##   6. O DO ARMAZÉM NÃO FECHA NO PÍER, e a viagem é de verdade; voltar ao
-##      Tonho fecha o último, e é ele quem entrega a terra.
+##   6. A CONTA SE PAGA NO LIVRO DO ARMAZÉM, longe do píer: falar com o Seu
+##      Nicolau não a risca nem mexe na bolsa; com o livro lido e a dívida
+##      quitada o passo fecha. Voltar ao Tonho fecha o
+##      último, é ele quem responde, e o robalo — o primeiro peixe — chega.
 ##   7. A CADEIA ENTRA NO CADERNO DO VALE e sobrevive a recarregar.
 
 const PovoadoLiberado = preload("res://tests/fixtures/povoado_liberado.gd")
 const ConversaDoE = preload("res://tests/fixtures/conversa_do_e.gd")
+const FiadoTonho = preload("res://scripts/prototipo_3d/fiado_tonho.gd")
 
 var falhas := 0
 const SEGUNDOS_PARA_ANUNCIAR := 12.0
 const SEGUNDOS_POR_PASSO := 15.0
-## O píer e o armazém têm de estar a mais que isto um do outro, em unidades.
+## O Tonho e o Seu Nicolau têm de estar a mais que isto um do outro, em unidades.
 const TRAVESSIA_MINIMA := 15.0
+## A conta do Tonho no livro do Seu Nicolau, em réis, conferida contra o dado.
+const CONTA_DO_TONHO := 1900
 ## O que a rede cobra, conferido contra o dado: se o arquivo mudar os números,
 ## este portão não pode continuar medindo os antigos.
 const REDE_COBRA := {"corda": 5, "tabua": 3}
@@ -75,6 +85,10 @@ func _run() -> void:
 	var jogo := current_scene
 	# O povoado se apresenta aos poucos na chegada (#155): este portão fala com moradores de longe.
 	await PovoadoLiberado.todos(self, jogo)
+	# O ACEITE É AUTOMÁTICO AQUI (08/10): este portão abre filas pelo E e segue; a tela de aceite
+	# pausaria o vale no meio da medida (a tela tem portão próprio, tests/missao_a_vista.gd).
+	if jogo.get("aceite") != null:
+		jogo.aceite.automatico = true
 	var jogador = jogo.get("player")
 	var inv := root.get_node("/root/Inventario")
 	var lugares := root.get_node("/root/Lugares")
@@ -125,8 +139,21 @@ func _run() -> void:
 			"a rede cobra %s de %s e este portão mede %s"
 				% [str(cobrada.get(qual, 0)), qual, str(REDE_COBRA[qual])])
 
-	var ponto_do_armazem: Vector3 = lugares.ponto(
-		str((cadeia.passos[3] as Dictionary).get("lugar", "")))
+	# O LIVRO COBRA A CONTA QUE ESTE PORTÃO MEDE: o passo fecha com o livro do baú lido e quitado (#68).
+	var livro: Dictionary = (cadeia.passos[3] as Dictionary).get("meta", {})
+	_conferir(str(livro.get("tipo", "")) == "evento" and (livro.get("eventos", []) as Array).has("livro_tonho_lido")
+			and (livro.get("eventos", []) as Array).has("divida_tonho_quitada"),
+		"o passo do livro não pede ler o livro e quitar a dívida: %s" % str(livro))
+	_conferir(FiadoTonho.DIVIDA == CONTA_DO_TONHO,
+		"a conta do Tonho no livro é de %d réis, e este portão mede %d" % [FiadoTonho.DIVIDA, CONTA_DO_TONHO])
+	var nicolau: Node3D = null
+	for morador in jogo.get("moradores"):
+		if str((morador.dados as Dictionary).get("id", "")) == "mercador":
+			nicolau = morador
+	_conferir(nicolau != null, "o vale não tem o Seu Nicolau, a quem o Tonho deve")
+	if nicolau == null:
+		_fechar()
+		return
 
 	jogador.global_position = tonho.global_position + Vector3(1.2, 0.0, 1.0)
 	await _frames(3)
@@ -234,55 +261,70 @@ func _run() -> void:
 		_conferir(tudo.contains("rede") or tudo.contains("malha"),
 			"a resposta da rede não é a do 2D: '%s'" % respostas[0])
 
-	# --- 6. A DÍVIDA, A TRAVESSIA E A TERRA ---------------------------------
+	# --- 6. A DÍVIDA, A CONTA PAGA E O PRIMEIRO PEIXE ----------------------
 	var fechou_divida := await _ate(func() -> bool: return cadeia.missao >= 3, SEGUNDOS_POR_PASSO)
 	_conferir(fechou_divida, "o passo da dívida não fechou ao lado do Tonho")
 	print("  %-16s %s" % ["tonho_divida", "fechou" if fechou_divida else "PRESO"])
 	var anunciou2 := await _ate(func() -> bool: return cadeia.espera <= 0.0, SEGUNDOS_PARA_ANUNCIAR)
 	_conferir(anunciou2, "o passo do livro não chegou a anunciar")
 
+	# A CONTA NÃO SE PAGA NO PÍER: o passo é levar os réis a quem os cobra.
+	var bolsa := root.get_node("/root/Jogo")
+	bolsa.dinheiro = CONTA_DO_TONHO + 100
 	var no_pier: int = cadeia.missao
 	await _ate(func() -> bool: return cadeia.missao != no_pier, 4.0)
 	_conferir(cadeia.missao == no_pier,
-		"o passo que manda ao armazém fechou com o jogador parado no píer")
-
-	var travessia: float = jogador.global_position.distance_to(ponto_do_armazem)
+		"o passo que manda pagar ao Seu Nicolau fechou com o jogador parado no píer")
+	var travessia: float = tonho.global_position.distance_to(nicolau.global_position)
 	_conferir(travessia > TRAVESSIA_MINIMA,
-		"o armazém está a %.1f u do píer: não é travessia, é um passo ao lado" % travessia)
-	jogador.global_position = ponto_do_armazem
+		"o Seu Nicolau está a %.1f u do Tonho: não é travessia, é um passo ao lado" % travessia)
+
+	# A CONVERSA COM O SEU NICOLAU NÃO PAGA, e nada sai da bolsa.
+	bolsa.dinheiro = CONTA_DO_TONHO - 1
+	jogador.global_position = nicolau.global_position + Vector3(1.0, 0.0, 0.8)
 	await _frames(3)
-	# O PASSO DO ARMAZÉM É DE EVENTO (#68, 54a17bb): chegar ao armazém não o fecha, o que o fecha é ler o livro
-	# do baú e quitar a dívida (`livro_no_armazem` anda o baú de verdade). Aqui a leitura e a quitação vêm do
-	# estado do livro, pelo mesmo caminho do jogo (`FiadoTonho.restaurar` registra os eventos na fila).
-	await _ate(func() -> bool: return cadeia.missao > no_pier, 2.0)
-	_conferir(cadeia.missao == no_pier, "só chegar ao armazém fechou o passo do livro: ele pede ler o livro e quitar a dívida")
+	# O LIVRO DE FIADO ESTÁ NO BAÚ DO ARMAZÉM (#68, 54a17bb), e a conta se paga nele: falar com o
+	# Seu Nicolau não a risca. O passo fecha com o livro lido e a dívida quitada (`livro_no_armazem`
+	# anda o baú de verdade, e `fiado_tonho` a regra do pagamento e do abatimento da rede). Aqui a
+	# leitura e a quitação vêm do estado do livro, pelo mesmo caminho do jogo (`FiadoTonho.restaurar`
+	# registra os eventos na fila).
+	await _falar_com(nicolau)
+	await _ate(func() -> bool: return cadeia.missao != no_pier, 4.0)
+	_conferir(cadeia.missao == no_pier, "falar com o Seu Nicolau fechou o passo do livro: ele pede ler o livro e quitar a dívida")
+	_conferir(int(bolsa.dinheiro) == CONTA_DO_TONHO - 1,
+		"falar com o Seu Nicolau mexeu na bolsa: eram %d réis e ficaram %d" % [CONTA_DO_TONHO - 1, int(bolsa.dinheiro)])
 	jogo.get("fiado_tonho").restaurar({"divida": 0, "rede": true, "lido": true})
-	var chegou := await _ate(func() -> bool: return cadeia.missao > no_pier, SEGUNDOS_POR_PASSO)
-	_conferir(chegou, "li o livro no armazém, a dívida está quitada e o passo não fechou")
-	print("  %-16s %s  (travessia de %.1f u)"
-		% ["tonho_livro", "fechou" if chegou else "PRESO", travessia])
+	var pagou := await _ate(func() -> bool: return cadeia.missao > no_pier, SEGUNDOS_POR_PASSO)
+	_conferir(pagou, "li o livro no armazém, a dívida está quitada e o passo não fechou")
+	print("  %-16s %s  (travessia de %.1f u)" % ["tonho_livro", "pago" if pagou else "PRESO", travessia])
 
 	var anunciou3 := await _ate(func() -> bool: return cadeia.espera <= 0.0, SEGUNDOS_PARA_ANUNCIAR)
-	_conferir(anunciou3, "o passo da terra não chegou a anunciar")
-	var no_armazem: int = cadeia.missao
-	await _ate(func() -> bool: return cadeia.missao != no_armazem, 4.0)
-	_conferir(cadeia.missao == no_armazem,
-		"o passo que manda voltar ao Tonho fechou com o jogador no armazém")
+	_conferir(anunciou3, "o passo do primeiro peixe não chegou a anunciar")
+	var na_venda: int = cadeia.missao
+	await _ate(func() -> bool: return cadeia.missao != na_venda, 4.0)
+	_conferir(cadeia.missao == na_venda,
+		"o passo que manda voltar ao Tonho fechou com o jogador ao lado do Seu Nicolau")
 
 	respostas.clear()
+	var robalos_antes: int = inv.quantidade("robalo")
 	jogador.global_position = tonho.global_position + Vector3(1.0, 0.0, 0.8)
 	await _frames(3)
 	await _falar_com(tonho)
-	var voltou := await _ate(func() -> bool: return cadeia.missao > no_armazem, SEGUNDOS_POR_PASSO)
-	_conferir(voltou, "voltei ao Tonho e o passo da terra não fechou")
+	var voltou := await _ate(func() -> bool: return cadeia.missao > na_venda, SEGUNDOS_POR_PASSO)
+	_conferir(voltou, "voltei ao Tonho e o passo do primeiro peixe não fechou")
 	print("  %-16s %s" % ["tonho_terra", "fechou" if voltou else "PRESO"])
+	# A RESPOSTA ESPERA A VEZ na fila de falas (o anúncio de antes, a saudação de quem está no píer).
+	var disse_o_fim := await _ate(func() -> bool: return _balao_diz(tonho, ["rede nova", "primeiro peixe"]), SEGUNDOS_POR_PASSO)
 	var no_balao := str(tonho.balao.get("_texto").text)
-	_conferir(tonho._balao_tempo > 0.0 and (no_balao.contains("chão") or no_balao.contains("terra")),
-		"quem entrega a terra não falou: a fala do fim ficou na boca de quem mandou embora ('%s')" % no_balao)
+	_conferir(disse_o_fim,
+		"quem dá o primeiro peixe não falou: a fala do fim ficou na boca de quem mandou embora ('%s')" % no_balao)
+	_conferir(not no_balao.contains("terra") and not no_balao.contains("chão"),
+		"o fim do Tonho ainda dá terra, que o vale não tem: '%s'" % no_balao)
 	if not respostas.is_empty():
-		var tudo2 := " ".join(respostas)
-		_conferir(tudo2.contains("chão") or tudo2.contains("terra"),
-			"a resposta da terra não é a do 2D: '%s'" % respostas[0])
+		_conferir(" ".join(respostas).contains("primeiro peixe"),
+			"a resposta do fim não dá o primeiro peixe da rede: '%s'" % respostas[0])
+	_conferir(inv.quantidade("robalo") >= robalos_antes + 1,
+		"o primeiro peixe da rede (o robalo) não chegou à mochila: %d -> %d" % [robalos_antes, inv.quantidade("robalo")])
 	_conferir(cadeia.acabou(), "a cadeia do Tonho não acabou depois dos cinco passos")
 
 	# --- 7. O CADERNO E O RECARREGAR ----------------------------------------
@@ -302,7 +344,7 @@ func _run() -> void:
 	_conferir(levados.has("pescador_rede"),
 		"o save não lembra a entrega da rede: recarregar pediria corda e tábua de novo")
 	_conferir(levados.has("tonho_terra"),
-		"o save não lembra a entrega da terra: recarregar mandaria voltar ao píer de novo")
+		"o save não lembra o primeiro peixe: recarregar mandaria voltar ao píer de novo")
 
 	cadeia._levados.clear()
 	cadeia.missao = 0
@@ -310,8 +352,10 @@ func _run() -> void:
 	await _frames(2)
 	_conferir(not cadeia.falta_a_meta(cadeia.passos[1]),
 		"recarregar esqueceu a entrega da rede")
+	_conferir(not cadeia.falta_a_meta(cadeia.passos[3]),
+		"recarregar esqueceu a conta paga")
 	_conferir(not cadeia.falta_a_meta(cadeia.passos[4]),
-		"recarregar esqueceu a entrega da terra")
+		"recarregar esqueceu o primeiro peixe")
 
 	_fechar()
 
@@ -323,10 +367,21 @@ func _falar_com(morador) -> void:
 	await process_frame
 
 
+## O balão do morador está aberto e diz um destes trechos?
+func _balao_diz(morador, trechos: Array) -> bool:
+	if morador._balao_tempo <= 0.0:
+		return false
+	var dito := str(morador.balao.get("_texto").text)
+	for trecho in trechos:
+		if dito.contains(str(trecho)):
+			return true
+	return false
+
+
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("TONHO_OK: a fila é do Tonho, é de enredo e tem os cinco passos da história dele; todo passo aponta lugar que o vale resolve; a maré fecha no píer; a rede NÃO fecha com uma tábua de menos nem come material, e com as cinco cordas e as três tábuas fecha tirando as duas contas certas; a dívida fecha no píer, o armazém não fecha antes da travessia, voltar ao Tonho fecha a terra e é ele quem a entrega; e os cinco passos constam como cumpridos no caderno, com o save lembrando as duas entregas")
+		print("TONHO_OK: a fila é do Tonho, é de enredo e tem os cinco passos da história dele; todo passo aponta lugar que o vale resolve; a maré fecha no píer; a rede NÃO fecha com uma tábua de menos nem come material, e com as cinco cordas e as três tábuas fecha tirando as duas contas certas; a dívida fecha no píer; a conta não se paga no píer nem na conversa com o Seu Nicolau, e fecha com o livro do armazém lido e quitado; voltar ao Tonho fecha o último, é ele quem responde e o robalo do primeiro lanço chega; e os cinco passos constam como cumpridos no caderno, com o save lembrando as três entregas")
 	else:
 		print("tonho: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

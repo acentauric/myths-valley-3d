@@ -53,24 +53,29 @@ const ESPERA_FORA := ["casa"]
 ## O PEDRO VAI NA FRENTE. "O Pedro deve conduzir o jogador até a casa dele. [...]
 ## no inicio sempre é o Pedro que conduz e orienta, temos que partir do
 ## principio que o jogador não conhece o lugar e nenhum NPC, ou seja, o Pedro
-## que vai apresentar." No passo com `conduz` ele anda pela malha até quem o
-## passo apresenta (ou até o lugar dele) e para a CONDUZ_ATE dele; o jogador vai
-## atrás. Ficando o jogador a mais de ESPERA_QUEM_FICA, ele para e espera,
-## virado para ele, e só volta a andar com o jogador a VOLTA_A_ANDAR. Anda no
-## passo do jogador: correndo se ele corre.
+## que vai apresentar." No passo com `conduz` ele anda pela malha — e pela estrada e
+## pela ponte (`Navegacao.caminho_pela_estrada`) — até quem o passo apresenta (ou até o
+## lugar dele) e para a CONDUZ_ATE dele; o jogador vai atrás.
+##
+## A LINHA DO PERCURSO (playtest de 07/10: "o Pedro só começa a andar depois do jogador
+## encostar nele... tem que andar já na direção do jogador; toda missão com deslocamento
+## de NPC deve ter uma linha de percurso para saber se o jogador já está mais à frente").
+## O caminho da condução é a régua: quanto cada um já andou dela (`_progresso_de`) diz
+## quem está na frente. Com o jogador À FRENTE, o Pedro não espera ninguém — segue, e
+## corre se ficou para trás. Com o jogador PARA TRÁS mais que VOLTA_POR_QUEM_FICA, ele
+## VOLTA pelo caminho até ele, em vez de parar no meio da estrada esperando uma
+## aproximação que o jogador não entendia; a VOLTA_A_ANDAR dele, retoma. Enquanto o
+## jogador não pode andar (a caixa de fala aberta, o corpo parado), ele espera. Os
+## marcos de antes (parar a cada onze passos) saíram: eram a espera que confundia.
 const CONDUZ_ATE := 2.4
-const ESPERA_QUEM_FICA := 5.5
+const VOLTA_POR_QUEM_FICA := 5.5
 const VOLTA_A_ANDAR := 3.0
-## OS MARCOS DA ESTRADA (playtest de 07/10: "depois de falar na praça, o Pedro tá
-## saindo correndo sem esperar o jogador; o ideal é ter alguns marcos ao longo da
-## estrada onde o Pedro espera o jogador chegar"). A cada MARCO unidades andadas
-## desde a última espera ele para, vira-se para o jogador e espera que ele chegue a
-## CHEGOU_AO_MARCO; e não dá um passo enquanto o jogador não pode andar (a caixa de
-## fala aberta, o corpo parado): era assim que ele ganhava a dianteira na praça.
-const MARCO := 11.0
-const CHEGOU_AO_MARCO := 3.0
-var _andado_desde_o_marco := 0.0
-var _no_marco := false
+## De quanto em quanto se refaz o caminho de volta até quem ficou.
+const REFAZER_A_VOLTA := 0.8
+var _volta: PackedVector3Array = PackedVector3Array()
+## O ponto da vez da volta (índice em `_volta`): só avança.
+var _volta_ponto := 1
+var _volta_em := 0.0
 ## NÃO FICA ATOLADO NO MEIO DO CAMINHO. A malha pode mandar por um corpo que ela não conhecia (uma peça
 ## nova da cena, a casca de um prédio): o Pedro anda contra ele sem sair do lugar, o jogador espera atrás
 ## ("o Pedro está esperando você") e o tutorial para ali para sempre — a partida jogada do zero ficou 600 s
@@ -186,7 +191,6 @@ var _treino_virar_s := 0.0
 ## marco para esperar o jogador e quando chega a quem o passo apresenta, ele olha o
 ## rumo e aponta. Uma vez por parada.
 const APONTAR_CLIPE := "pointing"
-var _marco_antes := false
 var _chegou_antes := false
 var _apontar_para := Vector3.INF
 var _apontando_s := 0.0
@@ -336,6 +340,10 @@ func _physics_process(delta: float) -> void:
 	if not _nado_ligado and jogador.has_signal("nado_mudou"):
 		_nado_ligado = true
 		jogador.connect("nado_mudou", _ao_nadar)
+	# EM CENA (cena_vale.gd), a cena manda nele, como no 2D (`Pedro._em_cena`).
+	if _em_cena:
+		_passo_da_cena(delta)
+		return
 	if terminou_o_tutorial():
 		# DEPOIS DO TUTORIAL ELE AINDA CONDUZ quando uma fila dele pede: a jornada da
 		# fazenda, em que ele leva o jogador pela ponte até o portão, como no 2D.
@@ -414,35 +422,23 @@ func _physics_process(delta: float) -> void:
 ## passo do jogador; parado, virado para ele, quando chegou ou quando ele ficou
 ## para trás.
 func _conduzir(delta: float, cadeia: Node = null) -> void:
+	_prefere_a_estrada = true
 	var destino := _destino_da_conducao(cadeia)
 	var onde_esta: Vector3 = jogador.global_position
 	var do_jogador := Vector2(onde_esta.x - global_position.x, onde_esta.z - global_position.z).length()
-	if _esperando_quem_ficou:
-		_esperando_quem_ficou = do_jogador > VOLTA_A_ANDAR
-	elif do_jogador > ESPERA_QUEM_FICA:
-		_esperando_quem_ficou = true
-		_pedir_situacao("ficou_atras", 10.0)
 	var falta := destino - global_position
 	falta.y = 0.0
-	# O JOGADOR NÃO PODE ANDAR (a caixa de fala aberta, o corpo parado): ele espera.
+	_quadro_da_conducao = Engine.get_physics_frames()
+	# O JOGADOR NÃO PODE ANDAR (a caixa de fala aberta, o corpo parado): ele espera. E chegado,
+	# o que o passo pede é perto dele (quem ele apresenta, a porta da casa).
 	var jogador_preso: bool = not jogador.is_physics_processing() or Dialogo.ocupado()
 	if cadeia == null:
 		_vigiar_o_rumo(delta, onde_esta, destino, falta.length(), jogador_preso)
-	# O MARCO: andou um trecho, para e espera o jogador chegar perto — a não ser que o
-	# destino já esteja logo ali.
-	if _no_marco:
-		if do_jogador <= CHEGOU_AO_MARCO:
-			_no_marco = false
-			_andado_desde_o_marco = 0.0
-	elif _andado_desde_o_marco >= MARCO and falta.length() > CONDUZ_ATE + MARCO * 0.5 and do_jogador > CHEGOU_AO_MARCO:
-		_no_marco = true
-	# O AVISO SÓ NO MEIO DO CAMINHO: chegado, o que o passo pede é perto dele (quem
-	# ele apresenta, a porta da casa), e quem anda por ali está fazendo o passo.
-	_quadro_da_conducao = Engine.get_physics_frames()
-	_avisar_quem_ficou((_esperando_quem_ficou or _no_marco) and not jogador_preso and falta.length() > CONDUZ_ATE)
 	_ver_se_aponta(falta.length() <= CONDUZ_ATE, destino)
-	if _esperando_quem_ficou or _no_marco or jogador_preso or falta.length() <= CONDUZ_ATE:
+	if jogador_preso or falta.length() <= CONDUZ_ATE:
 		_atolado_s = 0.0
+		_esperando_quem_ficou = false
+		_avisar_quem_ficou(false)
 		_mover(Vector3.ZERO, ANDAR, delta)
 		if _apontando_s > 0.0:
 			# Apontando, ele olha o rumo, e não o jogador.
@@ -450,23 +446,64 @@ func _conduzir(delta: float, cadeia: Node = null) -> void:
 			_olhar_para(_apontar_para, delta)
 		else:
 			_olhar_para(onde_esta, delta)
-		if falta.length() <= CONDUZ_ATE:
-			_andado_desde_o_marco = 0.0
-			if cadeia == null and do_jogador <= ESPERA_QUEM_FICA and str(_cadeia.passo_atual().get("id", "")) == PASSO_DA_CANDINHA:
-				_pedir_situacao("chegada_candinha", 15.0)
+		if falta.length() <= CONDUZ_ATE and cadeia == null and do_jogador <= VOLTA_POR_QUEM_FICA and str(_cadeia.passo_atual().get("id", "")) == PASSO_DA_CANDINHA:
+			_pedir_situacao("chegada_candinha", 15.0)
 		return
 	_apontando_s = 0.0
+	# O ponto da vez do caminho (pela estrada), que também o refaz quando é hora.
 	var ponto := _ponto_do_caminho(destino, delta)
-	var rumo := ponto - global_position
-	rumo.y = 0.0
-	# CORRE SÓ SE O JOGADOR CORRE DE FATO (o passo trocado para a corrida, parado,
-	# fazia o Pedro disparar enquanto o jogador ainda lia a caixa).
+	# A LINHA DO PERCURSO: o atraso do jogador ao longo dela (negativo: ele vai à frente).
+	var atraso := do_jogador
+	if _caminho.size() >= 2:
+		var meu := _progresso_de(global_position)
+		var dele := _progresso_de(onde_esta)
+		if dele <= 0.5:
+			# O JOGADOR ANTES DO COMEÇO DA LINHA (o caminho acabou de ser refeito de onde o Pedro
+			# estava, e o jogador ficou atrás disso): o atraso é o que o Pedro andou na linha mais
+			# o que falta ao jogador para chegar ao começo dela — e não só o andado, que era pouco
+			# e deixava o Pedro seguir em frente por quem ficou doze passos atrás (07/10).
+			atraso = meu + Vector2(onde_esta.x - _caminho[0].x, onde_esta.z - _caminho[0].z).length()
+		else:
+			atraso = meu - dele
+	if _esperando_quem_ficou:
+		_esperando_quem_ficou = atraso > VOLTA_A_ANDAR and do_jogador > VOLTA_A_ANDAR
+	elif atraso > VOLTA_POR_QUEM_FICA and do_jogador > VOLTA_POR_QUEM_FICA:
+		_esperando_quem_ficou = true
+		_pedir_situacao("ficou_atras", 10.0)
+	_avisar_quem_ficou(_esperando_quem_ficou)
 	var depressa: float = Vector2(jogador.velocity.x, jogador.velocity.z).length() if "velocity" in jogador else 0.0
 	var correndo := jogador.has_method("is_running") and bool(jogador.call("is_running")) and depressa > ANDAR * 1.2
-	var antes_de_andar := global_position
-	_mover(rumo.normalized() if rumo.length() > 0.05 else Vector3.ZERO, CORRER if correndo else ANDAR, delta)
-	_andado_desde_o_marco += Vector2(global_position.x - antes_de_andar.x, global_position.z - antes_de_andar.z).length()
+	var rumo: Vector3
+	var velocidade := ANDAR
+	if _esperando_quem_ficou:
+		# VOLTA POR QUEM FICOU, pela malha (a parede e a água no caminho de volta também contam).
+		_volta_em -= delta
+		if _volta_em <= 0.0 or _volta.is_empty():
+			_volta_em = REFAZER_A_VOLTA
+			var navegacao := get_tree().get_first_node_in_group("navegacao")
+			_volta = navegacao.caminho(global_position, onde_esta) if navegacao != null and navegacao.esta_pronta() else PackedVector3Array()
+			_volta_ponto = 1
+		var alvo := onde_esta
+		if _volta.size() > 1:
+			# O PONTO DA VEZ DA VOLTA NÃO RECUA: alcançado, fica para trás de vez. Recomeçar do
+			# primeiro a cada quadro mandava o Pedro de volta ao ponto que acabara de passar, e ele
+			# vinha aos trancos (07/10: 1,2 u por segundo, a 2,1 de passo).
+			while _volta_ponto < _volta.size() - 1 and Vector2(_volta[_volta_ponto].x - global_position.x, _volta[_volta_ponto].z - global_position.z).length() < PONTO_ALCANCADO:
+				_volta_ponto += 1
+			alvo = _volta[clampi(_volta_ponto, 0, _volta.size() - 1)]
+		rumo = alvo - global_position
+	else:
+		_volta = PackedVector3Array()
+		rumo = ponto - global_position
+		# CORRE SÓ SE O JOGADOR CORRE DE FATO — ou se ele foi à frente e ficou longe (o passo
+		# trocado para a corrida, parado, fazia o Pedro disparar enquanto o jogador lia a caixa).
+		velocidade = CORRER if (correndo or atraso < -CORRER_ALEM) else ANDAR
+	rumo.y = 0.0
+	_mover(rumo.normalized() if rumo.length() > 0.05 else Vector3.ZERO, velocidade, delta)
 	_pedir_passagem(rumo)
+	if _esperando_quem_ficou:
+		_atolado_s = 0.0
+		return
 	var andou := Vector2(get_real_velocity().x, get_real_velocity().z).length()
 	if rumo.length() > 0.05 and andou < ANDAR * 0.25:
 		_atolado_s += delta
@@ -475,6 +512,40 @@ func _conduzir(delta: float, cadeia: Node = null) -> void:
 			_saltar_para_o_caminho_livre()
 	else:
 		_atolado_s = maxf(_atolado_s - delta * 2.0, 0.0)
+
+
+## QUANTO DO CAMINHO (`_caminho`, pela malha e pela estrada) já ficou para trás de `p`: o
+## comprimento até a projeção de `p` na linha. Sem caminho, 0.
+func _progresso_de(p: Vector3) -> float:
+	if _caminho.size() < 2:
+		return 0.0
+	var q := Vector2(p.x, p.z)
+	var melhor := INF
+	var progresso := 0.0
+	var andado := 0.0
+	for i in range(_caminho.size() - 1):
+		var a := Vector2(_caminho[i].x, _caminho[i].z)
+		var b := Vector2(_caminho[i + 1].x, _caminho[i + 1].z)
+		var proj := Geometry2D.get_closest_point_to_segment(q, a, b)
+		var d := q.distance_to(proj)
+		if d < melhor:
+			melhor = d
+			progresso = andado + a.distance_to(proj)
+		andado += a.distance_to(b)
+	return progresso
+
+
+## A que distância da linha do caminho `p` está.
+func _afastamento_da_linha(p: Vector3) -> float:
+	if _caminho.size() < 2:
+		return INF
+	var q := Vector2(p.x, p.z)
+	var melhor := INF
+	for i in range(_caminho.size() - 1):
+		var a := Vector2(_caminho[i].x, _caminho[i].z)
+		var b := Vector2(_caminho[i + 1].x, _caminho[i + 1].z)
+		melhor = minf(melhor, q.distance_to(Geometry2D.get_closest_point_to_segment(q, a, b)))
+	return melhor
 
 
 ## Salta para o primeiro ponto do caminho, a pelo menos DESATOLA_PULOS[i] unidades de caminho adiante, que
@@ -598,18 +669,14 @@ func pode_vir_ajudar() -> bool:
 	return terminou_o_tutorial() and _outra_que_conduz() == null and super()
 
 
-## APONTA NA PARADA DA CONDUÇÃO (ver APONTAR_CLIPE): quando o marco começa, para o
-## próximo ponto do caminho; quando ele chega, para o destino. Uma vez por parada.
+## APONTA NA CHEGADA DA CONDUÇÃO (ver APONTAR_CLIPE): chegado, para o destino. Uma vez
+## por chegada. (Os marcos, que também apontavam o próximo ponto, saíram com a condução
+## pela estrada de 08/10: eram a espera que confundia.)
 func _ver_se_aponta(chegou: bool, destino: Vector3) -> void:
-	var marco := _no_marco
-	if (marco and not _marco_antes) or (chegou and not _chegou_antes):
-		var rumo := destino
-		if marco and not chegou and _ponto_da_vez >= 0 and _ponto_da_vez < _caminho.size():
-			rumo = _caminho[_ponto_da_vez]
+	if chegou and not _chegou_antes:
 		if animador != null and animador.has_method("gesto") and bool(animador.gesto(APONTAR_CLIPE)):
-			_apontar_para = rumo
+			_apontar_para = destino
 			_apontando_s = float(animador.duracao_do_clipe(APONTAR_CLIPE))
-	_marco_antes = marco
 	_chegou_antes = chegou
 
 
@@ -982,7 +1049,11 @@ func conversar() -> void:
 ## outros moradores.
 func _escolher_a_fala() -> Dictionary:
 	var depois: Array = dados.get("falas_depois", [])
-	if not terminou_o_tutorial() or depois.is_empty():
+	# DESDE QUE A CHEGADA COMEÇOU, e não só depois do tutorial (07/10: "do nada, o áudio do Pedro
+	# do início do jogo — 'chegou, homem, o mestre do saveiro...' — foi reproduzido sem nexo"):
+	# as falas do primeiro encontro são só do primeiro encontro. Entre o último passo e a
+	# despedida, e no E sem passo a repetir, ele caía nelas de novo.
+	if not _cadeia.iniciado or depois.is_empty():
 		return super()
 	if _proxima_fala_depois < 0:
 		_proxima_fala_depois = randi() % depois.size()

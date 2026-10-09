@@ -25,13 +25,14 @@
         "tipo": "falar",
         "a_quem": "pedro",
         "raio": 3,
-        "resposta": "Isso: o corpo respondeu, e depois de meio dia em pé num saveiro já é alguma coisa. O mestre Quirino larga amanhã cedo; você fica. Bem-vindo a Bom Jesus dos Pobres.",
-        "resposta_en": "There: your body answered, and after half a day standing on a saveiro that's something. Master Quirino sails off early tomorrow; you stay. Welcome to Bom Jesus dos Pobres.",
-        "resposta_es": "Eso: el cuerpo respondió, y después de medio día de pie en un saveiro ya es algo. El maestro Quirino zarpa mañana temprano; tú te quedas. Bienvenido a Bom Jesus dos Pobres."
+        "resposta": "Isso: o corpo respondeu, e depois de uma noite inteira em pé num saveiro já é alguma coisa. O mestre Quirino larga amanhã cedo; você fica. Bem-vindo a Bom Jesus dos Pobres.",
+        "resposta_en": "There: your body answered, and after a whole night standing on a saveiro that's something. Master Quirino sails off early tomorrow; you stay. Welcome to Bom Jesus dos Pobres.",
+        "resposta_es": "Eso: el cuerpo respondió, y después de toda una noche de pie en un saveiro ya es algo. El maestro Quirino zarpa mañana temprano; tú te quedas. Bienvenido a Bom Jesus dos Pobres."
       }
     },
     {
       "id": "correr",
+      "cena": "apresentacao_do_tonho",
       "titulo": "Pressa de quem chega",
       "titulo_en": "In a hurry",
       "titulo_es": "Prisa de quien llega",
@@ -52,6 +53,7 @@
     },
     {
       "id": "bom_dia",
+      "cena": "vista_da_praca",
       "titulo": "Quem chega, cumprimenta",
       "titulo_en": "Whoever arrives, says hello",
       "titulo_es": "Quien llega, saluda",
@@ -61,9 +63,9 @@
       "lugar": "pier",
       "raio": 7,
       "audio": "",
-      "texto": "Agora vem comigo, que eu te apresento a quem tá no píer. Aquele remendando rede desde a madrugada é o Tonho, pescador como eu. Aqui quem chega cumprimenta — chega perto dele e aperta E: pescador lembra de quem passou reto.",
-      "texto_en": "Now come with me, I'll introduce you to whoever's on the pier. The one mending nets since before dawn is Tonho, a fisherman like me. Here, whoever arrives says good morning — go up to him and press E: fishermen remember who walked past.",
-      "texto_es": "Ahora ven conmigo, que te presento a quien está en el muelle. El que remienda redes desde la madrugada es Tonho, pescador como yo. Aquí quien llega saluda: acércate a él y pulsa E, que el pescador se acuerda de quien pasó de largo.",
+      "texto": "Agora vem comigo, que eu te apresento a quem tá no píer. Aquele de linha na mão desde a madrugada é o Tonho, pescador como eu. Aqui quem chega cumprimenta — chega perto dele e aperta E: pescador lembra de quem passou reto.",
+      "texto_en": "Now come with me, I'll introduce you to whoever's on the pier. The one with a line in his hand since before dawn is Tonho, a fisherman like me. Here, whoever arrives says good morning — go up to him and press E: fishermen remember who walked past.",
+      "texto_es": "Ahora ven conmigo, que te presento a quien está en el muelle. El que está con el sedal en la mano desde la madrugada es Tonho, pescador como yo. Aquí quien llega saluda: acércate a él y pulsa E, que el pescador se acuerda de quien pasó de largo.",
       "meta": {
         "tipo": "falar",
         "a_quem": "tonho",
@@ -110,6 +112,7 @@
     },
     {
       "id": "chave_zefa",
+      "cena": "a_casa_do_tio",
       "titulo": "A chave com a Dona Zefa",
       "titulo_en": "The key with Dona Zefa",
       "titulo_es": "La llave con doña Zefa",
@@ -282,9 +285,9 @@
       "lugar": "poco",
       "raio": 8,
       "audio": "",
-      "texto": "O beiju é da minha avó, que soube que você chegou. Agora o poço: a corda partiu, e a boca tá esfarelando — balde que cai leva pedra junto. Toma a picareta, que também era do seu tio. Tem lajedo ali do lado do poço; pedra pra calçar a boca sai dele.",
-      "texto_en": "The beiju is from my grandmother — she heard you arrived. Now the well: the rope snapped, and the mouth is crumbling — a bucket that falls takes stone with it. Take the pickaxe, it was your uncle's too. There's a slab of rock right by the well; the stone to shore up the mouth comes from it.",
-      "texto_es": "El beiju es de mi abuela, que se enteró de que llegaste. Ahora el pozo: la cuerda se rompió y la boca se desmorona; balde que cae arrastra piedra. Toma el pico, que también era de tu tío. Hay una laja al lado del pozo: de ahí sale la piedra para calzar la boca.",
+      "texto": "O beiju é da minha avó, que soube que você chegou. Agora o poço: a corda partiu, e a boca tá esfarelando — balde que cai leva pedra junto. Toma a picareta, que também era do seu tio. Tem pedra solta no chão, ali do lado do poço: com a picareta ela sai ligeiro. Lajedo grande, não — esse pede picareta de aço e braço treinado.",
+      "texto_en": "The beiju is from my grandmother — she heard you arrived. Now the well: the rope snapped, and the mouth is crumbling — a bucket that falls takes stone with it. Take the pickaxe, it was your uncle's too. There's loose stone on the ground right by the well: with the pickaxe it comes out quick. Not the big rock slab — that one needs a steel pickaxe and a trained arm.",
+      "texto_es": "El beiju es de mi abuela, que se enteró de que llegaste. Ahora el pozo: la cuerda se rompió y la boca se desmorona; balde que cae arrastra piedra. Toma el pico, que también era de tu tío. Hay piedra suelta en el suelo, al lado del pozo: con el pico sale rápido. La laja grande, no: esa pide pico de acero y brazo entrenado.",
       "entrega": {
         "item": "picareta",
         "quantidade": 1
@@ -474,10 +477,10 @@
     },
     {
       "audio": "pedro_corpo_nado",
-      "tts": "A azul, a do meio, é o fôlego: o ar de quem nada. [seriously] Nadando, o corpo gasta primeiro o vigor; quando ele acaba, é o fôlego que vai, e sem fôlego a água tira da vida. [calmly] Parou de nadar, ou achou chão, ele volta sozinho.",
-      "texto": "A azul, a do meio, é o fôlego: o ar de quem nada. Nadando, o corpo gasta primeiro o vigor; quando ele acaba, é o fôlego que vai, e sem fôlego a água tira da vida. Parou de nadar, ou achou chão, ele volta sozinho.",
-      "texto_en": "The blue one, in the middle, is your breath: the air of whoever swims. Swimming, the body spends stamina first; when that runs out it is your breath that goes, and with no breath the water takes from your health. Stop swimming, or find your footing, and it comes back on its own.",
-      "texto_es": "La azul, la del medio, es el aliento: el aire de quien nada. Nadando, el cuerpo gasta primero la resistencia; cuando se acaba, es el aliento el que se va, y sin aliento el agua le quita a la salud. Dejas de nadar, o haces pie, y vuelve solo.",
+      "tts": "A azul, a do meio, é o ar de quem nada. [seriously] Nadando, o corpo gasta primeiro o vigor; quando ele acaba, é o ar que vai, e sem ar a água tira da vida. [calmly] Parou de nadar, ou achou chão, ele volta sozinho.",
+      "texto": "A azul, a do meio, é o ar de quem nada. Nadando, o corpo gasta primeiro o vigor; quando ele acaba, é o ar que vai, e sem ar a água tira da vida. Parou de nadar, ou achou chão, ele volta sozinho.",
+      "texto_en": "The blue one, in the middle, is the air of whoever swims. Swimming, the body spends stamina first; when that runs out it is the air that goes, and with no air the water takes from your health. Stop swimming, or find your footing, and it comes back on its own.",
+      "texto_es": "La azul, la del medio, es el aire de quien nada. Nadando, el cuerpo gasta primero la resistencia; cuando se acaba, es el aire el que se va, y sin aire el agua le quita a la salud. Dejas de nadar, o haces pie, y vuelve solo.",
       "interfaces": [
         "folego"
       ]

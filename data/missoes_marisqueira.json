@@ -20,9 +20,9 @@
       "lugar": "casa_da_marisqueira",
       "raio": 6,
       "audio": "",
-      "texto": "Rosa tira ostra e sururu da lama, de manhã cedo. Sururu sem farinha é lama com gosto. Me traga duas cuias de farinha da sua casa e eu lhe dou três ostras da maré de hoje — e, um dia, lhe ensino o que tem por baixo delas.",
-      "texto_en": "Rosa pulls oysters and mussels out of the mud, early in the morning. Mussels without flour are mud with a taste. Bring me two gourds of flour from your house and I'll give you three oysters from today's tide — and, one day, teach you what lies beneath them.",
-      "texto_es": "Rosa saca ostras y sururú del barro, de madrugada. Sururú sin harina es barro con sabor. Tráeme dos cuencos de harina de tu casa y te doy tres ostras de la marea de hoy — y, un día, te enseño lo que hay debajo de ellas.",
+      "texto": "Eu tiro ostra e sururu da lama, de manhã cedo. Sururu sem farinha é lama com gosto. Me traga duas cuias de farinha da sua casa e eu lhe dou três ostras da maré de hoje — e, um dia, lhe ensino o que tem por baixo delas.",
+      "texto_en": "I pull oysters and mussels out of the mud, early in the morning. Mussels without flour are mud with a taste. Bring me two gourds of flour from your house and I'll give you three oysters from today's tide — and, one day, teach you what lies beneath them.",
+      "texto_es": "Yo saco ostras y sururú del barro, de madrugada. Sururú sin harina es barro con sabor. Tráeme dos cuencos de harina de tu casa y te doy tres ostras de la marea de hoy — y, un día, te enseño lo que hay debajo de ellas.",
       "recompensa": {
         "xp": 15,
         "ostra": 3

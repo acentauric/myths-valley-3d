@@ -20,9 +20,9 @@
       "lugar": "casa_da_quituteira",
       "raio": 6,
       "audio": "",
-      "texto": "Ambrósia vende acarajé, beiju e cocada no tabuleiro da praça, e o tabuleiro come antes de vender: milho pra bolo e ovo pra massa. Três espigas e dois ovos do seu quintal, e a cocada é sua — a segunda do dia, que a primeira é de Iansã.",
-      "texto_en": "Ambrósia sells acarajé, beiju and cocada from the tray in the square, and the tray eats before it sells: corn for the cake and eggs for the batter. Three ears and two eggs from your yard, and the cocada is yours — the second of the day, since the first belongs to Iansã.",
-      "texto_es": "Ambrósia vende acarajé, beiju y cocada en el tablero de la plaza, y el tablero come antes de vender: maíz para el bollo y huevo para la masa. Tres mazorcas y dos huevos de tu patio, y la cocada es tuya — la segunda del día, que la primera es de Iansã.",
+      "texto": "Eu vendo acarajé, beiju e cocada no tabuleiro da praça, e o tabuleiro come antes de vender: milho pra bolo e ovo pra massa. Três espigas e dois ovos, e a cocada é sua — a segunda do dia, que a primeira é de Iansã.",
+      "texto_en": "I sell acarajé, beiju and cocada from the tray in the square, and the tray eats before it sells: corn for the cake and eggs for the batter. Three ears and two eggs, and the cocada is yours — the second of the day, since the first belongs to Iansã.",
+      "texto_es": "Yo vendo acarajé, beiju y cocada en el tablero de la plaza, y el tablero come antes de vender: maíz para el bollo y huevo para la masa. Tres mazorcas y dos huevos, y la cocada es tuya — la segunda del día, que la primera es de Iansã.",
       "recompensa": {
         "xp": 15,
         "cocada": 2,

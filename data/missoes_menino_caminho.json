@@ -20,9 +20,9 @@
       "lugar": "casa_do_carpinteiro",
       "raio": 6,
       "audio": "",
-      "texto": "Tá bom, você é amigo. O caminho começa atrás da casa do meu pai, na pedra com musgo, e sobe pela lombada até a pedra grande com desenho — a lapa. Eu não vou junto. Quem leva gente lá fica com dívida, meu pai disse. Mas quem só CONTA, não. Acho.",
-      "texto_en": "Fine, you're a friend. The path starts behind my father's house, at the mossy stone, and climbs the ridge to the big carved stone — the lapa. I'm not coming. Whoever takes people there ends up in debt, my father said. But whoever only TELLS doesn't. I think.",
-      "texto_es": "Está bien, eres amigo. El camino empieza detrás de la casa de mi padre, en la piedra con musgo, y sube por la loma hasta la piedra grande con dibujo — la lapa. Yo no voy. Quien lleva gente allá queda en deuda, dijo mi padre. Pero quien solo CUENTA, no. Creo.",
+      "texto": "Tá bom, você é amigo. O caminho começa atrás da casa do meu pai, na pedra com musgo, e sobe pela lombada até a pedra grande com desenho — a pedra pintada. Eu não vou junto. Quem leva gente lá fica com dívida, meu pai disse. Mas quem só CONTA, não. Acho.",
+      "texto_en": "Fine, you're a friend. The path starts behind my father's house, at the mossy stone, and climbs the ridge to the big stone with drawings — the painted stone. I'm not coming. Whoever takes people there ends up in debt, my father said. But whoever only TELLS doesn't. I think.",
+      "texto_es": "Está bien, eres amigo. El camino empieza detrás de la casa de mi padre, en la piedra con musgo, y sube por la loma hasta la piedra grande con dibujo — la piedra pintada. Yo no voy. Quien lleva gente allá queda en deuda, dijo mi padre. Pero quien solo CUENTA, no. Creo.",
       "recompensa": {
         "xp": 10
       },
@@ -33,14 +33,14 @@
       "titulo": "A pedra com desenho",
       "titulo_en": "The carved stone",
       "titulo_es": "La piedra con dibujo",
-      "resumo": "Suba a lombada até a lapa",
-      "resumo_en": "Climb the ridge to the lapa",
-      "resumo_es": "Sube la loma hasta la lapa",
+      "resumo": "Suba a lombada até a pedra pintada",
+      "resumo_en": "Climb the ridge to the painted stone",
+      "resumo_es": "Sube la loma hasta la piedra pintada",
       "lugar": "lapa",
       "raio": 8,
       "audio": "",
       "texto": "Pela lombada, até a pedra grande com desenho.",
-      "texto_en": "Up the ridge, to the big carved stone.",
+      "texto_en": "Up the ridge, to the big stone with drawings.",
       "texto_es": "Por la loma, hasta la piedra grande con dibujo.",
       "recompensa": {
         "xp": 10
@@ -85,7 +85,7 @@
   ],
   "arremate": {
     "texto": "Você achou a pedra grande com desenho pelo caminho do Tonico, e pagou a dívida com um cordel. Ele vai aprender a ler nele — e você ficou devendo não contar à mãe dele.",
-    "texto_en": "You found the big carved stone by Tonico's path, and paid the debt with a cordel. He'll learn to read from it — and you owe him not telling his mother.",
+    "texto_en": "You found the big stone with drawings by Tonico's path, and paid the debt with a cordel. He'll learn to read from it — and you owe him not telling his mother.",
     "texto_es": "Encontraste la piedra grande con dibujo por el camino de Tonico, y pagaste la deuda con un cordel. Él aprenderá a leer en él — y tú quedaste debiendo no contárselo a su madre.",
     "narra": false
   }
