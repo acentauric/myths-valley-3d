@@ -56,6 +56,9 @@ const TOLERANCIA_ANCORA_U := 0.05
 const CHEGADA_SEGUNDOS := 2.0
 const HISTORY_SIZE := Vector2(640, 600)
 const TESTADOR_SIZE := Vector2(640, 700)
+## O histórico é mais largo que os outros modais: cada linha junta duas ou três mudanças
+## (até ~110 caracteres) e precisa caber inteira, sem quebra, mesmo na fonte Miva a 13 px.
+const HISTORICO_SIZE := Vector2(960, 600)
 const HISTORY_ROWS := 10
 ## Lista do histórico: fonte base (desce até o mínimo se a linha não couber) e respiro.
 const HISTORY_FONTE := 15
@@ -1395,7 +1398,7 @@ func _change_history(step: int) -> void:
 func _render_history() -> void:
 	_clear()
 	# Resumos em uma linha, até dez por página, sem área de rolagem.
-	_place_modal(HISTORY_SIZE, "historico")
+	_place_modal(HISTORICO_SIZE, "historico")
 	history_open = true
 	var entry: Dictionary = history_entries[history_index]
 	# Sem foco em botão: as teclas ← → ficam livres para trocar de página.
@@ -1419,7 +1422,7 @@ func _render_history() -> void:
 		var fonte := change_label.get_theme_font("normal_font")
 		var tamanho := HISTORY_FONTE
 		var texto_simples := "• " + str(change).replace("*", "")
-		while tamanho > HISTORY_FONTE_MIN and fonte.get_string_size(texto_simples, HORIZONTAL_ALIGNMENT_LEFT, -1, tamanho).x > HISTORY_SIZE.x - 56:
+		while tamanho > HISTORY_FONTE_MIN and fonte.get_string_size(texto_simples, HORIZONTAL_ALIGNMENT_LEFT, -1, tamanho).x > HISTORICO_SIZE.x - 56:
 			tamanho -= 1
 		change_label.add_theme_font_size_override("normal_font_size", tamanho)
 		change_label.add_theme_color_override("default_color", Color.WHITE)
