@@ -40,7 +40,10 @@ func _run() -> void:
 	var inicial: Dictionary = diretor.contagem()
 	print("POPULACAO_INICIAL: " + JSON.stringify(inicial))
 	conferir(int(inicial.moradores.ativos) <= 6, "chegada: quatro essenciais e até dois outros moradores")
-	conferir(int(inicial.bichos_de_casa.ativos) <= 3, "chegada: até três quadrúpedes")
+	# A introdução (#155, reaberta): no passo 4 nenhum bicho entra perto de quem chega, e só um aparece.
+	conferir(int(inicial.bichos_de_casa.ativos) <= 1, "chegada: no máximo um quadrúpede, longe do caminho")
+	_longe_de_quem_chega(vale, "bichos_de_casa", "quadrúpede")
+	_longe_de_quem_chega(vale, "bandos_de_chao", "bando")
 	conferir(int(inicial.bandos_de_chao.ativos) <= 1, "chegada: até um bando")
 	# O bando de aves é medido pelo terreiro, e não pelo nó parado na origem (#193).
 	for bando in get_nodes_in_group("bandos_de_chao"):
@@ -85,10 +88,27 @@ func _run() -> void:
 		root.get_texture().get_image().save_png("res://scratch/populacao/%s.png" % ("antes" if sem else "depois"))
 		quit(0)
 		return
+	# Durante a introdução o tempo não amplia os bichos nem os bandos (#155, reaberta em 09/10)...
 	diretor.segundos = 90
 	diretor.atualizar()
 	var depois: Dictionary = diretor.contagem()
-	conferir(int(depois.bichos_de_casa.ativos) > int(inicial.bichos_de_casa.ativos), "tempo amplia apresentação dos animais")
+	conferir(int(depois.bichos_de_casa.ativos) <= 1, "durante a introdução o tempo não amplia os quadrúpedes (%d em cena)" % int(depois.bichos_de_casa.ativos))
+	conferir(int(depois.bandos_de_chao.ativos) <= 1, "durante a introdução o tempo não amplia os bandos (%d em cena)" % int(depois.bandos_de_chao.ativos))
+	_longe_de_quem_chega(vale, "bichos_de_casa", "quadrúpede")
+	_longe_de_quem_chega(vale, "bandos_de_chao", "bando")
+	conferir(diretor.em_introducao(), "com o Pedro no passo 5 ainda é a introdução")
+	# ...e terminada a entrada na casa do tio eles entram AOS POUCOS, e não de uma vez.
+	vale.pedro.missao = 6
+	diretor.atualizar()
+	conferir(not diretor.em_introducao(), "depois da entrada na casa a introdução acabou")
+	var ao_acabar: Dictionary = diretor.contagem()
+	conferir(int(ao_acabar.bichos_de_casa.ativos) <= 2, "ao acabar a introdução entram só dois quadrúpedes (%d em cena)" % int(ao_acabar.bichos_de_casa.ativos))
+	conferir(int(ao_acabar.bichos_de_casa.ativos) > int(depois.bichos_de_casa.ativos), "ao acabar a introdução os quadrúpedes começam a entrar")
+	diretor.segundos += 60
+	diretor.atualizar()
+	var depois_de_um_minuto: Dictionary = diretor.contagem()
+	conferir(int(depois_de_um_minuto.bichos_de_casa.ativos) > int(ao_acabar.bichos_de_casa.ativos), "o tempo depois da introdução amplia os quadrúpedes")
+	conferir(int(depois_de_um_minuto.bandos_de_chao.ativos) >= int(ao_acabar.bandos_de_chao.ativos), "o tempo depois da introdução não tira bando de cena")
 	var entrada := false
 	for ator in get_nodes_in_group("bichos_de_casa"):
 		if ator.get_meta("presenca_liberada", true):
@@ -101,7 +121,7 @@ func _run() -> void:
 			for malha in ator.find_children("*", "GeometryInstance3D", true, false):
 				conferir(is_zero_approx(malha.transparency), "entrada termina opaca")
 	var salvo: Dictionary = vale.estado_para_salvar()
-	conferir(float(salvo.segundos_apresentacao) == 90.0, "tempo da apresentação entra no save")
+	conferir(is_equal_approx(float(salvo.segundos_apresentacao), diretor.segundos), "tempo da apresentação entra no save")
 	var candinha: Node = vale._achar_morador("candinha")
 	var camada_original: int = candinha.collision_layer
 	candinha._recolher(true)
@@ -123,3 +143,14 @@ func _run() -> void:
 	conferir(not visitante.visible, "liberar todos mantém calendário da visita")
 	print("APRESENTACAO: %d falhas" % falhas)
 	quit(0 if falhas == 0 else 1)
+
+
+## Na introdução, nenhum ator do grupo em cena (visível e com movimento) está a menos de 40 u do jogador.
+func _longe_de_quem_chega(vale: Node, grupo: String, nome: String) -> void:
+	var minimo: float = vale.apresentacao_do_povoado.INTRODUCAO_LONGE
+	for ator in get_nodes_in_group(grupo):
+		if not (ator.is_physics_processing() or ator.is_processing()):
+			continue
+		var onde: Vector3 = vale.apresentacao_do_povoado.onde_esta(ator)
+		conferir(onde.distance_to(vale.player.global_position) >= minimo,
+			"na introdução um %s em cena está a %.1f u de quem chega (o mínimo é %.0f)" % [nome, onde.distance_to(vale.player.global_position), minimo])

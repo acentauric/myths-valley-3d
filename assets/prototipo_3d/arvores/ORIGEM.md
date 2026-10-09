@@ -280,3 +280,16 @@ Os vértices que sobram foram compactados; textura, UVs, normais e materiais fic
 como estavam, e nada foi regerado no Tripo. As alturas do catálogo foram recalculadas
 (7,03, 7,07 e 6,92) para a árvore seguir do tamanho que tinha. Os GLBs de antes estão
 no histórico do git.
+
+## Ingazeiro sem o cavaco de terra (10/10/2026, #141)
+
+Depois de tirada a laje, sobrava sob as raízes do ingazeiro um resto de terra laranja de beiras
+vivas, dentro do raio que a laje poupava para não cortar o pé das raízes (0,95 m do eixo).
+`tools/tripo/tirar_base_de_terra.py --altura <catálogo> --cavaco 0.3` tira os triângulos de cor de
+terra (matiz de 0,04 a 0,12, saturação de 0,5 para cima, lida na textura de cor nos três vértices),
+quase planos (normal com 60% ou mais na vertical) e colados ao chão (todos os vértices abaixo de
+0,3 m): 39 de 15.860 no GLB principal (1,6 m²) e 11 de 4.887 no leve (0,65 m²). O de longe (1.518
+triângulos, textura pobre) não tem triângulo de terra laranja ali e ficou como estava. Raízes,
+tronco, texturas e escala não mudam. O leve perdeu um triângulo da base e a caixa baixou 1%; a altura
+dele no catálogo e na receita do paisagismo foi de 7,07 para 7,0 para a árvore seguir do tamanho que
+tinha. Os GLBs de antes estão no histórico do git.

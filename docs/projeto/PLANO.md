@@ -16,6 +16,15 @@ forçar a visita fora do dia reproduz duas falhas.
 Liberar o elenco completo também persiste ao recalcular a visita, sem
 revogar a ausência de Quirino fora do calendário. Gate e mutante conferidos.
 
+A #155 foi reaberta em 09/10 (passo 4/16, perto da Candinha: três cabras e o bode soltos entre os
+moradores, 19 e 9 FPS). Até o Pedro entrar com o viajante na casa do tio, os bichos de casa e os
+bandos de aves só entram em cena a 40 u ou mais do jogador e da câmera, no máximo um de cada, e o
+tempo não os amplia; terminada a introdução entram aos poucos (dois quadrúpedes e um bando, mais um
+a cada 12 e 20 s), e não de uma vez. Fora de cena não andam, não animam e não colidem. O portão
+`apresentacao_do_povoado` cobra as duas fases; a medição de FPS antes e depois, na mesma cena
+(Candinha, 09 h, GPU em P-state alto), fica para a rodada de medição:
+[POPULACAO_GRADUAL.md](../testes/POPULACAO_GRADUAL.md).
+
 A #138 fechou: a extremidade marítima da areia se desfaz em manchas e a laje
 da foz também, os retângulos de borda reta do chão e da praia (o hash do
 ruído) saíram, com prova gráfica e passagem/maré preservadas:
@@ -82,6 +91,15 @@ do raio que a ferramenta poupou), e o pé do tronco fica a até 0,5 u (aroeira) 
 0,7 u (ingazeiro) do chão do ponto de plantio nas encostas; as outras espécies
 ficam a menos de 0,3 u. A base reta do jatobá e da embaúba e as abas do cedro
 não foram tocadas.
+
+Em 10/10 a #141 avançou nos dois achados. O cavaco de terra laranja saiu dos GLBs do ingazeiro
+principal e leve (`tirar_base_de_terra.py --cavaco 0.3`: terra laranja, quase plana, colada ao chão) e o
+portão `bases_das_arvores` passou a medi-lo. O plantio da mata, da beira do rio, da restinga, do
+paisagismo e das árvores nomeadas passou a assentar a árvore pela altura do chão do pé do tronco
+(`GeoRegionRenderer.desnivel_do_pe`, com trava de 1,2 u), e o `ground` do tronco acompanha; o portão
+`pe_das_arvores_na_encosta` mede o erro de assento contra o da regra antiga. Seguem pendentes, sem
+mexer no desenho, a base reta do jatobá e da embaúba e as abas do cedro, e a conferência a olho no
+jogo (o ingazeiro do caminho da chegada) com os portões de colisão, circulação e sobrevoo.
 
 Os troncos que pareciam vazados (#156) eram dez malhas com o fuste virado para
 dentro; só elas voltam às duas faces, e a conferência com janela, de três ângulos,

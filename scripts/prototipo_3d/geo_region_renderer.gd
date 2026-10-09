@@ -74,6 +74,9 @@ const ORCAMENTO_QUADRO_US := 80000
 const TREE_COLLISION_RADIUS := 28.0
 ## Quanto as árvores entram no chão (unidades), para não parecerem pousadas.
 const ARVORE_AFUNDADA := 0.06
+## O quanto, no máximo, a árvore sobe ou desce para apoiar o PÉ DO TRONCO no chão dele (e não no
+## do ponto de plantio): em encosta forte o pé fica a até um metro e meio do ponto (#141).
+const APOIO_PELO_PE_MAXIMO := 1.2
 const TREE_COLLISION_POOL_SIZE := 48
 const TREE_COLLISION_INTERVAL := 0.25
 const TERRAIN_CELL_SIZE := 4.0
@@ -2322,6 +2325,11 @@ func _build_forest(configuration: Dictionary) -> void:
 				continue
 			var ground := ground_height_at(Vector3(point.x, 0, point.y))
 			var transformacao := Transform3D(Basis.from_euler(Vector3(0, yaw, 0)).scaled(Vector3.ONE * scale), Vector3(point.x, ground - ARVORE_AFUNDADA, point.y)) * base
+			# O pé do tronco, e não o ponto de plantio, apoia a árvore na encosta (#141).
+			var apoio := desnivel_do_pe(built.mesh, base, transformacao, point, ground, float(built.tronco) * scale)
+			if apoio != 0.0:
+				ground += apoio
+				transformacao.origin.y += apoio
 			# Beira de rua: também sorteia e não planta (como a clareira), medindo
 			# o ponto e o pé do tronco que se vê, que na aroeira fica a 1,6 u dele.
 			if _perto_da_rua_para_plantar(point, built.mesh, transformacao, float(built.tronco) * scale):
@@ -2503,8 +2511,11 @@ func _build_margens_do_rio(rng: RandomNumberGenerator) -> void:
 						registros_mangue.append(_tree_trunks.size() - 1)
 					elif tem_inga and rng.randf() < 0.55:
 						var na_beira := Transform3D(giro, Vector3(ponto.x, chao - ARVORE_AFUNDADA, ponto.y)) * (inga.base as Transform3D)
+						# O pé do tronco, e não o ponto de plantio, apoia o ingazeiro na barranca (#141).
+						var apoio_inga := desnivel_do_pe(inga.mesh, inga.base, na_beira, ponto, chao, float(inga.tronco) * escala)
+						na_beira.origin.y += apoio_inga
 						do_inga.append(na_beira)
-						_tree_trunks.append({"point": ponto, "ground": chao, "height": minf(float(inga.altura) * escala, 4.0), "radius": float(inga.tronco) * escala, "especie": "ingazeiro", "transformacao": na_beira})
+						_tree_trunks.append({"point": ponto, "ground": chao + apoio_inga, "height": minf(float(inga.altura) * escala, 4.0), "radius": float(inga.tronco) * escala, "especie": "ingazeiro", "transformacao": na_beira})
 						registros_inga.append(_tree_trunks.size() - 1)
 				# Mangue fechado perto do mar, ingazeiros esparsos rio acima.
 				proximo += rng.randf_range(3.5, 6.0) if no_mangue else rng.randf_range(12.0, 22.0)
@@ -2675,8 +2686,11 @@ func _build_coast_palms(rng: RandomNumberGenerator) -> void:
 					var giro_livre := rng.randf_range(0.0, TAU)
 					if not _em_clareira(candidate) and not _no_vao_do_sobrevoo(candidate):
 						var na_restinga := Transform3D(Basis.from_euler(Vector3(0, giro_livre, 0)).scaled(Vector3.ONE * scale), Vector3(candidate.x, ground - ARVORE_AFUNDADA, candidate.y)) * (malha_local.base as Transform3D)
+						# O pé do tronco, e não o ponto de plantio, apoia a árvore da restinga (#141).
+						var apoio_restinga := desnivel_do_pe(malha_local.mesh, malha_local.base, na_restinga, candidate, ground, float(malha_local.tronco) * scale)
+						na_restinga.origin.y += apoio_restinga
 						(transforms_restinga[local] as Array[Transform3D]).append(na_restinga)
-						_tree_trunks.append({"point": candidate, "ground": ground, "height": minf(float(malha_local.altura) * scale, 4.0), "radius": float(malha_local.tronco) * scale, "especie": local, "transformacao": na_restinga})
+						_tree_trunks.append({"point": candidate, "ground": ground + apoio_restinga, "height": minf(float(malha_local.altura) * scale, 4.0), "radius": float(malha_local.tronco) * scale, "especie": local, "transformacao": na_restinga})
 						(registros_restinga[local] as Array[int]).append(_tree_trunks.size() - 1)
 				elif not _em_clareira(candidate) and not _no_vao_do_sobrevoo(candidate):
 					var transformacao := Transform3D(Basis.from_euler(Vector3(0, yaw, 0)).scaled(Vector3.ONE * scale), Vector3(candidate.x, ground - ARVORE_AFUNDADA, candidate.y)) * lean * modelo_base
@@ -2941,6 +2955,27 @@ func troncos_para_o_conjunto(ponto: Vector2) -> Array[Dictionary]:
 	if nearby.size() > TREE_COLLISION_POOL_SIZE:
 		nearby.resize(TREE_COLLISION_POOL_SIZE)
 	return nearby
+
+
+## O APOIO PELO PÉ DO TRONCO (#141): quanto a árvore plantada em `ponto` sobe (+) ou desce (−)
+## para o PÉ DO TRONCO, e não o ponto de plantio, ficar no chão. O ponto de plantio é o meio da
+## caixa do GLB, e o tronco sai de até um metro e meio dele (a aroeira a 1,6 u): o pé fica a até 0,5 u
+## (aroeira) e 0,7 u (ingazeiro) do chão do ponto, na encosta. Plantada pelo chão do ponto, a árvore flutuava
+## de um lado e se enterrava do outro. Mede-se o pé uma vez por malha (`CatalogoAssets.tronco_da_malha`,
+## com a transformação-base, no tamanho de referência), põe-se o pé na transformação já plantada e
+## pergunta-se o chão ali. Quem planta soma o resultado ao `ground` e à altura da transformação.
+## Zero fora do estilo Tripo, sem tronco medido, ou com o pé além do que a copa explica (medida errada).
+func desnivel_do_pe(malha: Mesh, base: Transform3D, transformacao: Transform3D, ponto: Vector2, ground: float, raio: float) -> float:
+	if not _estilo_tripo or malha == null:
+		return 0.0
+	var local := CatalogoAssets.tronco_da_malha(malha, base)
+	if not local.is_finite():
+		return 0.0
+	var pe: Vector3 = transformacao * local
+	if Vector2(pe.x - ponto.x, pe.z - ponto.y).length() > maxf(raio * 6.0, 2.0):
+		return 0.0
+	var no_pe := ground_height_at(Vector3(pe.x, 0.0, pe.z))
+	return clampf(no_pe - ground, -APOIO_PELO_PE_MAXIMO, APOIO_PELO_PE_MAXIMO)
 
 
 ## O PÉ DO TRONCO QUE SE VÊ, no referencial da região. O coqueiro da orla já
