@@ -29,9 +29,9 @@ const COMPONENTES := ["missao", "relogio", "vida", "folego", "vigor", "minimapa"
 const ESCALAS_COMPONENTE := [0.65, 0.8, 1.0, 1.15, 1.3, 1.5]
 ## Degrau de ESCALAS_COMPONENTE usado quando o jogador não escolheu nada (100%).
 const PADRAO_COMPONENTE := 2
-## Componentes cujo padrão é outro degrau: missão e mão nascem em 80% (#176, #178).
+## Componentes cujo padrão é outro degrau: missão, mão e a dica do E nascem em 80% (#176, #178, #188).
 ## Quem já gravou um tamanho para eles (inclusive 100%) mantém a escolha.
-const PADROES_COMPONENTE := {"missao": 1, "mao": 1}
+const PADROES_COMPONENTE := {"missao": 1, "mao": 1, "interacao": 1}
 var tamanhos_componentes: Dictionary = {}
 
 

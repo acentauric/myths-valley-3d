@@ -38,18 +38,18 @@ func _run() -> void:
 			var dica: PanelContainer = Dica.criar(camada, "E", exemplo)
 			await mostrar(dica, camera, exemplo)
 			var texto := dica.find_child("Acao", true, false) as Label
-			var requisito := dica.find_child("Requisito", true, false) as Label
+			var requisito := dica.find_child("Requisito", true, false) as RichTextLabel
 			var tecla := dica.find_child("Tecla", true, false) as Control
 			var letra := dica.find_child("Letra", true, false) as Label
 			# #188: o alvo é título (ouro, Cinzel); o requisito, leitura (creme, sans do HUD, menor).
 			conferir(requisito != null and requisito.visible and requisito.text != "" and texto.text.find(char(10)) < 0, "alvo e requisito em rótulos separados: " + exemplo)
 			conferir(dica.size.x < largura * 0.65 and dica.size.y > 40, "altura e largura adaptam às linhas")
-			conferir(texto.size.x <= 282 and texto.size.y >= texto.get_minimum_size().y, "texto cabe sem corte")
-			conferir(requisito.size.x <= 282 and requisito.size.y >= requisito.get_minimum_size().y, "requisito cabe sem corte")
+			conferir(texto.size.x <= Dica.LARGURA_MAXIMA + 2.0 and texto.size.y >= texto.get_minimum_size().y, "texto cabe sem corte")
+			conferir(requisito.size.x <= Dica.LARGURA_MAXIMA + 2.0 and requisito.size.y >= requisito.get_minimum_size().y, "requisito cabe sem corte")
 			conferir(texto.get_theme_color("font_color").is_equal_approx(Dica.COR_DO_ALVO), "alvo em ouro")
-			conferir(requisito.get_theme_color("font_color").is_equal_approx(Dica.COR_DO_REQUISITO), "requisito em creme")
-			conferir(requisito.get_theme_font("font") != texto.get_theme_font("font"), "alvo e requisito em fontes diferentes")
-			conferir(requisito.get_theme_font_size("font_size") < texto.get_theme_font_size("font_size"), "requisito menor que o alvo")
+			conferir(requisito.get_theme_color("default_color").is_equal_approx(Dica.COR_DO_REQUISITO), "requisito em creme")
+			conferir(requisito.get_theme_font("normal_font") != texto.get_theme_font("font"), "alvo e requisito em fontes diferentes")
+			conferir(requisito.get_theme_font_size("normal_font_size") < texto.get_theme_font_size("font_size"), "requisito menor que o alvo")
 			# A plaqueta do E tem a altura das duas linhas, é quadrada e a letra cresce com ela.
 			var altura_das_linhas: float = texto.size.y + requisito.size.y
 			conferir(absf(tecla.size.y - altura_das_linhas) <= 3.0, "plaqueta com a altura das duas linhas (%.1f x %.1f)" % [tecla.size.y, altura_das_linhas])
@@ -58,6 +58,24 @@ func _run() -> void:
 			var longa: String = exemplo + " e os materiais necessários para preparar este terreno com segurança"
 			await mostrar(dica, camera, longa)
 			conferir(requisito.get_line_count() > 1 and dica.size.x < largura * 0.65, "requisito longo quebra por largura")
+			# #188 (reaberta): a plaqueta tem teto de duas linhas de título, por mais linhas que o requisito tenha.
+			var teto: float = 2.0 * texto.get_theme_font("font").get_height(texto.get_theme_font_size("font_size"))
+			conferir(tecla.size.y <= teto + 1.0 and absf(tecla.size.x - tecla.size.y) <= 2.0,
+				"plaqueta com requisito longo passa de duas linhas de título (%.1f x %.1f, teto %.1f)" % [tecla.size.x, tecla.size.y, teto])
+			# A orientação da lavoura chega com quebra de linha e teclas entre colchetes: o título fica na
+			# fonte de título e o resto, na de leitura, com as teclas em negrito.
+			var leitos := ["Ver o leito\nNa leira arada: [5] Maniva de mandioca, depois [E] para plantar.",
+				"Look at the bed\nAt the tilled bed: [5] Cassava cutting, then [E] to plant.",
+				"Mirar el surco\nEn el surco arado: [5] Esqueje de mandioca, luego [E] para sembrar."]
+			var leito: String = leitos[exemplos.find(exemplo)]
+			await mostrar(dica, camera, leito)
+			conferir(texto.text == leito.split("\n")[0] and requisito.visible, "o título da lavoura fica no título, e a orientação no requisito: " + texto.text)
+			conferir(requisito.text.contains("[b]5[/b]") and requisito.text.contains("[b]E[/b]"), "as teclas do meio do texto saem em negrito: " + requisito.text)
+			conferir(requisito.get_theme_font("normal_font") != texto.get_theme_font("font"), "a orientação da lavoura não está na fonte de título")
+			conferir(tecla.size.y <= teto + 1.0 and absf(tecla.size.x - tecla.size.y) <= 2.0,
+				"plaqueta da lavoura passa de duas linhas de título (%.1f x %.1f, teto %.1f)" % [tecla.size.x, tecla.size.y, teto])
+			if largura >= 1280:
+				conferir(requisito.get_line_count() <= 2, "a orientação da lavoura cabe em duas linhas a %d px (%d)" % [largura, requisito.get_line_count()])
 			await mostrar(dica, camera, "Olhar")
 			conferir(not requisito.visible and texto.get_line_count() == 1 and dica.size.y < 40, "interação simples volta ao tamanho compacto")
 			conferir(absf(tecla.size.y - texto.size.y) <= 3.0 and absf(tecla.size.x - tecla.size.y) <= 2.0, "plaqueta da altura da linha única e quadrada (%.1f x %.1f)" % [tecla.size.x, tecla.size.y])

@@ -77,7 +77,7 @@ As letras marcadas com * são **remapeáveis** em AJUSTAR → Geral → Atalhos;
 
 No estilo **Procedural** (AJUSTAR → Cenário e tempo) as teclas Alt+1 a Alt+8 acionam os gestos do humanoide por código (acenar, concordar, apontar, coçar a cabeça, alongar, chamar, reverência, olhar em volta). O jogador começa em cima do saveiro, no píer, com o Pedro na ponta da prancha: desça, chegue perto dele e aperte E, e siga as missões do HUD. Os moradores cumprimentam quando você chega perto.
 
-**Falar com os moradores é o E.** Perto de alguém, a dica "E — Falar" aparece em cima da cabeça dele: o E conversa (a fala inteira dele no balão), cumpre o passo de missão que manda falar com ele ou levar alguma coisa (aí a dica diz "Entregar") e abre os pedidos de quem tem o que pedir. Chegar perto não basta: é o E que conversa, como no 2D. Durante a chegada, o E no Pedro repete o que fazer agora. Detalhes em [VALE_VIVO_3D.md](../mundo/VALE_VIVO_3D.md).
+**Falar com os moradores é o E.** Perto de alguém, a dica "E — Conversar" aparece em cima da cabeça dele: o E conversa (a fala inteira dele no balão), cumpre o passo de missão que manda falar com ele ou levar alguma coisa (aí a dica diz "Entregar") e abre os pedidos de quem tem o que pedir. Chegar perto não basta: é o E que conversa, como no 2D. Durante a chegada, o E no Pedro repete o que fazer agora. Detalhes em [VALE_VIVO_3D.md](../mundo/VALE_VIVO_3D.md).
 
 **Missão concluída:** todo passo de missão cumprido escurece a tela por um instante e mostra o emblema, "Missão concluída", o nome do passo e de que missão ele é. Some sozinha, sem segurar o jogo.
 

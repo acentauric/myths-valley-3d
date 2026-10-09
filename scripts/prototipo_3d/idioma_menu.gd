@@ -425,6 +425,8 @@ const EN := {
 	"Falar": "Talk",
 	"Entregar": "Hand over",
 	"Falar com %s": "Talk to %s",
+	# A dica do E num morador diz só o que o E faz; o nome já está na placa (#188).
+	"Conversar": "Talk",
 	# O E na comida acima do teto da reserva (#105).
 	"Comer agora joga fora %d de fôlego. Comer assim mesmo?": "Eating now wastes %d breath. Eat anyway?",
 	"Entregar a %s": "Hand over to %s",
@@ -913,6 +915,7 @@ const ES := {
 	"Falar": "Hablar",
 	"Entregar": "Dar",
 	"Falar com %s": "Hablar con %s",
+	"Conversar": "Hablar",
 	# O E na comida acima do teto da reserva (#105).
 	"Comer agora joga fora %d de fôlego. Comer assim mesmo?": "Comer ahora tira %d de aliento. ¿Comer igual?",
 	"Entregar a %s": "Entregar a %s",

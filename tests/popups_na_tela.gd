@@ -464,7 +464,9 @@ func _ninguem_cobre_ninguem(aqui: Vector3) -> void:
 		str(dono_visivel.visible), dono_visivel.modulate.a, str(dono_visivel.get_global_rect()), str(placa_de_tras.visible), placa_de_tras.modulate.a,
 		str(placa_de_tras.get_global_rect()), str(teclas._dica.get_global_rect()), _placas_ligadas(), placas.maximo]
 	_conferir(not (placa_de_tras.visible and placa_de_tras.modulate.a > 0.25), "com a dica de volta, a placa de quem está atrás, na coluna da dica, continuou na tela" + estado_das_placas)
-	_conferir(not dono_visivel.visible, "E já identifica o dono: a placa redundante voltou (#124)" + estado_das_placas)
+	# #188: a dica diz só "Conversar", e quem é o morador a placa de nome diz — ela fica à vista, sob a dica.
+	_conferir(dono_visivel.visible and dono_visivel.modulate.a > 0.25, "a dica do E diz só 'Conversar': a placa de nome do dono tem de ficar à vista (#188)" + estado_das_placas)
+	_conferir(not dono_visivel.get_global_rect().intersects(teclas._dica.get_global_rect()), "a dica do E cobre a placa de nome do dono" + estado_das_placas)
 	_conferir(absf(teclas._dica.get_global_rect().position.y - dica_antes.position.y) <= 3.0, "a dica do E não voltou ao lugar de antes (y=%.0f, e era y=%.0f)%s" % [teclas._dica.get_global_rect().position.y, dica_antes.position.y, estado_das_placas])
 	var placa: Control = placas._placas[dele]
 	var cobriria_longe := false
@@ -474,14 +476,15 @@ func _ninguem_cobre_ninguem(aqui: Vector3) -> void:
 		await _esperar(2.0)
 		var da_placa: Rect2 = placa.get_global_rect()
 		var da_dica: Rect2 = teclas._dica.get_global_rect()
-		_conferir(not placa.visible and teclas._dica.visible,
-			"com a câmera a %.0f m, a dica deve identificar o dono sem placa duplicada (#124)" % distancia)
+		_conferir(placa.visible and teclas._dica.visible and not da_placa.intersects(da_dica),
+			"com a câmera a %.0f m, a dica do E deve ficar acima da placa do dono, sem cobri-la (#188)" % distancia)
 		# O que a dica faria SEM subir: a conta crua de antes (o ponto 0,45 m acima da cabeça).
 		var ponto := dele.global_position + Vector3.UP * (float(dele.get("altura")) + 0.45)
 		var crua := Rect2(camera.unproject_position(ponto) - Vector2(da_dica.size.x * 0.5, da_dica.size.y), da_dica.size)
 		if crua.intersects(da_placa):
 			cobriria_longe = true
-	# #124 substitui a regra antiga de empilhar nome do dono e dica: só a dica aparece.
+	# Sem a regra de subir, a dica cairia sobre a placa do dono em algum dos dois alcances da câmera.
+	_conferir(cobriria_longe, "o portão não montou a cena: a conta crua da dica nunca cobriria a placa do dono, perto nem longe")
 	jogador.set("_distance", 8.0)
 	jogador.call("_apply_camera")
 
