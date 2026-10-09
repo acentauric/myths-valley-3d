@@ -69,6 +69,18 @@ const LARGURA_DA_LISTA_DE_MISSOES := 260.0
 const LARGURA_DAS_ABAS_NO_DIARIO := 170.0
 ## Largura da coluna das abas, à esquerda. A mesma proporção do almanaque.
 const LARGURA_DAS_ABAS := 230.0
+## O MENU DA ESQUERDA DO DIÁRIO RECOLHE (#221): as duas colunas (as abas e a lista de missões) viram uma faixa
+## estreita, só com o ▸ e os ícones das categorias, e a ficha ganha quase toda a largura. A escolha fica salva.
+const LARGURA_DA_FAIXA := 52.0
+const PREFERENCIAS := "user://preferencias_visuais.cfg"
+const SECAO_DO_MENU := "jogo"
+const CHAVE_DO_MENU := "diario_menu_recolhido"
+## A fala de quem pediu e os objetivos usam O MESMO tamanho de leitura (#221, o papel de leitura de #199);
+## só a cor e o estado mudam (concluído apagado, o de agora em destaque).
+const LETRA_DE_LEITURA_DO_DIARIO := Identidade.TAMANHO_LEITURA
+const ESPACO_ENTRE_LINHAS_DO_DIARIO := 4
+## O ícone de cada aba, na ordem de `Aba`.
+const ICONES_DAS_ABAS := ["cordel", "carta", "tabua", "machado", "farinha", "corda", "enxada", "carta", "peixe", "carta"]
 const ALTURA_DA_LINHA := 28.0
 const LETRA_TITULO := 22
 const LETRA_ABAS := 15
@@ -143,6 +155,13 @@ var _detalhe: VBoxContainer
 var _rodape: Label
 var _linhas: Array = []
 var _botao_jogo: Button
+## O botão do menu da esquerda do Diário (no alto, ao lado de JOGO) e a faixa em que ele vira quando recolhido.
+var _botao_do_menu: Button
+var _faixa_do_menu: VBoxContainer
+var _icones_da_faixa: VBoxContainer
+var _contador_do_menu: Label
+## O que o jogador escolheu (-1 = ainda não leu do arquivo; 0 = aberto; 1 = recolhido).
+static var _recolhido_guardado := -1
 
 
 func _ready() -> void:
@@ -211,6 +230,11 @@ func _unhandled_input(evento: InputEvent) -> void:
 			return
 		if tecla == KEY_TAB:
 			_proxima_aba(-1 if evento.shift_pressed else 1)
+			get_viewport().set_input_as_handled()
+			return
+		# Backspace recolhe e abre o menu da esquerda do Diário (#221): o teclado também alcança.
+		if tecla == KEY_BACKSPACE and _aba == Aba.MISSOES:
+			alternar_o_menu()
 			get_viewport().set_input_as_handled()
 			return
 		if tecla == Atalhos.tecla("interagir") or tecla == KEY_SPACE:
@@ -514,6 +538,11 @@ func _montar() -> void:
 	_titulo.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	Identidade.sombra_texto(_titulo)
 	topo.add_child(_titulo)
+	_botao_do_menu = _botao_pequeno("◂ MENU", func() -> void: alternar_o_menu())
+	_botao_do_menu.name = "BotaoDoMenu"
+	_botao_do_menu.tooltip_text = "Recolher ou abrir o menu da esquerda do Diário (Backspace)"
+	_botao_do_menu.visible = false
+	topo.add_child(_botao_do_menu)
 	_botao_jogo = _botao_pequeno("JOGO", func(): _ir_para_o_jogo())
 	_botao_jogo.tooltip_text = "Salvar, voltar ao menu, sair e os ajustes de teste"
 	topo.add_child(_botao_jogo)
@@ -526,6 +555,30 @@ func _montar() -> void:
 	lado_a_lado.add_theme_constant_override("separation", 22)
 	lado_a_lado.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	coluna.add_child(lado_a_lado)
+
+	# A FAIXA DO MENU RECOLHIDO (#221): só aparece com o menu da esquerda do Diário recolhido.
+	_faixa_do_menu = VBoxContainer.new()
+	_faixa_do_menu.name = "FaixaDoMenu"
+	_faixa_do_menu.add_theme_constant_override("separation", 4)
+	_faixa_do_menu.custom_minimum_size = Vector2(LARGURA_DA_FAIXA, 0)
+	_faixa_do_menu.visible = false
+	lado_a_lado.add_child(_faixa_do_menu)
+	var abrir_menu := _botao_pequeno("▸", func() -> void: alternar_o_menu())
+	abrir_menu.name = "AbrirMenu"
+	abrir_menu.tooltip_text = "Abrir o menu da esquerda do Diário (Backspace)"
+	abrir_menu.custom_minimum_size = Vector2(LARGURA_DA_FAIXA - 8.0, ALTURA_DA_LINHA + 8.0)
+	_faixa_do_menu.add_child(abrir_menu)
+	_icones_da_faixa = VBoxContainer.new()
+	_icones_da_faixa.name = "IconesDaFaixa"
+	_icones_da_faixa.add_theme_constant_override("separation", 2)
+	_faixa_do_menu.add_child(_icones_da_faixa)
+	var vao_da_faixa := Control.new()
+	vao_da_faixa.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_faixa_do_menu.add_child(vao_da_faixa)
+	_contador_do_menu = _rotulo("", LETRA_DICA, COR_APAGADA)
+	_contador_do_menu.name = "ContadorDoMenu"
+	_contador_do_menu.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_faixa_do_menu.add_child(_contador_do_menu)
 
 	# À ESQUERDA AS ABAS, EM COLUNA, como as seções do almanaque.
 	#
@@ -632,7 +685,7 @@ func _montar_abas() -> void:
 			figura.size = Vector2(22.0, 22.0)
 			linha.add_child(figura)
 		else:
-			linha.icon = Catalogo.icone(["cordel", "carta", "tabua", "machado", "farinha", "corda", "enxada", "carta", "peixe", "carta"][qual])
+			linha.icon = Catalogo.icone(ICONES_DAS_ABAS[qual])
 			linha.expand_icon = true
 			linha.add_theme_constant_override("icon_max_width", 24)
 			linha.add_theme_constant_override("h_separation", 8)
@@ -648,6 +701,69 @@ func _montar_abas() -> void:
 			linha.add_theme_stylebox_override(estado, _estilo_da_aba(aberta, estado != "normal", distintivo != ""))
 		linha.pressed.connect(func() -> void: _ir_para_aba(qual))
 		_abas_coluna.add_child(linha)
+
+
+## A FAIXA DO MENU RECOLHIDO (#221): o ícone de cada categoria, com o nome e a conta na dica, e a aberta em destaque.
+func _montar_faixa() -> void:
+	for filho in _icones_da_faixa.get_children():
+		_icones_da_faixa.remove_child(filho)
+		filho.queue_free()
+	for qual in abas_validas():
+		var aberta: bool = qual == _aba
+		var botao := Button.new()
+		botao.name = "Faixa_%d" % qual
+		botao.focus_mode = Control.FOCUS_NONE
+		botao.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+		botao.custom_minimum_size = Vector2(LARGURA_DA_FAIXA - 8.0, ALTURA_DA_LINHA + 8.0)
+		botao.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		botao.expand_icon = true
+		botao.add_theme_constant_override("icon_max_width", 24)
+		botao.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+		var conta := _conta_da_aba(qual)
+		botao.tooltip_text = (texto_vagas("titulo") if qual == Aba.VAGAS else str(NOME_DA_ABA[qual])) \
+			+ ("  ·  " + conta if conta != "" else "")
+		var distintivo := _distintivo_da_aba(qual)
+		botao.icon = ICONES_DO_PAINEL[distintivo] if distintivo != "" else Catalogo.icone(ICONES_DAS_ABAS[qual])
+		for estado in ["normal", "hover", "pressed"]:
+			botao.add_theme_stylebox_override(estado, _estilo_da_aba(aberta, estado != "normal"))
+		botao.pressed.connect(func() -> void: _ir_para_aba(qual))
+		_icones_da_faixa.add_child(botao)
+
+
+## O menu da esquerda do Diário está recolhido? A escolha fica no arquivo de preferências do jogador.
+static func menu_recolhido() -> bool:
+	if _recolhido_guardado >= 0:
+		return _recolhido_guardado == 1
+	var preferencias := ConfigFile.new()
+	var valor := false
+	if preferencias.load(PREFERENCIAS) == OK:
+		valor = bool(preferencias.get_value(SECAO_DO_MENU, CHAVE_DO_MENU, false))
+	_recolhido_guardado = 1 if valor else 0
+	return valor
+
+
+static func definir_menu_recolhido(recolhido: bool) -> void:
+	_recolhido_guardado = 1 if recolhido else 0
+	var preferencias := ConfigFile.new()
+	preferencias.load(PREFERENCIAS)
+	preferencias.set_value(SECAO_DO_MENU, CHAVE_DO_MENU, recolhido)
+	if preferencias.save(PREFERENCIAS) != OK:
+		push_warning("Não foi possível salvar a escolha do menu do Diário.")
+
+
+## Esquece o que a sessão guardou (o portão troca a escolha sem passar pelo arquivo).
+static func esquecer_o_menu() -> void:
+	_recolhido_guardado = -1
+
+
+## Recolhe ou abre o menu da esquerda do Diário (o botão do alto, o ▸ da faixa e a tecla Backspace). Só vale na aba
+## de missões, onde ele existe.
+func alternar_o_menu() -> void:
+	if _aba != Aba.MISSOES:
+		return
+	definir_menu_recolhido(not menu_recolhido())
+	Audio.efeito("menu_mover")
+	_redesenhar()
 
 
 ## "3" ao lado do nome da aba: quantas coisas há nela agora. Sem conta, vazio —
@@ -747,11 +863,19 @@ func _redesenhar() -> void:
 	_escolhiveis.clear()
 
 	_montar_abas()
+	_montar_faixa()
 	_titulo.text = "Painel  ›  %s" % str(NOME_DA_ABA[_aba])
 	_botao_jogo.text = "‹ VOLTAR" if _aba in [Aba.AJUSTES, Aba.VAGAS] else "JOGO"
 	# O diário só existe na aba de missões; nela a lista estreita e a dica de
 	# baixo some, porque o diário é a dica, inteira.
 	var no_diario := _aba == Aba.MISSOES
+	# O MENU DA ESQUERDA RECOLHIDO (#221): a lista de missões e as abas viram a faixa estreita, e a ficha ganha a
+	# largura. Só vale no Diário; nas outras abas o botão nem aparece.
+	var recolhido := no_diario and menu_recolhido()
+	_botao_do_menu.visible = no_diario
+	_botao_do_menu.text = "▸ MENU" if recolhido else "◂ MENU"
+	_faixa_do_menu.visible = recolhido
+	_rolagem.visible = not recolhido
 	_diario.visible = no_diario
 	_dica.visible = not no_diario
 	_rolagem.size_flags_horizontal = Control.SIZE_FILL if no_diario else Control.SIZE_EXPAND_FILL
@@ -760,8 +884,8 @@ func _redesenhar() -> void:
 	# vagas, que só têm a si mesmos) a coluna das abas some e a largura vai para a
 	# página. Com várias, ela encolhe no diário, que precisa do espaço.
 	var varias_abas := abas_validas().size() > 1
-	_abas_coluna.visible = varias_abas
-	_fio_das_abas.visible = varias_abas
+	_abas_coluna.visible = varias_abas and not recolhido
+	_fio_das_abas.visible = (varias_abas and not recolhido) or recolhido
 	_abas_coluna.custom_minimum_size.x = LARGURA_DAS_ABAS_NO_DIARIO if no_diario else LARGURA_DAS_ABAS
 	for filho in _detalhe.get_children():
 		_detalhe.remove_child(filho)
@@ -993,6 +1117,7 @@ func _desenhar_missoes() -> void:
 		_detalhe.add_child(_texto_do_diario(
 			"Fale com quem mora no vale: quem tem o que pedir, pede.", 17, COR_APAGADA))
 		_rodape.text = "[Esc] fechar"
+		_contador_do_menu.text = ""
 		return
 	# Dois grupos, com cabeçalho: enredo e dia a dia se leem diferente (ver o 2D).
 	var grupo := ""
@@ -1010,7 +1135,12 @@ func _desenhar_missoes() -> void:
 		_adicionar_linha("%s  %s" % [marca, _nome_da_missao(missao)], cor)
 	var escolhida: Dictionary = abertas[clampi(_cursor, 0, abertas.size() - 1)]
 	_desenhar_o_diario(escolhida)
-	_rodape.text = "[↑↓ ou W/S] escolher · [E ou Enter] acompanhar · [Esc] fechar"
+	# Recolhido, o menu não mostra a lista: a faixa diz em qual missão se está ("2/5"), e ↑↓ seguem trocando.
+	_contador_do_menu.text = "%d/%d" % [clampi(_cursor, 0, abertas.size() - 1) + 1, abertas.size()]
+	if menu_recolhido():
+		_rodape.text = "[↑↓ ou W/S] escolher · [E ou Enter] acompanhar · [Backspace] abrir o menu · [Esc] fechar"
+	else:
+		_rodape.text = "[↑↓ ou W/S] escolher · [E ou Enter] acompanhar · [Backspace] recolher o menu · [Esc] fechar"
 
 
 func _nome_da_missao(missao: Dictionary) -> String:
@@ -1108,9 +1238,8 @@ func _desenhar_o_diario(missao: Dictionary) -> void:
 	esquerda.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	colunas.add_child(esquerda)
 	if fala != "":
-		var citacao := _texto_do_diario("“%s”" % fala, 17, Identidade.COR_LEITURA)
+		var citacao := _texto_do_diario("“%s”" % fala, LETRA_DE_LEITURA_DO_DIARIO, Identidade.COR_LEITURA)
 		citacao.name = "Fala"
-		citacao.add_theme_constant_override("line_spacing", 4)
 		esquerda.add_child(citacao)
 
 	# OS OBJETIVOS: só esta coluna rola, e só se a missão tiver objetivos demais.
@@ -1129,13 +1258,13 @@ func _desenhar_o_diario(missao: Dictionary) -> void:
 	direita.add_child(objetivos)
 	# Os cumpridos, apagados e em UMA linha cada: o jogador já sabe o que fez.
 	for feito in missao.get("feitos", []):
-		var riscado := _texto_do_diario("%s  %s" % [CadeiaDeMissoes.MARCA_FEITA, str(feito)], 15, COR_APAGADA)
+		var riscado := _texto_do_diario("%s  %s" % [CadeiaDeMissoes.MARCA_FEITA, str(feito)], LETRA_DE_LEITURA_DO_DIARIO, COR_APAGADA)
 		riscado.name = "Feito"
 		direita.add_child(riscado)
 	var agora := str(missao.get("resumo", ""))
 	if agora == "":
 		agora = str(missao.get("linha", missao.get("titulo", "")))
-	var objetivo := _texto_do_diario("◆  %s" % agora, 17, COR_CURSOR if acompanhada else Identidade.COR_LEITURA)
+	var objetivo := _texto_do_diario("◆  %s" % agora, LETRA_DE_LEITURA_DO_DIARIO, COR_CURSOR if acompanhada else Identidade.COR_LEITURA)
 	objetivo.name = "ObjetivoDeAgora"
 	direita.add_child(objetivo)
 	var total := int(missao.get("total", 0))
@@ -1237,6 +1366,8 @@ func _texto_do_diario(texto: String, tamanho: int, cor: Color) -> Label:
 	etiqueta.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	etiqueta.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	Identidade.papel_leitura(etiqueta, tamanho, cor)
+	# O mesmo respiro entre linhas para a fala e para os objetivos (#221).
+	etiqueta.add_theme_constant_override("line_spacing", ESPACO_ENTRE_LINHAS_DO_DIARIO)
 	return etiqueta
 
 

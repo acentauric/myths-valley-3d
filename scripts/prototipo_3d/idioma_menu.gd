@@ -14,9 +14,12 @@ const SUFIXOS := ["", "_en", "_es", "_zh"]
 
 const EN := {
 	"Madrugada": "Small hours",
+	"Recolher ou abrir o menu da esquerda do Diário (Backspace)": "Collapse or open the Journal's left menu (Backspace)",
+	"Abrir o menu da esquerda do Diário (Backspace)": "Open the Journal's left menu (Backspace)",
 	"[↑↓ ou W/S] escolher · [E ou Enter] cozinhar · [Esc] fechar": "[↑↓ or W/S] choose · [E or Enter] cook · [Esc] close",
 	"[↑↓ ou W/S] escolher · [E ou Enter] fabricar · [Tab] outra aba · [Esc] fechar": "[↑↓ or W/S] choose · [E or Enter] craft · [Tab] other tab · [Esc] close",
-	"[↑↓ ou W/S] escolher · [E ou Enter] acompanhar · [Esc] fechar": "[↑↓ or W/S] choose · [E or Enter] follow · [Esc] close",
+	"[↑↓ ou W/S] escolher · [E ou Enter] acompanhar · [Backspace] abrir o menu · [Esc] fechar": "[↑↓ or W/S] choose · [E or Enter] follow · [Backspace] open the menu · [Esc] close",
+	"[↑↓ ou W/S] escolher · [E ou Enter] acompanhar · [Backspace] recolher o menu · [Esc] fechar": "[↑↓ or W/S] choose · [E or Enter] follow · [Backspace] collapse the menu · [Esc] close",
 	"[↑↓ ou W/S] escolher · [E ou Enter] tocar a obra · [Tab] outra aba · [Esc] fechar": "[↑↓ or W/S] choose · [E or Enter] carry on the build · [Tab] other tab · [Esc] close",
 	"[↑↓ ou W/S] escolher · [E ou Enter] comprar a receita · [Tab] outra aba · [Esc] fechar": "[↑↓ or W/S] choose · [E or Enter] buy the recipe · [Tab] other tab · [Esc] close",
 	"[↑↓ ou W/S] escolher · [E ou Enter] comprar · [A ou ←] vender · [Tab] outra aba · [Esc] fechar": "[↑↓ or W/S] choose · [E or Enter] buy · [A or ←] sell · [Tab] other tab · [Esc] close",
@@ -534,9 +537,14 @@ const EN := {
 
 const ES := {
 	"Madrugada": "Madrugada",
+	"◂ MENU": "◂ MENÚ",
+	"▸ MENU": "▸ MENÚ",
+	"Recolher ou abrir o menu da esquerda do Diário (Backspace)": "Recoger o abrir el menú izquierdo del Diario (Backspace)",
+	"Abrir o menu da esquerda do Diário (Backspace)": "Abrir el menú izquierdo del Diario (Backspace)",
 	"[↑↓ ou W/S] escolher · [E ou Enter] cozinhar · [Esc] fechar": "[↑↓ o W/S] elegir · [E o Enter] cocinar · [Esc] cerrar",
 	"[↑↓ ou W/S] escolher · [E ou Enter] fabricar · [Tab] outra aba · [Esc] fechar": "[↑↓ o W/S] elegir · [E o Enter] fabricar · [Tab] otra pestaña · [Esc] cerrar",
-	"[↑↓ ou W/S] escolher · [E ou Enter] acompanhar · [Esc] fechar": "[↑↓ o W/S] elegir · [E o Enter] seguir · [Esc] cerrar",
+	"[↑↓ ou W/S] escolher · [E ou Enter] acompanhar · [Backspace] abrir o menu · [Esc] fechar": "[↑↓ o W/S] elegir · [E o Enter] seguir · [Backspace] abrir el menú · [Esc] cerrar",
+	"[↑↓ ou W/S] escolher · [E ou Enter] acompanhar · [Backspace] recolher o menu · [Esc] fechar": "[↑↓ o W/S] elegir · [E o Enter] seguir · [Backspace] recoger el menú · [Esc] cerrar",
 	"[↑↓ ou W/S] escolher · [E ou Enter] tocar a obra · [Tab] outra aba · [Esc] fechar": "[↑↓ o W/S] elegir · [E o Enter] seguir con la obra · [Tab] otra pestaña · [Esc] cerrar",
 	"[↑↓ ou W/S] escolher · [E ou Enter] comprar a receita · [Tab] outra aba · [Esc] fechar": "[↑↓ o W/S] elegir · [E o Enter] comprar la receta · [Tab] otra pestaña · [Esc] cerrar",
 	"[↑↓ ou W/S] escolher · [E ou Enter] comprar · [A ou ←] vender · [Tab] outra aba · [Esc] fechar": "[↑↓ o W/S] elegir · [E o Enter] comprar · [A o ←] vender · [Tab] otra pestaña · [Esc] cerrar",
