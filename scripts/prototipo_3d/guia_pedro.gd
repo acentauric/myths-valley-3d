@@ -1164,7 +1164,9 @@ func conversar() -> void:
 	if not terminou_o_tutorial() and not _cadeia.acabou():
 		var fila := _fila()
 		if fila != null and fila.falando(self):
-			fila.pular()
+			# O E de quem a lê passa a página, e fecha na última (#220); o de quem não a espera passa a fala.
+			if not avancar_a_fala():
+				fila.pular()
 			return
 		var texto := _cadeia.texto_do_passo()
 		if texto != "":
@@ -1227,7 +1229,7 @@ func _verificar_anoitecer() -> void:
 		var aviso: Dictionary = dados.get("anoitecer", {})
 		var texto := String(IdiomaMenu.campo(aviso, "texto", ""))
 		if texto != "":
-			narrar(String(aviso.get("audio", "")), texto, {"classe": FilaDeFalas.Classe.MISSAO, "origem": "anoitecer"})
+			narrar(String(aviso.get("audio", "")), texto, {"classe": FilaDeFalas.Classe.MISSAO, "origem": "anoitecer", "por_e": false})
 	elif periodo == "manha":
 		_anoiteceu_hoje = false
 

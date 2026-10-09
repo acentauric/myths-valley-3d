@@ -65,6 +65,8 @@ var _chevron: ChevronMissao
 var _mola := SuavizadorDeTela.new()
 var _alfa := 0.0
 var _loucura_no: Node
+## Escondida enquanto a cena toca (#215): no modo cena só o balão e as tarjas ficam.
+var _oculta := false
 
 
 func _ready() -> void:
@@ -122,7 +124,7 @@ func definir_alvo(pos: Vector3, _texto: String) -> void:
 	_alvo = pos
 	global_position = pos
 	_ativo = true
-	visible = true
+	visible = not _oculta
 	if is_instance_valid(_cone):
 		_sincronizar_chegada()
 
@@ -134,6 +136,22 @@ func limpar() -> void:
 	_alfa = 0.0
 	if is_instance_valid(_chevron):
 		_chevron.visible = false
+
+
+## ESCONDE A SETA (o cone, o anel e o chevron) enquanto a cena toca (#215), e a devolve no fim. O alvo
+## lógico segue o mesmo: só o desenho some.
+func ocultar(sim: bool) -> void:
+	_oculta = sim
+	visible = _ativo and not sim
+	if sim:
+		_alfa = 0.0
+		if is_instance_valid(_chevron):
+			_chevron.visible = false
+
+
+## A seta está escondida pela cena?
+func oculta() -> bool:
+	return _oculta
 
 
 ## O ponto que a seta marca agora, ou null sem missão acompanhada.
@@ -149,7 +167,7 @@ func _loucura() -> Node:
 
 
 func _process(delta: float) -> void:
-	if not _ativo:
+	if not _ativo or _oculta:
 		return
 	_sincronizar_chegada()
 	# O MAPA DOIDO (loucura_do_mapa.gd): o cone flutua longe do alvo de verdade. Fora da loucura o

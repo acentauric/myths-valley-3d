@@ -45,6 +45,13 @@ extends Control
 ## pontinhos no cabeçalho dizem em que página se está.
 ##
 ##
+## O E PASSA A PÁGINA (#220)
+##
+## Na fala que espera o E (`npc.espera_o_e`), o tempo para com o jogador perto (`fila_de_falas.gd`) e
+## quem passa a página é ele: `passar_a_pagina` leva a fala ao ponto em que a seguinte começa. Um
+## "E »" no canto do cabeçalho diz que há mais; na última página vira "E ×", o que fecha.
+##
+##
 ## SEM COBRIR NINGUÉM
 ##
 ## Roda por último no quadro (`process_priority` 20): lê o retângulo fresco das
@@ -56,6 +63,7 @@ const Identidade = preload("res://scripts/prototipo_3d/identidade.gd")
 const SuavizadorDeTela = preload("res://scripts/prototipo_3d/suavizador_de_tela.gd")
 const PopupsDoMundo = preload("res://scripts/prototipo_3d/popups_do_mundo.gd")
 const FilaDeFalas = preload("res://scripts/prototipo_3d/fila_de_falas.gd")
+const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
 
 const LARGURA_MAX := 300.0
 ## Só de perto (#90): era 45 u, e balões da praça inteira apareciam de longe.
@@ -92,7 +100,7 @@ const FOLGA_DAS_DICAS := 4.0
 const LINHAS_SEM_PAGINA := 3
 const LINHAS_POR_PAGINA := 2
 ## Largura de cada pontinho do indicador de página.
-const ESPACO_DO_PONTO := 9.0
+const ESPACO_DO_PONTO := 13.0
 
 var alvo: Node3D
 var altura := 2.0
@@ -101,6 +109,8 @@ var _nome: Label
 var _texto: Label
 var _ponta: Control
 var _pontos: Control
+## O "E »" (há mais) / "E ×" (fim) do cabeçalho: só aparece quando o E é quem passa a fala.
+var _indicador_e: Label
 var _escolha := 0
 ## Onde a cabeça está na tela, de verdade (a conta dos lugares) e com a mola (a ponta).
 var _cabeca_tela := Vector2.ZERO
@@ -174,6 +184,14 @@ func _init() -> void:
 	_nome.add_theme_font_size_override("font_size", 12)
 	_nome.add_theme_color_override("font_color", NOME)
 	cabecalho.add_child(_nome)
+	_indicador_e = Label.new()
+	_indicador_e.visible = false
+	_indicador_e.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_indicador_e.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	_indicador_e.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TITULO, 700, 1))
+	_indicador_e.add_theme_font_size_override("font_size", 12)
+	_indicador_e.add_theme_color_override("font_color", Identidade.OURO)
+	cabecalho.add_child(_indicador_e)
 	_pontos = Control.new()
 	_pontos.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_pontos.size_flags_vertical = Control.SIZE_SHRINK_CENTER
@@ -237,11 +255,59 @@ func a_vista() -> bool:
 	return visible and _painel.visible
 
 
+## HÁ MAIS PÁGINAS depois da de agora?
+func ha_mais() -> bool:
+	return _paginas > 1 and _pagina < _paginas - 1
+
+
+## Em que fração (0 a 1) do tempo da fala começa a página seguinte, ou -1 na última (ou sem páginas).
+## Um tiquinho depois da divisa, para a conta de `_process` cair na página nova e não na de antes.
+func fracao_da_proxima_pagina() -> float:
+	if not ha_mais():
+		return -1.0
+	return minf((_pagina + 1) * LINHAS_POR_PAGINA / float(_linhas) + 0.002, 0.999)
+
+
+## O E PASSA A PÁGINA (#220): vai à seguinte e leva o tempo da fala até onde ela começa, na fila ou
+## no relógio do próprio balão. Falso na última página (ou sem páginas): o E ali é de fechar.
+func passar_a_pagina() -> bool:
+	var fracao := fracao_da_proxima_pagina()
+	if fracao < 0.0:
+		return false
+	_lido_s = fracao * maxf(_duracao_s, 0.1)
+	var fila := FilaDeFalas.da(self)
+	if fila != null:
+		fila.ajustar(alvo, fracao)
+	_aplicar_pagina(_pagina + 1)
+	return true
+
+
+## Em que página está (0 é a primeira) e quantas são.
+func pagina() -> int:
+	return _pagina
+
+
+func paginas() -> int:
+	return _paginas
+
+
+## O "E »" / "E ×" do cabeçalho: só quando quem fala espera o E (`npc.espera_o_e`).
+func _atualizar_o_indicador() -> void:
+	var espera: bool = alvo != null and is_instance_valid(alvo) and alvo.has_method("espera_o_e") \
+		and bool(alvo.call("espera_o_e"))
+	if espera:
+		_indicador_e.text = "%s %s" % [Atalhos.letra("interagir"), "»" if ha_mais() else "×"]
+	if _indicador_e.visible != espera:
+		_indicador_e.visible = espera
+		_painel.reset_size()
+
+
 func _process(delta: float) -> void:
 	if not visible:
 		return
 	_relogio += delta
 	_lido_s += delta
+	_atualizar_o_indicador()
 	if _paginas > 1:
 		var indice := mini(floori(_fracao_da_fala() * _linhas / float(LINHAS_POR_PAGINA)), _paginas - 1)
 		# A página só avança: a fila pode esticar a fala, e a fração, voltar.
@@ -293,7 +359,7 @@ func _aplicar_pagina(indice: int) -> void:
 	var da_linha := float(_texto.get_line_height())
 	var entre := float(_texto.get_theme_constant("line_spacing"))
 	_texto.custom_minimum_size.y = nesta * da_linha + (nesta - 1) * entre
-	_pontos.custom_minimum_size = Vector2(_paginas * ESPACO_DO_PONTO, 10.0)
+	_pontos.custom_minimum_size = Vector2(_paginas * ESPACO_DO_PONTO, 12.0)
 	_pontos.queue_redraw()
 	_painel.reset_size()
 
@@ -466,5 +532,6 @@ func _desenhar_pontos() -> void:
 		return
 	var meio := _pontos.size.y * 0.5
 	for indice in _paginas:
-		var cor := Color(Identidade.OURO, 0.95 if indice == _pagina else 0.3)
-		_pontos.draw_circle(Vector2(ESPACO_DO_PONTO * (indice + 0.5), meio), 2.8 if indice == _pagina else 2.0, cor)
+		# A página que ainda não passou fica legível (0,45), e não apagada: o jogador vê quantas faltam (#215).
+		var cor := Color(Identidade.OURO, 0.98 if indice == _pagina else 0.45)
+		_pontos.draw_circle(Vector2(ESPACO_DO_PONTO * (indice + 0.5), meio), 4.0 if indice == _pagina else 3.0, cor)

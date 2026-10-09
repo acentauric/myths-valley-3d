@@ -1,16 +1,16 @@
 {
-  "_nota": "As cenas tocadas pelos passos das missões ('cena' no dado do passo, ao fechar), lidas por scripts/prototipo_3d/cena_vale.gd. Cada cena é uma lista de comandos ('faz'): segura, camera, anda, encara, gesto, fala, anuncia, espera, solta. 'quem', 'de', 'para', 'ate', 'olha_de' e 'olha_para' aceitam jogador, pedro, o id de um morador, um lugar (Lugares) ou [x, y, z]. A fala da cena é o anúncio do passo seguinte ('anuncia'); 'fala' serve para uma fala só da cena, em texto/texto_en/texto_es.",
+  "_nota": "As cenas tocadas pelos passos das missões ('cena' no dado do passo, ao fechar), lidas por scripts/prototipo_3d/cena_vale.gd. Cada cena é uma lista de comandos ('faz'): segura, camera, anda, encara, gesto, fala, anuncia, espera, solta. 'quem', 'de', 'para', 'ate', 'olha_de' e 'olha_para' aceitam jogador, pedro, o id de um morador, um lugar (Lugares) ou [x, y, z]. A fala da cena é o anúncio do passo seguinte ('anuncia'); 'fala' serve para uma fala só da cena, em texto/texto_en/texto_es. A câmera tem os modos olha, vista, aproxima e dupla (dois personagens de lado, o que fala perto do centro: de, para, peso, recuo, lado, atras); ela sempre desliza entre os planos, e só corta seco no plano que traz \"corte\": true. O E e o Esc pulam a cena.",
   "apresentacao_do_tonho": {
     "quando": "fecha o passo 'correr' da chegada: o Pedro chama o jogador e vai na frente até o Tonho, que apresenta",
     "passos": [
       {"faz": "segura"},
-      {"faz": "camera", "modo": "olha", "de": "jogador", "para": "pedro", "recuo": 2.6, "lado": 1.4, "altura": 1.9, "tempo": 1.0},
+      {"faz": "camera", "modo": "dupla", "de": "jogador", "para": "pedro", "peso": 0.65, "recuo": 3.6, "altura": 1.7, "altura_do_alvo": 1.35, "tempo": 1.6},
       {"faz": "encara", "quem": "pedro", "para": "jogador"},
       {"faz": "gesto", "quem": "pedro", "gesto": "chamar"},
       {"faz": "espera", "s": 0.8},
       {"faz": "anuncia"},
       {"faz": "anda", "quem": "pedro", "ate": "tonho", "folga": 2.0, "velocidade": 2.4, "teto": 8},
-      {"faz": "camera", "modo": "olha", "de": "pedro", "para": "tonho", "recuo": 3.0, "lado": 1.5, "altura": 1.8, "tempo": 1.4},
+      {"faz": "camera", "modo": "dupla", "de": "pedro", "para": "tonho", "peso": 0.6, "recuo": 3.4, "altura": 1.7, "altura_do_alvo": 1.35, "tempo": 1.8},
       {"faz": "gesto", "quem": "pedro", "gesto": "apontar"},
       {"faz": "espera", "s": 1.4},
       {"faz": "solta"}

@@ -55,6 +55,18 @@ extends Node
 ## por cima — que era o defeito.
 ##
 ##
+## O E CONTROLA A CONVERSA (#220)
+##
+## A fala que o jogador procurou com o E, e a da missão, não somem sozinhas enquanto
+## ele está perto para ler: a fala traz `espera_e`, um Callable que diz "o jogador está ao
+## alcance do E dela", e com ele verdadeiro o tempo da fala PARA (`resta` não corre, e com ele
+## a página do balão não passa). O E avança a página (`ajustar`: leva a fala ao ponto em que a
+## página seguinte começa) e, na última, a fecha (`fechar`). Se o jogador se afasta, ou fica
+## `ESPERA_DO_E_MAXIMA` sem apertar nada, o tempo volta a correr e a fala acaba sozinha: a
+## condução do Pedro nunca trava por causa de quem foi embora. Só vale com o jogo aberto numa
+## janela (`segura_pelo_e`): um portão sem tela não tem quem aperte o E.
+##
+##
 ## SEM FILA NO VALE (um portão que monta uma peça só) cada boca fala na hora,
 ## como antes: quem pede pergunta `da(no)` e, sem resposta, segue sozinho. Este
 ## arquivo não cita autoload pelo nome (AGENTS.md: portão rodado com --script).
@@ -78,6 +90,15 @@ const ESPERA_MAXIMA := 16.0
 ## inteira: quem não viu o balão não o leu.
 const QUADRO_MAXIMO := 1.0
 const NA_FILA_NO_MAXIMO := 12
+## Quanto a fala que espera o E fica parada sem o jogador apertar nada, antes de o tempo voltar a correr.
+const ESPERA_DO_E_MAXIMA := 25.0
+## A fala que espera o E para o tempo dela só com o jogo numa janela; o portão sem tela (--headless) liga a mão.
+static var segura_pelo_e := DisplayServer.get_name() != "headless"
+
+
+## Liga (ou desliga) a espera pelo E: é como o portão `fala_pelo_e` confere o que a janela faz sozinha.
+static func ligar_a_espera_pelo_e(sim: bool) -> void:
+	segura_pelo_e = sim
 const HISTORICO_NO_MAXIMO := 240
 
 ## Uma fala ganhou a vez pela primeira vez, ou perdeu a vez de vez.
@@ -100,6 +121,7 @@ signal terminou(fala: Dictionary, cortada: bool)
 ##   parar      Callable(fala, cortada): perdeu a vez de vez
 ##   suspender  Callable(fala, sim): a caixa ou uma tela cobriu o vale (ou a festa cedeu)
 ##   tique      Callable(resta): a cada quadro, o tempo que falta
+##   espera_e   Callable() -> bool: o jogador está ao alcance do E dela; o tempo para (ver "O E CONTROLA")
 ##   ao_comecar Callable(): quem pediu fica sabendo que começou
 ##   ao_terminar Callable(): quem pediu fica sabendo que acabou — de qualquer jeito:
 ##              dita, cortada, calada ou descartada antes de sair
@@ -288,6 +310,49 @@ func soltar(id: int) -> void:
 	_tirar_da_fila(func(fala: Dictionary) -> bool: return int(fala.get("id", 0)) == id)
 
 
+## A FALA ESPERA O E NESTE QUADRO? Com `espera_e` verdadeiro o tempo dela não corre, até
+## `ESPERA_DO_E_MAXIMA` sem o jogador apertar nada.
+func _esperando_o_e(fala: Dictionary, dt: float) -> bool:
+	var quer = fala.get("espera_e")
+	if not segura_pelo_e or not (quer is Callable) or not (quer as Callable).is_valid():
+		return false
+	if float(fala.get("parada_s", 0.0)) >= ESPERA_DO_E_MAXIMA or not bool((quer as Callable).call()):
+		return false
+	fala["parada_s"] = float(fala.get("parada_s", 0.0)) + dt
+	return true
+
+
+## `falante` tem no ar uma fala que espera o E (e o jogador está ao alcance dela)?
+func espera_o_e(falante: Object) -> bool:
+	if not falando(falante) or bool(_atual.get("modal", false)):
+		return false
+	var quer = _atual.get("espera_e")
+	return segura_pelo_e and quer is Callable and (quer as Callable).is_valid() and bool((quer as Callable).call()) \
+		and float(_atual.get("parada_s", 0.0)) < ESPERA_DO_E_MAXIMA
+
+
+## O E LEVA A FALA DE `falante` ATÉ `fracao` (0 a 1) do tempo dela: o ponto em que a página
+## seguinte do balão começa. O tempo total não muda, e a espera recomeça a contar do zero.
+func ajustar(falante: Object, fracao: float) -> void:
+	if not falando(falante) or bool(_atual.get("modal", false)):
+		return
+	var total := float(_atual.get("no_ar", 0.0)) + maxf(float(_atual.get("resta", 0.0)), 0.0)
+	var no_ar := total * clampf(fracao, 0.0, 1.0)
+	_atual["no_ar"] = no_ar
+	_atual["resta"] = total - no_ar
+	_atual["parada_s"] = 0.0
+
+
+## O E NA ÚLTIMA PÁGINA FECHA A FALA de `falante`, dita até o fim (e não cortada): o respiro
+## que vem depois é o de uma fala que acabou, e a seguinte entra na vez dela.
+func fechar(falante: Object) -> bool:
+	if not falando(falante) or bool(_atual.get("modal", false)):
+		return false
+	_encerrar_atual(false)
+	_tentar_comecar()
+	return true
+
+
 func _process(_delta: float) -> void:
 	var agora := Time.get_ticks_msec()
 	var dt := clampf((agora - _ultimo_ms) / 1000.0, 0.0, QUADRO_MAXIMO)
@@ -306,7 +371,8 @@ func _process(_delta: float) -> void:
 			if not suspensa:
 				_atual["no_ar"] = float(_atual.get("no_ar", 0.0)) + dt
 				if not bool(_atual.get("modal", false)):
-					_atual["resta"] = float(_atual.get("resta", 0.0)) - dt
+					if not _esperando_o_e(_atual, dt):
+						_atual["resta"] = float(_atual.get("resta", 0.0)) - dt
 					_chamar(_atual, "tique", [maxf(float(_atual["resta"]), 0.0)])
 					if float(_atual["resta"]) <= 0.0:
 						_encerrar_atual(false)

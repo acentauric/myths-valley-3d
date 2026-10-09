@@ -410,12 +410,32 @@ func _robo() -> bool:
 	return OS.get_environment("MV_JEV_ROBOT") == "1"
 
 
+## A camada do painel TESTANDO (e do F6, do modal do bloqueio e da faixa manual).
+var camada_observador: CanvasLayer
+
+
+## NA CENA O PAINEL SAI (#215): com a cena dos dados tocando, o jogador assiste e só ficam o balão de fala e as
+## tarjas; o painel do testador, que ficava por cima de tudo, se recolhe e volta no fim dela. O modal do
+## bloqueio, que pede uma decisão, não se esconde.
+func _acertar_o_painel_na_cena() -> void:
+	if camada_observador == null or not is_instance_valid(camada_observador):
+		return
+	var cenas = current_scene.get("cenas") if _no_vale() else null
+	var na_cena: bool = cenas != null and bool(cenas.em_cena())
+	if modal_bloqueio != null and modal_bloqueio.visible:
+		na_cena = false
+	if camada_observador.visible == na_cena:
+		camada_observador.visible = not na_cena
+
+
 func _montar_painel() -> void:
 	var camada := CanvasLayer.new()
 	camada.name = "JevObservador"
 	camada.layer = 110
 	camada.process_mode = Node.PROCESS_MODE_ALWAYS
 	root.add_child(camada)
+	camada_observador = camada
+	process_frame.connect(_acertar_o_painel_na_cena)
 	var painel := PainelSessao.new()
 	painel_observador = painel
 	painel.add_to_group("obstaculos_do_hud")
@@ -865,7 +885,9 @@ func _estado() -> Dictionary:
 	estado["npcs"] = []
 	for npc in current_scene.get("moradores"):
 		if is_instance_valid(npc):
-			estado.npcs.append({"speaking": npc.has_method("falando_agora") and npc.falando_agora(), "node": str(npc.name), "id": npc.dados.get("id", ""), "name": npc.dados.get("nome", ""),
+			# A frase curta de atenção (#198) não é conversa: o E já vale com ela no ar, e o robô não espera por ela.
+			estado.npcs.append({"speaking": npc.has_method("falando_agora") and npc.falando_agora() and not npc.atencao_no_ar(),
+				"attending": npc.has_method("atencao_no_ar") and npc.atencao_no_ar(), "node": str(npc.name), "id": npc.dados.get("id", ""), "name": npc.dados.get("nome", ""),
 				"position": _vetor(npc.global_position), "distance": snappedf(jogador.global_position.distance_to(npc.global_position), 0.1)})
 	var mochila := root.get_node("Mochila")
 	estado["home_interaction"] = current_scene.get("casa").perto()
@@ -882,7 +904,8 @@ func _estado() -> Dictionary:
 			"rows": _json_seguro(painel.get("_linhas")), "advice": painel.get("_dica").text}
 	var pedro: Node3D = current_scene.get("pedro")
 	if is_instance_valid(pedro):
-		estado["pedro"] = {"speaking": pedro.has_method("falando_agora") and pedro.falando_agora(), "distance": snappedf(jogador.global_position.distance_to(pedro.global_position), 0.1),
+		estado["pedro"] = {"speaking": pedro.has_method("falando_agora") and pedro.falando_agora() and not pedro.atencao_no_ar(),
+			"attending": pedro.has_method("atencao_no_ar") and pedro.atencao_no_ar(), "distance": snappedf(jogador.global_position.distance_to(pedro.global_position), 0.1),
 			"step": pedro.get("missao"), "text": pedro.texto_da_missao(), "position": _vetor(pedro.global_position),
 			"tutorial_finished": bool(pedro.terminou_o_tutorial())}
 		var cadeia: Node = pedro.get("_cadeia")
@@ -894,6 +917,16 @@ func _estado() -> Dictionary:
 		estado.pedro.merge({"conducting": bool(cadeia.passo_atual().get("conduz", false)),
 			"waiting_for_player": bool(pedro.get("_esperando_quem_ficou")), "guide_destination": _vetor(destino),
 			"guide_destination_reached": distancia <= 2.9, "distance_to_guide_destination": snappedf(distancia, 0.1)})
+	# A FALA ABERTA ESPERA O E (#220): o balão fica até o jogador passar a página, e o testador também.
+	estado["speech_awaiting_e"] = ""
+	var com_fala: Array = (current_scene.get("moradores") as Array).duplicate()
+	if is_instance_valid(pedro):
+		com_fala.append(pedro)
+	for npc in com_fala:
+		if is_instance_valid(npc) and npc.has_method("espera_o_e") and bool(npc.espera_o_e()):
+			estado["speech_awaiting_e"] = str(npc.name)
+			estado["speech_has_more_pages"] = bool(npc.fala_tem_mais())
+			break
 	var dono: Object = current_scene.get("foco_do_e").dono()
 	estado["interaction_target"] = str(dono.name) if dono is Node else ""
 	if dono != null and dono.has_method("perto"):
@@ -1006,6 +1039,9 @@ func _acoes(estado: Dictionary) -> Dictionary:
 	if not jogador.is_physics_processing():
 		return {"wait": "Wait for the current narration/animation to release the controls"}
 	opcoes["inspect_pause"] = "Press Escape to open the normal pause menu, including Save game"
+	if str(estado.get("speech_awaiting_e", "")) != "":
+		opcoes["speech_next"] = "Press E to advance the open speech balloon of %s: next page, or close it on the last page (more pages: %s). Do not walk away from it" % [
+			str(estado["speech_awaiting_e"]), str(estado.get("speech_has_more_pages", false))]
 	var pedro: Node3D = current_scene.get("pedro")
 	if is_instance_valid(pedro):
 		if _guia_conduz(pedro):
@@ -1140,7 +1176,7 @@ func _executar(escolha: String) -> String:
 				if chegada != "arrived":
 					return chegada
 			return await _caminhar(sala.soleira_de_fora() if saindo else sala.soleira_de_dentro(), false, true, true)
-		"dialogue_next", "interact", "confirm_screen":
+		"dialogue_next", "interact", "confirm_screen", "speech_next":
 			if escolha == "confirm_screen" and not _menu_de_pausa_permite_confirmar():
 				return "clock_or_other_menu_line_not_allowed"
 			await _tecla(KEY_E)

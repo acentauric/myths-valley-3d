@@ -812,6 +812,9 @@ func _ready() -> void:
 	cenas.name = "Cenas"
 	add_child(cenas)
 	cenas.configurar(self)
+	# A interface do vale se recolhe com a cena e volta no fim dela (#215).
+	cenas.comecou.connect(_acertar_as_placas.unbind(1))
+	cenas.acabou.connect(_acertar_as_placas.unbind(1))
 	interiores.entrou.connect(_ao_mudar_de_lado.unbind(1))
 	interiores.saiu.connect(_ao_mudar_de_lado.unbind(1))
 	# O E NOS MORADORES (tecla_dos_moradores.gd): conversar, cumprir o passo que
@@ -1744,6 +1747,9 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			# menu?", que virou UMA das linhas dele.
 			if mapa.aberto:
 				_toggle_map()
+			elif tecla_dos_moradores != null and tecla_dos_moradores.fechar_a_fala():
+				# A conversa aberta é o que está aberto (#220): o Esc a fecha, e o menu fica para o próximo.
+				pass
 			elif telas != null:
 				telas.abrir("menu_pausa")
 		elif event.is_action_pressed("mv_mapa"):
@@ -1933,13 +1939,20 @@ func _acertar_as_placas() -> void:
 	# relógio, barras, atalhos, minimapa, dicas, avisos e a seta, sem reativar
 	# filhos expirados quando a tela fecha. A regra mora SÓ aqui: tela nova que
 	# entra em `telas` já a herda. O mapa (M) tem a dele em `hud.set_map_open`.
+	#
+	# A CENA TAMBÉM (#215): enquanto uma cena dos dados toca (`cena_vale.gd`), o jogador assiste, e só o
+	# balão de fala e as tarjas ficam — o painel de missão, o relógio e as barras, os atalhos, o minimapa,
+	# a barra de mão, a seta, as plaquinhas e as dicas se recolhem e voltam no fim dela.
+	var na_cena: bool = cenas != null and bool(cenas.em_cena())
 	if hud_layer != null:
-		hud_layer.visible = _saindo or not modal_aberto()
+		hud_layer.visible = _saindo or not (modal_aberto() or na_cena)
+	if is_instance_valid(_seta):
+		_seta.ocultar(na_cena)
 	if placas == null:
 		return
 	var coberto: bool = Dialogo.ativo or (telas != null and telas.aberta() != "") \
 		or (aviso_da_primeira_vez != null and aviso_da_primeira_vez.aberto()) \
-		or (conquista != null and conquista.ativa())
+		or (conquista != null and conquista.ativa()) or na_cena
 	placas.permitir(not coberto)
 
 

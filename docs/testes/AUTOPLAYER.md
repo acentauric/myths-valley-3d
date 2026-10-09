@@ -199,6 +199,20 @@ entra no relatório como bloqueio. Acabado o tutorial o Pedro não conduz mais: 
 sai do catálogo e ele passa a ser abordado como morador (`approach_MoradorPedro`), no máximo
 seis vezes por pergunta pela próxima cadeia.
 
+**A fala aberta espera o E (#220).** A fala da missão e a conversa do E ficam no balão enquanto o
+robô está a até 6 m e à vista dela, e quem passa a página (e na última a fecha) é o E. O estado traz
+`speech_awaiting_e` (o morador com a fala aberta) e `speech_has_more_pages`; com eles o catálogo oferece
+`speech_next` (E), que a política escolhe antes de seguir o Pedro ou de abordar alguém. Afastado, ou
+sem apertar nada por 25 s, a fala acaba pelo tempo e a condução não trava.
+
+**Na cena do vale o painel sai (#215).** Enquanto uma cena dos dados toca, o painel TESTANDO (a camada
+`JevObservador`, menos o modal do bloqueio) fica escondido e volta no fim; o jogador está parado e o
+catálogo oferece só `wait`, e a cena tem teto de 28 s, então o robô a atravessa sem fazer nada.
+
+**O morador que dá atenção não é "falando" (#198).** A frase curta de quem para ao ver o jogador chegar
+(`npc.atencao_no_ar`) sai do `speaking` do estado e vai para `attending`: o E já vale com ela no ar, e a
+política escolhe `interact` no passo "Volte ao Pedro" em vez de esperar a frase ou de repetir `follow_pedro`.
+
 **A câmera não esconde o viajante (#201).** Só na sessão de teste (o nó
 `tools/jev/camera_do_teste.gd`, criado pelo `sessao.gd`; o jogo comum e as camadas da câmera
 ficam como estão), a cada quadro um raio vai da câmera ao peito e à cabeça do viajante. Se
