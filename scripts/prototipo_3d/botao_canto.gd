@@ -216,10 +216,14 @@ static func estilizar_tecla(marca: Label) -> void:
 	fundo.content_margin_left = 3
 	fundo.content_margin_right = 3
 	marca.add_theme_stylebox_override("normal", fundo)
-	marca.add_theme_font_override("font", Identidade.fonte_numeros(600))
-	marca.add_theme_font_size_override("font_size", 10)
+	# A FONTE LEGÍVEL DO HUD (10/10/2026): a Cormorant de números antigos, em 10, não se lia nos
+	# números da barra de mão. A sans do HUD, em negrito, com algarismos de altura igual.
+	var legivel := Identidade.fonte_do_hud()
+	legivel.variation_embolden = 0.6
+	marca.add_theme_font_override("font", legivel)
+	marca.add_theme_font_size_override("font_size", 11)
 	marca.add_theme_color_override("font_color", Color("1a241f"))
-	marca.custom_minimum_size = Vector2(16, 14)
+	marca.custom_minimum_size = Vector2(16, 15)
 	marca.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	marca.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	marca.mouse_filter = Control.MOUSE_FILTER_IGNORE

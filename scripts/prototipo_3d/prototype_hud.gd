@@ -783,12 +783,12 @@ func _sincronizar_prioridade_dos_avisos() -> void:
 	superiores.append_array(PopupsDoMundo.retangulos(self, PopupsDoMundo.GRUPO_DICAS))
 	var essenciais := PopupsDoMundo.retangulos(self, PopupsDoMundo.GRUPO_HUD, null, PopupsDoMundo.PRIORIDADE_HUD)
 	if is_instance_valid(_espera_panel):
-		_espera_panel.position.y = 154.0
-		# O aviso segue abaixo dos componentes maiores, antes de disputar com
-		# as falas do mundo. Sua função permanece legível com uma missão ampliada.
+		_espera_panel.position.y = _altura_do_aviso_de_espera()
+		# O aviso sobe acima dos componentes maiores que o cobririam, antes de disputar com
+		# as falas do mundo.
 		for caixa in essenciais:
 			if caixa.intersects(_espera_panel.get_global_rect()):
-				_espera_panel.position.y = caixa.end.y + 12.0
+				_espera_panel.position.y = minf(_espera_panel.position.y, caixa.position.y - _espera_panel.size.y - 12.0)
 	superiores.append_array(essenciais)
 	if is_instance_valid(_notice_panel):
 		var livre := true
@@ -806,7 +806,7 @@ func _sincronizar_prioridade_dos_avisos() -> void:
 		for caixa in superiores:
 			var comum := caixa.intersection(meu)
 			if comum.has_area() and comum.get_area() < meu.get_area() * 0.25:
-				_espera_panel.position.y = maxf(_espera_panel.position.y, caixa.end.y + 12.0)
+				_espera_panel.position.y = minf(_espera_panel.position.y, caixa.position.y - _espera_panel.size.y - 12.0)
 		var livre := true
 		for caixa in superiores:
 			if caixa.intersects(_espera_panel.get_global_rect()):
@@ -949,15 +949,21 @@ func _criar_aviso_de_espera() -> void:
 	_root.add_child(_espera_panel)
 	Tela.vincular_componente(_espera_panel, "avisos", Vector2(0.5, 0))
 	_espera_panel.add_to_group("obstaculos_do_hud")
-	# No meio, abaixo do relógio (18 a 72) e das três barras do corpo embaixo
-	# dele (a do vigor vai até 146), com um respiro, e crescendo para os dois
-	# lados com o texto.
+	# No meio, LOGO ACIMA DA BARRA DE MÃO e do nome do item (10/10/2026: ficava no alto, no
+	# meio da tela, em cima do que o jogador olha), crescendo para os dois lados com o texto.
 	_espera_panel.anchor_left = 0.5
 	_espera_panel.anchor_right = 0.5
 	_espera_panel.offset_top = 154.0
 	_espera_panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
 	_espera_panel.modulate.a = 0.0
 	_espera_panel.visible = false
+
+
+## O alto do aviso de espera: acima da barra de mão (52 + 18 de margem) e do nome do item que
+## fica sobre ela (24), com um respiro.
+func _altura_do_aviso_de_espera() -> float:
+	var escala := Tela.escala_componente("mao")
+	return _root.size.y - BarraDeMao.MARGEM_DE_BAIXO - (BarraDeMao.ALTURA + 24.0) * escala - 14.0 - _espera_panel.size.y
 
 
 ## Painel de informações à esquerda, abaixo do título: casas e lápides do cemitério.

@@ -101,7 +101,8 @@ func _montar() -> void:
 		numero.name = "TeclaDeAtalho"
 		numero.text = "0" if i == 9 else str(i + 1)
 		preload("res://scripts/prototipo_3d/botao_canto.gd").estilizar_tecla(numero)
-		numero.position = Vector2(4.0, -9.0)
+		# Acima do ícone (que começa a 6 do alto), qualquer que seja a altura da plaqueta.
+		numero.position = Vector2(4.0, 5.0 - numero.get_combined_minimum_size().y)
 		numero.z_index = 3
 		espaco.add_child(numero)
 
