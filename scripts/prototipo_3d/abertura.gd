@@ -1394,6 +1394,15 @@ func _open_history() -> void:
 	_render_history()
 
 
+## Dias juntos numa entrada vêm no JSON como "27–28/09/2026"; na tela o traço vira a palavra do idioma:
+## "27 a 28/09/2026" (pt e es), "27 to 28/09/2026" (en), "27至28/09/2026" (zh).
+const CONECTOR_DE_DATAS := [" a ", " to ", " a ", "至"]
+
+
+static func data_do_historico(data: String, idioma: int) -> String:
+	return data.replace("–", CONECTOR_DE_DATAS[clampi(idioma, 0, CONECTOR_DE_DATAS.size() - 1)])
+
+
 ## Entradas longas viram páginas extras, mantendo cada alteração inteira. Estática, para o portão do histórico
 ## (`tests/historico_em_linhas_longas.gd`) conferir a conta sem montar o menu.
 static func _paginar_historico(entradas: Array) -> Array:
@@ -1445,7 +1454,7 @@ func _render_history() -> void:
 	var entry: Dictionary = history_entries[history_index]
 	# Sem foco em botão: as teclas ← → ficam livres para trocar de página.
 	_modal_header("Histórico", _home, "O que mudou no vale a cada versão.")
-	_label("%s · %s" % [entry.get("data", ""), IdiomaMenu.campo(entry, "estado")], HISTORY_FONTE_DATA)
+	_label("%s · %s" % [data_do_historico(str(entry.get("data", "")), IdiomaMenu.indice()), IdiomaMenu.campo(entry, "estado")], HISTORY_FONTE_DATA)
 	_label(str(IdiomaMenu.campo(entry, "titulo")), HISTORY_FONTE_TITULO)
 	var changes := VBoxContainer.new()
 	changes.name = "MudancasHistorico"

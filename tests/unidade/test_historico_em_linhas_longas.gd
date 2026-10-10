@@ -71,6 +71,13 @@ func test_historico_em_linhas_longas() -> void:
 				_conferir(largura <= util, "%s: a linha passa da largura útil do modal (%.0f de %.0f px): '%s'" % [str(e.get("data", "")), largura, util, str(linha)])
 	_conferir(quantas > 0 and soma / quantas >= util * 0.5, "a linha média usa só %.0f%% da largura útil do modal" % (100.0 * soma / maxf(quantas, 1) / util))
 
+	# --- 5b. O INTERVALO DE DIAS NO IDIOMA DO JOGADOR -------------------------------------------------------
+	_conferir(Abertura.data_do_historico("27–28/09/2026", 0) == "27 a 28/09/2026", "em português o intervalo é '27 a 28/09/2026'")
+	_conferir(Abertura.data_do_historico("27–28/09/2026", 1) == "27 to 28/09/2026", "em inglês o intervalo é '27 to 28/09/2026'")
+	_conferir(Abertura.data_do_historico("27–28/09/2026", 2) == "27 a 28/09/2026", "em espanhol o intervalo é '27 a 28/09/2026'")
+	_conferir(Abertura.data_do_historico("27–28/09/2026", 3) == "27至28/09/2026", "em chinês o intervalo é '27至28/09/2026'")
+	_conferir(Abertura.data_do_historico("10/10/2026", 1) == "10/10/2026", "um dia só fica como está")
+
 	# --- 6. UMA PÁGINA POR DIA ------------------------------------------------------------------------------
 	var paginas: Array = Abertura._paginar_historico(entradas)
 	var esperadas := 0
