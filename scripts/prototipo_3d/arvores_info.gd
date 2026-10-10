@@ -178,16 +178,10 @@ func _process(_delta: float) -> void:
 		return
 	if _corte_vale_a_tecla():
 		var arvore: Dictionary = _cortaveis[_cortavel_perto]
-		if esmaecida_em(get_tree(), arvore["pos"]):
-			_dica.visible = false
-			return
 		DicaTecla.mostrar_em(_dica, camera, (arvore["pos"] as Vector3) + Vector3(0, ALTURA_DICA, 0), _texto_do_corte(_cortavel_perto))
 		return
 	if _fibra_perto >= 0:
 		var palmeira: Dictionary = _cortaveis[_fibra_perto]
-		if esmaecida_em(get_tree(), palmeira["pos"]):
-			_dica.visible = false
-			return
 		DicaTecla.mostrar_em(_dica, camera, (palmeira["pos"] as Vector3) + Vector3(0, ALTURA_DICA, 0), _texto_da_fibra(_fibra_perto))
 		return
 	if _perto < 0 or _perto == _aberta:
@@ -198,19 +192,33 @@ func _process(_delta: float) -> void:
 	if Almanaque.conhece(String(arvore_info["especie"])):
 		_dica.visible = false
 		return
-	if esmaecida_em(get_tree(), arvore_info["pos"]):
-		_dica.visible = false
-		return
 	var ficha: Dictionary = _fichas[arvore_info["especie"]]
 	DicaTecla.mostrar_em(_dica, camera, arvore_info["pos"] + Vector3(0, ALTURA_DICA, 0), String(IdiomaMenu.campo(ficha, "nome", "Árvore")))
 
 
-## A ÁRVORE ESTÁ ESMAECIDA na frente do viajante (10/10/2026)? Com ela transparente a dica do E
-## dela some de vez: não fica uma placa boiando sobre uma árvore que não se vê. Vale para as
+## A ÁRVORE ESTÁ ESMAECIDA na frente do viajante (10/10/2026)? A árvore da interação nunca esmaece
+## (`alvo_da_interacao`), então a dica do E dela não some; esta pergunta fica para os portões. Vale para as
 ## peças que a câmera do jogo esmaece (`obstaculos_camera.gd`) e para as cópias que a sessão de
 ## teste esmaece no lugar das árvores em bloco (`tools/jev/copas_do_teste.gd`).
 const RAIO_DA_ESMAECIDA := 1.5
 const ESMAECIDA_A_PARTIR_DE := 0.3
+
+
+## A ÁRVORE EM QUE O JOGADOR VAI MEXER (a do golpe, a do E de cortar, de tirar fibra ou de ler a
+## ficha), ou Vector3.INF. Ela não esmaece na frente da câmera (10/10/2026): transparente, não se
+## via a árvore que se estava cortando.
+func alvo_da_interacao() -> Vector3:
+	for indice in [_em_golpe, _cortavel_perto, _fibra_perto]:
+		if indice >= 0 and indice < _cortaveis.size():
+			return _cortaveis[indice]["pos"]
+	if _perto >= 0 and _perto < _pontos.size():
+		return _pontos[_perto]["pos"]
+	return Vector3.INF
+
+
+static func alvo_em(arvore: SceneTree) -> Vector3:
+	var info := arvore.get_first_node_in_group("arvores_do_vale")
+	return info.alvo_da_interacao() if info != null and info.has_method("alvo_da_interacao") else Vector3.INF
 
 
 static func esmaecida_em(arvore: SceneTree, pos: Vector3) -> bool:

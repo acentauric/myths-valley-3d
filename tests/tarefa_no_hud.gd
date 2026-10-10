@@ -108,8 +108,9 @@ func _run() -> void:
 		var rotulo := "janela %dx%d" % [tamanho_da_janela.x, tamanho_da_janela.y]
 		_conferir(aviso.visible and aviso.size.x <= float(hud.LARGURA_DO_AVISO) + 1.0, "%s: o aviso mede %.0f de largura; o máximo é %.0f" % [rotulo, aviso.size.x, float(hud.LARGURA_DO_AVISO)])
 		_conferir(hud._notice_label.get_line_count() > 1, "%s: a fala comprida do Pedro não quebrou a linha no aviso" % rotulo)
-		_conferir(caixa.position.x < 60.0, "%s: o aviso não está no canto esquerdo (começa em x=%.0f)" % [rotulo, caixa.position.x])
-		_conferir(caixa.position.y >= hud._heading.get_global_rect().end.y, "%s: o aviso não fica abaixo do quadro da missão (aviso em y=%.0f, missão termina em %.0f)" % [rotulo, caixa.position.y, hud._heading.get_global_rect().end.y])
+		# 10/10/2026: o aviso fica no centro de baixo, acima da barra de mão e do aviso de espera.
+		_conferir(absf(caixa.get_center().x - hud._root.get_global_rect().get_center().x) <= 2.0, "%s: o aviso não está centrado (centro em x=%.0f)" % [rotulo, caixa.get_center().x])
+		_conferir(caixa.get_center().y > tela.y * 0.5, "%s: o aviso não fica na metade de baixo (y=%.0f)" % [rotulo, caixa.position.y])
 		_conferir(not caixa.intersects(hud._heading.get_global_rect()), "%s: o aviso cobre a missão" % rotulo)
 		_conferir(not caixa.intersects(hud._clock_panel.get_global_rect()), "%s: o aviso cobre o relógio" % rotulo)
 		for barra_do_corpo: Control in [hud.barra_vida, hud.barra_folego, hud.barra_stamina]:

@@ -1567,7 +1567,8 @@ func _encontrar(passo: Dictionary, quem: Node3D) -> void:
 	_calar_o_anuncio(passo)
 	var resposta := str(meta.get("resposta", ""))
 	if resposta != "" and quem.has_method("narrar"):
-		quem.narrar("", resposta, {"classe": FilaDeFalas.Classe.CONVERSA, "no_lugar": true,
+		# Com a voz de quem responde, quando a resposta a tem ("audio_resposta", 10/10/2026).
+		quem.narrar(str(meta.get("audio_resposta", "")), resposta, {"classe": FilaDeFalas.Classe.CONVERSA, "no_lugar": true,
 			"origem": "resposta:%d:%s" % [get_instance_id(), str(passo.get("id", ""))]})
 
 

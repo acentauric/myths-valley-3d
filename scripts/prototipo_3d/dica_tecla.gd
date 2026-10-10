@@ -154,6 +154,10 @@ static func criar(pai: Control, tecla_texto: String, acao: String) -> PanelConta
 ## para cima dela (`popups_do_mundo.gd`). O empurrão é o que falta para não cobrir, calculado
 ## depois da mola e com uma mola mais leve só dele: a placa que some (o morador começou a
 ## falar) não derruba a dica de uma vez, e a que chega não a faz saltar.
+## O respiro (px) entre a dica do E e o corpo do jogador na tela.
+const FOLGA_DO_JOGADOR := 8.0
+
+
 static func mostrar_em(dica: PanelContainer, camera: Camera3D, ponto: Vector3, acao: String = "") -> void:
 	if camera == null or camera.is_position_behind(ponto):
 		dica.visible = false
@@ -187,6 +191,12 @@ static func mostrar_em(dica: PanelContainer, camera: Camera3D, ponto: Vector3, a
 	if livre.size == Vector2.ZERO:
 		dica.visible = false
 		return
+	# NUNCA EM CIMA DO VIAJANTE (10/10/2026): o alvo atrás dele punha a dica na cabeça do
+	# jogador. Cobrindo o corpo dele, a dica vai para o lado mais perto, fora do corpo e do HUD.
+	livre = _fora_do_jogador(dica, camera, livre, paineis, tela)
+	if livre.size == Vector2.ZERO:
+		dica.visible = false
+		return
 	# O empurrão também tem peso: a placa que some (o morador começou a falar) não faz a dica
 	# despencar de uma vez, e a que chega não a faz saltar.
 	var empurrao := _mola_do_empurrao(dica)
@@ -196,6 +206,30 @@ static func mostrar_em(dica: PanelContainer, camera: Camera3D, ponto: Vector3, a
 	var sobe := empurrao.seguir(alvo_do_empurrao, dica.get_process_delta_time(), TEMPO_DO_EMPURRAO,
 		SuavizadorDeTela.VELOCIDADE_MAXIMA, 0.0, CORREIA_DO_EMPURRAO)
 	dica.position = (caixa.position + sobe - origem).round()
+
+
+## A caixa da dica fora do corpo do jogador na tela; se não houver lado livre, vazia (a dica apaga).
+static func _fora_do_jogador(dica: Control, camera: Camera3D, caixa: Rect2, paineis: Array[Rect2], tela: Vector2) -> Rect2:
+	var jogador := dica.get_tree().get_first_node_in_group("map_player") as Node3D if dica.is_inside_tree() else null
+	if jogador == null:
+		return caixa
+	var corpo: Rect2 = load("res://scripts/prototipo_3d/placas_nomes.gd").caixa_na_tela(camera, jogador.global_position, 0.0, 1.95, 0.32)
+	if corpo.size == Vector2.ZERO or not caixa.intersects(corpo.grow(FOLGA_DO_JOGADOR)):
+		return caixa
+	var esquerda := caixa
+	esquerda.position.x = corpo.position.x - FOLGA_DO_JOGADOR - caixa.size.x
+	var direita := caixa
+	direita.position.x = corpo.end.x + FOLGA_DO_JOGADOR
+	var lados := [esquerda, direita]
+	if absf(direita.get_center().x - caixa.get_center().x) < absf(esquerda.get_center().x - caixa.get_center().x):
+		lados = [direita, esquerda]
+	for lado: Rect2 in lados:
+		if lado.position.x < 0.0 or lado.end.x > tela.x:
+			continue
+		var livre := PopupsDoMundo.livre_do_hud(lado, paineis, FOLGA_DO_HUD, tela)
+		if livre.size != Vector2.ZERO and not livre.intersects(corpo.grow(FOLGA_DO_JOGADOR - 1.0)):
+			return livre
+	return Rect2()
 
 
 ## O alvo e o requisito, independentemente do idioma. Não quebra nomes procurando

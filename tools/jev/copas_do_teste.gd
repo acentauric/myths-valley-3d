@@ -28,6 +28,11 @@ var _sonda_s := 0.0
 var _malhas: Dictionary = {}
 ## índice do tronco -> {"copia": MeshInstance3D, "frente": bool, "regiao": Node3D}
 var _troncos: Dictionary = {}
+var _alvo := Vector3.INF
+
+
+func _e_o_alvo(pos: Vector3) -> bool:
+	return _alvo.is_finite() and Vector2(pos.x - _alvo.x, pos.z - _alvo.z).length() < 1.6
 
 
 func _process(delta: float) -> void:
@@ -69,6 +74,8 @@ func _sondar() -> void:
 		return
 	var de := camera.global_position
 	var pontos := [jogador.global_position + Vector3.UP * ALTURA_DO_PEITO, jogador.global_position + Vector3.UP * ALTURA_DA_CABECA]
+	# A árvore em que o viajante vai mexer não esmaece: transparente, não se via o que se cortava.
+	_alvo = load("res://scripts/prototipo_3d/arvores_info.gd").alvo_em(jogador.get_tree())
 	_sondar_os_blocos(de, pontos)
 	var alcance := de.distance_to(jogador.global_position) + 2.0
 	for peca in get_tree().get_nodes_in_group(GRUPO):
@@ -79,17 +86,15 @@ func _sondar() -> void:
 		var centro := (peca as Node3D).global_position
 		if Vector2(centro.x - jogador.global_position.x, centro.z - jogador.global_position.z).length() > alcance + raio:
 			continue
+		if _e_o_alvo(centro):
+			continue
 		for malha in peca.find_children("*", "MeshInstance3D", true, false):
 			var m := malha as MeshInstance3D
 			if m.mesh == null or not m.is_visible_in_tree():
 				continue
 			var caixa: AABB = m.global_transform * m.get_aabb()
 			caixa = caixa.grow(-minf(caixa.size.x, caixa.size.z) * ENCOLHE)
-			var frente := false
-			for ponto in pontos:
-				if caixa.intersects_segment(de, ponto) or caixa.has_point(de):
-					frente = true
-					break
+			var frente := _na_frente(caixa, de, pontos)
 			if not frente:
 				continue
 			var id := m.get_instance_id()
@@ -124,9 +129,12 @@ func _sondar_os_blocos(de: Vector3, pontos: Array) -> void:
 					continue
 				if visual == null or int(tronco.get("instancia", -1)) < 0 or not tronco.has("transformacao") or bool(tronco.get("cortado", false)):
 					continue
+				var pe_do_tronco: Vector3 = (visual.global_transform * (tronco["transformacao"] as Transform3D)).origin
 				if _troncos.has(i):
 					var caixa_ja: AABB = _caixa_do_tronco(visual, tronco)
-					_troncos[i]["frente"] = _na_frente(caixa_ja, de, pontos)
+					_troncos[i]["frente"] = _na_frente(caixa_ja, de, pontos) and not _e_o_alvo(pe_do_tronco)
+					continue
+				if _e_o_alvo(pe_do_tronco):
 					continue
 				if not visual.is_visible_in_tree() or visual.multimesh == null or visual.multimesh.mesh == null:
 					continue
@@ -139,7 +147,20 @@ func _caixa_do_tronco(visual: MultiMeshInstance3D, tronco: Dictionary) -> AABB:
 	return caixa.grow(-minf(caixa.size.x, caixa.size.z) * ENCOLHE)
 
 
+## A copa está ENTRE a câmera e o viajante? (10/10/2026: debaixo de uma árvore, a câmera ficava dentro
+## da caixa da árvore da frente, e a árvore à frente do viajante sumia.) Só conta a copa cujo centro,
+## no rumo da câmera ao viajante, fica antes dele.
 static func _na_frente(caixa: AABB, de: Vector3, pontos: Array) -> bool:
+	if pontos.is_empty():
+		return false
+	var ate: Vector3 = pontos[0]
+	var rumo := Vector2(ate.x - de.x, ate.z - de.z)
+	var distancia := rumo.length()
+	if distancia > 0.01:
+		var centro := caixa.get_center()
+		var adiante := Vector2(centro.x - de.x, centro.z - de.z).dot(rumo / distancia)
+		if adiante > distancia - 0.3:
+			return false
 	if caixa.has_point(de):
 		return true
 	for ponto in pontos:

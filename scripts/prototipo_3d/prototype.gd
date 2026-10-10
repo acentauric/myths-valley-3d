@@ -365,6 +365,7 @@ func _ready() -> void:
 	recursos.name = "Recursos3D"
 	add_child(recursos)
 	recursos.configurar(world, player, hud, hud_layer)
+	# A recusa ("Precisa de Foice.") vai ao centro de baixo, com os outros recados curtos.
 	recursos.recusado.connect(func(motivo: String) -> void: hud.set_notice(motivo))
 	recursos.derrubado.connect(_ao_derrubar)
 	_recursos = recursos
@@ -1625,8 +1626,9 @@ func _on_periodo_mudou(periodo: String) -> void:
 			hud.set_notice("Amanheceu. A mata acorda com as aves do Recôncavo.")
 
 
-func _on_saudacao(morador: MoradorNPC, texto: String) -> void:
-	hud.set_fala(String(morador.dados.get("nome", "Morador")), texto)
+## A saudação já está inteira no balão do canto (10/10/2026): o aviso de baixo não a repete.
+func _on_saudacao(_morador: MoradorNPC, _texto: String) -> void:
+	pass
 
 
 ## O QUE UMA CADEIA ANUNCIA SÓ VAI AO HUD QUANDO NÃO HÁ MISSÃO ABERTA.

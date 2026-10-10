@@ -15,7 +15,7 @@ from jogar import MAX_BODY, MAX_TOKENS, PRICE, ProgressGuard, Session, game_refe
 IGUAIS_NO_IDIOMA = {"nivel_jev_en", "nivel_jev_es", "nivel_gpt_en", "nivel_gpt_es", "capitulo_es",
                     "parar_curto_es", "a_wait_es", "a_dodge_es", "a_run_es", "a_explore_es",
                     "nivel_jev_zh", "nivel_gpt_zh", "cmd_minimizar_es", "cmd_maximizar_es",
-                    "cmd_devolver_curto_es"}
+                    "cmd_devolver_curto_es", "manual_titulo_en", "manual_titulo_es"}
 
 
 class SpendingTests(unittest.TestCase):

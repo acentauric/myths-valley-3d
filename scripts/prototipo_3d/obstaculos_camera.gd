@@ -24,7 +24,12 @@ func mostrar_jogador(camera: Camera3D, centro: Vector3, delta: float) -> void:
 			for id in _corpos:
 				if corpo in _corpos[id]:
 					encobrindo[id] = true
+	# A árvore em que o jogador vai mexer não esmaece (10/10/2026).
+	var alvo_da_interacao: Vector3 = load("res://scripts/prototipo_3d/arvores_info.gd").alvo_em(get_tree())
 	for id in _corpos:
+		var peca = instance_from_id(id)
+		if alvo_da_interacao.is_finite() and peca is Node3D and Vector2((peca as Node3D).global_position.x - alvo_da_interacao.x, (peca as Node3D).global_position.z - alvo_da_interacao.z).length() < 1.6:
+			encobrindo.erase(id)
 		for corpo in _corpos[id]:
 			if not is_instance_valid(corpo):
 				continue

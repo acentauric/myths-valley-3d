@@ -86,6 +86,13 @@ func _run() -> void:
 	_pôr_o_jogador_a(jogador, mundo, tonho, 4.0)
 	await _esperar(1.2)
 	_conferir(tonho.balao.a_vista(), "a 4 u o balão do Tonho não aparece (câmera a %.1f)" % _camera_ate(tonho))
+	# 10/10/2026: o balão fica preso no canto de cima, à esquerda, sob o quadro da missão e da largura dele.
+	var hud_do_vale = get_first_node_in_group("hud_do_vale")
+	if hud_do_vale != null:
+		var canto: Rect2 = hud_do_vale.canto_da_fala()
+		var do_balao: Rect2 = tonho.balao.retangulo()
+		_conferir(absf(do_balao.position.x - canto.position.x) <= 1.0 and absf(do_balao.position.y - canto.position.y) <= 1.0 and absf(do_balao.size.x - canto.size.x) <= 2.0,
+			"o balão do Tonho não ficou preso no canto, na largura da missão (%s, canto %s)" % [do_balao, canto])
 	tonho.balao.esconder()
 
 	# --- 3. UM BALÃO POR VEZ ------------------------------------------------------------

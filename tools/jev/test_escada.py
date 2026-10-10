@@ -10,7 +10,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from escada import DETERMINISTICO, GPT, JEV, DetectorDeTrava, Escada, contexto_enxuto, plano_simulado
+from escada import DETERMINISTICO, GPT, JEV, LIMITES, DetectorDeTrava, Escada, contexto_enxuto, plano_simulado
 from jogar import GPT_MODELO_PADRAO, Session, detectar_apoios, ler_ponteiro, ultima_sessao
 from progresso import Ritmo, capitulos, medir
 
@@ -127,7 +127,7 @@ class EscadaTests(unittest.TestCase):
         self.fail("a escada nunca pediu apoio")
 
     def test_deterministic_plays_alone_until_a_signal(self):
-        resposta = travar(self.escada, 10, andar=True)
+        resposta = travar(self.escada, 5, andar=True)
         self.assertEqual(resposta["tipo"], "deterministico")
         self.assertEqual(resposta["modo"], "normal")
 
@@ -138,7 +138,7 @@ class EscadaTests(unittest.TestCase):
             resposta = self.escada.decidir(estado(i * 2), ACOES, TAREFA)
             modos.append((resposta["tipo"], resposta.get("modo")))
         primeiro_pedido = next(i for i, (tipo, _) in enumerate(modos) if tipo == "pedir")
-        self.assertGreaterEqual(primeiro_pedido, 25 + 12 - 1)
+        self.assertGreaterEqual(primeiro_pedido, LIMITES["acoes"] + LIMITES["local_acoes"] - 1)
         self.assertIn(("deterministico", "recuperacao_local"), modos[:primeiro_pedido])
 
     def test_jev_plan_is_executed_and_progress_returns_control_and_learns(self):
@@ -235,7 +235,7 @@ class EscadaTests(unittest.TestCase):
     def test_context_is_lean(self):
         contexto = contexto_enxuto(estado(5, interaction_target="Pedro"), ACOES, TAREFA,
                                    [{"action": f"a{i}", "result": "ok"} for i in range(30)], [], ["Precisa de Machado."], [], JEV)
-        self.assertEqual(len(contexto["recent_actions"]), 10)
+        self.assertEqual(len(contexto["recent_actions"]), 20)
         self.assertNotIn("world_map", contexto)
         self.assertLess(len(json.dumps(contexto)), 4000)
         self.assertEqual(contexto["refusals"], ["Precisa de Machado."])

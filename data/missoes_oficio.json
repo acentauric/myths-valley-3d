@@ -19,7 +19,7 @@
       "resumo_es": "Pesca 2 peces (E lanza, E otra vez engancha)",
       "lugar": "pier",
       "raio": 8.0,
-      "audio": "",
+      "audio": "pedro_oficio_pesca",
       "texto": "Essa vara era do meu pai; com você ela pesca mais do que comigo. Água na frente — o píer, a praia, a beira do rio —, e o E lança a linha. Quando a bóia afunda e acende, E de novo, ligeiro, que peixe não espera. No mar sai robalo; no rio, traíra.",
       "texto_en": "This rod was my father's; with you it'll catch more than it does with me. Water in front of you — the pier, the beach, the riverbank — and E casts the line. When the float sinks and lights up, E again, quick, because fish don't wait. In the sea you get snook; in the river, trahira.",
       "texto_es": "Esta caña era de mi padre; contigo pesca más que conmigo. Agua delante —el muelle, la playa, la orilla del río—, y la E lanza el sedal. Cuando la boya se hunde y se enciende, E otra vez, rápido, que el pez no espera. En el mar sale róbalo; en el río, traíra.",
@@ -37,7 +37,7 @@
       "resumo_es": "Desbloquea un talento en la red (K)",
       "lugar": "pier",
       "raio": 8.0,
-      "audio": "",
+      "audio": "pedro_oficio_talentos",
       "texto": "Quem trabalha aprende, e o corpo guarda. Cada tanto de lida vira um ponto, e o ponto se gasta na teia — o K abre. Escolhe um caminho: o braço do machado, a mão da pedra, a lida da roça. Olhar não basta: tem que destravar um.",
       "texto_en": "Whoever works learns, and the body keeps it. Every so much toil becomes a point, and the point is spent in the web — K opens it. Pick a path: the axe arm, the stone hand, the field work. Looking isn't enough: you have to unlock one.",
       "texto_es": "Quien trabaja aprende, y el cuerpo lo guarda. Cada tanto de faena se vuelve un punto, y el punto se gasta en la red: la K la abre. Elige un camino: el brazo del hacha, la mano de la piedra, la faena del sembrado. Mirar no basta: hay que desbloquear uno.",
@@ -45,6 +45,7 @@
     }
   ],
   "arremate": {
+    "audio": "pedro_oficio_arremate",
     "texto": "Vara na mão e um caminho na teia: já tem ofício. O resto o vale ensina, um dia de cada vez.",
     "texto_en": "A rod in your hand and a path in the web: now you have a trade. The rest the valley teaches, one day at a time.",
     "texto_es": "Caña en la mano y un camino en la red: ya tienes oficio. Lo demás lo enseña el valle, un día a la vez."

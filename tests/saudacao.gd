@@ -153,10 +153,20 @@ func _run() -> void:
 		if saudou:
 			_conferir(ditas[0] == fala_longa,
 				"o aviso de %s não levou a fala inteira: '%s'" % [nome, ditas[0]])
-			# A fala vai inteira ao aviso do canto; o balão fica só com o sinal de fala (10/10/2026).
+			# A saudação vai inteira ao balão preso no canto (10/10/2026).
 			var no_balao: String = sem_missao.balao._texto.text
-			_conferir(no_balao == "• • •",
-				"o balão de %s devia mostrar só o sinal de fala, com a fala no aviso: '%s'" % [nome, no_balao])
+			_conferir(no_balao == fala_longa,
+				"o balão do canto de %s devia trazer a saudação inteira: '%s'" % [nome, no_balao])
+			# O balão fica preso no canto de cima, à esquerda, sob o quadro da missão e da largura dele.
+			var hud_do_vale = root.get_tree().get_first_node_in_group("hud_do_vale") if root.get_tree() else null
+			if hud_do_vale != null:
+				await process_frame
+				var canto: Rect2 = hud_do_vale.canto_da_fala()
+				var do_balao: Rect2 = sem_missao.balao.retangulo()
+				# Quem cumprimenta longe da câmera (além do alcance do balão) não aparece no canto.
+				if do_balao.size != Vector2.ZERO:
+					_conferir(absf(do_balao.position.x - canto.position.x) <= 1.0 and absf(do_balao.position.y - canto.position.y) <= 1.0 and absf(do_balao.size.x - canto.size.x) <= 2.0,
+						"o balão de %s não ficou preso no canto, na largura da missão (%s, canto %s)" % [nome, do_balao, canto])
 			print("  %-9s balão '%s' (fala de %d letras)" % [nome, no_balao, fala_longa.length()])
 
 	# --- 4. O PEDRO DE DEPOIS DO TUTORIAL NÃO SE APRESENTA DE NOVO --------------

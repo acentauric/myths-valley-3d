@@ -112,7 +112,7 @@ var _house_info_heading: Label
 var _clock_label: Label
 ## A largura máxima do aviso do canto superior esquerdo (#102): a mesma do quadro
 ## da missão, e a coluna do canto fica alinhada de cima a baixo.
-const LARGURA_DO_AVISO := 360.0
+const LARGURA_DO_AVISO := 560.0
 ## A margem do canto e o respiro entre dois quadros da coluna da esquerda.
 const MARGEM_DO_CANTO := 18.0
 const FOLGA_DA_COLUNA := 12.0
@@ -139,6 +139,7 @@ var mapa_aberto := false
 
 
 func _ready() -> void:
+	add_to_group("hud_do_vale")
 	layer = 20
 	process_priority = 30 # Depois de posicionar falas e dicas.
 	set_process_unhandled_key_input(true)
@@ -845,14 +846,12 @@ func _layout_notice() -> void:
 		# máxima (LARGURA_DO_AVISO, ou o que a janela e a escala dos avisos deixam)
 		# para a fala do Pedro, que então quebra a linha e cresce para baixo — o
 		# rótulo mora dentro da caixa, e ela acompanha a altura dele.
-		# A MESMA LARGURA DO BLOCO DA MISSÃO, logo acima (10/10/2026): os dois blocos do canto
-		# formam uma coluna só. Na tela, com a escala de cada um (a missão pode estar em 80%
-		# e os avisos em 100%), e sem passar do que a janela deixa.
-		var na_tela := HEADING_WIDTH * Tela.escala_componente("missao")
-		var maxima := maxf(160.0, _root.get_viewport_rect().size.x * 0.68 / Tela.escala_componente("avisos"))
-		var largura := minf(na_tela / Tela.escala_componente("avisos"), maxima)
-		_notice_panel.offset_left = MARGEM_DO_CANTO
-		_notice_panel.offset_right = MARGEM_DO_CANTO + largura
+		# O AVISO FICA NO CENTRO DE BAIXO (10/10/2026), acima da barra de mão: no canto de cima ele
+		# disputava lugar com a fala. Mede-se pelo texto, até LARGURA_DO_AVISO.
+		var font := _notice_label.get_theme_font("font")
+		var maxima := minf(LARGURA_DO_AVISO, maxf(160.0, _root.get_viewport_rect().size.x * 0.68 / Tela.escala_componente("avisos")))
+		var largura := minf(font.get_string_size(_notice, HORIZONTAL_ALIGNMENT_LEFT, -1, _notice_label.get_theme_font_size("font_size")).x + 60.0, maxima)
+		_notice_panel.offset_right = _notice_panel.offset_left + largura
 		# Volta à altura de uma linha: o painel cresce de novo até o texto novo caber.
 		_notice_panel.offset_bottom = _notice_panel.offset_top + 30.0
 		_posicionar_aviso()
@@ -863,30 +862,29 @@ func _retangulo_em_tela(controle: Control) -> Rect2:
 	return controle.get_global_transform_with_canvas() * Rect2(Vector2.ZERO, controle.size)
 
 
-## ONDE O AVISO COMEÇA, na coluna do canto superior esquerdo (#102): logo abaixo do
-## último quadro que ocupa a mesma faixa horizontal — a missão, as informações da
-## casa, o relógio e as barras (quando a janela é estreita e eles descem para baixo
-## do quadro) e o aviso de espera. Sem nenhum deles à frente, vai para o fim da
-## missão. Os quadros mudam de altura (a tarefa longa, a escala de cada
-## componente), e o aviso os acompanha em vez de uma altura fixa.
+## ONDE O AVISO FICA (10/10/2026): no centro de baixo, acima da barra de mão e do aviso de espera;
+## os "✓" da tarefa feita empilham por cima dele.
 func _posicionar_aviso() -> void:
 	if not is_instance_valid(_notice_panel) or not is_instance_valid(_heading):
 		return
-	var largura := (_notice_panel.offset_right - _notice_panel.offset_left) * Tela.escala_componente("avisos")
-	var direita := MARGEM_DO_CANTO + largura
-	var topo := MARGEM_DO_CANTO
-	var antes: Array = [_heading, _clock_panel, barra_vida, barra_folego, barra_stamina, _house_info_panel, _espera_panel]
-	for item in antes:
-		var controle := item as Control
-		if controle == null or not is_instance_valid(controle) or not controle.is_visible_in_tree():
-			continue
-		var caixa := _retangulo_em_tela(controle)
-		if caixa.end.x > MARGEM_DO_CANTO and caixa.position.x < direita:
-			topo = maxf(topo, caixa.end.y + FOLGA_DA_COLUNA)
-	var delta := topo - _notice_panel.offset_top
-	if absf(delta) > 0.01:
-		_notice_panel.offset_top += delta
-		_notice_panel.offset_bottom += delta
+	# A coluna de baixo: o aviso de espera embaixo, o aviso por cima dele, e os "✓" acima de tudo.
+	# A largura é a que `_layout_notice` mediu pelo texto; a altura, a que o texto pede.
+	var largura_logica := _notice_panel.offset_right - _notice_panel.offset_left
+	var altura_logica := maxf(_notice_panel.size.y, 30.0)
+	var tamanho := Vector2(largura_logica, altura_logica) * Tela.escala_componente("avisos")
+	# A vaga do aviso de espera fica sempre reservada embaixo dele: o aviso não pula quando ela
+	# aparece ou some.
+	# Ancorado no meio de baixo da tela: acompanha a janela que muda de tamanho sem esperar outro quadro.
+	var do_pe := _root.size.y - _altura_da_coluna_de_baixo() + VAGA_DA_ESPERA
+	_notice_panel.anchor_left = 0.5
+	_notice_panel.anchor_right = 0.5
+	_notice_panel.anchor_top = 1.0
+	_notice_panel.anchor_bottom = 1.0
+	_notice_panel.offset_left = roundf(-tamanho.x * 0.5)
+	_notice_panel.offset_right = _notice_panel.offset_left + largura_logica
+	_notice_panel.offset_top = roundf(-do_pe - tamanho.y)
+	_notice_panel.offset_bottom = _notice_panel.offset_top + altura_logica
+	_arrumar_avisos_de_tarefa()
 
 
 ## A FALA NO AVISO DO CANTO (10/10/2026): o nome de quem fala em ouro e a fala embaixo. O balão
@@ -987,6 +985,28 @@ func _criar_aviso_de_espera() -> void:
 	_espera_panel.visible = false
 
 
+## A altura reservada ao aviso de espera ("Pedro voltou para te buscar"), sob o aviso de baixo.
+const VAGA_DA_ESPERA := 40.0
+
+
+## O pé da coluna de baixo: acima da barra de mão e do nome do item sobre ela, com um respiro.
+func _altura_da_coluna_de_baixo() -> float:
+	return _root.size.y - BarraDeMao.MARGEM_DE_BAIXO - (BarraDeMao.ALTURA + 24.0) * Tela.escala_componente("mao") - 14.0
+
+
+## O CANTO DA FALA (10/10/2026): o balão de quem fala fica preso no canto de cima, à esquerda, logo
+## abaixo do quadro da missão e com a largura dele; sobre a cabeça de quem fala, só o sinal "• • •".
+## Devolve o retângulo na tela (a altura é a do quadro da missão só para a posição).
+func canto_da_fala() -> Rect2:
+	if not is_instance_valid(_heading) or not _heading.is_visible_in_tree():
+		return Rect2(Vector2(MARGEM_DO_CANTO, MARGEM_DO_CANTO), Vector2(HEADING_WIDTH, 0.0))
+	var missao := _retangulo_em_tela(_heading)
+	var topo := missao.end.y + FOLGA_DA_COLUNA
+	if is_instance_valid(_house_info_panel) and _house_info_panel.visible:
+		topo = maxf(topo, _retangulo_em_tela(_house_info_panel).end.y + FOLGA_DA_COLUNA)
+	return Rect2(Vector2(missao.position.x, topo), Vector2(missao.size.x, 0.0))
+
+
 ## O alto do aviso de espera: acima da barra de mão (52 + 18 de margem) e do nome do item que
 ## fica sobre ela (24), com um respiro.
 func _altura_do_aviso_de_espera() -> float:
@@ -1064,6 +1084,20 @@ func tarefa_concluida(texto: String) -> void:
 		_mostrar_proxima_tarefa()
 
 
+## UM RECADO CURTO DO JOGO NO CENTRO DE BAIXO (10/10/2026): "Precisa de Foice." e as outras
+## recusas vão para a mesma pilha do "✓ tarefa", acima da barra de mão, e não para o aviso do
+## canto, que é das falas. O mesmo recado repetido (o E apertado de novo) não empilha.
+func avisar_embaixo(texto: String) -> void:
+	if texto.strip_edges().is_empty() or _fila_de_tarefas.has(texto):
+		return
+	for aviso in _avisos_de_tarefa:
+		if is_instance_valid(aviso) and aviso.text == texto:
+			return
+	_fila_de_tarefas.append(texto)
+	if _fila_de_tarefas.size() == 1:
+		_mostrar_proxima_tarefa()
+
+
 ## O aviso de baixo: um por vez, até três empilhados se chegarem juntos.
 const TAREFAS_EMPILHADAS := 3
 var _fila_de_tarefas: Array[String] = []
@@ -1107,7 +1141,11 @@ func _mostrar_proxima_tarefa() -> void:
 ## Empilha os avisos de baixo para cima, o mais antigo embaixo, acima da barra de mão.
 func _arrumar_avisos_de_tarefa() -> void:
 	var largura := minf(720.0, _root.size.x - 40.0)
-	var base := _root.size.y - BarraDeMao.MARGEM_DE_BAIXO - (BarraDeMao.ALTURA + 24.0) * Tela.escala_componente("mao") - 14.0
+	var base := _altura_da_coluna_de_baixo()
+	if is_instance_valid(_espera_panel) and _espera_panel.visible:
+		base = minf(base, _espera_panel.position.y - 6.0)
+	if is_instance_valid(_notice_panel) and _notice_panel.visible:
+		base = minf(base, _retangulo_em_tela(_notice_panel).position.y - 6.0)
 	for i in _avisos_de_tarefa.size():
 		var aviso := _avisos_de_tarefa[i]
 		aviso.size = Vector2(largura, 24.0)

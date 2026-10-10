@@ -973,6 +973,15 @@ class JogadorAutomatico:
             distance = sum((position[i] - marker[i]) ** 2 for i in (0, 2)) ** 0.5
             if 3 < distance < leg["distance"] - 0.5:
                 return select(leg["action"], "Continuar a rota que aproxima do alvo; viagem longa ainda nao e bloqueio")
+        # CHEGOU A QUEM O PASSO MANDA FALAR: aperta o E, em vez de aproximar de novo (10/10/2026: ao
+        # lado do Pedro, "Volte ao Pedro" virava 13 approach_MoradorPedro seguidos e o modal do bloqueio).
+        required = task.get("required_npc", {}) or {}
+        alvo_e = str(state.get("interaction_target", ""))
+        if (required.get("distance", 999) < 3.0 and "interact" in actions and not state.get("screen")
+                and alvo_e and alvo_e in (required.get("name"), required.get("node"), "Pedro", "MoradorPedro")
+                and not required.get("speaking") and self.coverage[(context, "interact_required")] < 3):
+            self.coverage[(context, "interact_required")] += 1
+            return select("interact", "Ao lado de quem o passo manda falar: apertar E")
         direct_now = [a for a in task.get("actions_matching_the_current_requirement", [])
                       if a in actions and a not in task.get("last_action_failed", [])]
         if direct_now and self.coverage[(context, direct_now[0])] < 3:

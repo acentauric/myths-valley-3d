@@ -19,7 +19,7 @@
       "resumo_es": "Forja un machete en el banco del taller",
       "lugar": "oficina",
       "raio": 6.0,
-      "audio": "",
+      "audio": "pedro_armas_armas_facao",
       "texto": "Bicho do mato não espera você estar pronto. Machado é pra árvore; pra caititu, é facão. Na bancada da oficina, duas lenhas de cabo e uma pedra de amolar viram um — encosta e aperta E. Se já tiver o seu, melhor ainda.",
       "texto_en": "A wild animal won't wait for you to be ready. An axe is for trees; for a peccary, it's a machete. At the workshop bench, two pieces of firewood for the handle and a whetstone make one — walk up and press E. If you already have your own, even better.",
       "texto_es": "El bicho del monte no espera a que estés listo. El hacha es para el árbol; para el pecarí, el machete. En el banco del taller, dos leñas de mango y una piedra de afilar hacen uno: acércate y pulsa E. Si ya tienes el tuyo, mejor aún.",
@@ -35,7 +35,7 @@
       "resumo_es": "Derriba un pecarí en el monte",
       "lugar": "pedras",
       "raio": 10.0,
-      "audio": "",
+      "audio": "pedro_armas_armas_bote",
       "texto": "Caititu avisa antes de morder: para, baixa a cabeça, e o corpo clareia. É nessa hora que se sai da frente — e depois se bate. Três pancadas de facão derrubam um. Tem bando na mata do dendê e no pé da pedreira.",
       "texto_en": "A peccary warns before it bites: it stops, lowers its head, and its body lightens. That's when you step out of the way — and then you strike. Three blows of the machete bring one down. There's a herd in the palm woods and at the foot of the quarry.",
       "texto_es": "El pecarí avisa antes de morder: se para, baja la cabeza y el cuerpo se le aclara. En ese momento se sale del frente, y después se pega. Tres golpes de machete derriban uno. Hay manada en el monte de las palmeras y al pie de la cantera.",
@@ -52,7 +52,7 @@
       "resumo_es": "Acierta 3 golpes fuertes a un bicho (mantén E y suelta)",
       "lugar": "pedras",
       "raio": 10.0,
-      "audio": "",
+      "audio": "pedro_armas_armas_forte",
       "ensina": "golpe_forte",
       "texto": "Pancada ligeira cansa o bicho; a de peso derruba. Segura o E, deixa o braço juntar força e solta em cima dele. Três dessas, e o braço aprendeu.",
       "texto_en": "A quick blow tires the animal; a heavy one brings it down. Hold E, let your arm gather strength and release it on the animal. Three of those, and your arm has learned.",
@@ -62,6 +62,7 @@
     }
   ],
   "arremate": {
+    "audio": "pedro_armas_arremate",
     "texto": "Agora você anda na mata como quem é daqui. Bicho que avisa, a gente respeita; bicho que morde, a gente derruba.",
     "texto_en": "Now you walk the woods like someone from here. An animal that warns, we respect; an animal that bites, we bring down.",
     "texto_es": "Ahora andas por el monte como quien es de aquí. Al bicho que avisa, lo respetamos; al que muerde, lo derribamos."

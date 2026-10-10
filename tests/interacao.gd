@@ -296,15 +296,14 @@ func _ao_lado_de(jogador, morador, desvio: Vector3) -> void:
 
 
 ## O que está no balão de quem fala.
-## O que o morador diz: com a fala no aviso do canto, o balão mostra só "• • •" (10/10/2026), e o texto
-## é o da fala no ar.
+## O que o morador diz (a fala curta, a que os portões conferem).
 func _no_balao(morador) -> String:
 	var rotulo = morador.balao.get("_texto")
 	var texto := str(rotulo.text) if rotulo != null else ""
-	if texto == "• • •":
-		var no_ar: Dictionary = morador.get("_fala_no_ar")
-		if not no_ar.is_empty():
-			return str(no_ar.get("texto", ""))
+	# A saudação mostra no balão do canto a fala inteira; a conta dos portões é pela curta.
+	var no_ar: Dictionary = morador.get("_fala_no_ar")
+	if not no_ar.is_empty() and texto == str(no_ar.get("inteira", "")) and texto != "":
+		return str(no_ar.get("texto", ""))
 	return texto
 
 

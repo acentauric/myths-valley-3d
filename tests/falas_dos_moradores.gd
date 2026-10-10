@@ -499,15 +499,14 @@ func _quem_fala():
 
 
 ## O que está no balão de quem fala.
-## O que o morador está dizendo. A fala que vai ao aviso do canto deixa no balão só o sinal de fala
-## ("• • •", 10/10/2026): aí o que ele diz é o texto da fala no ar.
+## O que o morador está dizendo (a fala curta, a que os portões conferem).
 func _no_balao(morador) -> String:
 	var rotulo = morador.balao.get("_texto")
 	var texto := str(rotulo.text) if rotulo != null else ""
-	if texto == "• • •":
-		var no_ar: Dictionary = morador.get("_fala_no_ar")
-		if not no_ar.is_empty():
-			return str(no_ar.get("texto", ""))
+	# A saudação mostra no balão do canto a fala inteira; a conta dos portões é pela curta.
+	var no_ar: Dictionary = morador.get("_fala_no_ar")
+	if not no_ar.is_empty() and texto == str(no_ar.get("inteira", "")) and texto != "":
+		return str(no_ar.get("texto", ""))
 	return texto
 
 

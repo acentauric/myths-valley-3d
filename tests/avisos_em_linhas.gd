@@ -23,15 +23,20 @@ func _run() -> void:
   conferir(texto.size.y >= texto.get_minimum_size().y, "todas as linhas cabem")
   conferir(fundo.get_global_rect().encloses(texto.get_global_rect()), "fundo acompanha altura do texto")
   conferir(fundo.get_global_rect().position.x >= 0 and fundo.get_global_rect().end.x <= hud._root.get_viewport_rect().size.x, "aviso cabe na tela")
-  # O aviso tem a largura do bloco da missão acima dele, com qualquer escala dos dois (10/10/2026).
+  # O aviso fica no centro de baixo, acima da barra de mão (10/10/2026).
   if tamanho.x >= 1280:
-   var missao: Rect2 = hud._retangulo_em_tela(hud._heading)
    var aviso: Rect2 = hud._retangulo_em_tela(fundo)
-   conferir(absf(missao.size.x - aviso.size.x) <= 1.0 and absf(missao.position.x - aviso.position.x) <= 1.0, "o aviso tem a largura do bloco da missão (%.0f e %.0f)" % [aviso.size.x, missao.size.x])
-  hud.set_notice("Curto.")
-  for _i in 2: await process_frame
+   conferir(absf(aviso.get_center().x - hud._root.size.x * 0.5) <= 2.0 and aviso.end.y <= hud._altura_da_coluna_de_baixo() + 1.0 and aviso.get_center().y > hud._root.size.y * 0.5, "o aviso fica no centro de baixo (%s)" % aviso)
+  # A recusa curta vai ao centro de baixo, acima da barra de mão, e não ao canto; repetida não empilha.
   if tamanho.x >= 1280:
-   conferir(absf(hud._retangulo_em_tela(fundo).size.x - hud._retangulo_em_tela(hud._heading).size.x) <= 1.0, "o aviso curto também tem a largura da missão")
+   hud.avisar_embaixo("Precisa de Foice.")
+   hud.avisar_embaixo("Precisa de Foice.")
+   for _i in 2: await process_frame
+   var embaixo: Array = hud._avisos_de_tarefa.filter(func(a) -> bool: return is_instance_valid(a) and a.text == "Precisa de Foice.")
+   conferir(embaixo.size() == 1, "a recusa aparece uma vez embaixo (%d)" % embaixo.size())
+   if embaixo.size() == 1:
+    var r: Rect2 = (embaixo[0] as Control).get_global_rect()
+    conferir(r.get_center().y > hud._root.size.y * 0.6 and absf(r.get_center().x - hud._root.size.x * 0.5) < 2.0, "a recusa fica no centro de baixo")
   if "--capturar" in OS.get_cmdline_user_args():
    await process_frame
    await RenderingServer.frame_post_draw

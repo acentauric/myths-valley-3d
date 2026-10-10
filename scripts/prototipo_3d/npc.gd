@@ -1622,7 +1622,7 @@ func _comecar_a_fala(fala: Dictionary) -> void:
 	_balao_tempo = float(fala.get("segundos", FilaDeFalas.MINIMO))
 	# A fala que também vai ao aviso do canto (`aviso`) fica lá, com o nome em ouro; o balão mostra
 	# só o sinal de fala, para o texto não aparecer duas vezes (10/10/2026).
-	balao.mostrar("• • •" if bool(fala.get("aviso", false)) else str(fala.get("texto", "")))
+	balao.mostrar(str(fala.get("inteira", fala.get("texto", ""))) if bool(fala.get("aviso", false)) else str(fala.get("texto", "")))
 	# O balão já traz o nome; o rótulo 3D volta quando a fala termina.
 	nome_label.visible = false
 	var fluxo = fala.get("voz")

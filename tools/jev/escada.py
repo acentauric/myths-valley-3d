@@ -30,22 +30,30 @@ JEV = "jev"
 GPT = "gpt"
 NIVEIS_IA = (JEV, GPT)
 
+# A ESCADA SOBE MAIS CEDO (10/10/2026: "está lento para acionar o Jev e o GPT"; "nesses casos de
+# ficar dando volta já era para ter acionado"): o laço de posição pega em 10 ações, a recuperação
+# local tem 4 e o pedido seguinte espera 4 s. O GPT, o mais forte, tem 3 tentativas por passo e
+# planos de até 8 ações, com o contexto do que o vale mostra (`contexto_enxuto`).
 LIMITES = {
-    "acoes": 25,                 # ações sem progresso até o primeiro sinal
-    "segundos": 90.0,            # segundos de jogo sem progresso até o primeiro sinal
+    "acoes": 15,                 # ações sem progresso até o primeiro sinal
+    "segundos": 60.0,            # segundos de jogo sem progresso até o primeiro sinal
     "raio": 6.0,                 # laço de posição: raio em metros
-    "janela_laco": 20,           # ... e quantas ações seguidas dentro dele
+    "janela_laco": 10,           # ... e quantas ações seguidas dentro dele
     "recusas": 2,                # o mesmo aviso, quantas vezes
-    "alvo_acoes": 15,            # E mirando quem a missão não pede, por quantas ações
-    "minimo_sinal_leve": 8,      # ações sem progresso antes de um sinal leve valer
-    "local_acoes": 12,           # ações da recuperação local antes de chamar IA
-    "entre_escalonamentos": 15.0,  # segundos reais mínimos entre dois pedidos de IA
+    "alvo_acoes": 10,            # E mirando quem a missão não pede, por quantas ações
+    "minimo_sinal_leve": 6,      # ações sem progresso antes de um sinal leve valer
+    "local_acoes": 4,            # ações da recuperação local antes de chamar IA
+    "entre_escalonamentos": 4.0,   # segundos reais mínimos entre dois pedidos de IA
     "chamadas_jev": 2,           # por passo da missão
-    "chamadas_gpt": 1,           # por passo da missão
-    "plano_maximo": 5,           # ações de um plano
+    "chamadas_gpt": 3,           # por passo da missão
+    "plano_maximo": 8,           # ações de um plano
 }
 
 RECUSAS_CAMINHO = "/Aviso"       # onde o HUD escreve "Precisa de Machado."
+# Avisos do HUD que não são recusa (10/10/2026: "Modo corrida desativado ao parar", repetido a cada
+# parada, virava "recusa repetida" e abria o modal do bloqueio num passo simples).
+AVISOS_QUE_NAO_SAO_RECUSA = ("Modo corrida", "Recebido", "Amanheceu", "Noite no arraial", "O sol vai baixando",
+                             "Salvo", "Jogo salvo", "Partida salva")
 
 
 def inventario(state):
@@ -112,7 +120,8 @@ class DetectorDeTrava:
     @staticmethod
     def _avisos(state):
         return {str(o.get("text", "")).strip() for o in state.get("observations", []) or []
-                if RECUSAS_CAMINHO in str(o.get("path", "")) and str(o.get("text", "")).strip()}
+                if RECUSAS_CAMINHO in str(o.get("path", "")) and str(o.get("text", "")).strip()
+                and not str(o.get("text", "")).strip().startswith(AVISOS_QUE_NAO_SAO_RECUSA)}
 
     def _contar_alvo(self, state, task):
         """A dica do E aponta para um morador que o passo não pede."""
@@ -201,7 +210,15 @@ def contexto_enxuto(state, actions, task, historico, sinais, recusas, falhos, ni
         "required_npc": (task or {}).get("required_npc", {}),
         "resource_targets": state.get("resource_targets", {}),
         "nearby_npcs": perto,
-        "recent_actions": [{"action": h.get("action"), "result": h.get("result")} for h in list(historico)[-10:]],
+        "recent_actions": [{"action": h.get("action"), "result": h.get("result")} for h in list(historico)[-20:]],
+        # O que o vale mostra e que o GPT precisa para decidir sem adivinhar (10/10/2026).
+        "objective_target": objetivo.get("alvo"), "objective_owner": objetivo.get("dono"),
+        "pedro": {k: (state.get("pedro", {}) or {}).get(k) for k in ("position", "distance", "speaking", "conducting", "waiting_for_player", "text")},
+        "screen": state.get("screen"), "dialogue": state.get("dialogue"), "speech_awaiting_e": state.get("speech_awaiting_e"),
+        "route": state.get("route"), "directions": state.get("directions"), "last_refusal": state.get("last_refusal"),
+        "energy": state.get("energy"), "life": state.get("life"), "vigor": state.get("vigor"),
+        "interaction_candidates": state.get("interaction_candidates"), "tool_requirement": state.get("tool_requirement"),
+        "home_interaction": state.get("home_interaction"), "possible_issues": state.get("possible_issues"),
         "refusals": sorted(recusas),
         "stuck_signals": sinais,
         "failed_plans": falhos,

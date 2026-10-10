@@ -85,6 +85,8 @@ func _conferir(ok: bool, rotulo: String) -> void:
 
 
 func _run() -> void:
+	# Este portão mede o balão que procura lugar perto da cabeça; o do canto (10/10/2026) tem portão próprio.
+	load("res://scripts/prototipo_3d/balao_fala.gd").no_canto = false
 	falsificar = OS.get_environment("MV_FALSIFICAR") == "popups"
 	if falsificar:
 		print("  FALSIFICAÇÃO: sem mola, sem teto de placas e sem permanência do balão (MV_FALSIFICAR=popups)")
@@ -477,32 +479,21 @@ func _ninguem_cobre_ninguem(aqui: Vector3) -> void:
 		str(dono_visivel.visible), dono_visivel.modulate.a, str(dono_visivel.get_global_rect()), str(placa_de_tras.visible), placa_de_tras.modulate.a,
 		str(placa_de_tras.get_global_rect()), str(teclas._dica.get_global_rect()), _placas_ligadas(), placas.maximo]
 	_conferir(not (placa_de_tras.visible and placa_de_tras.modulate.a > 0.25), "com a dica de volta, a placa de quem está atrás, na coluna da dica, continuou na tela" + estado_das_placas)
-	# #188: a dica diz só "Conversar", e quem é o morador a placa de nome diz — ela fica à vista, sob a dica.
-	_conferir(dono_visivel.visible and dono_visivel.modulate.a > 0.25, "a dica do E diz só 'Conversar': a placa de nome do dono tem de ficar à vista (#188)" + estado_das_placas)
-	_conferir(not dono_visivel.get_global_rect().intersects(teclas._dica.get_global_rect()), "a dica do E cobre a placa de nome do dono" + estado_das_placas)
-	var folga_de_volta: float = dono_visivel.get_global_rect().position.y - teclas._dica.get_global_rect().end.y
-	_conferir(absf(folga_de_volta - folga_antes) <= 3.0, "a dica do E não voltou ao lugar de antes, logo acima da placa do dono (folga de %.0f px, e era %.0f px)%s" % [folga_de_volta, folga_antes, estado_das_placas])
-	var placa: Control = placas._placas[dele]
-	var cobriria_longe := false
+	# 10/10/2026 (substitui o #188): com a dica do E sobre o morador, a placa de nome dele sai — dois
+	# balões na mesma cabeça não. A dica nunca fica sobre o corpo do viajante.
+	_conferir(not (dono_visivel.visible and dono_visivel.modulate.a > 0.25), "com a dica do E acesa, a placa de nome do dono devia sair" + estado_das_placas)
 	for distancia in [5.0, 12.0]:
 		jogador.set("_distance", distancia)
 		jogador.call("_apply_camera")
 		await _esperar(2.0)
-		var da_placa: Rect2 = placa.get_global_rect()
-		var da_dica: Rect2 = teclas._dica.get_global_rect()
-		_conferir(placa.visible and teclas._dica.visible and not da_placa.intersects(da_dica),
-			"com a câmera a %.0f m, a dica do E deve ficar acima da placa do dono, sem cobri-la (#188)" % distancia)
-		# O que a dica faria SEM subir: a conta crua de antes (o ponto 0,45 m acima da cabeça).
-		var ponto := dele.global_position + Vector3.UP * (float(dele.get("altura")) + 0.45)
-		var crua := Rect2(camera.unproject_position(ponto) - Vector2(da_dica.size.x * 0.5, da_dica.size.y), da_dica.size)
-		if crua.intersects(da_placa):
-			cobriria_longe = true
-	# Sem a regra de subir, a dica cairia sobre a placa do dono em algum dos dois alcances da câmera.
-	_conferir(cobriria_longe, "o portão não montou a cena: a conta crua da dica nunca cobriria a placa do dono, perto nem longe")
+		if teclas._dica.visible:
+			var corpo: Rect2 = placas.caixa_na_tela(camera, jogador.global_position, 0.0, 1.95, 0.32)
+			_conferir(not teclas._dica.get_global_rect().intersects(corpo), "com a câmera a %.0f m, a dica do E cobre o viajante" % distancia)
 	jogador.set("_distance", 8.0)
 	jogador.call("_apply_camera")
 
 	# O MESMO MORADOR FALANDO: a placa dele some, o balão sobe acima da dica, e ninguém cobre o balão.
+	var placa: Control = placas._placas[dele]
 	placas.cala_com_balao = not falsificar
 	dele.mostrar_balao(FALA_CURTA, 12.0)
 	var falou: bool = await relogio.ate(func() -> bool: return dele.balao.visible and dele.balao.retangulo().size != Vector2.ZERO, 3.0)
@@ -1078,6 +1069,7 @@ func _fechar() -> void:
 		print("POPUPS_NA_TELA_OK: a mola não pula, não passa do alvo, ignora o tremor e segura o popup perto numa virada rápida; o dono do E e o alvo da missão levam placa antes de qualquer distância; com quinze moradores à frente da câmera há no máximo três placas ligadas (duas com um balão no ar, quatro popups de personagem); a dica do E sobe acima da placa do dono dela, a placa de quem está atrás dele cede à coluna da dica, o balão deixa a dica embaixo e nenhuma placa fica sob o balão; numa varredura rápida a placa, a dica, o chevron da missão, a vida da árvore e o balão andam menos que o ponto a que estão presos e assentam sem balançar; o balão não troca de canto antes da permanência e o canto novo é um deslizar; e a fala longa passa em páginas de duas linhas, no ritmo da fila")
 	else:
 		print("popups_na_tela: %d falha(s)" % falhas)
+	load("res://scripts/prototipo_3d/balao_fala.gd").no_canto = true
 	quit(1 if falhas > 0 else 0)
 
 

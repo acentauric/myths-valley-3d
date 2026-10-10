@@ -286,7 +286,7 @@ func esconder() -> void:
 func retangulo() -> Rect2:
 	if not visible or not _painel.visible:
 		return Rect2()
-	return Rect2(_painel.global_position, _painel.size)
+	return Rect2(_painel.global_position, _painel.size * _painel.scale)
 
 
 ## O balão está sendo visto: com fala, ao alcance e na frente da câmera. Longe
@@ -404,9 +404,45 @@ func _aplicar_pagina(indice: int) -> void:
 	_painel.reset_size()
 
 
+## O BALÃO NO CANTO (10/10/2026, `prototype_hud.canto_da_fala`): preso à esquerda, abaixo do quadro da
+## missão e da largura dele, e sobre a cabeça de quem fala só o sinal "• • •" (desenhado na ponta).
+## Falso devolve o balão que procura lugar perto da cabeça (portões antigos que medem essa conta).
+static var no_canto := true
+
+
+func _posicionar_no_canto(camera: Camera3D) -> bool:
+	var hud := get_tree().get_first_node_in_group("hud_do_vale") if is_inside_tree() else null
+	if not no_canto or hud == null or not hud.has_method("canto_da_fala"):
+		return false
+	var canto: Rect2 = hud.canto_da_fala()
+	var cabeca := alvo.global_position + Vector3(0, altura, 0)
+	_cabeca_tela = camera.unproject_position(cabeca) if not camera.is_position_behind(cabeca) else Vector2(-1000, -1000)
+	# A mesma regra do balão de antes: quem fala longe (além de ALCANCE) não aparece no canto.
+	_painel.visible = camera.global_position.distance_to(cabeca) <= ALCANCE
+	_ponta.visible = _painel.visible
+	if not _painel.visible:
+		return true
+	_painel.scale = Vector2.ONE * Tela.escala_componente("fala")
+	var largura := canto.size.x / _painel.scale.x
+	var margens := _painel.get_theme_stylebox("panel").get_minimum_size().x
+	var util := maxf(80.0, largura - margens)
+	if not is_equal_approx(_texto.custom_minimum_size.x, util):
+		_texto.custom_minimum_size.x = util
+		_texto.size.x = util
+		_paginar()
+	_painel.custom_minimum_size.x = largura
+	_painel.reset_size()
+	_painel.position = canto.position.round()
+	_novo = false
+	_ponta.queue_redraw()
+	return true
+
+
 func _posicionar(delta: float) -> void:
 	var camera := get_viewport().get_camera_3d()
 	if camera == null or alvo == null:
+		return
+	if _posicionar_no_canto(camera):
 		return
 	var cabeca := alvo.global_position + Vector3(0, altura, 0)
 	var longe := camera.global_position.distance_to(cabeca) > ALCANCE
@@ -623,6 +659,18 @@ func _retangulo_do_corpo(camera: Camera3D, corpo: Node3D, alto: float) -> Rect2:
 
 ## Ponta do balão: sai da borda mais perto da cabeça de quem fala e aponta para ela.
 func _desenhar_ponta() -> void:
+	if no_canto and _painel.custom_minimum_size.x > 0.0:
+		# O SINAL DE FALA sobre a cabeça: um balãozinho com três pontos.
+		var c := _cabeca_tela + Vector2(0.0, -FOLGA * 0.5)
+		if c.x < 0.0:
+			return
+		var caixa := Rect2(c - Vector2(22.0, 26.0), Vector2(44.0, 22.0))
+		_ponta.draw_rect(caixa, FUNDO)
+		_ponta.draw_rect(caixa, FILETE, false, 1.5)
+		_ponta.draw_colored_polygon(PackedVector2Array([caixa.position + Vector2(16, 22), caixa.position + Vector2(24, 22), caixa.position + Vector2(18, 29)]), FUNDO)
+		for i in 3:
+			_ponta.draw_circle(caixa.position + Vector2(13.0 + i * 9.0, 11.0), 2.4, NOME)
+		return
 	var caixa := Rect2(_painel.position, _painel.size * _painel.scale)
 	var alvo_ponta := _alvo_da_ponta
 	var base := Vector2(clampf(alvo_ponta.x, caixa.position.x + 16.0, caixa.end.x - 16.0), clampf(alvo_ponta.y, caixa.position.y + 12.0, caixa.end.y - 12.0))
