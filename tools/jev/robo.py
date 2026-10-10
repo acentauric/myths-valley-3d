@@ -1122,8 +1122,14 @@ class JogadorAutomatico:
         if event == "entrou_casa" or step.get("id") == "casa":
             return select("enter_home", "Entrar pela porta da casa") or select("objective", "Chegar à entrada")
         if event == "dormiu":
-            if "Dormir" in str(actions.get("interact", "")):
-                return select("interact", "Dormir para avançar ao dia seguinte")
+            # A descrição do E é "Press E to interact with CasaDoJogador", sem a palavra "Dormir":
+            # o robô chegava à cama e nunca deitava (10/10/2026). Ao pé da cama (home_interaction
+            # "cama"), o E da casa é o de dormir; sem o foco nele, vira-se para ele antes.
+            if state.get("home_interaction") == "cama" or "Dormir" in str(actions.get("interact", "")):
+                if state.get("interaction_target") == "CasaDoJogador" or "Dormir" in str(actions.get("interact", "")):
+                    return select("interact", "Dormir para avançar ao dia seguinte")
+                if "face_CasaDoJogador" in actions:
+                    return select("face_CasaDoJogador", "Dar foco ao E da cama para dormir")
             return select("approach_bed", "Chegar à cama") or select("enter_home", "Entrar na casa para descansar")
         if event.startswith("leu:"):
             return select("inspect_inventory", "Procurar o documento na mochila")

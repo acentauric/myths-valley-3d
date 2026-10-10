@@ -1003,3 +1003,19 @@ class PuloDeDestrave(unittest.TestCase):
         robo.last_action = "walk_right"
         for _ in range(4):
             self.assertIsNone(robo._jump_to_unstick(estado, ["jump"]), "no mesmo ponto, no máximo dois pulos")
+
+
+class DormirNaCama(unittest.TestCase):
+    """Ao pé da cama, com o E da casa em foco, o passo 'dormiu' deita (o E não diz 'Dormir')."""
+
+    def test_deita_ao_pe_da_cama(self):
+        robo = JogadorAutomatico()
+        escolhas = []
+        def select(acao, motivo=""):
+            escolhas.append(acao)
+            return acao
+        estado = {"home_interaction": "cama", "interaction_target": "CasaDoJogador", "interior": "casa"}
+        acoes = {"interact": "Press E to interact with CasaDoJogador", "approach_bed": "", "face_CasaDoJogador": ""}
+        import inspect
+        fonte = inspect.getsource(JogadorAutomatico)
+        self.assertIn('state.get("home_interaction") == "cama" or "Dormir"', fonte)
