@@ -43,12 +43,10 @@ conta o quê.
 
 - **`main` sempre abre e roda.** Trabalha-se direto nela; o que a protege é
   o portão do push, não uma branch.
-- **Cada fatia é um commit, com portão e falsificação** (regra 4 do
-  [PLANO.md](../../docs/projeto/PLANO.md)). Commit que muda comportamento sem mexer em
-  portão nenhum é commit que ninguém vai conseguir defender depois.
-- Commite à vontade e rode `.\tools\prototipo_3d\testar.ps1` uma vez por
-  lote: ele compara com o último verde desta máquina e cobre todos os commits
-  desde ele. Antes de cada `git push`, `testar.ps1 -Push`. Ele escolhe sozinho
-  os portões afetados e reaproveita os verdes; comentário e formatação não
-  rodam portão; a bateria completa (`-Tudo`) é para fechar build, não para
-  cada vírgula.
+- **Cada fatia é um commit, com teste e falsificação** (regra 4 do
+  [PLANO.md](../../docs/projeto/PLANO.md)): um `test_` de unidade ou uma
+  conferência num caso da suíte do vale. Commit que muda comportamento sem
+  mexer em teste nenhum é commit que ninguém vai conseguir defender depois.
+- Commite à vontade e rode `.\tools\prototipo_3d\testar.ps1` (os testes de
+  unidade, em segundos). A bateria completa, `testar.ps1 -Push`, roda só antes
+  de ir para a `main` (#242).

@@ -9,7 +9,7 @@ Myths' Valley 3D: projeto Godot independente na raiz.
 Assunto em **prosa, no presente, dizendo o que mudou no jogo** — e não um rótulo
 de categoria. A regra inteira, e por que ela não é `tipo(escopo):`, está em
 [.agents/rules/commits.md](.agents/rules/commits.md). Cada fatia é um commit,
-com portão e falsificação. Trabalha-se direto na `main`; ela sempre abre e
+com teste e falsificação. Trabalha-se direto na `main`; ela sempre abre e
 roda, porque nada é enviado (`git push`) sem `testar.ps1 -Push` verde no estado final.
 
 ### Chaves
@@ -191,17 +191,27 @@ luz, som ou moradores do 3D.
 ## Sistemas e validação
 
 Os sistemas de `scripts/compartilhado/` pertencem ao 3D; não copie versões de
-outro checkout. **Commite à vontade e teste por lote:** feito o lote (uma
-issue, uma sequência de fatias), rode `.\tools\prototipo_3d\testar.ps1` uma
-vez; a base padrão é o último commit que esta máquina viu verde, então a rodada
-cobre o lote inteiro. **Antes de `git push` é obrigatório**
-`.\tools\prototipo_3d\testar.ps1 -Push`: árvore limpa, e tudo o que a branch
-afeta desde a origin/main verde. O runner roda **só os portões que a mudança
-alcança** (fecho de dependências de cada teste, com impressão digital
-semântica: comentário, linha em branco, formatação de JSON e doc não contam),
-reaproveita o que já ficou verde nesta máquina e roda em paralelo. Não
-contorne isso rodando a bateria inteira à mão. `-Explicar` diz o que rodaria e
-por quê; `-Tudo` força a bateria completa e fica para antes de fechar build;
-`.\tools\prototipo_3d\testar_analise_teste.ps1` testa o próprio runner.
+outro checkout.
+
+**Os testes (#242, 10/10/2026)** — detalhes em
+[docs/projeto/VALIDACAO.md](docs/projeto/VALIDACAO.md):
+
+- **No dia a dia:** `.\tools\prototipo_3d\testar.ps1` roda os testes de unidade
+  (GUT, `tests/unidade/`) num Godot só, em segundos. `-Teste nome` roda um teste
+  ou caso pelo nome.
+- **A bateria completa roda só antes de ir para a `main`:**
+  `.\tools\prototipo_3d\testar.ps1 -Push` (árvore limpa; unidade + a suíte do
+  vale + os isolados). Nunca por commit, por issue ou por lote, e nunca sem
+  o autor pedir.
+- **Nada de portão novo que monte o vale num processo próprio.** Regra nova
+  (missão, inventário, cálculo, tela solta) ganha um `test_` em
+  `tests/unidade/`, que estende `tests/unidade/base.gd`. O que precisa do vale
+  vira um caso da suíte (`extends "res://tests/suite/caso.gd"`), ou uma
+  conferência a mais num caso que já existe; ele recebe o vale montado.
+- **O caso devolve o que mexe no vale** (cordel pego, árvore cortada, jogador
+  movido). O que não pode dividir o vale se declara `const ISOLADO := true`; o
+  longo demais para a bateria, `const LONGO := true` (roda com `-Longos`).
+- O painel ao vivo da rodada fica em http://127.0.0.1:8765/.
+
 Os testes não podem acessar o diretório pai do projeto. Preserve UIDs, opções
 de importação e o diretório de saves. Os binários grandes usam Git LFS.

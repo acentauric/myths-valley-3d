@@ -175,14 +175,16 @@ o outro repositório. Veja a [arquitetura](docs/projeto/ARQUITETURA.md).
 ```powershell
 .\tools\prototipo_3d\testar.ps1
 .\tools\prototipo_3d\testar.ps1 -Teste salvamento
-.\tools\prototipo_3d\testar.ps1 -Teste seguranca_arquivos
+.\tools\prototipo_3d\testar.ps1 -Push              # a bateria completa, antes da main
 ```
 
-Cada teste usa um perfil temporário, teto de execução e conferência de erros
-de compilação. O runner encerra apenas processos que ele próprio iniciou.
+O primeiro roda os testes de unidade (GUT), num Godot só, em segundos. A
+integração roda numa suíte que monta o vale uma vez. Cada rodada usa um perfil
+temporário, teto de execução e conferência de erros de compilação, e encerra
+apenas processos que ela iniciou.
 As verificações gráficas também exigem execução com o renderer normal;
 detalhes em [Validação](docs/projeto/VALIDACAO.md). Trabalho novo parte de uma
-issue e de `feature/<nome>`; a bateria completa precede cada commit.
+issue; a bateria completa precede o envio para a `main`.
 
 Mudanças de código são salvas no repositório. A publicação de uma nova build
 fica para uma versão mais estável, fechada pelo autor; cada commit não exige

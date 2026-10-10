@@ -1,122 +1,83 @@
-# RODAR OS PORTÕES DO VALE 3D: só os afetados, uma vez por lote, em paralelo, sem matar o que não é meu.
+# OS TESTES DO VALE 3D: unidade em segundos no dia a dia; o vale montado UMA vez, num Godot só, antes da main.
 #
-#   .\tools\prototipo_3d\testar.ps1                      # o que mudou desde o último verde (padrão)
-#   .\tools\prototipo_3d\testar.ps1 -Push                # antes do git push: tudo o que a branch afeta
-#   .\tools\prototipo_3d\testar.ps1 -Explicar            # só diz o que rodaria e por quê
-#   .\tools\prototipo_3d\testar.ps1 -Explicar -Detalhar -Teste casa   # de que a casa depende
-#   .\tools\prototipo_3d\testar.ps1 -Explicar -Teste casa -Por scripts/prototipo_3d/world_builder.gd
-#   .\tools\prototipo_3d\testar.ps1 -Teste composicao_vale,casa
-#   .\tools\prototipo_3d\testar.ps1 -Tudo                # bateria inteira (antes de fechar build)
-#   .\tools\prototipo_3d\testar.ps1 -Paralelo 4          # força o número de portões simultâneos
-#   .\tools\prototipo_3d\testar.ps1 -Base HEAD~5         # compara só com este commit
-#   .\tools\prototipo_3d\testar_analise_teste.ps1        # os testes do próprio runner (sem Godot)
+#   .\tools\prototipo_3d\testar.ps1                  # rápido: os testes de unidade (GUT), em segundos
+#   .\tools\prototipo_3d\testar.ps1 -Completo        # unidade + a suíte do vale + os isolados
+#   .\tools\prototipo_3d\testar.ps1 -Push            # antes do git push para a main: árvore limpa e -Completo
+#   .\tools\prototipo_3d\testar.ps1 -Teste casa,regras_missoes   # pelo nome (caso da suíte ou teste de unidade)
+#   .\tools\prototipo_3d\testar.ps1 -Completo -Longos            # também a partida inteira e as réguas
+#   .\tools\prototipo_3d\testar.ps1 -Completo -Paralelo 3        # a suíte dividida em 3 Godots (3 montagens do vale)
+#   .\tools\prototipo_3d\testar.ps1 -Teste pier_sem_queda -Extra --falsificar   # a falsificação tem de reprovar
+#   .\tools\prototipo_3d\testar.ps1 -Explicar        # só diz o que rodaria
 #
 #
-# O FLUXO: COMMITE À VONTADE, TESTE POR LOTE, E O LOTE INTEIRO ANTES DO PUSH
+# O FLUXO (#242, decisão do autor de 09/10/2026)
 #
-# Não se roda isto a cada commit. Faça os commits do lote (uma issue, uma tarde)
-# e rode o runner uma vez no fim: a base padrão é o ÚLTIMO VERDE DESTA MÁQUINA,
-# então uma rodada cobre todos os commits desde ele. Antes de `git push`, rode
-# com -Push: a base passa a ser só a saída da origin/main, a árvore tem de estar
-# limpa, e o que a branch inteira afeta tem de estar verde (rodado agora ou já
-# verde no cache com o mesmo conteúdo).
+# A bateria completa roda SÓ ao juntar na main, antes do push: nunca por commit,
+# por issue ou por lote. No dia a dia roda o modo rápido, que são os testes de
+# unidade: regras, dados, cálculos, telas sem o vale, tudo num Godot headless.
 #
+# A ANTIGA BATERIA abria um Godot por portão (~230), e quase todos montavam o
+# vale inteiro do zero: de 1 a 3 horas, 4 a 6 Godots em paralelo, CPU a 100%, e
+# um "fecho de dependências" que, mudando uma tradução, disparava 200 portões.
+# Agora são três peças, e nenhuma depende de análise de quem foi afetado:
 #
-# COMO ELE DECIDE O QUE RODAR
+#   1. UNIDADE (tests/unidade/test_*.gd, GUT 9.7 em addons/gut): um Godot,
+#      sem vale, segundos. Cada teste começa com os autoloads como num Godot
+#      recém-aberto (tests/unidade/base.gd).
+#   2. A SUÍTE DO VALE (tests/suite/rodar.gd): um Godot que monta o vale uma
+#      vez por estilo e roda todos os casos de integração em sequência
+#      (tests/*.gd, `extends "res://tests/suite/caso.gd"`). Entre um caso e
+#      outro os autoloads e o user:// voltam ao estado de logo depois da
+#      montagem. Ver tests/suite/caso.gd.
+#   3. OS ISOLADOS: o caso que precisa de um Godot novo (`const ISOLADO := true`)
+#      roda num processo só dele, um de cada vez.
 #
-# Cada portão (tests/*.gd) depende de um conjunto de arquivos: o próprio teste, o
-# project.godot, os autoloads, e tudo o que esses arquivos alcançam por
-# `res://...`, `uid://...` e `class_name` — scripts, cenas, dados, assets. O
-# runner monta esse FECHO por análise de texto e tira dele uma IMPRESSÃO DIGITAL:
-# o hash do conteúdo de cada arquivo do fecho. A análise mora em
-# testar_analise.cs (o PowerShell levava um minuto só para montar os fechos).
+# O caso que reprova na suíte roda DE NOVO sozinho, num Godot novo. Reprovou
+# sozinho também: defeito. Passou sozinho: é contaminação de um caso anterior,
+# a bateria aponta e conta como verde, e o certo é consertar quem contamina ou
+# declarar o caso ISOLADO.
 #
-# A impressão é SEMÂNTICA: o .gd entra sem comentário, sem linha em branco e sem
-# espaço no fim (o '#' dentro de string fica; o recuo fica, é sintaxe), o .json
-# sem espaço fora das strings (a ordem das chaves fica: o Dictionary do Godot
-# itera nela), e .md e docs/ não entram. Comentário e formatação não rodam
-# portão nenhum. O portão que lê código como texto (FileAccess num .gd, ou
-# `source_code`, nas falsificações) é TEXTUAL: para ele vale o conteúdo cru.
+# Texto e tradução não disparam nada: o modo rápido roda a unidade inteira (o
+# `idiomas` inclusive) em segundos, e o completo só roda antes da main.
 #
-# Um portão RODA só quando a impressão digital dele é nova, isto é, quando não é
-#   (a) igual a uma que já ficou verde nesta máquina (cache em .godot/testar3d), nem
-#   (b) igual à de uma BASE verde. Sem -Base, as bases são duas:
-#       - o último commit em que esta máquina viu o conjunto analisado inteiro
-#         verde (.godot/testar3d/verde.json, gravado por uma rodada verde com a
-#         árvore limpa e o mesmo executável do Godot);
-#       - o merge-base com a origin/main, verde por regra: nada entra na main sem
-#         este runner verde. Por indução, o que não mudou desde ela não reprova.
-#       Com a origin/main à frente da branch, compará-la direto contaria como
-#       "mudança minha" tudo o que a equipe enviou; o merge-base não conta.
+# O PUSH: árvore limpa, e o conteúdo (a árvore do HEAD) já verde nesta máquina
+# com este Godot, ou -Completo verde agora. O verde fica em
+# .godot/testar3d/verde.json, pela árvore do commit e não pelo commit: um
+# rebase que não muda conteúdo não pede outra bateria.
 #
-# Mexeu numa vírgula de doc ou num comentário: nenhum portão roda. Mexeu num
-# script do vale: rodam os portões cujo fecho o contém, e só eles. Mudou o motor
-# (outro executável do Godot): o cache local e o último verde não valem, e tudo o
-# que mudou desde a origin/main roda de novo.
+# O PAINEL AO VIVO: toda rodada escreve .godot/testar3d/bateria.log e sobe o
+# painel (tools/prototipo_3d/painel_bateria.py) em http://127.0.0.1:8765/,
+# salvo com -SemPainel.
 #
-# Referência montada em tempo de execução ("res://data/%s.json" % nome) entra como
-# PREFIXO ("res://data/"): o portão passa a depender da pasta inteira. É
-# conservador de propósito; erra rodando a mais, não a menos. O que nenhuma análise
-# de texto pega (um caminho inteiro vindo de fora do projeto) é o motivo do -Tudo
-# antes de fechar build.
-#
-# Os .import e .uid ficam fora da impressão digital: o editor os reescreve sozinho
-# (detect_3d, reimportação) e cada reescrita faria portões rodarem à toa.
-#
-#
-# POR QUE MUDAR UMA FUNÇÃO DE AUTOLOAD AINDA RODA QUASE TUDO
-#
-# Os 40 autoloads são raiz de todo portão, e a unidade da impressão é o arquivo.
-# Recortar por função (rodar só os portões cujo fecho cita a função mudada, ou
-# quem a chama) foi medido em 08/10/2026 e recusado:
-#   - o ganho é pequeno: das 27 funções do tela.gd, 17 são citadas em 169 a 216
-#     dos 216 fechos, e as outras são chamadas de dentro delas (do _ready, do
-#     _aplicar, de sinais); no missoes.gd a mediana é 216. O recorte pouparia no
-#     máximo um quinto dos portões de uma mudança no tela.gd;
-#   - erro de compilação em qualquer função derruba o autoload e, com ele, todo
-#     portão: o recorte deixaria esse erro passar quando nenhum portão cita a
-#     função, e a origin/main herdaria um verde falso;
-#   - o GDScript chama por nome montado em tempo de execução (call, Callable,
-#     sinais ligados em .tscn, dados que nomeiam ações), e citação por texto não
-#     prova quem executa o quê.
-# O que resolve o custo é o lote: dez commits no tela.gd custam uma rodada.
-#
-#
-# O QUE CONTINUA VALENDO DO RUNNER ANTIGO
 #
 #     NUNCA MATAR PROCESSO DO GODOT POR NOME.
 #
 # `taskkill /F /IM Godot_v4.7.2-stable_win64.exe` mata por nome de imagem, e esse
 # é o binário do EDITOR. Já fechou o editor aberto do outro lado da mesa no meio do
 # trabalho, mais de uma vez, levando junto cena não salva. Aqui se mata só por PID,
-# e só PID que este script levantou. Teto de tempo em vez de processo pendurado,
-# `$processo.Handle` tocado antes de o processo morrer, stdout e stderr em
-# arquivos separados, e `-clike` para "FALHA:" não casar com "Falhas: 0".
+# e só PID que este script levantou.
 
 param(
 	[string[]]$Teste = @(),
-	[switch]$Tudo,
-	[switch]$Explicar,
-	# Com -Explicar: lista o fecho de cada portão analisado e todos os arquivos mudados nele.
-	[switch]$Detalhar,
-	# Com -Explicar: mostra a cadeia de referências que põe este arquivo no fecho.
-	[string]$Por = "",
-	# Sem -Base: o último verde desta máquina e o merge-base com a origin/main.
-	# Com -Base <commit>: só ele (vazio: nenhuma base, só o cache).
-	[string]$Base = "",
-	# Antes do git push: só a origin/main como base, árvore limpa, verde gravado.
+	[switch]$Completo,
 	[switch]$Push,
-	[int]$Paralelo = 0,
+	[switch]$Longos,
+	[switch]$Explicar,
+	[switch]$SemPainel,
+	# Argumentos a mais para os casos da suíte, como a falsificação: -Teste pier_sem_queda -Extra --falsificar
+	[string[]]$Extra = @(),
+	[int]$Porta = 8765,
+	# Divide a suíte em N Godots (cada um monta o vale uma vez), equilibrados pelo tempo da
+	# última rodada. O padrão é um Godot só, como pede a #242; 2 ou 3 cortam o tempo pela metade ou mais.
+	[int]$Paralelo = 1,
 	[string]$Godot = "C:\Tools\Godot\Godot_v4.7.2-stable_win64_console.exe",
-	# O vale monta o mundo inteiro antes de qualquer pergunta, e a cadeia das
-	# missões ainda joga os nove passos. Quem passar disto está preso.
-	[int]$TetoSegundos = 420,
-	# Onde o Godot roda os portões. Só muda para testar o próprio runner numa cópia.
+	# Sem saída nova por tanto tempo, o Godot travou num laço (o anfitrião escreve a cada 15 s).
+	[int]$SilencioSegundos = 600,
+	# Onde o Godot roda. Só muda para testar o próprio runner numa cópia.
 	[string]$Projeto = ""
 )
 
 [Console]::OutputEncoding = [Text.Encoding]::UTF8
-# Caminho com acento enviado ao git pelo pipe: o 5.1 manda ASCII por padrão.
 $OutputEncoding = New-Object System.Text.UTF8Encoding($false)
 $ErrorActionPreference = "Stop"
 $raiz = (Resolve-Path (Join-Path (Join-Path $PSScriptRoot "..") "..")).Path
@@ -125,47 +86,17 @@ Push-Location $raiz
 $noWindows = ($PSVersionTable.PSEdition -eq "Desktop") -or $IsWindows
 $semBom = New-Object System.Text.UTF8Encoding($false)
 $relogioTotal = [Diagnostics.Stopwatch]::StartNew()
-$baseExplicita = $PSBoundParameters.ContainsKey("Base")
+if ($Push) { $Completo = $true }
 
-# `ordem_da_visita` é uma RÉGUA: mede quanto o jogador anda na ordem de hoje e
-# imprime o número. Não há resposta certa. Portão que não pode reprovar não é
-# portão, e deixá-lo na bateria ensina a ignorar a bateria.
-$REGUAS = @("ordem_da_visita")
-
-# O `agua_rasa` atravessa o bracinho de mar a pé, com 14000 + 16000 quadros de
-# física: perto de 500 s de relógio. Cortar o teto faz o portão TRAVAR sem medir.
-#
-# O `missoes_do_comeco_ao_fim` joga as 22 filas, do desembarque à fazenda, com os controles
-# do jogador (andar atrás do Pedro, cortar árvore, E, J, dormir, lutar): o jogo anda perto de
-# 1 segundo de jogo por segundo de relógio e a partida inteira passa de uma hora de jogo (de uma
-# hora e meia a duas, medido, com a máquina livre) — e a bateria cheia a deixa mais lenta: com o
-# quadro em 130 ms o jogo anda a 0,4 do relógio. O teto é de quatro horas: o portão se mata sozinho
-# no primeiro passo que não fecha (ver `tests/missoes_do_comeco_ao_fim.gd`), e o teto só pega o
-# que trava de verdade.
-$TETO_DO_PORTAO = @{ "agua_rasa" = 700; "missoes_do_comeco_ao_fim" = 14400 }
-
-# OS PESADOS SÓ ENTRAM NA BATERIA COMPLETA (-Tudo) ou pedidos pelo nome (-Teste). A impressão digital
-# deles abrange o jogo inteiro (`res://data/` por prefixo, todos os scripts do vale): rodariam a cada
-# mudança, e meia hora por commit ensina a pular o runner. Antes de fechar build, -Tudo os roda.
-$SO_NO_TUDO = @("missoes_do_comeco_ao_fim")
-
-function Ler-Log([string]$arquivo) {
+function Ler-Arquivo([string]$arquivo) {
 	if (-not (Test-Path -LiteralPath $arquivo)) { return "" }
 	$fluxo = [IO.File]::Open($arquivo, [IO.FileMode]::Open, [IO.FileAccess]::Read, [IO.FileShare]::ReadWrite)
 	$leitor = New-Object IO.StreamReader($fluxo, $semBom)
 	try { return $leitor.ReadToEnd() } finally { $leitor.Dispose() }
 }
 
-function Hash-Texto([string]$texto) {
-	$sha = [Security.Cryptography.SHA1]::Create()
-	try {
-		return ([BitConverter]::ToString($sha.ComputeHash($semBom.GetBytes($texto)))).Replace("-", "").ToLower()
-	} finally { $sha.Dispose() }
-}
-
-function Git-Linhas([string[]]$argumentos) {
-	# No 5.1, stderr de .exe vira ErrorRecord e, com Stop, derruba o script (a
-	# armadilha do runner do 2D). Aqui o erro do git é resposta, não exceção.
+function Git-Saida([string[]]$argumentos) {
+	# No 5.1, stderr de .exe vira ErrorRecord e, com Stop, derruba o script.
 	$antes = $ErrorActionPreference
 	$ErrorActionPreference = "Continue"
 	try { $saida = & git -c core.quotepath=false @argumentos 2>$null } finally { $ErrorActionPreference = $antes }
@@ -173,58 +104,29 @@ function Git-Linhas([string[]]$argumentos) {
 	return @($saida)
 }
 
-# O git respondeu com sucesso? (Resposta vazia de função vira $null no
-# PowerShell, então `merge-base --is-ancestor` se lê pelo código de saída.)
-function Git-Ok([string[]]$argumentos) {
-	$antes = $ErrorActionPreference
-	$ErrorActionPreference = "Continue"
-	try { & git @argumentos 2>$null | Out-Null } finally { $ErrorActionPreference = $antes }
-	return ($LASTEXITCODE -eq 0)
-}
-
-# A primeira linha da resposta do git, ou $null. (Função devolve array de um item
-# como o item: `(Git-Linhas ...)[0]` de um hash só daria o primeiro caractere.)
-function Git-Linha([string[]]$argumentos) {
-	$linhas = Git-Linhas $argumentos
-	if ($null -eq $linhas) { return $null }
-	foreach ($l in $linhas) { if ("$l" -ne "") { return [string]$l } }
-	return $null
-}
-
 
 # ---------------------------------------------------------------------------
-# PRÉ-VOO: TODO AUTOLOAD REGISTRADO TEM DE ESTAR VERSIONADO.
+# PRÉ-VOO: autoload versionado, LFS baixado, Godot presente.
 #
-# O `project.godot` já registrou `Mochila="*res://scripts/ui/mochila.gd"` com o
-# arquivo só na máquina de quem rodou o sincronizador. Aqui tudo passava; quem
-# clonasse pegava um autoload apontando para o nada, e o projeto INTEIRO não subia.
-# Nenhum portão dentro do Godot pega isso: quem responde é o git, não o motor.
-$projetoGodot = Join-Path $raiz "project.godot"
-$linhasProjeto = [IO.File]::ReadAllLines($projetoGodot, $semBom)
-$autoloads = @()
-$secao = ""
+# O `project.godot` já registrou um autoload com o arquivo só na máquina de quem
+# rodou o sincronizador: quem clonasse pegava um projeto que não abre. E o Godot
+# termina com 0 mesmo recebendo ponteiros LFS.
+
 $faltando = @()
-foreach ($linha in $linhasProjeto) {
+$secao = ""
+foreach ($linha in [IO.File]::ReadAllLines((Join-Path $raiz "project.godot"), $semBom)) {
 	if ($linha -match '^\s*\[(.+)\]\s*$') { $secao = $Matches[1]; continue }
 	if ($secao -ne "autoload") { continue }
-	if ($linha -notmatch '^\s*[A-Za-z_][A-Za-z0-9_]*\s*=\s*"\*?((res|uid)://[^"]+)"\s*$') { continue }
-	$autoloads += $Matches[1]
-	if ($Matches[2] -ne "res") { continue }
-	$relativo = $Matches[1].Substring(6)
-	if ($relativo -notmatch '\.(gd|tscn)$') { continue }
+	if ($linha -notmatch '^\s*[A-Za-z_][A-Za-z0-9_]*\s*=\s*"\*?res://([^"]+\.(gd|tscn))"\s*$') { continue }
+	$relativo = $Matches[1]
 	if (-not (Test-Path (Join-Path $raiz $relativo))) { $faltando += "$relativo (nao existe no disco)"; continue }
-	$conhecido = & git -C $raiz ls-files -- $relativo
-	if ([string]::IsNullOrWhiteSpace(($conhecido -join ""))) { $faltando += "$relativo (existe aqui, mas nao esta versionado)" }
+	if ([string]::IsNullOrWhiteSpace(((& git -C $raiz ls-files -- $relativo) -join ""))) { $faltando += "$relativo (existe aqui, mas nao esta versionado)" }
 }
 if ($faltando.Count -gt 0) {
 	Write-Host "PRE-VOO REPROVADO: autoload registrado sem arquivo versionado"
 	foreach ($f in $faltando) { Write-Host ("         " + $f) }
-	Write-Host "quem clonar esta branch pega um projeto que nao abre."
 	Pop-Location; exit 1
 }
-
-# O Godot pode terminar com 0 mesmo recebendo ponteiros LFS. Confira os binários
-# antes de abrir a engine: clone sem assets reprova com instrução útil.
 $ponteiros = @()
 foreach ($arquivo in @(git ls-files -- assets | Where-Object { $_ -match '\.(glb|fbx|wav)$' })) {
 	$caminho = Join-Path $raiz $arquivo
@@ -232,13 +134,12 @@ foreach ($arquivo in @(git ls-files -- assets | Where-Object { $_ -match '\.(glb
 	$fluxo = [IO.File]::OpenRead($caminho)
 	try {
 		$cabeca = New-Object byte[] 7
-		$lidos = $fluxo.Read($cabeca, 0, $cabeca.Length)
-		if ($lidos -eq 7 -and [Text.Encoding]::ASCII.GetString($cabeca) -eq 'version') { $ponteiros += $arquivo }
+		if ($fluxo.Read($cabeca, 0, 7) -eq 7 -and [Text.Encoding]::ASCII.GetString($cabeca) -eq 'version') { $ponteiros += $arquivo }
 	} finally { $fluxo.Dispose() }
 }
 if ($ponteiros.Count -gt 0) {
-	Write-Host "LFS PENDENTE: execute git lfs pull antes da bateria."
-	foreach ($arquivo in $ponteiros) { Write-Host ("         " + $arquivo) }
+	Write-Host "LFS PENDENTE: execute git lfs pull antes dos testes."
+	foreach ($arquivo in ($ponteiros | Select-Object -First 5)) { Write-Host ("         " + $arquivo) }
 	Pop-Location; exit 1
 }
 if (-not (Test-Path -LiteralPath $Godot)) {
@@ -249,578 +150,422 @@ if (-not (Test-Path -LiteralPath $Godot)) {
 $itemGodot = Get-Item -LiteralPath $Godot
 $motor = $itemGodot.Name + ":" + $itemGodot.Length
 
-
-# ---------------------------------------------------------------------------
-# A ANÁLISE EM C#: compilada uma vez por versão da fonte, guardada no cache.
-
 $pastaCache = Join-Path $raiz ".godot/testar3d"
 [IO.Directory]::CreateDirectory($pastaCache) | Out-Null
-$fonteAnalise = Join-Path $PSScriptRoot "testar_analise.cs"
-$assinatura = (Hash-Texto ([IO.File]::ReadAllText($fonteAnalise, $semBom) + $PSVersionTable.PSEdition + $PSVersionTable.PSVersion)).Substring(0, 12)
-$dllAnalise = Join-Path $pastaCache ("analise-" + $assinatura + ".dll")
-if (-not (Test-Path -LiteralPath $dllAnalise)) {
-	# Compila num nome só deste processo e renomeia: duas rodadas ao mesmo tempo
-	# não leem DLL pela metade.
-	$temporaria = Join-Path $pastaCache ("analise-" + $assinatura + "-" + $PID + ".dll")
-	Add-Type -Path $fonteAnalise -OutputAssembly $temporaria -OutputType Library
-	try { Move-Item -LiteralPath $temporaria -Destination $dllAnalise -ErrorAction Stop } catch { $dllAnalise = $temporaria }
-	foreach ($velha in @(Get-ChildItem -LiteralPath $pastaCache -Filter "analise-*.dll")) {
-		if ($velha.FullName -ne $dllAnalise) { try { Remove-Item -LiteralPath $velha.FullName -Force -ErrorAction Stop } catch { } }
-	}
-}
-Add-Type -Path $dllAnalise
-
-
-# ---------------------------------------------------------------------------
-# O ESTADO DOS ARQUIVOS: hash de conteúdo de cada um, agora e nas bases.
-#
-# Arquivo limpo usa o blob do índice do git (custo zero); arquivo sujo ou novo é
-# hasheado com `git hash-object`, o mesmo hash, então "voltei como estava" casa
-# com o verde antigo. O project.godot entra sem as seções que só o editor lê.
-
-function Hash-Projeto([string[]]$linhas) {
-	$filtradas = New-Object Collections.Generic.List[string]
-	$s = ""
-	foreach ($l in $linhas) {
-		if ($l -match '^\s*\[(.+)\]\s*$') { $s = $Matches[1] }
-		if ($s -eq "editor_plugins" -or $s -eq "editor") { continue }
-		$filtradas.Add($l.TrimEnd())
-	}
-	return Hash-Texto ($filtradas -join "`n")
-}
-
-function Novo-Estado {
-	return , (New-Object 'Collections.Generic.Dictionary[string,string]' ([StringComparer]::OrdinalIgnoreCase))
-}
-
-$atual = Novo-Estado
-foreach ($l in (Git-Linhas @("ls-files", "-s"))) {
-	if ($l -match '^\d+ ([0-9a-f]+) \d\t(.+)$') { $atual[$Matches[2]] = $Matches[1] }
-}
-$sujos = New-Object Collections.Generic.List[string]
-# A textura que a importação extrai de um .glb (<modelo>_*.png/.jpg ao lado
-# dele, e o .import dela) não é versionada: é saída da importação, como o .import,
-# e fica fora do estado. Se contasse, cada importação mudaria o fecho de todo
-# portão que cita a pasta dos modelos.
-$modelosPorPasta = @{}
-foreach ($c in $atual.Keys) {
-	if ($c -notmatch '^(.*/)?([^/]+)\.(glb|gltf)$') { continue }
-	$pasta = $Matches[1]
-	if ($null -eq $pasta) { $pasta = "" }
-	if (-not $modelosPorPasta.ContainsKey($pasta)) { $modelosPorPasta[$pasta] = New-Object Collections.Generic.List[string] }
-	$modelosPorPasta[$pasta].Add($Matches[2] + "_")
-}
-function Extraida-Da-Importacao([string]$caminho) {
-	if ($caminho -notmatch '^(.*/)?([^/]+)\.(png|jpe?g|webp)(\.import)?$') { return $false }
-	$pasta = $Matches[1]
-	if ($null -eq $pasta) { $pasta = "" }
-	if (-not $modelosPorPasta.ContainsKey($pasta)) { return $false }
-	foreach ($prefixo in $modelosPorPasta[$pasta]) { if ($Matches[2].StartsWith($prefixo)) { return $true } }
-	return $false
-}
-foreach ($l in (Git-Linhas @("status", "--porcelain=v1", "-uall", "--no-renames"))) {
-	if ($l.Length -lt 4) { continue }
-	$caminho = $l.Substring(3).Trim('"')
-	if ($l.StartsWith("??") -and (Extraida-Da-Importacao $caminho)) { continue }
-	if (Test-Path -LiteralPath (Join-Path $raiz $caminho) -PathType Leaf) { $sujos.Add($caminho) } else { [void]$atual.Remove($caminho) }
-}
-if ($sujos.Count -gt 0) {
-	# Os caminhos vão como ARGUMENTOS, e não pelo pipe para o `--stdin-paths`: no
-	# Windows PowerShell 5.1 o pipe para programa nativo põe um BOM na frente do
-	# primeiro caminho, e o git procurava "﻿AGENTS.md" e parava o runner com
-	# qualquer arquivo modificado. Em lotes, para a linha de comando caber.
-	$hashes = New-Object Collections.Generic.List[string]
-	for ($i = 0; $i -lt $sujos.Count; $i += 100) {
-		$lote = @($sujos.GetRange($i, [Math]::Min(100, $sujos.Count - $i)))
-		foreach ($h in @(& git -c core.quotepath=false hash-object -- $lote)) { $hashes.Add([string]$h) }
-	}
-	for ($i = 0; $i -lt $sujos.Count; $i++) { $atual[$sujos[$i]] = $hashes[$i] }
-}
-$atual["project.godot"] = Hash-Projeto $linhasProjeto
-# Mudança fora de commit que conta para algum portão (doc, .import e .uid não contam).
-$sujosQueContam = @($sujos | Where-Object { -not [Testar3D.Grafo]::ForaDaImpressao($_) })
-
-function Estado-Do-Commit([string]$sha) {
-	$linhasBase = Git-Linhas @("ls-tree", "-r", "--full-tree", $sha)
-	if ($null -eq $linhasBase) { return $null }
-	$estado = Novo-Estado
-	foreach ($l in $linhasBase) {
-		if ($l -match '^\d+ blob ([0-9a-f]+)\t(.+)$') { $estado[$Matches[2]] = $Matches[1] }
-	}
-	$projetoBase = Git-Linhas @("show", "${sha}:project.godot")
-	if ($null -ne $projetoBase) { $estado["project.godot"] = Hash-Projeto $projetoBase }
-	return , $estado
-}
-
-# AS BASES: commits cujo conteúdo é verde. Cada uma leva a lista dos portões que
-# ela prova (o último verde só prova o que foi analisado naquela rodada).
-$bases = New-Object Collections.Generic.List[object]
-function Juntar-Base([string]$rev, [string]$papel, $portoes) {
-	$sha = Git-Linha @("rev-parse", "--verify", "--quiet", ($rev + "^{commit}"))
-	if ($null -eq $sha) { Write-Host "aviso: base '$rev' nao existe"; return }
-	foreach ($b in $bases) { if ($b.sha -eq $sha) { return } }
-	$estado = Estado-Do-Commit $sha
-	if ($null -eq $estado) { return }
-	$bases.Add(@{ sha = $sha; papel = $papel; estado = $estado; portoes = $portoes })
-}
-
 $arquivoVerde = Join-Path $pastaCache "verde.json"
-if (-not $Tudo) {
-	if ($baseExplicita) {
-		if ($Base -ne "") { Juntar-Base $Base "pedida" $null }
-	} else {
-		$saidaDaMain = Git-Linha @("merge-base", "HEAD", "origin/main")
-		$verde = $null
-		if (-not $Push -and (Test-Path -LiteralPath $arquivoVerde)) {
-			try { $verde = (Ler-Log $arquivoVerde) | ConvertFrom-Json } catch { $verde = $null }
-		}
-		if ($null -ne $verde -and $verde.motor -eq $motor -and (Git-Ok @("merge-base", "--is-ancestor", [string]$verde.commit, "HEAD"))) {
-			# O verde mais velho que a saída da main não acrescenta nada: a main é verde por regra.
-			$velho = ($null -ne $saidaDaMain -and [string]$verde.commit -ne $saidaDaMain -and (Git-Ok @("merge-base", "--is-ancestor", [string]$verde.commit, $saidaDaMain)))
-			if (-not $velho) { Juntar-Base ([string]$verde.commit) "ultimo verde desta maquina" @($verde.portoes) }
-		}
-		if ($null -ne $saidaDaMain) { Juntar-Base $saidaDaMain "saida da origin/main" $null }
-		else { Write-Host "aviso: sem origin/main; so o cache e o ultimo verde evitam reteste" }
-	}
-}
-$basesDescritas = "sem base"
-if ($bases.Count -gt 0) { $basesDescritas = (@($bases | ForEach-Object { $_.papel + " " + $_.sha.Substring(0, 7) }) -join ", ") }
 
-if ($Push -and $sujosQueContam.Count -gt 0) {
-	Write-Host ("PUSH: ha " + $sujosQueContam.Count + " arquivo(s) fora de commit (doc, .import e .uid nao contam): " + (($sujosQueContam | Select-Object -First 3) -join ", "))
-	Write-Host "         o push envia commits: commite ou guarde (git stash) e rode de novo."
-	if (-not $Explicar) { Pop-Location; exit 1 }
+
+# ---------------------------------------------------------------------------
+# O PUSH: árvore limpa, e o conteúdo já verde ou verde agora.
+
+$arvoreHead = $null
+if ($Push) {
+	# Doc, .uid e .import não contam: o editor reescreve os dois últimos sozinho.
+	$sujos = @(Git-Saida @("status", "--porcelain=v1", "-uall") | Where-Object { $_ -and $_.Length -gt 3 } | ForEach-Object { $_.Substring(3).Trim('"') } |
+		Where-Object { $_ -notmatch '\.(uid|import|md)$' -and $_ -notmatch '^docs/' -and $_ -notmatch '_tripo_[^/]*\.(png|jpe?g)$' })
+	if ($sujos.Count -gt 0) {
+		Write-Host ("PUSH: ha " + $sujos.Count + " arquivo(s) fora de commit: " + (($sujos | Select-Object -First 3) -join ", "))
+		Write-Host "         o push envia commits: commite ou guarde (git stash) e rode de novo."
+		Pop-Location; exit 1
+	}
+	$arvoreHead = Git-Saida @("rev-parse", "HEAD^{tree}") | Select-Object -First 1
+	if (Test-Path -LiteralPath $arquivoVerde) {
+		try { $verde = (Ler-Arquivo $arquivoVerde) | ConvertFrom-Json } catch { $verde = $null }
+		if ($null -ne $verde -and $verde.arvore -eq $arvoreHead -and $verde.motor -eq $motor) {
+			Write-Host ("PUSH OK: este conteudo ja passou na bateria completa nesta maquina (" + $verde.quando + ")")
+			Pop-Location; exit 0
+		}
+	}
 }
 
 
 # ---------------------------------------------------------------------------
-# O GRAFO E AS NORMAS: quem cada arquivo alcança, e o hash semântico de cada
-# conteúdo (guardado em .godot/testar3d/normas-<versão da análise>.txt; cada
-# blob é lido uma vez; mudou a normalização, as normas antigas não valem).
-
-$grafo = [Testar3D.Grafo]::new($raiz, $atual)
-$arquivoNormas = Join-Path $pastaCache ("normas-" + $assinatura + ".txt")
-foreach ($velha in @(Get-ChildItem -LiteralPath $pastaCache -Filter "normas*.txt")) {
-	if ($velha.FullName -ne $arquivoNormas) { try { Remove-Item -LiteralPath $velha.FullName -Force -ErrorAction Stop } catch { } }
-}
-$normas = [Testar3D.Normas]::new($arquivoNormas, $raiz, $grafo)
-$normas.PrepararEstado($atual)
-foreach ($b in $bases) { $normas.PrepararEstado($b.estado) }
-
-# AS REFERÊNCIAS: o estado de agora (prova pelo cache antigo), o do HEAD quando há
-# mudança fora de commit, e as bases. Uma referência só serve se dá a mesma
-# impressão semântica que o estado de agora.
-$referencias = New-Object Collections.Generic.List[object]
-$referencias.Add(@{ estado = $atual; base = $false; portoes = $null })
-if ($sujos.Count -gt 0) {
-	$cabecaAgora = Git-Linha @("rev-parse", "--verify", "--quiet", "HEAD")
-	if ($null -ne $cabecaAgora) {
-		$estadoDoHead = Estado-Do-Commit $cabecaAgora
-		if ($null -ne $estadoDoHead) {
-			$normas.PrepararEstado($estadoDoHead)
-			$referencias.Add(@{ estado = $estadoDoHead; base = $false; portoes = $null })
-		}
-	}
-}
-foreach ($b in $bases) { $referencias.Add(@{ estado = $b.estado; base = $true; portoes = $b.portoes }) }
-
-$raizesComuns = @("project.godot")
-foreach ($a in $autoloads) {
-	if ($a.StartsWith("res://")) { $raizesComuns += $a.Substring(6) }
-	elseif ($grafo.PorUid.ContainsKey($a)) { $raizesComuns += $grafo.PorUid[$a] }
-}
-
-
-# ---------------------------------------------------------------------------
-# O CACHE: impressões digitais que ficaram verdes nesta máquina, e quanto cada
-# portão demora (para começar pelos mais longos). `legado` guarda as impressões
-# cruas do runner antigo: conteúdo igual ao cru é igual ao semântico, então um
-# verde antigo ainda vale, e vira verde novo na primeira rodada que o encontra.
-
-$arquivoCache = Join-Path $pastaCache "cache.json"
-$cache = @{}
-if (Test-Path -LiteralPath $arquivoCache) {
-	try {
-		$lido = (Ler-Log $arquivoCache) | ConvertFrom-Json
-		$versaoLida = 1
-		if ($null -ne $lido.versao) { $versaoLida = [int]$lido.versao }
-		$mesmoMotor = ($lido.motor -eq $motor)
-		foreach ($p in $lido.portoes.PSObject.Properties) {
-			$entrada = @{ verdes = @(); legado = @(); duracao = [double]$p.Value.duracao }
-			# Motor novo: os verdes não valem, mas as durações ainda servem de ordem.
-			if ($mesmoMotor) {
-				if ($versaoLida -ge 2) {
-					$entrada.verdes = @($p.Value.verdes | Where-Object { $_ })
-					$entrada.legado = @($p.Value.legado | Where-Object { $_ })
-				} else { $entrada.legado = @($p.Value.verdes | Where-Object { $_ }) }
-			}
-			$cache[$p.Name] = $entrada
-		}
-	} catch { $cache = @{} }
-}
-
-function Gravar-Cache {
-	[IO.Directory]::CreateDirectory($pastaCache) | Out-Null
-	$gravar = @{ versao = 2; motor = $motor; portoes = @{} }
-	foreach ($k in $cache.Keys) {
-		$gravar.portoes[$k] = @{ verdes = @($cache[$k].verdes); legado = @($cache[$k].legado); duracao = [Math]::Round($cache[$k].duracao, 1) }
-	}
-	[IO.File]::WriteAllText($arquivoCache, ($gravar | ConvertTo-Json -Depth 5), $semBom)
-	$normas.Gravar()
-}
-
-function Marcar-Verde([string]$nome, [string]$impressao) {
-	if (-not $cache.ContainsKey($nome)) { $cache[$nome] = @{ verdes = @(); legado = @(); duracao = 90 } }
-	$cache[$nome].verdes = @(@($impressao) + @($cache[$nome].verdes | Where-Object { $_ -ne $impressao }) | Select-Object -First 8)
-}
-
-# O último verde: só com a rodada inteira (nada pedido pelo nome), verde, e
-# nada fora de commit que conte. É o que o próximo lote usa de base.
-function Gravar-Verde {
-	if ($pedidos.Count -gt 0 -or $sujosQueContam.Count -gt 0) { return }
-	$cabeca = Git-Linha @("rev-parse", "HEAD")
-	if ($null -eq $cabeca) { return }
-	$registro = @{ commit = $cabeca; motor = $motor; portoes = @($analisados); quando = (Get-Date).ToString("s") }
-	[IO.File]::WriteAllText($arquivoVerde, ($registro | ConvertTo-Json -Depth 3), $semBom)
-}
-
-
-# ---------------------------------------------------------------------------
-# A ESCOLHA.
-
-$todosPortoes = @(Get-ChildItem (Join-Path $raiz "tests") -Filter "*.gd" | Sort-Object Name | ForEach-Object { $_.BaseName } | Where-Object { $REGUAS -notcontains $_ })
-$pedidos = @()
-foreach ($t in $Teste) { foreach ($parte in ($t -split ',')) { if ($parte.Trim() -ne "") { $pedidos += ($parte.Trim() -replace '\.gd$', '') } } }
-foreach ($p in $pedidos) {
-	if (-not (Test-Path (Join-Path $raiz "tests/$p.gd"))) { Write-Host "portao inexistente: $p"; Pop-Location; exit 1 }
-}
-
-$fila = @()
-$reaproveitados = 0
-$porBase = 0
-$porCache = 0
-$textuais = 0
-$motivos = @{}
-$impressoes = @{}
-# Verdes provados sem rodar (base ou impressão antiga): entram no cache na rodada de verdade.
-$provados = @{}
-$analisados = $todosPortoes
-if (-not $Tudo) { $analisados = @($todosPortoes | Where-Object { $SO_NO_TUDO -notcontains $_ }) }
-if ($pedidos.Count -gt 0) { $analisados = $pedidos }
-foreach ($nome in $analisados) {
-	$fecho = $grafo.Fecho([string[]]($raizesComuns + @("tests/$nome.gd")))
-	# O que o portão lê como texto (null: nada) vale cru na impressão dele.
-	$textual = $grafo.EscopoTextual($fecho)
-	if ($null -ne $textual) { $textuais++ }
-	$impressao = $normas.Impressao($fecho, $atual, $textual)
-	$impressoes[$nome] = $impressao
-	if ($Detalhar) {
-		$pastas = @{}
-		foreach ($c in $fecho) { $d = ($c -split '/')[0..([Math]::Min(2, ($c -split '/').Count - 2))] -join '/'; if (-not $pastas.ContainsKey($d)) { $pastas[$d] = 0 }; $pastas[$d]++ }
-		$tipo = ""
-		if ($null -ne $textual) { $tipo = " (textual: le " + $textual.Count + " arquivo(s) como texto, e neles comentario conta)" }
-		Write-Host ("fecho de " + $nome + ": " + $fecho.Count + " arquivos" + $tipo)
-		foreach ($d in ($pastas.Keys | Sort-Object { -$pastas[$_] } | Select-Object -First 12)) { Write-Host ("    {0,5}  {1}" -f $pastas[$d], $d) }
-	}
-	if ($Por -ne "") {
-		$passos = $grafo.Cadeia([string[]]($raizesComuns + @("tests/$nome.gd")), $Por)
-		if ($passos.Count -eq 0) { Write-Host ($nome + ": " + $Por + " nao esta no fecho") }
-		else { Write-Host ($nome + ": " + ($passos -join "`n    -> ")) }
-	}
-	if ($Tudo -or ($pedidos.Count -gt 0 -and -not $Explicar)) { $fila += $nome; $motivos[$nome] = "pedido"; continue }
-	if ($cache.ContainsKey($nome) -and $cache[$nome].verdes -contains $impressao) { $reaproveitados++; $porCache++; continue }
-	# Um estado de referência com a mesma impressão semântica prova o verde se é
-	# base deste portão, ou se o cache antigo (cru) o viu verde: é assim que um
-	# comentário novo por cima de um verde antigo não roda nada.
-	$legado = @()
-	if ($cache.ContainsKey($nome)) { $legado = $cache[$nome].legado }
-	$prova = ""
-	foreach ($r in $referencias) {
-		if ($normas.Impressao($fecho, $r.estado, $textual) -ne $impressao) { continue }
-		if ($r.base -and ($null -eq $r.portoes -or $r.portoes -contains $nome)) { $prova = "base"; break }
-		if ($legado.Count -gt 0 -and $legado -contains [Testar3D.Grafo]::ImpressaoV1($fecho, $r.estado)) { $prova = "cache"; break }
-	}
-	if ($prova -eq "base") { $reaproveitados++; $porBase++; $provados[$nome] = $impressao; continue }
-	if ($prova -eq "cache") { $reaproveitados++; $porCache++; $provados[$nome] = $impressao; continue }
-	$fila += $nome
-	# O motivo mostrado é a menor diferença para alguma referência: o HEAD, com
-	# mudança fora de commit, ou a base mais próxima.
-	$mudados = @()
-	$comoNoHead = $false
-	foreach ($r in $referencias) {
-		if ([object]::ReferenceEquals($r.estado, $atual)) { continue }
-		$estes = @($normas.Mudados($fecho, $r.estado, $atual, $textual))
-		if ($estes.Count -eq 0) { $comoNoHead = $true; continue }
-		if ($mudados.Count -eq 0 -or $estes.Count -lt $mudados.Count) { $mudados = $estes }
-	}
-	if ($mudados.Count -gt 0) {
-		$texto = ($mudados | Select-Object -First 2) -join ", "
-		if ($Detalhar) { $texto = $mudados -join ", " }
-		elseif ($mudados.Count -gt 2) { $texto += " (+" + ($mudados.Count - 2) + ")" }
-		$motivos[$nome] = "mudou: " + $texto
-		# Igual a uma referência no que conta, mas ninguém viu este conteúdo verde aqui.
-		if ($comoNoHead) { $motivos[$nome] = "sem verde registrado para este conteudo (desde a base mudou: " + $texto + ")" }
-	} elseif ($bases.Count -eq 0) { $motivos[$nome] = "sem verde registrado" }
-	else { $motivos[$nome] = "sem verde com este motor" }
-}
-
-# Os mais longos primeiro: o paralelo termina junto em vez de esperar um retardatário.
-$fila = @($fila | Sort-Object @{ Expression = { if ($cache.ContainsKey($_)) { $cache[$_].duracao } else { 90 } }; Descending = $true }, @{ Expression = { $_ } })
-
-if ($Paralelo -le 0) {
-	$nucleos = [Environment]::ProcessorCount
-	$livreGB = 4.0
-	try {
-		if ($noWindows) { $livreGB = (Get-CimInstance Win32_OperatingSystem).FreePhysicalMemory / 1MB }
-		elseif (Test-Path /proc/meminfo) { $livreGB = [double](((Get-Content /proc/meminfo | Where-Object { $_ -match '^MemAvailable' }) -split '\s+')[1]) / 1MB }
-	} catch { }
-	# Um portão que monta o vale chega a ~0,5 GB; 0,8 GB de folga por portão, e
-	# 1,5 GB reservados para o editor e o resto da máquina.
-	$porMemoria = [Math]::Floor(($livreGB - 1.5) / 0.8)
-	# Outras baterias na mesma máquina (outros agentes, outras worktrees) disputam
-	# os mesmos núcleos: cada portão delas é um `..._console` vivo. Com a máquina
-	# cheia, 11 portões a mais faziam o vale montar em câmera lenta e 22 portões
-	# TRAVAREM no teto de 420 s (medido em 08/10/2026). Só se conta; não se mexe neles.
-	$outros = 0
-	try { $outros = @(Get-Process -ErrorAction Stop | Where-Object { $_.ProcessName -like "Godot*console*" }).Count } catch { }
-	$Paralelo = [Math]::Max(1, [Math]::Min([Math]::Min($nucleos - 1 - $outros, $porMemoria), 12))
-	$explicacaoParalelo = "$Paralelo em paralelo ($nucleos nucleos, $outros portoes de outras baterias, " + [Math]::Round($livreGB, 1) + " GB livres)"
-} else { $explicacaoParalelo = "$Paralelo em paralelo (pedido)" }
-
-Write-Host ("bases: " + $basesDescritas)
-Write-Host ("portoes: " + $analisados.Count + " analisados, " + $fila.Count + " a rodar, " + $reaproveitados + " reaproveitados (" + $porCache + " verdes no cache, " + $porBase + " iguais a uma base); " + $textuais + " textuais; analise em " + [Math]::Round($relogioTotal.Elapsed.TotalSeconds, 1) + " s")
-# Agrupado por motivo: 60 portões pela mesma mudança são uma linha, não 60.
-$grupos = [ordered]@{}
-foreach ($nome in ($fila | Sort-Object)) {
-	$m = $motivos[$nome]
-	if (-not $grupos.Contains($m)) { $grupos[$m] = New-Object Collections.Generic.List[string] }
-	$grupos[$m].Add($nome)
-}
-foreach ($m in $grupos.Keys) {
-	Write-Host ("  " + $grupos[$m].Count + " por " + $m + ":")
-	Write-Host ("      " + ($grupos[$m] -join ", "))
-}
-if ($Explicar) { $normas.Gravar(); Pop-Location; exit 0 }
-foreach ($nome in $provados.Keys) { Marcar-Verde $nome $provados[$nome] }
-if ($fila.Count -eq 0) {
-	Gravar-Cache
-	Gravar-Verde
-	Write-Host ""
-	Write-Host "nada a testar: a mudanca nao alcanca nenhum portao"
-	if ($Push) { Write-Host "PUSH OK: tudo o que a branch afeta esta verde" }
-	Pop-Location; exit 0
-}
-
-
-# ---------------------------------------------------------------------------
-# A IMPORTAÇÃO, UMA VEZ: num `--script` o Godot não importa nada, e recurso novo
-# sem cache (ou class_name novo fora do cache de classes) reprovaria cada portão
-# que o toca como "NAO ABRE". Pendente, importa antes da bateria. O cache que
-# existe mas está quebrado (o .scn importado de um .glb cita a textura que a
-# importação extraiu e que sumiu do disco; o md5 do .glb bate, e o Godot não o
-# refaria) tem o cache apagado antes da importação (ver CachesQuebrados). O
-# que ainda escapar aparece no log do portão como "Failed loading resource:
-# res://.godot/imported/..." ou "Resource file not found": aí importa uma vez e
-# roda de novo só esses portões.
+# O PLANO.
 
 $saida = Join-Path ([IO.Path]::GetTempPath()) ("testar3d-" + [guid]::NewGuid().ToString("N"))
 New-Item -ItemType Directory -Path $saida | Out-Null
-# Uma importação depois da bateria, e só uma: o que reprovar de novo reprova.
-$retentou = $false
-# Recursos cujo cache importado está quebrado (o .scn cita textura extraída que não
-# existe): o md5 bate, então o Godot não reimportaria. Apagar o cache deles (só
-# dentro de .godot/imported) obriga a importação a refazê-los.
-$refazer = New-Object 'Collections.Generic.HashSet[string]'
-function Importar-Projeto([string]$motivo) {
-	Write-Host ("importando (" + $motivo + ")...")
-	$pastaImportados = [IO.Path]::GetFullPath((Join-Path $raiz ".godot/imported"))
-	foreach ($origem in $refazer) {
-		$descricao = Ler-Log (Join-Path $raiz ($origem + ".import"))
-		foreach ($d in [regex]::Matches($descricao, '"res://(\.godot/imported/[^"]+)"')) {
-			$destino = [IO.Path]::GetFullPath((Join-Path $raiz $d.Groups[1].Value))
-			if (-not $destino.StartsWith($pastaImportados, [StringComparison]::OrdinalIgnoreCase)) { continue }
-			Remove-Item -LiteralPath $destino -Force -ErrorAction SilentlyContinue
-			Remove-Item -LiteralPath ($destino -replace '(-[0-9a-f]{32})\..*$', '$1.md5') -Force -ErrorAction SilentlyContinue
-		}
-	}
-	if ($refazer.Count -gt 0) { Write-Host ("  refazendo o cache de " + $refazer.Count + " recurso(s), ex.: " + ((@($refazer) | Select-Object -First 3) -join ", ")) }
-	$perfilImportacao = Join-Path $saida "perfil-importacao"
-	[IO.Directory]::CreateDirectory($perfilImportacao) | Out-Null
-	$anterior = @($env:APPDATA, $env:XDG_DATA_HOME, $env:XDG_CONFIG_HOME)
-	$env:APPDATA = $perfilImportacao; $env:XDG_DATA_HOME = $perfilImportacao; $env:XDG_CONFIG_HOME = $perfilImportacao
+$arquivoLog = Join-Path $pastaCache "bateria.log"
+[IO.File]::WriteAllText($arquivoLog, "", $semBom)
+
+function Diz([string]$linha) {
+	Write-Host $linha
+	[IO.File]::AppendAllText($arquivoLog, $linha + "`n", $semBom)
+}
+
+# Um Godot com perfil descartável (saves e preferências), stdout e stderr em arquivos.
+function Iniciar-Godot([string]$nome, [string[]]$argumentos) {
+	$perfil = Join-Path $saida ("perfil-" + $nome)
+	[IO.Directory]::CreateDirectory($perfil) | Out-Null
+	$log = Join-Path $saida "$nome.txt"
+	$anterior = @($env:APPDATA, $env:XDG_DATA_HOME, $env:XDG_CONFIG_HOME, $env:TESTAR3D_PERFIL_DESCARTAVEL)
+	$env:APPDATA = $perfil; $env:XDG_DATA_HOME = $perfil; $env:XDG_CONFIG_HOME = $perfil; $env:TESTAR3D_PERFIL_DESCARTAVEL = "1"
 	try {
-		$argumentos = @{
+		$opcoes = @{
 			FilePath = $Godot; PassThru = $true; WorkingDirectory = $Projeto
-			ArgumentList = @("--headless", "--path", ".", "--editor", "--import")
-			RedirectStandardOutput = (Join-Path $saida "importacao.txt"); RedirectStandardError = (Join-Path $saida "importacao.err")
+			# `--path .`, e não o caminho inteiro: no 5.1 o -ArgumentList não põe aspas
+			# em argumento com espaço.
+			ArgumentList = (@("--headless", "--path", ".") + $argumentos)
+			RedirectStandardOutput = $log; RedirectStandardError = "$log.err"
 		}
-		if ($noWindows) { $argumentos["WindowStyle"] = "Hidden" }
-		$importacao = Start-Process @argumentos
-	} finally { $env:APPDATA = $anterior[0]; $env:XDG_DATA_HOME = $anterior[1]; $env:XDG_CONFIG_HOME = $anterior[2] }
-	$null = $importacao.Handle
-	if (-not $importacao.WaitForExit(900000)) {
-		# Só o PID que este script levantou, nunca por nome.
-		if ($noWindows) { & taskkill /F /T /PID $importacao.Id 2>&1 | Out-Null } else { Stop-Process -Id $importacao.Id -Force }
-		Write-Host "aviso: a importacao passou de 15 min e foi encerrada; os portoes rodam assim mesmo"
+		if ($noWindows) { $opcoes["WindowStyle"] = "Hidden" }
+		$processo = Start-Process @opcoes
+	} finally { $env:APPDATA = $anterior[0]; $env:XDG_DATA_HOME = $anterior[1]; $env:XDG_CONFIG_HOME = $anterior[2]; $env:TESTAR3D_PERFIL_DESCARTAVEL = $anterior[3] }
+	$null = $processo.Handle
+	return @{ nome = $nome; processo = $processo; log = $log }
+}
+
+function Encerrar([object]$execucao) {
+	$p = $execucao.processo
+	if ($p.HasExited) { return }
+	try {
+		if ($noWindows) { & taskkill /F /T /PID $p.Id 2>&1 | Out-Null } else { Stop-Process -Id $p.Id -Force }
+	} catch { if (-not $p.HasExited) { throw } }
+	$p.WaitForExit(5000) | Out-Null
+}
+
+# Espera o Godot terminar, repassando ao log as linhas que `filtro` aceita.
+# Godot calado por $SilencioSegundos travou num laço: sai por PID.
+function Acompanhar([object]$execucao, [scriptblock]$filtro) {
+	$lidas = 0
+	$silencio = [Diagnostics.Stopwatch]::StartNew()
+	$calou = $false
+	while ($true) {
+		$acabou = $execucao.processo.HasExited
+		$linhas = (Ler-Arquivo $execucao.log) -split "`n"
+		# A última linha pode estar pela metade enquanto o processo escreve.
+		$prontas = if ($acabou) { $linhas.Count } else { $linhas.Count - 1 }
+		for ($i = $lidas; $i -lt $prontas; $i++) {
+			$l = $linhas[$i].TrimEnd("`r")
+			if (& $filtro $l) { Diz $l }
+		}
+		if ($prontas -gt $lidas) { $lidas = $prontas; $silencio.Restart() }
+		if ($acabou) { break }
+		if ($silencio.Elapsed.TotalSeconds -ge $SilencioSegundos) { $calou = $true; Encerrar $execucao; continue }
+		Start-Sleep -Milliseconds 500
 	}
-	[Testar3D.Importacao]::Aceitar($raiz, [string[]]@($refazer))
-	$refazer.Clear()
-	$restantes = [Testar3D.Importacao]::Pendencias($raiz, $grafo)
-	if ($restantes.Count -gt 0) { Write-Host ("aviso: " + $restantes.Count + " pendencia(s) seguem depois da importacao, ex.: " + (($restantes | Select-Object -First 3) -join ", ")) }
+	$execucao.processo.WaitForExit()
+	return @{ codigo = $execucao.processo.ExitCode; calou = $calou; texto = (Ler-Arquivo $execucao.log); erro = (Ler-Arquivo ($execucao.log + ".err")) }
 }
-foreach ($q in [Testar3D.Importacao]::CachesQuebrados($raiz, $grafo)) { [void]$refazer.Add($q) }
-$pendentes = [Testar3D.Importacao]::Pendencias($raiz, $grafo)
-if ($pendentes.Count -gt 0) {
-	Importar-Projeto ("" + $pendentes.Count + " pendencia(s) antes da bateria, ex.: " + (($pendentes | Select-Object -First 3) -join ", "))
+
+# Como Acompanhar, para vários Godots ao mesmo tempo (a suíte dividida com -Paralelo).
+function Acompanhar-Varios([object[]]$execucoes, [scriptblock]$filtro) {
+	$lidas = @{}; $silencio = @{}; $calou = @{}
+	foreach ($e in $execucoes) { $lidas[$e.nome] = 0; $silencio[$e.nome] = [Diagnostics.Stopwatch]::StartNew(); $calou[$e.nome] = $false }
+	while ($true) {
+		$vivos = 0
+		foreach ($e in $execucoes) {
+			$acabou = $e.processo.HasExited
+			$linhas = (Ler-Arquivo $e.log) -split "`n"
+			$prontas = if ($acabou) { $linhas.Count } else { $linhas.Count - 1 }
+			for ($i = $lidas[$e.nome]; $i -lt $prontas; $i++) {
+				$l = $linhas[$i].TrimEnd("`r")
+				if (& $filtro $l) { Diz $l }
+			}
+			if ($prontas -gt $lidas[$e.nome]) { $lidas[$e.nome] = $prontas; $silencio[$e.nome].Restart() }
+			if (-not $acabou) {
+				$vivos++
+				if ($silencio[$e.nome].Elapsed.TotalSeconds -ge $SilencioSegundos) { $calou[$e.nome] = $true; Encerrar $e }
+			}
+		}
+		if ($vivos -eq 0) { break }
+		Start-Sleep -Milliseconds 500
+	}
+	foreach ($e in $execucoes) { $e.processo.WaitForExit() }
+	return $calou
 }
-Write-Host ("rodando " + $explicacaoParalelo)
-Write-Host ""
+
+$linhaDaSuite = { param($l) $l -match '^\[\s*\d+/\d+\]|^\s{9}\S|^\s+\.\.\. rodando:|^suite:|^vale montado|^caso inexistente' }
+
+# O que existe de cada lado.
+$unidades = @(Get-ChildItem (Join-Path $raiz "tests/unidade") -Filter "test_*.gd" -ErrorAction SilentlyContinue | Sort-Object Name | ForEach-Object { $_.BaseName })
+$pedidos = @()
+foreach ($t in $Teste) { foreach ($parte in ($t -split ',')) { if ($parte.Trim() -ne "") { $pedidos += ($parte.Trim() -replace '\.gd$', '') } } }
+$unidadesPedidas = @()
+$casosPedidos = @()
+foreach ($p in $pedidos) {
+	if ($unidades -contains $p) { $unidadesPedidas += $p }
+	elseif ($unidades -contains "test_$p") { $unidadesPedidas += "test_$p" }
+	elseif (Test-Path (Join-Path $raiz "tests/$p.gd")) { $casosPedidos += $p }
+	else { Write-Host "teste inexistente: $p"; Pop-Location; exit 1 }
+}
+
+# A IMPORTAÇÃO: num `--script` o Godot não importa nada, e recurso novo sem
+# cache (ou class_name novo fora do cache de classes) faria o caso não abrir.
+# Importa quando o conteúdo mudou desde a última importação desta máquina.
+$carimbo = Join-Path $pastaCache "importado.txt"
+$estadoAgora = ((Git-Saida @("rev-parse", "HEAD")) -join "") + "|" + ((Git-Saida @("status", "--porcelain=v1", "-uall")) -join "|") + "|" + $motor
+$hashAgora = [BitConverter]::ToString([Security.Cryptography.SHA1]::Create().ComputeHash($semBom.GetBytes($estadoAgora))).Replace("-", "")
+$precisaImportar = (-not (Test-Path -LiteralPath (Join-Path $raiz ".godot/global_script_class_cache.cfg"))) -or ((Ler-Arquivo $carimbo).Trim() -ne $hashAgora)
+
+$rodarUnidade = $Completo -or ($pedidos.Count -eq 0) -or ($unidadesPedidas.Count -gt 0)
+$rodarSuite = $Completo -or ($casosPedidos.Count -gt 0)
+
+$plano = $null
+
+function Importar {
+	Diz "importando (o conteudo mudou desde a ultima importacao)..."
+	$imp = Iniciar-Godot "importacao" @("--editor", "--import")
+	if (-not $imp.processo.WaitForExit(900000)) { Encerrar $imp; Diz "aviso: a importacao passou de 15 min e foi encerrada" }
+	[IO.File]::WriteAllText($carimbo, $hashAgora, $semBom)
+	$script:precisaImportar = $false
+}
+
+if ($precisaImportar -and -not $Explicar -and ($rodarSuite -or $rodarUnidade)) { Importar }
+
+if ($rodarSuite) {
+	$argsPlano = @("--script", "res://tests/suite/rodar.gd", "--", "--listar")
+	if ($casosPedidos.Count -gt 0) { $argsPlano += ("--casos=" + ($casosPedidos -join ",")) }
+	if ($Longos) { $argsPlano += "--longos" }
+	$exec = Iniciar-Godot "plano" $argsPlano
+	$r = Acompanhar $exec { param($l) $false }
+	$linhaPlano = ($r.texto -split "`n") | Where-Object { $_.StartsWith("PLANO:") } | Select-Object -First 1
+	if (-not $linhaPlano) {
+		Diz "a suite nao abriu: o anfitriao nao imprimiu o plano"
+		foreach ($l in (($r.erro -split "`n") | Where-Object { $_ -match 'ERROR' } | Select-Object -First 5)) { Diz ("         " + $l.Trim()) }
+		Pop-Location; exit 1
+	}
+	$plano = $linhaPlano.Substring(6) | ConvertFrom-Json
+	foreach ($n in @($plano.inexistentes)) { if ($n) { Write-Host "caso inexistente: $n"; Pop-Location; exit 1 } }
+}
+
+$nUnidade = if ($rodarUnidade) { 1 } else { 0 }
+$nSuite = if ($null -ne $plano) { @($plano.nomes).Count } else { 0 }
+$isolados = if ($null -ne $plano -and $casosPedidos.Count -eq 0) { @($plano.isolados | Where-Object { $_ }) } else { @() }
+$fora = if ($null -ne $plano) { @($plano.fora_da_suite | Where-Object { $_ }) } else { @() }
+$total = $nUnidade + $nSuite + $isolados.Count + $fora.Count
+
+$modo = if ($Push) { "push (completo)" } elseif ($Completo) { "completo" } elseif ($pedidos.Count -gt 0) { "pelo nome" } else { "rapido (unidade)" }
+Diz ("bateria: " + $total + " etapa(s), modo " + $modo)
+if ($rodarUnidade) {
+	$quais = if ($unidadesPedidas.Count -gt 0) { $unidadesPedidas -join ", " } else { "" + $unidades.Count + " arquivo(s) de teste" }
+	Diz ("  unidade (GUT, um Godot): " + $quais)
+}
+if ($nSuite -gt 0) { Diz ("  suite do vale (um Godot): " + $nSuite + " caso(s)") }
+if ($isolados.Count -gt 0) { Diz ("  isolados (um Godot cada): " + ($isolados -join ", ")) }
+if ($fora.Count -gt 0) { Diz ("  fora da suite (SceneTree propria): " + ($fora -join ", ")) }
+if ($null -ne $plano -and @($plano.longos_deixados | Where-Object { $_ }).Count -gt 0) { Diz ("  longos, so com -Longos: " + (@($plano.longos_deixados) -join ", ")) }
+if ($Explicar) { Pop-Location; exit 0 }
+
+
+# ---------------------------------------------------------------------------
+# O PAINEL.
+
+if (-not $SemPainel) {
+	$ocupada = $false
+	try { $c = New-Object Net.Sockets.TcpClient; $c.Connect("127.0.0.1", $Porta); $c.Close(); $ocupada = $true } catch { }
+	$python = Get-Command python -ErrorAction SilentlyContinue
+	if (-not $ocupada -and $null -ne $python) {
+		$painel = Join-Path $PSScriptRoot "painel_bateria.py"
+		$opcoesPainel = @{ FilePath = $python.Source; ArgumentList = @("`"$painel`"", "`"$arquivoLog`"", "$Porta", "`"Bateria do vale`""); PassThru = $true }
+		if ($noWindows) { $opcoesPainel["WindowStyle"] = "Hidden" }
+		$null = Start-Process @opcoesPainel
+	}
+	if ($ocupada -or $null -ne $python) { Write-Host ("painel ao vivo: http://127.0.0.1:" + $Porta + "/") }
+}
 
 
 # ---------------------------------------------------------------------------
 # A EXECUÇÃO.
 
-$errosFatais = "Parse Error|Compile Error|SCRIPT ERROR|Failed loading resource"
-
-function Encerrar-Teste($processo) {
-	if ($processo.HasExited) { return }
-	try {
-		if ($noWindows) { & taskkill /F /T /PID $processo.Id 2>&1 | Out-Null } else { Stop-Process -Id $processo.Id -Force }
-	} catch {
-		# quit(1) pode encerrar entre a leitura do erro e o taskkill.
-		if (-not $processo.HasExited) { throw }
-	}
-	$processo.WaitForExit(5000) | Out-Null
-}
-
-function Iniciar-Portao([string]$nome) {
-	$perfil = Join-Path $saida ("perfil-" + $nome)
-	[IO.Directory]::CreateDirectory($perfil) | Out-Null
-	$log = Join-Path $saida "$nome.txt"
-	# Cada portão recebe saves e preferências descartáveis (o filho herda o
-	# ambiente no momento em que nasce, então trocar aqui não vaza para os outros).
-	$anterior = @($env:APPDATA, $env:XDG_DATA_HOME, $env:XDG_CONFIG_HOME)
-	$env:APPDATA = $perfil; $env:XDG_DATA_HOME = $perfil; $env:XDG_CONFIG_HOME = $perfil
-	try {
-		$argumentos = @{
-			FilePath = $Godot; PassThru = $true; WorkingDirectory = $Projeto
-			# `--path .`, e não o caminho inteiro: o diretório de trabalho já é o
-			# projeto, e no Windows PowerShell 5.1 o -ArgumentList não põe aspas em
-			# argumento com espaço — "Mitys Valley 3D" chegava partido, e o Godot
-			# saía com 1 antes de qualquer portão.
-			ArgumentList = @("--headless", "--path", ".", "--script", "res://tests/$nome.gd")
-			RedirectStandardOutput = $log; RedirectStandardError = "$log.err"
-		}
-		if ($noWindows) { $argumentos["WindowStyle"] = "Hidden" }
-		$processo = Start-Process @argumentos
-	} finally { $env:APPDATA = $anterior[0]; $env:XDG_DATA_HOME = $anterior[1]; $env:XDG_CONFIG_HOME = $anterior[2] }
-	$null = $processo.Handle
-	$teto = $TetoSegundos
-	if ($TETO_DO_PORTAO.ContainsKey($nome)) { $teto = $TETO_DO_PORTAO[$nome] }
-	return @{ nome = $nome; processo = $processo; log = $log; relogio = [Diagnostics.Stopwatch]::StartNew(); teto = $teto }
-}
-
-function Julgar($r) {
-	$segundos = [Math]::Round($r.relogio.Elapsed.TotalSeconds)
-	if ($r.travou) { return @{ ok = $false; linha = ("TRAVOU   {0,-26} {1,4}s  passou do teto de {2}s" -f $r.nome, $segundos, $r.teto) } }
-	$dito = Ler-Log $r.log
-	$reclamado = Ler-Log ($r.log + ".err")
-	$texto = $dito + $reclamado
-	$linhas = $dito -split "`n"
-	$falhas = @($linhas | Where-Object { $_ -clike "FALHA:*" })
-	if ($texto -match $errosFatais) {
-		$motivo = (($texto -split "`n") | Where-Object { $_ -match $errosFatais } | Select-Object -First 2) -join "`n         "
-		$daImportacao = $texto -match 'Failed loading resource: res://\.godot/imported/|Resource file not found: res://'
-		# O recurso de origem que não carregou: o cache dele é refeito na importação.
-		foreach ($m in [regex]::Matches($texto, 'Failed loading resource: res://([^\s]+?)\.?(
-?
-|$)')) {
-			$origem = $m.Groups[1].Value
-			if (-not $origem.StartsWith(".godot/") -and $atual.ContainsKey($origem + ".import")) { [void]$refazer.Add($origem) }
-		}
-		return @{ ok = $false; importacao = $daImportacao; linha = ("NAO ABRE {0,-26} {1,4}s  o script nao compilou`n         {2}" -f $r.nome, $segundos, $motivo) }
-	}
-	if ($r.processo.ExitCode -ne 0 -or $falhas.Count -gt 0) {
-		$extra = ""
-		foreach ($f in $falhas) { $extra += "`n         " + $f.Trim() }
-		return @{ ok = $false; linha = ("FALHOU   {0,-26} {1,4}s  saiu com {2}{3}" -f $r.nome, $segundos, $r.processo.ExitCode, $extra) }
-	}
-	# O RESUMO É A LINHA "<NOME>_OK:" DO TESTE, não a última do processo (o Godot
-	# despeja vazamento de RID no desligamento, que não é defeito de ninguém).
-	$resumo = ($linhas | Where-Object { $_ -cmatch "_OK:" } | Select-Object -Last 1)
-	if (-not $resumo) { $resumo = ($linhas | Where-Object { $_.Trim() -ne "" -and $_ -notmatch '^(ERROR|WARNING|\s+at:|\s+\[)' } | Select-Object -Last 1) }
-	if (-not $resumo) { $resumo = "" }
-	$resumo = $resumo.Trim()
-	if ($resumo.Length -gt 110) { $resumo = $resumo.Substring(0, 107) + "..." }
-	return @{ ok = $true; linha = ("ok       {0,-26} {1,4}s  {2}" -f $r.nome, $segundos, $resumo) }
-}
-
-$aguardando = New-Object Collections.Generic.Queue[string]
-foreach ($n in $fila) { $aguardando.Enqueue($n) }
-$rodando = New-Object Collections.Generic.List[object]
 $feitos = 0
 $reprovados = New-Object Collections.Generic.List[string]
-# Os que reprovaram por cache de importação: rodam de novo depois de uma importação.
-$deNovo = New-Object Collections.Generic.List[string]
-$ultimoSinal = [Diagnostics.Stopwatch]::StartNew()
+$contaminados = New-Object Collections.Generic.List[string]
+$errosFatais = "Parse Error|Compile Error|SCRIPT ERROR|Failed loading resource"
+$relogio = [Diagnostics.Stopwatch]::new()
+
 try {
-	while ($aguardando.Count -gt 0 -or $rodando.Count -gt 0) {
-		while ($rodando.Count -lt $Paralelo -and $aguardando.Count -gt 0) { $rodando.Add((Iniciar-Portao $aguardando.Dequeue())) }
-		Start-Sleep -Milliseconds 400
-		foreach ($r in $rodando.ToArray()) {
-			$acabou = $r.processo.HasExited
-			if (-not $acabou -and (Ler-Log ($r.log + ".err")) -match $errosFatais) { Encerrar-Teste $r.processo; $acabou = $true }
-			if (-not $acabou -and $r.relogio.Elapsed.TotalSeconds -ge $r.teto) { Encerrar-Teste $r.processo; $r.travou = $true; $acabou = $true }
-			if (-not $acabou) { continue }
-			$r.relogio.Stop()
-			$r.processo.WaitForExit()
-			[void]$rodando.Remove($r)
-			$feitos++
-			$veredito = Julgar $r
-			Write-Host ("[{0,3}/{1}] {2}" -f $feitos, $fila.Count, $veredito.linha)
-			$ultimoSinal.Restart()
-			if (-not $cache.ContainsKey($r.nome)) { $cache[$r.nome] = @{ verdes = @(); legado = @(); duracao = 90 } }
-			$cache[$r.nome].duracao = $r.relogio.Elapsed.TotalSeconds
-			if ($veredito.ok) { Marcar-Verde $r.nome $impressoes[$r.nome] }
-			elseif ($veredito.importacao -and -not $retentou) { $deNovo.Add($r.nome) }
-			else { $reprovados.Add($r.nome) }
+	# 1. UNIDADE
+	if ($rodarUnidade) {
+		$relogio.Restart()
+		$argsGut = @("--script", "res://addons/gut/gut_cmdln.gd", "-gconfig=res://.gutconfig.json", "-gexit")
+		if ($unidadesPedidas.Count -gt 0) { $argsGut = @("--script", "res://addons/gut/gut_cmdln.gd", "-gconfig=res://.gutconfig.json", "-gexit", "-gdir=", ("-gtest=" + (($unidadesPedidas | ForEach-Object { "res://tests/unidade/$_.gd" }) -join ","))) }
+		$exec = Iniciar-Godot "unidade" $argsGut
+		$r = Acompanhar $exec { param($l) $false }
+		$feitos++
+		$segundos = [Math]::Round($relogio.Elapsed.TotalSeconds)
+		$texto = $r.texto
+		$nTestes = if ($texto -match '(?m)^Tests\s+(\d+)') { [int]$Matches[1] } else { 0 }
+		$nFalhas = if ($texto -match '(?m)^Failing( Tests)?\s+(\d+)') { [int]$Matches[2] } else { 0 }
+		$nAsserts = if ($texto -match '(?m)^Asserts\s+(\d+)') { [int]$Matches[1] } else { 0 }
+		$falhasGut = @(($texto -split "`n") | Where-Object { $_ -match '^\s*\[Failed\]|^res://tests/unidade/\S+\.gd$|^\s*- test_' } | ForEach-Object { $_.Trim() } | Select-Object -First 12)
+		$fatal = ($r.erro + $texto) -match 'Parse Error|Compile Error'
+		if ($r.codigo -eq 0 -and $nFalhas -eq 0 -and $nTestes -gt 0 -and -not $r.calou -and -not $fatal) {
+			Diz ("[{0,3}/{1}] ok       {2,-26} {3,4}s  {4} testes, {5} conferencias, 0 falhas" -f $feitos, $total, "unidade", $segundos, $nTestes, $nAsserts)
+		} else {
+			$status = if ($r.calou) { "TRAVOU" } elseif ($fatal) { "NAO ABRE" } else { "FALHOU" }
+			Diz ("[{0,3}/{1}] {2,-8} {3,-26} {4,4}s  {5} testes, {6} falha(s), saiu com {7}" -f $feitos, $total, $status, "unidade", $segundos, $nTestes, $nFalhas, $r.codigo)
+			foreach ($f in $falhasGut) { Diz ("         " + $f) }
+			if ($fatal) { foreach ($l in ((($r.erro + $texto) -split "`n") | Where-Object { $_ -match 'Parse Error|Compile Error' } | Select-Object -First 3)) { Diz ("         " + $l.Trim()) } }
+			$reprovados.Add("unidade")
 		}
-		if ($aguardando.Count -eq 0 -and $rodando.Count -eq 0 -and $deNovo.Count -gt 0) {
-			$retentou = $true
-			Importar-Projeto ("" + $deNovo.Count + " portao(oes) nao acharam recurso importado")
-			Write-Host ("rodando de novo: " + ($deNovo -join ", "))
-			foreach ($n in $deNovo) { $aguardando.Enqueue($n) }
-			$feitos -= $deNovo.Count
-			$deNovo.Clear()
+	}
+
+	# 2. A SUÍTE DO VALE
+	$reprovadosNaSuite = @()
+	if ($nSuite -gt 0) {
+		# Um caso que DERRUBA o Godot (crash do motor) não leva a suíte junto: ele
+		# reprova, e um Godot novo continua do caso seguinte. Até 5 quedas.
+		$restantes = @($plano.nomes)
+		$vistos = @()
+		$rodada = 0
+		# Lê o resultado de uma rodada da suíte: quem rodou, quem reprovou, quem precisou do vale novo.
+		function Ler-Resultado([string]$pasta, [string]$rotulo) {
+			$arquivo = Join-Path $pasta "resultado.json"
+			if (-not (Test-Path -LiteralPath $arquivo)) { return }
+			Copy-Item -LiteralPath $arquivo -Destination (Join-Path $pastaCache ($rotulo + ".json")) -Force
+			$res = $null
+			try { $res = (Ler-Arquivo $arquivo) | ConvertFrom-Json } catch { return }
+			foreach ($c in $res.casos) {
+				$script:vistos += $c.nome
+				if ($c.contaminado) { $contaminados.Add($c.nome) }
+				# O caso do vale que reprovou já rodou de novo com o vale montado do zero: reprovou duas vezes.
+				# Reprovou na suíte (mesmo depois do vale novo): a palavra final é de um Godot novo, só dele.
+				if ($c.status -ne "ok") { $script:reprovadosNaSuite += $c.nome }
+			}
 		}
-		if ($rodando.Count -gt 0 -and $ultimoSinal.Elapsed.TotalSeconds -ge 15) {
-			$lista = ($rodando | ForEach-Object { $_.nome + " " + [Math]::Round($_.relogio.Elapsed.TotalSeconds) + "s" }) -join ", "
-			Write-Host ("          ... rodando: " + $lista + "  (faltam " + $aguardando.Count + " na fila)")
-			$ultimoSinal.Restart()
+		foreach ($velho in @(Get-ChildItem -LiteralPath $pastaCache -Filter "suite-*.json" -ErrorAction SilentlyContinue)) {
+			# Os tempos da rodada anterior equilibram a divisão; lidos antes de serem trocados.
+			if ($null -eq $tempos) { $tempos = @{} }
+			try { foreach ($c in ((Ler-Arquivo $velho.FullName) | ConvertFrom-Json).casos) { $tempos[$c.nome] = [double]$c.segundos } } catch { }
+		}
+		if ($Paralelo -gt 1 -and $restantes.Count -gt 1) {
+			if ($null -eq $tempos) { $tempos = @{} }
+			$cestos = @(); $somas = @()
+			for ($k = 0; $k -lt $Paralelo; $k++) { $cestos += , (New-Object Collections.Generic.List[string]); $somas += 0.0 }
+			# O procedural todo num Godot só: cada Godot que o recebe monta o vale de novo.
+			foreach ($c in @($plano.casos | Where-Object { [int]$_.grupo -eq 2 })) { $cestos[0].Add($c.nome); $somas[0] += $(if ($tempos.ContainsKey($c.nome)) { $tempos[$c.nome] } else { 20.0 }) }
+			$resto = @($plano.casos | Where-Object { [int]$_.grupo -ne 2 } | Sort-Object { if ($tempos.ContainsKey($_.nome)) { -$tempos[$_.nome] } else { -20.0 } })
+			foreach ($c in $resto) {
+				$menor = 0
+				for ($k = 1; $k -lt $Paralelo; $k++) { if ($somas[$k] -lt $somas[$menor]) { $menor = $k } }
+				$cestos[$menor].Add($c.nome); $somas[$menor] += $(if ($tempos.ContainsKey($c.nome)) { $tempos[$c.nome] } else { 20.0 })
+			}
+			Diz ("suite dividida em " + $Paralelo + " Godots: " + (($cestos | ForEach-Object { "" + $_.Count + " casos" }) -join ", "))
+			$execucoes = @(); $base = $feitos
+			for ($k = 0; $k -lt $Paralelo; $k++) {
+				if ($cestos[$k].Count -eq 0) { continue }
+				$pastaK = Join-Path $saida ("suite-p" + $k)
+				$argsK = @("--script", "res://tests/suite/rodar.gd", "--", "--perfil-descartavel", ("--saida=" + $pastaK.Replace('\', '/')), ("--deslocamento=" + $base), ("--total=" + $total), ("--casos=" + ($cestos[$k] -join ",")))
+				if ($Longos) { $argsK += "--longos" }
+				$argsK += $Extra
+				$execucoes += (Iniciar-Godot ("suite-p" + $k) $argsK)
+				$base += $cestos[$k].Count
+			}
+			$null = Acompanhar-Varios $execucoes $linhaDaSuite
+			for ($k = 0; $k -lt $Paralelo; $k++) { Ler-Resultado (Join-Path $saida ("suite-p" + $k)) ("suite-p" + $k) }
+			# O que um Godot que caiu não rodou segue no laço de baixo, um Godot de cada vez.
+			$restantes = @(@($plano.nomes) | Where-Object { $vistos -notcontains $_ })
+			$rodada = 1
+		}
+		while ($restantes.Count -gt 0) {
+			$rodada++
+			$pastaSuite = Join-Path $saida ("suite-" + $rodada)
+			$argsSuite = @("--script", "res://tests/suite/rodar.gd", "--", "--perfil-descartavel", ("--saida=" + $pastaSuite.Replace('\', '/')), ("--deslocamento=" + ($feitos + $vistos.Count)), ("--total=" + $total))
+			if ($rodada -gt 1 -or $casosPedidos.Count -gt 0) { $argsSuite += ("--casos=" + ($restantes -join ",")) }
+			if ($Longos) { $argsSuite += "--longos" }
+			$argsSuite += $Extra
+			$exec = Iniciar-Godot ("suite-" + $rodada) $argsSuite
+			$r = Acompanhar $exec $linhaDaSuite
+			# O último resultado fica no cache: tempo de cada caso e quem precisou do vale novo.
+			Ler-Resultado $pastaSuite ("suite-" + $rodada)
+			$restantes = @(@($plano.nomes) | Where-Object { $vistos -notcontains $_ })
+			if ($restantes.Count -eq 0) { break }
+			# Saiu antes de acabar: quem rodava agora é o primeiro dos que faltam.
+			$culpado = $restantes[0]
+			$porque = if ($r.calou) { "ficou calado " + $SilencioSegundos + " s e foi encerrado" } else { "caiu (saiu com " + $r.codigo + ")" }
+			Diz ("[{0,3}/{1}] NAO ABRE {2,-26} {3,4}s  o Godot da suite {4}" -f ($feitos + $vistos.Count + 1), $total, $culpado, 0, $porque)
+			foreach ($l in (($r.erro -split "`n") | Where-Object { $_ -match ($errosFatais + '|signal \d+|GDScript backtrace|^\s+\[\d+\] .*\.gd:') } | Select-Object -Last 4)) { Diz ("         " + $l.Trim()) }
+			$reprovados.Add($culpado)
+			$vistos += $culpado
+			$restantes = @($restantes | Select-Object -Skip 1)
+			if ($rodada -ge 6) {
+				Diz ("o Godot da suite caiu " + $rodada + " vezes; " + $restantes.Count + " caso(s) nao rodaram")
+				foreach ($n in $restantes) { $reprovados.Add($n) }
+				break
+			}
+		}
+		$feitos += $nSuite
+	}
+
+	# 3. OS ISOLADOS, um Godot cada (e o que reprovou na suíte, de novo, sozinho).
+	function Rodar-Sozinho([string]$nome, [int]$numero) {
+		$argsCaso = @("--script", "res://tests/suite/rodar.gd", "--", "--perfil-descartavel", ("--saida=" + (Join-Path $saida ("sozinho-" + $nome)).Replace('\', '/')), ("--casos=" + $nome))
+		$argsCaso += $Extra
+		if ($numero -gt 0) { $argsCaso += @(("--deslocamento=" + ($numero - 1)), ("--total=" + $total)) }
+		$filtro = if ($numero -gt 0) { $linhaDaSuite } else { { param($l) $l -match '^\s{9}\S' } }
+		$exec = Iniciar-Godot ("sozinho-" + $nome) $argsCaso
+		$r = Acompanhar $exec $filtro
+		$linha = (($r.texto -split "`n") | Where-Object { $_ -match '^\[\s*\d+/\d+\]' } | Select-Object -Last 1)
+		$ok = ($r.codigo -eq 0 -and $linha -match '^\[\s*\d+/\d+\]\s+ok\s')
+		if ($numero -le 0) {
+			$resumo = if ($linha) { ($linha -replace '^\[\s*\d+/\d+\]\s+', '').Trim() } else { "nao terminou (saiu com " + $r.codigo + ")" }
+			Diz ("         sozinho: " + $resumo)
+		}
+		return $ok
+	}
+	foreach ($nome in $isolados) {
+		$feitos++
+		if (-not (Rodar-Sozinho $nome $feitos)) { $reprovados.Add($nome) }
+	}
+	if ($reprovadosNaSuite.Count -gt 0) {
+		Diz ""
+		Diz ("repetindo sozinho, num Godot novo, o que reprovou na suite: " + ($reprovadosNaSuite -join ", "))
+		foreach ($nome in $reprovadosNaSuite) {
+			if (Rodar-Sozinho $nome 0) { $contaminados.Add($nome) } else { $reprovados.Add($nome) }
+		}
+	}
+
+	# 4. FORA DA SUÍTE: portão que ainda é uma SceneTree própria (herda de uma ferramenta).
+	foreach ($nome in $fora) {
+		$feitos++
+		$relogio.Restart()
+		$exec = Iniciar-Godot ("fora-" + $nome) @("--script", "res://tests/$nome.gd")
+		$r = Acompanhar $exec { param($l) $false }
+		$segundos = [Math]::Round($relogio.Elapsed.TotalSeconds)
+		$linhas = $r.texto -split "`n"
+		$falhas = @($linhas | Where-Object { $_ -clike "FALHA:*" } | ForEach-Object { $_.Trim() })
+		$resumo = ($linhas | Where-Object { $_ -cmatch "_OK" } | Select-Object -Last 1)
+		if ($null -eq $resumo) { $resumo = "" }
+		$resumo = $resumo.Trim(); if ($resumo.Length -gt 110) { $resumo = $resumo.Substring(0, 107) + "..." }
+		if (($r.texto + $r.erro) -match $errosFatais) {
+			Diz ("[{0,3}/{1}] NAO ABRE {2,-26} {3,4}s  erro de script" -f $feitos, $total, $nome, $segundos)
+			foreach ($l in ((($r.texto + $r.erro) -split "`n") | Where-Object { $_ -match $errosFatais } | Select-Object -First 2)) { Diz ("         " + $l.Trim()) }
+			$reprovados.Add($nome)
+		} elseif ($r.calou -or $r.codigo -ne 0 -or $falhas.Count -gt 0) {
+			$status = if ($r.calou) { "TRAVOU" } else { "FALHOU" }
+			Diz ("[{0,3}/{1}] {2,-8} {3,-26} {4,4}s  saiu com {5}" -f $feitos, $total, $status, $nome, $segundos, $r.codigo)
+			foreach ($f in ($falhas | Select-Object -First 8)) { Diz ("         " + $f) }
+			$reprovados.Add($nome)
+		} else {
+			Diz ("[{0,3}/{1}] ok       {2,-26} {3,4}s  {4}" -f $feitos, $total, $nome, $segundos, $resumo)
 		}
 	}
 } finally {
-	foreach ($r in $rodando.ToArray()) { Encerrar-Teste $r.processo }
-	# O cache é gravado mesmo se a bateria for interrompida: o que ficou verde, ficou.
-	Gravar-Cache
 	$temporarios = [IO.Path]::GetFullPath([IO.Path]::GetTempPath())
 	$alvo = [IO.Path]::GetFullPath($saida)
 	if ($alvo.StartsWith($temporarios, [StringComparison]::OrdinalIgnoreCase)) { Remove-Item -LiteralPath $alvo -Recurse -Force -ErrorAction SilentlyContinue }
-	Pop-Location
 }
 
 # SEM ACENTO NAS LINHAS DE RESUMO, de propósito: o PowerShell 5.1 lê .ps1 sem BOM
 # na página de código da máquina, e acento sai embaralhado no console.
-Write-Host ""
+Diz ""
 $minutos = [Math]::Round($relogioTotal.Elapsed.TotalMinutes, 1)
-if ($reprovados.Count -gt 0) {
-	Write-Host ("" + $reprovados.Count + " portao(oes) reprovado(s) de " + $fila.Count + " rodados em " + $minutos + " min: " + ($reprovados -join ", "))
-	exit 1
+if ($contaminados.Count -gt 0) {
+	Diz ("aviso: reprovaram no estado deixado por um caso anterior e passaram com o vale novo ou num Godot so deles: " + ($contaminados -join ", "))
+	Diz "         contam como verdes; o certo e o caso anterior devolver o que mexe (ou este se declarar const ISOLADO := true)"
 }
-Push-Location $raiz
-Gravar-Verde
+if ($reprovados.Count -gt 0) {
+	Diz ("" + $reprovados.Count + " etapa(s) reprovado(s) de " + $total + " em " + $minutos + " min: " + ($reprovados -join ", "))
+	if ($Push) { Diz "PUSH: reprovado; nada vai para a main assim" }
+	Pop-Location; exit 1
+}
+Diz ("BATERIA OK: as " + $total + " etapas passaram em " + $minutos + " min")
+if ($Completo -and $pedidos.Count -eq 0) {
+	$arvore = if ($null -ne $arvoreHead) { $arvoreHead } else { Git-Saida @("rev-parse", "HEAD^{tree}") | Select-Object -First 1 }
+	$limpo = @(Git-Saida @("status", "--porcelain=v1") | Where-Object { $_ -and $_.Substring(3) -notmatch '\.(uid|import|md)$' }).Count -eq 0
+	if ($limpo -and $arvore) {
+		[IO.File]::WriteAllText($arquivoVerde, (@{ arvore = $arvore; motor = $motor; quando = (Get-Date).ToString("s") } | ConvertTo-Json), $semBom)
+	}
+}
+if ($Push) { Diz "PUSH OK: a bateria completa passou" }
 Pop-Location
-Write-Host ("os " + $fila.Count + " portoes rodados passaram em " + $minutos + " min (" + $reaproveitados + " reaproveitados)")
-if ($Push) { Write-Host "PUSH OK: tudo o que a branch afeta esta verde" }
-Write-Host ("reguas fora da bateria (rode a mao): " + ($REGUAS -join ", "))
-Write-Host ("pesados que so rodam com -Tudo ou pelo nome (-Teste): " + ($SO_NO_TUDO -join ", "))

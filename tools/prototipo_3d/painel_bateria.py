@@ -1,10 +1,12 @@
 """Painel ao vivo da bateria: lê o log do testar.ps1 e empurra o estado para a página por SSE.
 
-    .\tools\prototipo_3d\testar.ps1 -Push *> D:\bateria.log      # a bateria escreve o log
-    python tools/prototipo_3d/painel_bateria.py D:\bateria.log 8765 "Bateria"
+    .\tools\prototipo_3d\testar.ps1 -Completo     # escreve .godot/testar3d/bateria.log e sobe este painel
+    python tools/prototipo_3d/painel_bateria.py .godot/testar3d/bateria.log 8765 "Bateria"   # à mão
     ->  http://127.0.0.1:8765/  (a página recebe o estado ao vivo, sem recarregar)
+
+O servidor sai sozinho meia hora depois de a bateria terminar (ou de o log parar).
 """
-import json, re, sys, time
+import json, re, sys, threading, time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
@@ -33,9 +35,9 @@ def ler():
 def estado():
     texto = ler()
     total, feitos, rodando, fila, fim = 0, [], [], None, ''
-    m = re.search(r'portoes: (\d+) analisados, (\d+) a rodar, (\d+) reaproveitados', texto)
+    m = re.search(r'bateria: (\d+) etapa', texto)
     if m:
-        total = int(m.group(2))
+        total = int(m.group(1))
     for l in texto.splitlines():
         a = LINHA.match(l)
         if a:
@@ -50,7 +52,7 @@ def estado():
                 if partes and partes[0]:
                     rodando.append({'nome': partes[0], 'seg': partes[1] if len(partes) > 1 else ''})
             fila = int(r.group(2))
-        if 'reprovado(s)' in l or 'portoes rodados passaram' in l or 'PUSH:' in l:
+        if 'reprovado(s)' in l or 'BATERIA OK' in l or 'casos rodados passaram' in l or 'PUSH' in l:
             fim = l.strip()
     nomes = {f['nome'] for f in feitos}
     rodando = [x for x in rodando if x['nome'] not in nomes]
@@ -93,6 +95,22 @@ class Painel(BaseHTTPRequestHandler):
         self.wfile.write(corpo)
 
 
+def vigiar_o_fim(servidor):
+    """Meia hora depois do fim (ou do log parado), o painel se desliga."""
+    while True:
+        time.sleep(30)
+        try:
+            e = estado()
+        except Exception:
+            continue
+        acabou = e['fim'] or e['parado_ha'] > 0
+        if acabou and LOG.exists() and time.time() - LOG.stat().st_mtime > 1800:
+            servidor.shutdown()
+            return
+
+
 ThreadingHTTPServer.daemon_threads = True
 print(f'painel em http://127.0.0.1:{PORTA}/', flush=True)
-ThreadingHTTPServer(('127.0.0.1', PORTA), Painel).serve_forever()
+servidor = ThreadingHTTPServer(('127.0.0.1', PORTA), Painel)
+threading.Thread(target=vigiar_o_fim, args=(servidor,), daemon=True).start()
+servidor.serve_forever()
