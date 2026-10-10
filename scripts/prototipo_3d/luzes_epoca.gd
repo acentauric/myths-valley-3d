@@ -199,7 +199,14 @@ func _process(delta: float) -> void:
 
 ## O brilho do viajante (#229): nas noites sem lua uma luz quente de uns seis metros anda com ele,
 ## para a mata fechada não virar breu em volta de quem joga. Na lua cheia, ou de dia, fica apagada
-## (e nem é criada).
+## (e nem é criada). O PROPÓSITO É O CHÃO EM VOLTA, e não o corpo: a luz ficava a 1,4 m, dentro
+## do peito, e acendia por dentro as bordas da roupa e do cabelo (10/10/2026). Agora ela fica
+## acima da cabeça (ALTURA_DO_BRILHO) e o alcance cresce na conta certa para o círculo de luz no
+## chão continuar do mesmo tamanho de antes; o viajante recebe luz de cima, como de um céu claro.
+const ALTURA_DO_BRILHO := 3.2
+const ALTURA_ANTIGA_DO_BRILHO := 1.4
+
+
 func _seguir_o_viajante() -> void:
 	if _energia_do_viajante <= 0.01:
 		if _viajante != null:
@@ -214,13 +221,14 @@ func _seguir_o_viajante() -> void:
 		_viajante = OmniLight3D.new()
 		_viajante.name = "BrilhoDoViajante"
 		_viajante.light_color = COR_OLEO
-		_viajante.omni_range = FasesDaLua.ALCANCE_DO_VIAJANTE
+		var no_chao := sqrt(FasesDaLua.ALCANCE_DO_VIAJANTE ** 2 - ALTURA_ANTIGA_DO_BRILHO ** 2)
+		_viajante.omni_range = sqrt(no_chao ** 2 + ALTURA_DO_BRILHO ** 2)
 		_viajante.omni_attenuation = 1.4
 		_viajante.shadow_enabled = false
 		add_child(_viajante)
 	_viajante.visible = true
 	_viajante.light_energy = _energia_do_viajante
-	_viajante.global_position = jogador.global_position + Vector3(0.0, 1.4, 0.0)
+	_viajante.global_position = jogador.global_position + Vector3(0.0, ALTURA_DO_BRILHO, 0.0)
 
 
 func _atualizar(_delta: float) -> void:

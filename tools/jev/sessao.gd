@@ -73,6 +73,7 @@ var camera_do_teste: Node
 const TECLAS_DO_TESTADOR := [KEY_W, KEY_A, KEY_S, KEY_D, KEY_E, KEY_F, KEY_V, KEY_SHIFT, KEY_SPACE]
 ## A casca de cada construção ao alcance, como o olho a vê, para saber quando o centro do viajante entra
 ## numa malha opaca (#205): nome do lote -> {"corpo", "desde"}; e quando o último achado dela foi.
+const BotaoCanto = preload("res://scripts/prototipo_3d/botao_canto.gd")
 const AuditoriaDeGeometria = preload("res://scripts/prototipo_3d/auditoria_de_geometria.gd")
 var cascas_auditadas: Dictionary = {}
 var dentro_de_geometria_visto: Dictionary = {}
@@ -82,7 +83,6 @@ var modal_bloqueio: ModalBloqueio
 var escolha_do_bloqueio := ""
 ## F6 (#234): o painel minimizado numa faixa; a escolha vale a sessão inteira.
 var minimizado := false
-var botao_f6: Button
 ## O idioma pedido pelo menu (#180), ou -1: conferido a cada volta e reaplicado se escapar.
 var idioma_pedido := -1
 ## O arquivo de pronto do menu (#175) só nasce com o vale carregado.
@@ -410,7 +410,7 @@ func _robo() -> bool:
 	return OS.get_environment("MV_JEV_ROBOT") == "1"
 
 
-## A camada do painel TESTANDO (e do F6, do modal do bloqueio e da faixa manual).
+## A camada do painel TESTANDO (e do modal do bloqueio e da faixa manual).
 var camada_observador: CanvasLayer
 
 
@@ -447,18 +447,6 @@ func _montar_painel() -> void:
 	botao_manual = painel._manual
 	painel.manual_pedido.connect(_alternar_manual)
 	painel.minimizar_pedido.connect(_alternar_minimizado)
-	# O botão próprio do F6, à direita do FPS (o primeiro da coluna de atalhos).
-	botao_f6 = Button.new()
-	botao_f6.name = "MinimizarF6"
-	botao_f6.text = "F6"
-	botao_f6.focus_mode = Control.FOCUS_NONE
-	botao_f6.theme = painel.theme
-	botao_f6.add_theme_font_size_override("font_size", 10)
-	botao_f6.custom_minimum_size = Vector2(28.0, 24.0)
-	botao_f6.visible = false
-	botao_f6.pressed.connect(_alternar_minimizado)
-	botao_f6.add_to_group("obstaculos_do_hud")
-	camada.add_child(botao_f6)
 	# O modal do bloqueio (#183), escondido até a ponte mandar `blocked`.
 	modal_bloqueio = ModalBloqueio.new()
 	camada.add_child(modal_bloqueio)
@@ -553,7 +541,6 @@ func _atualizar_painel() -> void:
 	if _no_vale() and bool(current_scene.get("carga_ok")):
 		painel_observador.visible = current_scene.get("telas").aberta().is_empty() and not root.get_node("Dialogo").ativo \
 			and not _em_cutscene()
-	_posicionar_botao_f6()
 	# Sem cobrir a barra de mão, o minimapa, a coluna de atalhos nem o resto do HUD: a cada meio
 	# segundo, no lugar livre (o preferido é à esquerda da coluna, #234).
 	if Time.get_ticks_msec() >= reposicionar_em:
@@ -568,39 +555,26 @@ func _alternar_minimizado() -> void:
 	_atualizar_painel()
 
 
-## A coluna de atalhos da direita (os `botoes_canto` do HUD), em coordenadas da tela, já com o
-## botão do F6 ao lado do FPS. Vazio fora do vale.
+## A coluna de atalhos da direita (os `botoes_canto` do HUD), em coordenadas da tela. Vazio
+## fora do vale, o lugar fixo onde ela vai nascer. O F6 fica só no painel (e no teclado).
 func _coluna_de_atalhos() -> Rect2:
 	var coluna := Rect2()
-	if not _no_vale():
+	if _no_vale():
+		for no in get_nodes_in_group("botoes_canto"):
+			if not (no is Control) or not (no as Control).is_visible_in_tree():
+				continue
+			var rect := (no as Control).get_global_rect()
+			coluna = rect if not coluna.has_area() else coluna.merge(rect)
+	if coluna.has_area():
 		return coluna
-	for no in get_nodes_in_group("botoes_canto"):
-		if not (no is Control) or not (no as Control).is_visible_in_tree():
-			continue
-		var rect := (no as Control).get_global_rect()
-		coluna = rect if not coluna.has_area() else coluna.merge(rect)
-	if coluna.has_area() and botao_f6 != null and botao_f6.visible:
-		coluna = coluna.merge(botao_f6.get_global_rect())
-	return coluna
-
-
-## O botão do F6 mora à direita do botão de FPS, centrado nele; some com o painel.
-func _posicionar_botao_f6() -> void:
-	if botao_f6 == null:
-		return
-	var hud = current_scene.get("hud") if _no_vale() else null
-	var fps = hud.get("_performance_button") if hud != null else null
-	if not (fps is Control) or not is_instance_valid(fps) or not (fps as Control).is_visible_in_tree():
-		botao_f6.visible = false
-		return
-	botao_f6.visible = painel_observador.visible
-	var rect := (fps as Control).get_global_rect()
-	var tamanho := botao_f6.get_combined_minimum_size()
-	var janela := painel_observador.get_viewport_rect().size
-	var x := minf(rect.end.x + 4.0, janela.x - tamanho.x - 2.0)
-	botao_f6.position = Vector2(x, rect.position.y + (rect.size.y - tamanho.y) * 0.5).floor()
-	botao_f6.size = tamanho
-	botao_f6.tooltip_text = _texto("cmd_maximizar" if minimizado else "cmd_minimizar")
+	# NA CARGA E NO MENU, A COLUNA QUE VAI EXISTIR: o painel nascia embaixo, à direita, e
+	# pulava para o alto quando o HUD do vale surgia. A coluna do HUD tem lugar fixo
+	# (`botao_canto.gd`: MARGEM da borda direita, TOPO do alto, LADO na escala do HUD), e o
+	# painel já nasce ao lado dela.
+	var tela := root.get_node_or_null("Tela")
+	var lado: float = BotaoCanto.LADO * (float(tela.get("escala_hud")) if tela != null and tela.get("escala_hud") != null else 1.0)
+	var janela := root.get_visible_rect().size
+	return Rect2(Vector2(janela.x - BotaoCanto.MARGEM - lado, BotaoCanto.TOPO), Vector2(lado, lado))
 
 
 ## Uma cutscene (as cenas dos dados ou as do revoar) está tocando? O painel e o modal saem.
@@ -1549,8 +1523,11 @@ func _salvar_quadro() -> String:
 
 ## A câmera leva uns quadros para alcançar o ponto novo (o encaixe dela dura três ticks de física).
 func _salvar_quadro_depois(nome: String) -> void:
-	for _quadro in 6:
+	# A câmera vai suave até a pose livre: o quadro sai quando ela chega (ou em 2 s).
+	for _quadro in 120:
 		await process_frame
+		if _quadro >= 6 and (camera_do_teste == null or not is_instance_valid(camera_do_teste) or camera_do_teste.alinhada()):
+			break
 	var imagem := root.get_texture().get_image()
 	if imagem != null and not imagem.is_empty():
 		imagem.save_jpg(pasta.path_join(nome), 0.85)

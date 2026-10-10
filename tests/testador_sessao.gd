@@ -283,6 +283,28 @@ func _modal() -> void:
 		var args := lancados[0][1] as PackedStringArray
 		_conferir(args.has("--apoio-jev") and args.has("--apoio-gpt") and args.has("--continuar") and args.has("--budget"), "INICIAR leva Jev, GPT, orçamento e a continuação (%s)" % str(args))
 	_conferir(abertura.panel.find_child("IniciarTeste", true, false) == null and abertura.estado_testador.visible, "INICIAR volta à Home com o aviso do testador")
+	# Com a ponte aberta, o menu se fecha quando a sessão grava o aviso de que o vale abriu.
+	var fechou_menu := [false]
+	abertura.fechar_menu_do_testador = func() -> void: fechou_menu[0] = true
+	abertura._testador_pid = OS.get_process_id()
+	var aviso := FileAccess.open(abertura.TESTADOR_PRONTO, FileAccess.WRITE)
+	aviso.store_string("ok")
+	aviso.close()
+	for _i in 5:
+		await process_frame
+	_conferir(fechou_menu[0] and not FileAccess.file_exists(abertura.TESTADOR_PRONTO), "o menu se fecha quando o vale da sessão abriu")
+	# Mesmo que o processo da ponte pareça ter saído, o aviso de pronto ainda fecha o menu.
+	fechou_menu[0] = false
+	abertura._testador_pid = 999999
+	abertura._testador_desde_ms = maxi(1, Time.get_ticks_msec())
+	await process_frame
+	aviso = FileAccess.open(abertura.TESTADOR_PRONTO, FileAccess.WRITE)
+	aviso.store_string("ok")
+	aviso.close()
+	for _i in 5:
+		await process_frame
+	_conferir(fechou_menu[0], "com a ponte dada como saída, o aviso de pronto ainda fecha o menu")
+	abertura._testador_desde_ms = 0
 	# Um pid velho de uma ponte que já saiu não trava o INICIAR: ele recomeça, sem ficar mudo.
 	abertura._testador_pid = 999999
 	lancados.clear()

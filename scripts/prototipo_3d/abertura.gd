@@ -137,8 +137,12 @@ var estado_testador: Label
 ## Quem abre a ponte do testador: o `OS.create_process` de verdade; o portão troca por um
 ## que só anota os argumentos, para apertar INICIAR sem abrir uma sessão.
 var lancar_testador: Callable = func(programa: String, argumentos: PackedStringArray) -> int: return OS.create_process(programa, argumentos)
+## O que fecha o menu quando a sessão do testador abriu (o portão troca para não sair).
+var fechar_menu_do_testador: Callable = func() -> void: get_tree().quit()
 ## O PID do python que sobe o testador, enquanto o menu espera a janela da sessão (#175).
 var _testador_pid := 0
+## Quando o INICIAR abriu a ponte (ms), para seguir olhando o aviso de pronto.
+var _testador_desde_ms := 0
 ## Quanto falta do trecho da travessia na tela (1 → 0), para o jogador saber quando passa.
 var line_bar: ProgressBar
 var line_total := 1.0
@@ -2109,22 +2113,34 @@ func _iniciar_teste(jev: bool, gpt: bool, orcamento: float, minutos: int, contin
 		estado_testador.text = tr("Não foi possível iniciar o testador. Confira a instalação do Python.")
 	else:
 		_testador_pid = pid
+		_testador_desde_ms = maxi(1, Time.get_ticks_msec())
 		estado_testador.text = tr("Abrindo o teste automático. Esta janela se fecha quando a sessão começar; F8 encerra a sessão e volta ao menu.")
 	estado_testador.show()
 
 
-## O menu fecha quando a janela do testador subiu; se o python saiu antes, avisa e segue aberto.
+## O menu fecha quando a sessão do testador abriu o vale (o aviso de pronto). Se o python
+## parece ter saído, avisa, mas segue olhando o aviso por um tempo: no Windows o processo
+## que o menu abriu pode não ser o que fica de pé, e o menu ficava aberto com o vale da
+## sessão já carregado.
+const VIGIA_DO_TESTADOR_MS := 600000
+
+
 func _vigiar_testador() -> void:
-	if _testador_pid <= 0:
+	if _testador_pid <= 0 and _testador_desde_ms <= 0:
 		return
 	if FileAccess.file_exists(TESTADOR_PRONTO):
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(TESTADOR_PRONTO))
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(TESTADOR_JANELA))
 		_testador_pid = 0
-		get_tree().quit()
-	elif not OS.is_process_running(_testador_pid):
+		_testador_desde_ms = 0
+		print("TESTADOR: a sessão abriu o vale; o menu se fecha")
+		fechar_menu_do_testador.call()
+	elif _testador_pid > 0 and not OS.is_process_running(_testador_pid):
+		print("TESTADOR: o processo da ponte não está mais de pé; o menu segue olhando o aviso")
 		_testador_pid = 0
 		estado_testador.text = tr("O teste automático não abriu a janela da sessão. Esta janela continua aberta; confira a instalação do Python.")
+	elif _testador_pid <= 0 and Time.get_ticks_msec() - _testador_desde_ms > VIGIA_DO_TESTADOR_MS:
+		_testador_desde_ms = 0
 
 
 func _modal_header(title: String, action: Callable, subtitle: String = "", icon: String = "fechar") -> Button:

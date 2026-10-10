@@ -36,6 +36,14 @@ const ENCOBERTO_DEMAIS_S := 1.5
 const LIVRE_ANTES_DE_VOLTAR_S := 1.5
 const VOLTA_DA_DISTANCIA_POR_S := 1.5
 
+## O GIRO QUE SE VÊ (10/10/2026): o testador aponta o giro da câmera (`_yaw`) direto para cada
+## ponto da rota e para cada coisa que vai usar, e a imagem piscava de um lado para o outro. O
+## giro do jogador continua o mesmo (é ele que dá o rumo do passo), mas o pivô da câmera o
+## persegue numa curva suave, com este ritmo (1/s) e este teto (rad/s), depois do jogador
+## escrever o pivô no quadro (`process_priority`).
+const SUAVIDADE_DO_GIRO := 5.0
+const GIRO_VISIVEL_MAXIMO_POR_S := 2.6
+
 signal encoberto_demais(segundos: float)
 
 var jogador: CharacterBody3D
@@ -46,6 +54,33 @@ var _sonda_s := 0.0
 var _alvo_yaw := NAN
 var _distancia_original := NAN
 var _anunciado := false
+var _yaw_visivel := NAN
+
+
+func _ready() -> void:
+	process_priority = 100
+
+
+## O giro que se vê já chegou ao do jogador? (a captura do relatório espera por isto)
+func alinhada() -> bool:
+	return jogador == null or is_nan(_yaw_visivel) or absf(wrapf(float(jogador.get("_yaw")) - _yaw_visivel, -PI, PI)) < 0.05
+
+
+## O pivô da câmera persegue o giro do jogador, suave e com teto, pelo caminho mais curto.
+func _suavizar_o_giro(delta: float) -> void:
+	if jogador == null or not is_instance_valid(jogador) or not jogador.is_inside_tree():
+		return
+	var pivo: Node3D = jogador.get("camera_pivot")
+	if pivo == null:
+		return
+	var alvo := float(jogador.get("_yaw"))
+	if is_nan(_yaw_visivel) or bool(jogador.get("_de_cima")):
+		_yaw_visivel = alvo
+	else:
+		var diferenca := wrapf(alvo - _yaw_visivel, -PI, PI)
+		var passo := clampf(diferenca * (1.0 - exp(-SUAVIDADE_DO_GIRO * delta)), -GIRO_VISIVEL_MAXIMO_POR_S * delta, GIRO_VISIVEL_MAXIMO_POR_S * delta)
+		_yaw_visivel = wrapf(_yaw_visivel + passo, -PI, PI) if absf(diferenca) > 0.001 else alvo
+	pivo.rotation.y = _yaw_visivel
 
 
 # --- a geometria, sem estado: é o que o portão confere -----------------------------
@@ -164,8 +199,8 @@ func _encurtar_a(distancia: float) -> void:
 		jogador.set("_distance", distancia)
 
 
-## Reposiciona a câmera NA HORA, sem suavizar, para a captura do relatório sair com o
-## viajante à vista. Devolve se mexeu.
+## Manda a câmera para a pose livre, para a captura do relatório sair com o viajante à vista;
+## ela vai até lá suave, e a captura espera chegar (`alinhada`). Devolve se mexeu.
 func liberar_ja() -> bool:
 	if not _aplicavel():
 		return false
@@ -176,11 +211,11 @@ func liberar_ja() -> bool:
 	_alvo_yaw = NAN
 	_encurtar_a(float(pose["distancia"]))
 	jogador.call("_apply_camera")
-	jogador.call("_encaixar_a_camera")
 	return true
 
 
 func _process(delta: float) -> void:
+	_suavizar_o_giro(delta)
 	if not _aplicavel():
 		encoberto_s = 0.0
 		return
