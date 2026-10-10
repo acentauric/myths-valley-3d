@@ -15,10 +15,10 @@ run/main_scene="res://scenes/prototipo_3d/inicio.tscn"
 config/use_custom_user_dir=true
 config/custom_user_dir_name="MythsValleyPrototype3D"
 config/features=PackedStringArray("4.7", "Forward Plus")
-config/icon="res://assets/prototipo_3d/identidade/icone/icone.png"
-config/windows_native_icon="res://assets/prototipo_3d/identidade/icone/icone.ico"
 boot_splash/bg_color=Color(0.04, 0.07, 0.06, 1)
 boot_splash/show_image=false
+config/icon="res://assets/prototipo_3d/identidade/icone/icone.png"
+config/windows_native_icon="res://assets/prototipo_3d/identidade/icone/icone.ico"
 
 [autoload]
 
