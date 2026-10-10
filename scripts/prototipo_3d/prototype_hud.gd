@@ -660,9 +660,20 @@ func _agrupar_componente(controles: Array, chave: String, pivo: Vector2) -> void
 	for controle: Control in controles:
 		controle.reparent(grupo, false)
 	var aplicar := func() -> void:
+		if not is_instance_valid(grupo):
+			return
 		grupo.pivot_offset = pivo
 		grupo.scale = Vector2.ONE * Tela.escala_componente(chave)
+	# O Tela é autoload e vive mais que o HUD: ligado só enquanto o grupo está na
+	# árvore, senão o HUD liberado deixa o lambda pendurado no sinal.
 	Tela.componentes_mudaram.connect(aplicar)
+	grupo.tree_exiting.connect(func() -> void:
+		if Tela.componentes_mudaram.is_connected(aplicar):
+			Tela.componentes_mudaram.disconnect(aplicar))
+	grupo.tree_entered.connect(func() -> void:
+		if not Tela.componentes_mudaram.is_connected(aplicar):
+			Tela.componentes_mudaram.connect(aplicar)
+		aplicar.call())
 	grupo.resized.connect(aplicar)
 	aplicar.call()
 
