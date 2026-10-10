@@ -102,6 +102,11 @@ const GAME_SCENE := "res://scenes/prototipo_3d/vale.tscn"
 ## O fundo da carga que o botão do mapa abre (lobby em vídeo): o vale pintado visto de cima
 ## (`gpt-image-2`, a mesma pintura da página do mapa no site), e não a capa da carga do jogo.
 const FUNDO_DA_CARGA_DO_MAPA := "res://assets/prototipo_3d/identidade/mapa_pintado.webp"
+## A nota do almanaque no canto da Home: letra de sempre, a menor a que ela encolhe para
+## caber, e o máximo de linhas (o rótulo acima fica fixo na altura dessas duas linhas).
+const FONTE_NOTA := 21
+const FONTE_NOTA_MIN := 16
+const LINHAS_NOTA := 2
 ## Equipe exibida em SOBRE.
 const CREDITS_HIGHLIGHTS := [
 	"histórias brasileiras", "Brazilian", "historias brasileñas",
@@ -576,9 +581,14 @@ func _montar_decoracao(layer: CanvasLayer) -> void:
 	nota_almanaque.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	nota_almanaque.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	nota_almanaque.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_ITALICO, 500))
-	nota_almanaque.add_theme_font_size_override("font_size", 21)
+	nota_almanaque.add_theme_font_size_override("font_size", FONTE_NOTA)
 	nota_almanaque.add_theme_color_override("font_color", Identidade.TEXTO)
 	nota_almanaque.add_theme_constant_override("line_spacing", 0)
+	# O RÓTULO NÃO SE MEXE: a nota guarda sempre a altura de duas linhas e escreve do alto,
+	# e a de uma linha só deixa a segunda vazia. Nunca passa de duas (`_por_nota`).
+	nota_almanaque.vertical_alignment = VERTICAL_ALIGNMENT_TOP
+	nota_almanaque.max_lines_visible = LINHAS_NOTA
+	nota_almanaque.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	Identidade.sombra_texto(nota_almanaque)
 	bloco_almanaque.add_child(nota_almanaque)
 	_indice_nota = Time.get_ticks_msec() % Identidade.NOTAS_DIA.size()
@@ -637,9 +647,25 @@ func _atualizar_almanaque(imediato := false) -> void:
 	var notas := _notas_atuais()
 	_indice_nota = _indice_nota % notas.size()
 	if imediato:
-		nota_almanaque.text = tr(notas[_indice_nota])
+		_por_nota(tr(notas[_indice_nota]))
 		return
 	_trocar_nota(tr(notas[_indice_nota]))
+
+
+## Escreve a nota em no máximo duas linhas: a que não cabe na letra de sempre encolhe
+## (até FONTE_NOTA_MIN), e a caixa fica com a altura de duas linhas na letra de sempre,
+## para o rótulo "Do almanaque" ficar no mesmo lugar com qualquer nota.
+func _por_nota(texto: String) -> void:
+	var fonte := nota_almanaque.get_theme_font("font")
+	var escala := Tela.escala_texto
+	var base := roundi(FONTE_NOTA * escala)
+	nota_almanaque.custom_minimum_size.y = ceilf(fonte.get_height(base) * LINHAS_NOTA)
+	nota_almanaque.text = texto
+	var tamanho := FONTE_NOTA
+	nota_almanaque.add_theme_font_size_override("font_size", roundi(tamanho * escala))
+	while tamanho > FONTE_NOTA_MIN and nota_almanaque.get_line_count() > LINHAS_NOTA:
+		tamanho -= 1
+		nota_almanaque.add_theme_font_size_override("font_size", roundi(tamanho * escala))
 
 
 func _proxima_nota() -> void:
@@ -653,7 +679,7 @@ func _trocar_nota(texto: String) -> void:
 		_tween_nota.kill()
 	_tween_nota = nota_almanaque.create_tween()
 	_tween_nota.tween_property(nota_almanaque, "modulate:a", 0.0, 0.35)
-	_tween_nota.tween_callback(func() -> void: nota_almanaque.text = texto)
+	_tween_nota.tween_callback(_por_nota.bind(texto))
 	_tween_nota.tween_property(nota_almanaque, "modulate:a", 1.0, 0.6)
 
 

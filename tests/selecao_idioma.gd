@@ -214,6 +214,22 @@ func _run() -> void:
 				_conferir(item.get_line_count() == 1 and item.get_content_width() <= item.size.x + 1 and item.get_content_height() <= item.size.y + 1, "item inteiro em uma linha %d/%d" % [lingua, pagina])
 			_conferir(abertura.panel.get_global_rect().encloses(lista.get_global_rect()), "lista cabe no modal %d/%d" % [lingua, pagina])
 			_conferir(not abertura.bloco_almanaque.visible, "notas ocultas no modal %d/%d" % [lingua, pagina])
+	# A nota do almanaque da Home: em todo idioma, toda nota (de dia e de noite) cabe em no máximo duas linhas, e o
+	# rótulo "Do almanaque" fica no mesmo lugar, com nota de uma ou de duas linhas.
+	abertura._home()
+	await process_frame
+	var y_do_rotulo := -1.0
+	for lingua in 4:
+		idioma.definir(lingua)
+		for texto in abertura.Identidade.NOTAS_DIA + abertura.Identidade.NOTAS_NOITE:
+			abertura._por_nota(TranslationServer.translate(texto))
+			await process_frame
+			var nota: Label = abertura.nota_almanaque
+			_conferir(nota.get_line_count() <= abertura.LINHAS_NOTA, "nota do almanaque em até duas linhas %d: %s" % [lingua, texto])
+			var y: float = abertura.rotulo_almanaque.get_global_rect().position.y
+			if y_do_rotulo < 0.0:
+				y_do_rotulo = y
+			_conferir(is_equal_approx(y, y_do_rotulo), "o rótulo do almanaque não se mexe com a nota %d: %s (%.1f, era %.1f)" % [lingua, texto, y, y_do_rotulo])
 	# Uma entrada futura com mais linhas que cabem numa página preserva todas em páginas extras (#212: 14 por página).
 	var itens := range(23)
 	var por_pagina: int = abertura.HISTORY_ROWS
