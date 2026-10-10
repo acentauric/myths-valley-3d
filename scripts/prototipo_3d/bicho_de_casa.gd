@@ -22,6 +22,7 @@ extends CharacterBody3D
 
 const Animador = preload("res://scripts/prototipo_3d/animador_bicho.gd")
 
+## Padrões dos alcances (cada espécie tem os seus em `bichos_de_casa.json`, bloco "alcance").
 ## Distância a que o cão acompanha o dono, e a partir de quando corre atrás.
 const JUNTO_DO_DONO := 1.5
 const CORRE_ATRAS := 6.0
@@ -220,6 +221,16 @@ func _decidir(delta: float) -> void:
 			_rondar(lugar_de_casa(), float(dados.get("raio", 3.0)), 0.5)
 
 
+## Um alcance da ESPÉCIE (u), do bloco "alcance" dela em `bichos_de_casa.json`: até onde o
+## cão acompanha o dono, a que distância corre atrás dele e vigia, e de que distância o
+## gato foge. Espécie sem o campo usa o padrão das constantes acima.
+func _alcance(nome: String, padrao: float) -> float:
+	var bloco: Variant = especie.get("alcance", {})
+	if bloco is Dictionary:
+		return float((bloco as Dictionary).get(nome, padrao))
+	return padrao
+
+
 func _rotina_do_cao(_delta: float) -> void:
 	var periodo: String = Dia.periodo()
 	var seguir: Node3D = lider if lider != null and is_instance_valid(lider) else dono
@@ -233,11 +244,11 @@ func _rotina_do_cao(_delta: float) -> void:
 	# De dia segue o dono; só na hora da sesta (do meio-dia às duas) e de noite deita.
 	var sesta: bool = Dia.hora >= SESTA.x and Dia.hora < SESTA.y
 	if periodo in ["manha", "tarde", "entardecer"] and not sesta and seguir != null and is_instance_valid(seguir):
-		_acompanhar(seguir, JUNTO_DO_DONO)
+		_acompanhar(seguir, _alcance("junto", JUNTO_DO_DONO))
 		return
 	var porta := lugar_de_casa()
 	if periodo == "noite" and jogador != null \
-			and _plano(jogador.global_position - global_position).length() < VIGIA \
+			and _plano(jogador.global_position - global_position).length() < _alcance("vigia", VIGIA) \
 			and _plano(porta - global_position).length() < 1.5:
 		# DE VIGIA: levanta e encara quem passa.
 		fazendo = "vigia"
@@ -259,7 +270,7 @@ func _acompanhar(quem: Node3D, junto: float) -> void:
 		return
 	_alvo = world.ground_position(ponto, 0.02)
 	var longe := _plano(quem.global_position - global_position).length()
-	_velocidade = float(especie.get("corrida", 3.0)) if longe > CORRE_ATRAS else float(especie.get("passo", 1.0)) * 1.15
+	_velocidade = float(especie.get("corrida", 3.0)) if longe > _alcance("corre_atras", CORRE_ATRAS) else float(especie.get("passo", 1.0)) * 1.15
 
 
 ## Vai para o ponto e, parado lá uns segundos, deita.
@@ -289,7 +300,7 @@ func _rotina_do_gato(_delta: float) -> void:
 		_rumo_da_fuga = _plano(global_position - perigo).normalized()
 		if _rumo_da_fuga == Vector3.ZERO:
 			_rumo_da_fuga = Vector3.RIGHT
-		_fugindo = FOGE_ATE / float(especie.get("corrida", 4.0))
+		_fugindo = _alcance("foge_ate", FOGE_ATE) / float(especie.get("corrida", 4.0))
 		return
 	var periodo: String = Dia.periodo()
 	var soleira := lugar_de_casa()
@@ -309,9 +320,9 @@ func _rotina_do_gato(_delta: float) -> void:
 ## O que o gato teme agora (cão perto, gente correndo), ou INF.
 func _perigo_para_o_gato() -> Vector3:
 	for cao in caes:
-		if is_instance_valid(cao) and _plano(cao.global_position - global_position).length() < FOGE_DO_CAO:
+		if is_instance_valid(cao) and _plano(cao.global_position - global_position).length() < _alcance("foge_do_cao", FOGE_DO_CAO):
 			return cao.global_position
-	if jogador != null and _plano(jogador.global_position - global_position).length() < FOGE_DE_QUEM_CORRE:
+	if jogador != null and _plano(jogador.global_position - global_position).length() < _alcance("foge_de_quem_corre", FOGE_DE_QUEM_CORRE):
 		var correndo: bool = jogador.has_method("is_running") and jogador.is_running() \
 			and _plano(jogador.get("velocity") if jogador.get("velocity") != null else Vector3.ZERO).length() > 3.0
 		if correndo:

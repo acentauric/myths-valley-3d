@@ -17,7 +17,8 @@ extends SceneTree
 ##      casa; todo terreiro acha pelo menos seis pontos de ave.
 ##   4. O DIA DO CÃO: de dia segue o dono (e chega a menos de 2,6 u dele), na
 ##      sesta deita na porta, de noite deita na porta e troca para o GLB deitado.
-##   5. O GATO FOGE DO CÃO e o porco fica no chiqueiro.
+##   5. O GATO FOGE DO CÃO e o porco fica no chiqueiro; o alcance de fuga, do cão e do
+##      gato vem da espécie, no JSON (5b, #109).
 ##   6. O BANDO: ao entardecer sobe no poleiro, às sete está no chão de novo, de
 ##      dia cisca dentro do terreiro, o pavão abre o leque (troca de modelo) e o
 ##      bando é espantado por quem chega perto.
@@ -256,6 +257,32 @@ func _run() -> void:
 	_conferir(longe > 3.0, "o gato fugiu só até %.1f u do cão" % longe)
 	gato.perto = false
 	cao_da_estrada.perto = false
+	# --- 5b. O ALCANCE É DA ESPÉCIE (#109) ---------------------------------------
+	# Cão e gato trazem o 'alcance' no JSON, e o bicho lê dele: com o alcance de fuga do gato
+	# encolhido na espécie, o cão a 1,4 u deixa de ser perigo; com o padrão de volta, é.
+	var especies: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://data/bichos_de_casa.json"))["especies"]
+	for chave in especies:
+		var sp: Variant = especies[chave]
+		if not sp is Dictionary:
+			continue
+		_conferir(float(sp.get("passo", 0.0)) > 0.0 and float(sp.get("corrida", 0.0)) > float(sp.get("passo", 0.0)),
+			"%s: passo e corrida da espécie faltam ou a corrida não passa do passo" % chave)
+		if str(chave).begins_with("gato"):
+			var a: Variant = sp.get("alcance", null)
+			_conferir(a is Dictionary and float(a.get("foge_do_cao", 0.0)) > 0.0 and float(a.get("foge_de_quem_corre", 0.0)) > 0.0 and float(a.get("foge_ate", 0.0)) > 0.0,
+				"%s: faltam os alcances de fuga do gato no JSON" % chave)
+		if str(chave).begins_with("cachorro"):
+			var a2: Variant = sp.get("alcance", null)
+			_conferir(a2 is Dictionary and float(a2.get("junto", 0.0)) > 0.0 and float(a2.get("corre_atras", 0.0)) > 0.0 and float(a2.get("vigia", 0.0)) > 0.0,
+				"%s: faltam os alcances do cão no JSON" % chave)
+	gato.global_position = soleira
+	cao_da_estrada.global_position = world.ground_position(soleira + lado * 1.4, 0.0)
+	var alcance_do_json: Variant = gato.especie.get("alcance", {})
+	_conferir(gato._perigo_para_o_gato().is_finite(), "o cão a 1,4 u não é perigo para o gato com o alcance do JSON")
+	gato.especie["alcance"] = {"foge_do_cao": 0.5, "foge_de_quem_corre": 0.5, "foge_ate": 5.0}
+	_conferir(not gato._perigo_para_o_gato().is_finite(), "o gato não leu o alcance de fuga da espécie: o cão a 1,4 u ainda o assusta com o alcance de 0,5 u")
+	gato.especie["alcance"] = alcance_do_json
+
 	var porco = _da_casa(gerente, "Casa de Carro Quebrado", "porco")[0]
 	porco.perto = true
 	await _fisica(240)
