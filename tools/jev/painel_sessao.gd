@@ -152,7 +152,8 @@ func montar(t: Callable) -> void:
 	_titulo.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_pilula = PanelContainer.new()
 	_pilula.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	_pilula.add_theme_stylebox_override("panel", _estilo_da_pilula(Color.WHITE))
+	# Só o ícone, sem moldura: o modo não é botão e não deve parecer clicável.
+	_pilula.add_theme_stylebox_override("panel", StyleBoxEmpty.new())
 	cabeca.add_child(_pilula)
 	_nivel = _rotulo(_pilula, 11, Color.WHITE, Identidade.fonte(Identidade.FONTE_TITULO, 700, 1))
 	_nivel.autowrap_mode = TextServer.AUTOWRAP_OFF
@@ -162,6 +163,7 @@ func montar(t: Callable) -> void:
 	# O nome do modo fica na dica do ícone; o rótulo só guarda o texto (o portão o lê).
 	_nivel.visible = false
 	_icone_modo = IconeModo.new()
+	_icone_modo.custom_minimum_size = Vector2(26.0, 26.0)
 	_pilula.add_child(_icone_modo)
 	_sub = _rotulo(_corpo, 15, NOTA, Identidade.fonte(Identidade.FONTE_ITALICO, 500))
 	_corpo.add_child(Identidade.divisor())
@@ -395,7 +397,6 @@ func mostrar(d: Dictionary) -> void:
 		_icone_modo.queue_redraw()
 		var cor: Color = CORES.get(nivel, Color.WHITE)
 		_nivel.add_theme_color_override("font_color", cor)
-		_pilula.add_theme_stylebox_override("panel", _estilo_da_pilula(cor))
 	_sub.text = str(d.get("sub", ""))
 	_acao.text = str(d.get("acao", ""))
 	_acao.tooltip_text = str(d.get("acao_tecnica", ""))
