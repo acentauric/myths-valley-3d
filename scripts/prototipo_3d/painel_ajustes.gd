@@ -515,61 +515,81 @@ func _volume(titulo: String, valor: float, ao_mudar: Callable, canal: String) ->
 	_pai = anterior
 
 
-## Botões do cabeçalho, à esquerda do × e na altura dele: "Restaurar estes" volta ao padrão
-## só os volumes da aba aberta; "Restaurar todos", os das duas abas. Nos dois, nada fica
-## silenciado. Ações do painel moram no cabeçalho, ao lado do ×.
+## UM SÓ BOTÃO DE RESTAURAR NO CABEÇALHO (10/10/2026), o ↺ à esquerda do × e na altura dele:
+## passar o mouse (ou clicar) abre as opções — "Restaurar estes", só os volumes da aba aberta, e
+## "Restaurar todos", os das duas abas — e cada uma pergunta antes (`CaixaDePergunta`), para
+## ninguém perder os ajustes por um clique errado. Nos dois, nada fica silenciado.
 func _restaurar_volumes(fechar: Button) -> void:
-	var linha := fechar.get_parent() as HBoxContainer
-	linha.add_theme_constant_override("separation", 8)
 	var desta_aba: Array = Audio.CAMADAS_AMBIENTE if aba == ABA_SONS else Audio.CANAIS_GERAIS
-	_botao_restaurar(fechar, "Restaurar estes", desta_aba,
-		"Sons voltam ao padrão." if aba == ABA_SONS else "Música, narração, falas, efeitos e ambiente voltam ao padrão.")
-	_botao_restaurar(fechar, "Restaurar todos", [], "Todos os volumes, das duas abas, voltam ao padrão.")
+	_botao_restaurar(fechar, [
+		["Restaurar estes", "Sons voltam ao padrão." if aba == ABA_SONS else "Música, narração, falas, efeitos e ambiente voltam ao padrão.",
+			func() -> void: Audio.restaurar_padroes(desta_aba)],
+		["Restaurar todos", "Todos os volumes, das duas abas, voltam ao padrão.", func() -> void: Audio.restaurar_padroes([])],
+	])
 
 
-## "Restaurar todas as interfaces" da aba Interface, no cabeçalho como os de volume: devolve
-## cada "Tamanho de cada interface" a 100%.
+## "Restaurar todas as interfaces" da aba Interface, no mesmo botão: devolve cada "Tamanho de
+## cada interface" a 100%.
 func _restaurar_interfaces(fechar: Button) -> void:
 	var textos: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://data/interface_tamanhos.json"))
+	_botao_restaurar(fechar, [[str(IdiomaMenu.campo(textos["restaurar"], "texto")), "", func() -> void: Tela.restaurar_componentes()]])
+
+
+## O ↺ do cabeçalho, inserido antes do ×, com o menu das `opcoes` ([rótulo, frase, ação]).
+func _botao_restaurar(fechar: Button, opcoes: Array) -> void:
 	var linha := fechar.get_parent() as HBoxContainer
 	linha.add_theme_constant_override("separation", 8)
-	_botao_restaurar(fechar, str(IdiomaMenu.campo(textos["restaurar"], "texto")), [], "", "RestaurarInterfaces",
-		func() -> void: Tela.restaurar_componentes())
-
-
-## Botão do cabeçalho com o ↺ à esquerda (o mesmo dos ajustes de cada linha), inserido
-## antes do ×. Sem `acao`, restaura os volumes de `canais` (vazio: todos).
-func _botao_restaurar(fechar: Button, texto: String, canais: Array, dica: String, nome := "", acao := Callable()) -> void:
 	var botao := Button.new()
-	botao.name = nome if not nome.is_empty() else "Restaurar" + ("Todos" if canais.is_empty() else "Estes")
-	botao.text = texto
-	botao.tooltip_text = tr(dica) if not dica.is_empty() else ""
-	botao.custom_minimum_size = Vector2(0, ALTURA_CABECALHO)
+	botao.name = "Restaurar"
+	botao.theme_type_variation = &"BotaoIcone"
+	botao.tooltip_text = tr("Restaurar o padrão")
+	botao.custom_minimum_size = Vector2(ALTURA_CABECALHO, ALTURA_CABECALHO)
 	botao.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	var icone: HudIcon = HudIcon.new().configurar("restaurar")
 	icone.definir(true)
-	icone.position = Vector2(10, (ALTURA_CABECALHO - 24.0) / 2.0)
+	icone.position = Vector2.ONE * (ALTURA_CABECALHO - 24.0) / 2.0
 	icone.size = Vector2(24, 24)
 	icone.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	botao.add_child(icone)
-	botao.mouse_entered.connect(func(): Audio.efeito("ui_hover"))
-	botao.pressed.connect(func() -> void:
-		Audio.efeito("ui_confirmar")
-		if acao.is_valid():
-			acao.call()
-		else:
-			Audio.restaurar_padroes(canais)
-		_reconstruir(aba))
-	# Espaço à esquerda para o ícone em todos os estados (o estilo vem do tema herdado).
-	botao.ready.connect(func() -> void:
-		for estado in ["normal", "hover", "pressed", "hover_pressed", "disabled", "focus"]:
-			var caixa := botao.get_theme_stylebox(estado).duplicate() as StyleBoxFlat
-			if caixa:
-				caixa.content_margin_left = 40
-				botao.add_theme_stylebox_override(estado, caixa))
-	var linha := fechar.get_parent()
+	var menu := PopupMenu.new()
+	menu.name = "OpcoesDeRestaurar"
+	for i in opcoes.size():
+		menu.add_item(tr(String(opcoes[i][0])), i)
+		if String(opcoes[i][1]) != "":
+			menu.set_item_tooltip(i, tr(String(opcoes[i][1])))
+	botao.add_child(menu)
+	var abrir := func() -> void:
+		if menu.visible:
+			return
+		var r := botao.get_global_rect()
+		menu.reset_size()
+		menu.position = Vector2i(roundi(r.end.x - menu.get_contents_minimum_size().x), roundi(r.end.y + 4.0))
+		menu.popup()
+	botao.mouse_entered.connect(func() -> void:
+		Audio.efeito("ui_hover")
+		abrir.call())
+	botao.pressed.connect(abrir)
+	menu.id_pressed.connect(func(i: int) -> void: _confirmar_restaurar(opcoes[i]))
 	linha.add_child(botao)
 	linha.move_child(botao, fechar.get_index())
+
+
+## Pergunta antes de restaurar; "sim" faz e redesenha a aba.
+func _confirmar_restaurar(opcao: Array) -> void:
+	var caixa := CaixaDePergunta.new()
+	var frase := String(opcao[1])
+	caixa.perguntar(_camada, {"titulo": tr(String(opcao[0])) + "?",
+		"texto": tr(frase) if frase != "" else tr("Os ajustes desta aba voltam ao padrão."),
+		"nao": tr("CANCELAR"), "sim": tr("RESTAURAR")})
+	caixa.name = "PerguntaRestaurar"
+	Audio.efeito("ui_trava")
+	caixa.respondeu.connect(func(sim: bool) -> void:
+		if not sim:
+			Audio.efeito("ui_voltar")
+			return
+		Audio.efeito("ui_confirmar")
+		(opcao[2] as Callable).call()
+		_reconstruir(aba))
 
 
 ## Seleção com o botão de voltar ao padrão (`padrao`, índice da opção de fábrica) no

@@ -256,6 +256,31 @@ static func rotulo_de(botao: Button) -> String:
 func _rotular(botao: Button, texto: String) -> void:
 	(botao.find_child("Rotulo", true, false) as Label).text = texto
 	botao.tooltip_text = texto
+	_acertar_comandos()
+
+
+## OS TRÊS COMANDOS CABEM LADO A LADO, INTEIROS: cada botão fica com a largura do que diz
+## ("MINIMIZAR" saía cortado em três partes iguais), e se os três não cabem na linha a letra
+## desce até caber.
+func _acertar_comandos() -> void:
+	var botoes: Array = [_minimizar, _manual, _parar].filter(func(b) -> bool: return b != null and b.visible)
+	for tamanho in range(12, 8, -1):
+		var total := 4.0 * (botoes.size() - 1)
+		var larguras: Array[float] = []
+		for botao: Button in botoes:
+			var rotulo := botao.find_child("Rotulo", true, false) as Label
+			var plaqueta := (rotulo.get_parent() as Control).get_child(0) as Control
+			var fonte := rotulo.get_theme_font("font")
+			var largura := fonte.get_string_size(rotulo.text.to_upper() if rotulo.uppercase else rotulo.text, HORIZONTAL_ALIGNMENT_LEFT, -1, tamanho).x
+			larguras.append(ceilf(largura + plaqueta.get_combined_minimum_size().x + 7.0 + 12.0 + 2.0))
+			total += larguras.back()
+		if total <= LARGURA_UTIL or tamanho == 9:
+			for i in botoes.size():
+				var b: Button = botoes[i]
+				(b.find_child("Rotulo", true, false) as Label).add_theme_font_size_override("font_size", tamanho)
+				b.custom_minimum_size.x = larguras[i]
+				b.size_flags_stretch_ratio = larguras[i]
+			return
 
 
 ## Troca entre o painel completo e a faixa de uma linha, levando os comandos junto.

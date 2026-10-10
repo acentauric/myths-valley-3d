@@ -171,6 +171,11 @@ func _painel() -> void:
 	_conferir(teclas.size() == 1, "a tecla F8 vem numa plaqueta ao lado do Parar")
 	_conferir(painel.size.is_equal_approx(inicial), "o painel tem tamanho fixo, com ou sem conteúdo (%s -> %s)" % [inicial, painel.size])
 	_conferir(is_equal_approx(painel.size.x, PainelSessao.LARGURA), "a largura não cresce com a etiqueta do nível")
+	for nome_do_comando in ["Minimizar", "Manual", "Parar"]:
+		var comando := painel.find_child(nome_do_comando, true, false) as Button
+		if comando != null and comando.visible:
+			var r := comando.find_child("Rotulo", true, false) as Label
+			_conferir(r.get_theme_font("font").get_string_size(r.text.to_upper() if r.uppercase else r.text, HORIZONTAL_ALIGNMENT_LEFT, -1, r.get_theme_font_size("font_size")).x <= r.size.x + 1.0, "o comando %s cabe inteiro (%s)" % [nome_do_comando, r.text])
 	var icone_modo = painel._icone_modo
 	_conferir(icone_modo != null and icone_modo.visible and icone_modo.modo == "jev" and icone_modo.tooltip_text != "" and not painel._nivel.visible, "o modo é um ícone com o nome na dica")
 	painel.mostrar({"titulo": "Testando", "nivel": "deterministic", "modo": "local", "sub": "", "acao": "", "decisoes": []})
