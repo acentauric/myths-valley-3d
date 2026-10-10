@@ -2499,6 +2499,14 @@ func _parar_o_jogador() -> void:
 	player.set_physics_process(false)
 	player.set_process_input(false)
 	player.set_process_unhandled_input(false)
+	# PARADO DE VERDADE (10/10/2026): sem a física, ninguém troca o clipe, e o viajante seguia
+	# correndo no lugar a cena inteira. O corpo para e o clipe vai ao parado (nadando, fica o nado).
+	player.velocity = Vector3.ZERO
+	if player.has_method("_cancel_walk"):
+		player._cancel_walk()
+	var animador = player.get("animator")
+	if animador != null and animador.has_method("update_motion") and not (player.has_method("is_swimming") and player.is_swimming()):
+		animador.update_motion(0.0, 0.0)
 
 
 func _soltar_o_jogador() -> void:

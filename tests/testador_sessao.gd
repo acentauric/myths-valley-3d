@@ -180,6 +180,9 @@ func _painel() -> void:
 	_conferir(icone_modo != null and icone_modo.visible and icone_modo.modo == "jev" and icone_modo.tooltip_text != "" and not painel._nivel.visible, "o modo é um ícone com o nome na dica")
 	painel.mostrar({"titulo": "Testando", "nivel": "deterministic", "modo": "local", "sub": "", "acao": "", "decisoes": []})
 	_conferir(icone_modo.modo == "local", "o determinístico em recuperação tem ícone próprio")
+	painel.mostrar({"titulo": "Testando", "nivel": "jev", "sub": "", "acao": "", "decisoes": [], "minimizado": true, "faixa": "TESTANDO · 37 ações"})
+	_conferir(painel._linha_da_faixa.visible and painel._icone_da_faixa.modo == "jev" and painel._linha_da_faixa.get_child(0) == painel._icone_da_faixa, "minimizado, o ícone do modo vem à esquerda de TESTANDO")
+	painel.mostrar({"titulo": "Testando", "nivel": "jev", "sub": "", "acao": "", "decisoes": [], "minimizado": false})
 	var linha_dos_comandos: Array = painel.find_children("Minimizar", "Button", true, false) + painel.find_children("Parar", "Button", true, false)
 	_conferir(linha_dos_comandos.size() == 2 and is_equal_approx((linha_dos_comandos[0] as Button).global_position.y, (linha_dos_comandos[1] as Button).global_position.y), "os comandos ficam em linha")
 	# Os comandos empilhados (#234) somam uma linha ao painel de antes (~460 px).

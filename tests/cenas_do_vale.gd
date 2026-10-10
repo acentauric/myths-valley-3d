@@ -117,8 +117,15 @@ func _run() -> void:
 	guia.espera = 0.0
 	var d_antes: float = _plano(pedro.global_position, tonho.global_position) if tonho != null else 0.0
 	var antes := Time.get_ticks_msec()
+	# Correndo quando a cena começa: o corpo deve parar no clipe parado, e não seguir correndo no lugar.
+	var animador = jogador.get("animator")
+	if animador != null and animador.has_method("update_motion"):
+		animador.update_motion(6.0, 0.1)
 	guia.avancar()
 	await _frames(3)
+	if animador != null and animador.has_method("get_current_animation"):
+		var clipe := String(animador.get_current_animation()).to_lower()
+		_conferir(not clipe.contains("run") and not clipe.contains("walk"), "na cena o viajante segue no clipe de andar ou correr ('%s')" % clipe)
 	_conferir(bool(cenas.em_cena()) and str(cenas.nome_da_cena()) == "apresentacao_do_tonho", "fechado o passo da corrida, a cena da apresentação não tocou (em cena: %s, '%s')" % [str(cenas.em_cena()), str(cenas.nome_da_cena())])
 	_conferir(guia.missao == i_correr + 1, "a fila da chegada não passou ao passo seguinte (missao %d)" % guia.missao)
 	_conferir(not jogador.is_physics_processing(), "na cena o jogador continua com a física ligada: a tela não travou")

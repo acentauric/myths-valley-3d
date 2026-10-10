@@ -513,9 +513,8 @@ func _atualizar_painel() -> void:
 		gasto = ""
 	var espera := aguardando or d.is_empty()
 	var nivel_atual := str(d.get("nivel", "")) if robo else ""
+	# O modo vai no ícone à esquerda da faixa, e não escrito: sobra espaço para o contador.
 	var faixa: Array = [_texto("testando")]
-	if nivel_atual != "":
-		faixa.append(_texto("nivel_" + nivel_atual))
 	faixa.append(_texto("n_acoes") % chamadas)
 	if int(progresso.get("total", 0)) > 0:
 		faixa.append(PainelSessao.TestadorApoios.numero(float(progresso.get("percentual", 0.0)), 1) + "%")

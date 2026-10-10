@@ -114,6 +114,8 @@ var _manual: Button
 var _minimizar: Button
 var _corpo: VBoxContainer
 var _faixa: Label
+var _linha_da_faixa: HBoxContainer
+var _icone_da_faixa: IconeModo
 var _comandos_em_pe: VBoxContainer
 var _comandos_deitados: HBoxContainer
 var minimizado := false
@@ -137,8 +139,17 @@ func montar(t: Callable) -> void:
 	_faixa.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TITULO, 600, 1))
 	_faixa.add_theme_font_size_override("font_size", 13)
 	_faixa.add_theme_color_override("font_color", Identidade.CREME)
-	_faixa.visible = false
-	caixa.add_child(_faixa)
+	_faixa.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	# Minimizado, o modo vem como ícone à esquerda de "TESTANDO" (o nome não cabia com o contador).
+	_linha_da_faixa = HBoxContainer.new()
+	_linha_da_faixa.name = "LinhaDaFaixa"
+	_linha_da_faixa.add_theme_constant_override("separation", 8)
+	_linha_da_faixa.visible = false
+	caixa.add_child(_linha_da_faixa)
+	_icone_da_faixa = IconeModo.new()
+	_icone_da_faixa.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	_linha_da_faixa.add_child(_icone_da_faixa)
+	_linha_da_faixa.add_child(_faixa)
 	_corpo = VBoxContainer.new()
 	_corpo.name = "Corpo"
 	_corpo.add_theme_constant_override("separation", 5)
@@ -288,6 +299,7 @@ func _acertar_comandos() -> void:
 ## Troca entre o painel completo e a faixa de uma linha, levando os comandos junto.
 func _arrumar_modo() -> void:
 	_faixa.visible = minimizado
+	_linha_da_faixa.visible = minimizado
 	_corpo.visible = not minimizado
 	# Os comandos ficam sempre lado a lado, com o rótulo curto (MINIMIZAR, ASSUMIR, PARAR).
 	var destino: BoxContainer = _comandos_deitados
@@ -395,6 +407,10 @@ func mostrar(d: Dictionary) -> void:
 		_icone_modo.cor = CORES.get(nivel, Color.WHITE)
 		_icone_modo.tooltip_text = etiqueta
 		_icone_modo.queue_redraw()
+		_icone_da_faixa.modo = _icone_modo.modo
+		_icone_da_faixa.cor = _icone_modo.cor
+		_icone_da_faixa.tooltip_text = etiqueta
+		_icone_da_faixa.queue_redraw()
 		var cor: Color = CORES.get(nivel, Color.WHITE)
 		_nivel.add_theme_color_override("font_color", cor)
 	_sub.text = str(d.get("sub", ""))
@@ -440,6 +456,7 @@ func mostrar(d: Dictionary) -> void:
 	_gasto.text = str(d.get("gasto", ""))
 	minimizado = bool(d.get("minimizado", false))
 	_faixa.text = str(d.get("faixa", ""))
+	_icone_da_faixa.modulate.a = 1.0 if nivel != "" else 0.0
 	_arrumar_modo()
 	_rotular(_minimizar, str(d.get("minimizar_botao", _t.call("cmd_maximizar" if minimizado else "cmd_minimizar"))))
 	_rotular(_parar, str(_t.call("parar_curto")))
