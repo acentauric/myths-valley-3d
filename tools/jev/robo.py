@@ -945,6 +945,13 @@ class JogadorAutomatico:
                 return select("confirm_screen", "Executar pela interface a obra exigida: " + wanted_work)
             return select("screen_down" if cursor < index else "screen_up", "Selecionar a obra exigida")
         if task.get("step", {}).get("meta", {}).get("tipo") == "obra" and not state.get("screen"):
+            # A OBRA SE FAZ PELO J DE ONDE ESTIVER (10/10/2026: "Conserte o poço: [E] no poço ou
+            # [J] › Obras"): antes de viajar, abre o diário uma vez; se a aba de obras não estiver
+            # liberada aqui, o painel fecha e a viagem segue como antes.
+            remota = (goal, "obra_pelo_diario")
+            if "inspect_journal" in actions and self.attempts[remota] < 1:
+                self.attempts[remota] += 1
+                return select("inspect_journal", "Fazer a obra pelo diario (J > Obras) antes de viajar ate ela")
             marker = state.get("objective", {}).get("alvo", [])
             position = state.get("position", [])
             if len(marker) == len(position) == 3 and not task.get("last_action_failed"):
