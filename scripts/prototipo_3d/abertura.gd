@@ -81,12 +81,13 @@ const TESTADOR_SIZE := Vector2(640, 700)
 const NOME_LARGURA := 600.0
 const NOME_TAMANHO_AJUDA := 18
 const NOME_TAMANHO_ERRO := 16
-## O HISTÓRICO USA A LARGURA E A ALTURA QUE TEM (#212): era um modal de 640 px com linhas de ~260 px, mais da metade
-## vazia à direita e 26 páginas para 17 dias. Largo, cada linha junta as mudanças relacionadas de um mesmo dia
-## (`data/historico_3d.json`, um grupo por dia), e cabem até `HISTORY_ROWS` linhas por página: uma página por dia
-## sempre que couber. Os modais Vagas e Sobre seguem em `HISTORY_SIZE`.
-const HISTORICO_SIZE := Vector2(780, 680)
-const HISTORY_ROWS := 14
+## O HISTÓRICO USA A LARGURA QUE TEM (#212): era um modal de 640 px com linhas de ~260 px, mais da metade
+## vazia à direita e 26 páginas para 17 dias. Largo, cada linha junta duas ou três mudanças de um mesmo dia
+## (até ~110 caracteres, `data/historico_3d.json`, um grupo por dia) e cabe inteira, sem quebra, mesmo na
+## fonte Miva a 13 px; cabem até `HISTORY_ROWS` linhas por página: uma página por dia sempre que couber.
+## Os modais Vagas e Sobre seguem em `HISTORY_SIZE`.
+const HISTORICO_SIZE := Vector2(960, 600)
+const HISTORY_ROWS := 10
 ## Lista do histórico: fonte base (desce até o mínimo se a linha não couber) e respiro.
 const HISTORY_FONTE := 15
 const HISTORY_FONTE_MIN := 13
@@ -1438,7 +1439,7 @@ func _change_history(step: int) -> void:
 
 func _render_history() -> void:
 	_clear()
-	# Resumos em uma linha, até catorze por página, sem área de rolagem.
+	# Resumos em uma linha, até dez por página, sem área de rolagem.
 	_place_modal(HISTORICO_SIZE, "historico")
 	history_open = true
 	var entry: Dictionary = history_entries[history_index]
