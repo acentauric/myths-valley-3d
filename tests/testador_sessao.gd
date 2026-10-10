@@ -116,6 +116,14 @@ func _acoes_em_palavras() -> void:
 
 
 func _painel() -> void:
+	# O MODAL DO BLOQUEIO com o que a ponte manda de verdade: `tries` é uma lista de textos.
+	# `int(lista)` derrubava o jogo e a sessão fechava sozinha no primeiro bloqueio (10/10/2026).
+	var modal = load("res://tools/jev/modal_bloqueio.gd").new()
+	root.add_child(modal)
+	modal.montar(Callable(self, "_t"))
+	modal.abrir({"step": "pedro_casa", "reason": "sem progresso", "tries": ["Jev: andar → falar (sem saída)", "GPT: seguir o Pedro (nada)"]})
+	_conferir(modal.aberto() and modal._tentativas.visible and modal._tentativas.text.contains("2"), "o modal do bloqueio abre com as tentativas da ponte (lista)")
+	modal.queue_free()
 	var painel: PanelContainer = PainelSessao.new()
 	root.add_child(painel)
 	painel.montar(Callable(self, "_t"))

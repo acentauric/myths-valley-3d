@@ -107,7 +107,10 @@ func abrir(bloqueio: Dictionary) -> void:
 	(find_child("Titulo", true, false) as Label).text = _t.call("bloqueio_titulo")
 	_pergunta.text = str(_t.call("bloqueio_pergunta")) % [passo if passo != "" else _t.call("passo_desconhecido"),
 		motivo if motivo != "" else _t.call("motivo_desconhecido")]
-	var tentativas := int(bloqueio.get("tries", 0))
+	# A ponte manda as tentativas como LISTA de textos (`bloqueio_em_palavras`): `int(lista)` derrubava
+	# o jogo com erro de script, e a sessão fechava sozinha no primeiro bloqueio (10/10/2026).
+	var dadas = bloqueio.get("tries", 0)
+	var tentativas := (dadas as Array).size() if dadas is Array else int(dadas)
 	_tentativas.text = str(_t.call("bloqueio_tentativas")) % tentativas
 	_tentativas.visible = tentativas > 0
 	for par in [["Assumir", "cmd_assumir"], ["OutraRota", "bloqueio_outra"], ["Encerrar", "bloqueio_encerrar"]]:
