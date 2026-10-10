@@ -49,8 +49,9 @@ gates passam; a auditoria estrita de talentos continua reprovando os quatro
 consumidores ausentes, fora da bateria e sem exceções. Passo, lenha, faro
 de cordel e vista no topo da Lombada chegam às ações nativas. Favor conserva
 seu significado histórico de desconto da terra, agora integrado na fatia
-parcial #9; produção e frações
-dos trabalhadores dependem da #160, reaberta por ausência no HEAD. A #18
+parcial #9; os quatro campos de produção
+(`pastoreio`, `pressa_do_curral`, `rendimento_do_morador`, `pericia_do_morador`)
+ganharam leitor na #160, e a auditoria estrita deixa de acusá-los. A #18
 permanece aberta, sem afirmar equivalência completa dos quinze contratos.
 
 A #149 avança parcialmente: passeio não recebe galope por um clipe de
@@ -175,7 +176,8 @@ e avisos fora da missão ampliada. Independência, resolução/idioma, prioridad
 e tarefa passaram; mutante sem escala acusa uma falha. Capturas da cena real
 a 150% foram conferidas nos três idiomas. A issue segue aberta até revisar
 as telas secundárias e as combinações com texto global; ver
-[INTERFACES_INDIVIDUAIS.md](../testes/INTERFACES_INDIVIDUAIS.md).
+[INTERFACES_INDIVIDUAIS.md](../testes/INTERFACES_INDIVIDUAIS.md). Em 10/10 o aceite
+da missão e o aviso de primeira vez ganharam escala própria (34 componentes).
 
 A #126 ganha os três modos de câmera persistidos, giro suave por movimento,
 desvios com histerese e geometria de árvores próximas. Raízes sem ângulo livre
