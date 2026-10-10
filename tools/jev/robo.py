@@ -70,6 +70,9 @@ class JogadorAutomatico:
         self.events = []          # eventos para o relatório, recolhidos pela ponte
         self.alternate = None     # rota alternativa depois do modal de bloqueio
         self.continuar = False    # --continuar: carregar a vaga 1 em vez de partida nova (#235)
+        self.still_position = []  # onde estava na última ação de deslocamento (o pulo de destrave)
+        self.still_count = 0
+        self.jumps_here = Counter()
 
     def drain_events(self):
         events, self.events = list(getattr(self, "events", [])), []
@@ -362,6 +365,23 @@ class JogadorAutomatico:
             return asked["ferramenta"]
         return ""
 
+    def _jump_to_unstick(self, state, actions):
+        here = state.get("position", [])
+        travelled = self.last_action.startswith(TRAVEL_ACTIONS)
+        moved = len(here) == len(self.still_position) == 3 and sum((here[i] - self.still_position[i]) ** 2 for i in (0, 2)) ** 0.5 >= 0.4
+        if self.last_action == "jump":
+            return None
+        self.still_count = self.still_count + 1 if travelled and not moved and len(here) == len(self.still_position) == 3 else 0
+        self.still_position = list(here)
+        if self.still_count < 2 or "jump" not in actions or state.get("screen") or state.get("room") or len(here) != 3:
+            return None
+        spot = (round(here[0] / 2), round(here[2] / 2))
+        if self.jumps_here[spot] >= 2:
+            return None
+        self.jumps_here[spot] += 1
+        self.still_count = 0
+        return "jump"
+
     def replan(self):
         """O humano devolveu o controle (F7, #206): o plano velho (rota, contorno, tentativas, cobertura,
         ferramenta em troca) não vale mais. Fica só o que o robô já sabe do mundo (lugares visitados)."""
@@ -649,6 +669,14 @@ class JogadorAutomatico:
             self.route_failed = True
             self.room_still = 0
             return self._explore(state, actions, select)
+
+        # UMA PULADINHA DESTRAVA (10/10/2026): andar contra uma cerca, um degrau ou uma raiz e
+        # não sair do lugar por duas ações de deslocamento seguidas. Antes de recalcular a rota,
+        # pula uma vez (duas no máximo no mesmo ponto, a cada ~2 m), e o deslocamento seguinte
+        # já sai do novo lugar.
+        jump = self._jump_to_unstick(state, actions)
+        if jump:
+            return select(jump, "Destravar: dar um pulo antes de recalcular, preso no mesmo lugar")
 
         if self.alternate:
             alternate = self._alternate_choice(state, actions, select, state.get("objective", {}).get("id"))

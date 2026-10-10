@@ -983,3 +983,23 @@ class RouteTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class PuloDeDestrave(unittest.TestCase):
+    """Preso no mesmo lugar por duas ações de deslocamento, o robô dá um pulo (no máximo duas vezes no ponto)."""
+
+    def test_pula_quando_preso(self):
+        robo = JogadorAutomatico()
+        estado = {"position": [10.0, 0.0, 10.0]}
+        robo.last_action = "walk_right"
+        self.assertIsNone(robo._jump_to_unstick(estado, ["jump", "walk_right"]))
+        self.assertIsNone(robo._jump_to_unstick(estado, ["jump", "walk_right"]))
+        self.assertEqual(robo._jump_to_unstick(estado, ["jump", "walk_right"]), "jump")
+        robo.last_action = "jump"
+        self.assertIsNone(robo._jump_to_unstick(estado, ["jump"]))
+        robo.last_action = "walk_right"
+        self.assertIsNone(robo._jump_to_unstick(estado, ["jump"]))
+        self.assertEqual(robo._jump_to_unstick(estado, ["jump"]), "jump", "o segundo pulo no mesmo ponto")
+        robo.last_action = "walk_right"
+        for _ in range(4):
+            self.assertIsNone(robo._jump_to_unstick(estado, ["jump"]), "no mesmo ponto, no máximo dois pulos")
