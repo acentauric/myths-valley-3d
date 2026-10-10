@@ -273,6 +273,7 @@ func _run() -> void:
 	v._pedidos.clear()
 	v._ultima_ms = -1000000
 	await _o_selo(jogo, jogador, v, Selo)
+	v.set_process(true)
 	Selo.definir_legendas(legendas_de_antes)
 	Selo.esquecer_as_legendas()
 	_fechar()
@@ -286,11 +287,28 @@ func _o_selo(jogo: Node, jogador: Node, v: Node, Selo: GDScript) -> void:
 		return
 	selo.coberto = Callable()
 	selo.permitir(true)
+	# A fala do despertar (passo 6) pode estar no ar: o selo se mede com o viajante calado, a vez da
+	# fila livre e o fade terminado, senão o "parou" dela chega no meio da fala de teste abaixo. E ele
+	# não fala mais nada de verdade enquanto o selo é medido: só as falas emitidas aqui contam.
+	v.set_process(false)
+	v._pedidos.clear()
+	var fila = jogo.get("fila_de_falas")
+	if fila != null:
+		await _palavra_livre(fila, 10.0)
+	var calado := await _ate(func() -> bool: return (fila == null or fila.livre()) and not selo.falando and selo.alfa_do_icone <= 0.0 and selo.alfa_da_legenda <= 0.0, 30.0)
+	_conferir(calado, "o viajante não se calou depois do despertar")
 	# O "?"/"!" de quem espera o jogador (o Pedro, logo atrás dele no começo) cai sobre a cabeça do viajante
 	# nesta câmera, e o selo cede a ele de propósito. Aqui se mede o selo com a cabeça livre: os marcadores
 	# saem do grupo que o selo consulta (a cessão a um popup é a da dica do E, mais abaixo).
 	for morador in get_nodes_in_group(PopupsDoMundo.GRUPO_MARCADORES):
 		morador.remove_from_group(PopupsDoMundo.GRUPO_MARCADORES)
+	# O ombro da câmera da chegada (#119) põe o viajante num canto do quadro, com a cabeça sob o título do
+	# HUD, a que a legenda cede de propósito. Ele se solta quando o viajante anda; aqui sai na hora, e o selo
+	# se mede na câmera de sempre, com o viajante no meio do quadro.
+	if "_ombro" in jogador:
+		jogador.set("_ombro", Vector3.ZERO)
+		await process_frame
+		await process_frame
 	Selo.definir_legendas(1)
 	Selo.esquecer_as_legendas()
 	var camera: Camera3D = root.get_camera_3d()
