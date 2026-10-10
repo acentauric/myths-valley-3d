@@ -2,6 +2,23 @@
 
 ## Em desenvolvimento — 10/10/2026
 
+- **A segunda rodada do Mixamo: 35 clipes em 18 personagens (#190).** Os clipes que o Ramon aprovou na
+  prévia entram redirecionados para o esqueleto de cada um, e nenhum dos oito reprovados. Quem tem agenda os
+  toca na ação da rotina: a marisqueira cava a areia, pega o marisco e enxuga o suor; a lavadeira enxuga o suor
+  na ponte; o mercador conta o troco nos dedos no balcão; o sacristão capina o cemitério com a foice e abre a
+  porta antes de se recolher; o mestre do saveiro puxa a corda enquanto espera; as crianças pulam brincando e
+  vão brincar com o passo alegre; o guarda faz a ronda de peito aberto e o mestre do saveiro vai à festa do
+  mesmo jeito. Quem só tem postos por período ganha o período como ação (`posto:manha`): a Dona Zefa ceifa o
+  terreiro de manhã, o Damião cava no cemitério, o Tonho conta nos dedos no trapiche e o Quirino puxa a corda
+  no píer, de tempos em tempos. A Candinha, o padre e a quituteira saúdam com o aceno, e o guarda bate
+  continência; quem trabalha intercala o aceno no ofício. O viajante pula, soca de mão vazia, boceja ao
+  acordar na cama, levanta-se do chão ao acordar de um desmaio ou de uma queda, e respira ofegante com o vigor
+  zerado, até recuperar 30 %. Os sete clipes de sentar (banco) e o de abrir a porta do viajante ficam
+  registrados com o motivo, porque o vale não tem banco na rotina de quem sentaria nem porta que abra. A ficha
+  em Modelos leva os clipes do Mixamo num menu dourado ("Mixamo (6)") quando há mais de dois. O portão `animacoes_mixamo` cobra a
+  lista aprovada e reprovada, cada gatilho, o passo, a saudação, a porta, o pulo, o soco, o ofego e o acordar,
+  e o `acordar_parado` passa a esperar o clipe de cada motivo. Falta jogar para ver cada momento.
+
 - **O golpe ganha lascas do material e um tranco na tela (#16).** Cada golpe que acerta solta uma rajada de
   cubinhos a um braço do viajante, rumo ao alvo: cinza na pedra, marrom na madeira, verde no capim, claro na
   ostra, terra na mão; o último golpe solta o dobro. A câmera dá um tranco curto (maior no último) e volta ao

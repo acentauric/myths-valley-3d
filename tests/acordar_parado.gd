@@ -11,7 +11,9 @@ extends SceneTree
 ##      nadando antes de deitar: com o cartão ainda no escuro, o jogador já está
 ##      no parado, no ponto de acordar, sem velocidade nem corrida ligada.
 ##   3. O GANCHO: a pose de acordar é escolhida por motivo (`POSE_DE_ACORDAR`),
-##      e um papel que o animador não conhece cai no parado.
+##      e um papel que o animador não conhece cai no parado. Desde o Mixamo (#190)
+##      a pose da cama é o espreguiçar e a do desmaio e da queda, o levantar do chão:
+##      clipes do viajante que tocam como gesto e acabam no parado.
 
 var falhas := 0
 var vale
@@ -106,11 +108,16 @@ func _noite_com_o_corpo_ocupado(motivo: String) -> void:
 	_conferir(amanhecer.aberto, "[%s] o cartão do amanhecer não abriu" % motivo)
 	# NO ESCURO, antes de clarear: o corpo já está parado.
 	var parado := String(jogador.animator._clips.get("idle", ""))
-	_conferir(String(jogador.get_current_animation()) == parado,
-		"[%s] no escuro o clipe é '%s', e deveria ser o parado" % [motivo, jogador.get_current_animation()])
+	# A pose do motivo: um clipe do Mixamo do viajante (um gesto que acaba no parado), ou o parado.
+	var papel := str(queda.POSE_DE_ACORDAR[motivo])
+	var do_mixamo: bool = papel in jogador.animator.clipes_mixamo()
+	var esperado := String(jogador.animator._clips[papel]) if do_mixamo else parado
+	_conferir(String(jogador.get_current_animation()) == esperado,
+		"[%s] no escuro o clipe é '%s', e deveria ser '%s'" % [motivo, jogador.get_current_animation(), esperado])
 	_conferir(jogador.velocity.length() < 0.01, "[%s] acordou com velocidade %s" % [motivo, jogador.velocity])
 	_conferir(not jogador._run_toggled and not jogador.is_running(), "[%s] a corrida sobreviveu à noite" % motivo)
-	_conferir(not jogador.animator.gesture_ativa() and not jogador.is_swimming(), "[%s] o golpe ou o nado sobreviveu à noite" % motivo)
+	_conferir((do_mixamo or not jogador.animator.gesture_ativa()) and not jogador.animator.chop_ativo() and not jogador.is_swimming(),
+		"[%s] o golpe ou o nado sobreviveu à noite" % motivo)
 	_conferir(jogador._acao_golpe_restante <= 0.0, "[%s] a trava de golpe sobreviveu à noite" % motivo)
 	var destino: Vector3 = queda.ponto_de_casa()
 	if destino.is_finite():
@@ -119,7 +126,7 @@ func _noite_com_o_corpo_ocupado(motivo: String) -> void:
 	await _esperar_ate(func() -> bool: return acordou[0], 15.0)
 	_conferir(acordou[0], "[%s] a noite não terminou" % motivo)
 	await _frames(6)
-	_conferir(String(jogador.get_current_animation()) == parado,
+	_conferir(String(jogador.get_current_animation()) in [parado, esperado],
 		"[%s] depois de clarear o clipe é '%s'" % [motivo, jogador.get_current_animation()])
 	if motivo == "queda":
 		# A explicação da queda abre no painel do HUD; fecha para não atrapalhar a próxima.

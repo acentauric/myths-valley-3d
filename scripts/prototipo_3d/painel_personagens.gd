@@ -703,13 +703,18 @@ func _dados_morador(pessoa: Dictionary) -> void:
 
 ## A altura (px) da linha Animações, com ou sem botão do Mixamo.
 const ALTURA_DA_LINHA_DE_ANIMACOES := 30.0
+## Até quantos clipes do Mixamo a linha mostra um botão cada; com mais, eles vão para um menu dourado
+## ("Mixamo (6)"), como os do Tripo: o viajante tem seis, e a linha estouraria a largura do modal sem
+## mudar de altura para os outros.
+const BOTOES_DO_MIXAMO_NA_LINHA := 2
 
 
 ## AS ANIMAÇÕES DO MORADOR (#190), numa linha só, como as outras da ficha: os clipes
 ## do Mixamo, cada um num botão com o selo dourado ("Capoeira · Mixamo"), e os do
 ## Tripo num menu ("Tripo (8)"). O clique toca o clipe na prévia; o segundo, no
 ## mesmo botão, volta à pose parada. A linha existe para todo morador, com ou sem
-## Mixamo, para a ficha não mudar de forma.
+## Mixamo, para a ficha não mudar de forma. Com mais de `BOTOES_DO_MIXAMO_NA_LINHA`
+## clipes do Mixamo, eles vão num menu dourado ("Mixamo (6)").
 func _animacoes(id: String) -> void:
 	var linha := HBoxContainer.new()
 	linha.name = "Animacoes"
@@ -725,7 +730,27 @@ func _animacoes(id: String) -> void:
 	rotulo.add_theme_color_override("font_color", Color(DOURADO, 0.8))
 	linha.add_child(rotulo)
 	var campo := func(dados: Dictionary, chave: String) -> String: return str(IdiomaMenu.campo(dados, chave))
-	for clipe: Dictionary in MixamoUso.clipes(id):
+	var do_mixamo: Array = MixamoUso.clipes(id)
+	if do_mixamo.size() > BOTOES_DO_MIXAMO_NA_LINHA:
+		var dourado := MenuButton.new()
+		dourado.name = "ClipesMixamo"
+		dourado.text = "%s (%d)" % [MixamoUso.ORIGEM, do_mixamo.size()]
+		dourado.tooltip_text = tr("Clipes do Mixamo deste personagem: escolha um para ver na prévia")
+		dourado.flat = false
+		dourado.add_theme_font_size_override("font_size", 12)
+		dourado.add_theme_color_override("font_color", DOURADO)
+		dourado.add_theme_color_override("font_hover_color", DOURADO)
+		dourado.set_meta("origem", MixamoUso.ORIGEM)
+		var popup := dourado.get_popup()
+		for i in do_mixamo.size():
+			var clipe: Dictionary = do_mixamo[i]
+			popup.add_item(str(campo.call(clipe, "rotulo")))
+			popup.set_item_tooltip(i, "%s
+%s: %s" % [campo.call(clipe, "gatilho"), MixamoUso.ORIGEM, str(clipe.get("descricao_mixamo", ""))])
+		popup.index_pressed.connect(func(indice: int) -> void: _tocar_na_previa(str(do_mixamo[indice].get("id", "")), null))
+		linha.add_child(dourado)
+		do_mixamo = []
+	for clipe: Dictionary in do_mixamo:
 		var nome := str(clipe.get("id", ""))
 		var botao := Button.new()
 		botao.name = "Clipe_" + nome

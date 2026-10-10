@@ -153,6 +153,21 @@ func _run() -> void:
 	_assert((painel._lista.find_child("Linhas", true, false) as GridContainer).get_child_count() == linhas_pedro, "as mesmas linhas para todos")
 	var falas_benedito: Array = painel._lista.find_children("Fala*", "HBoxContainer", true, false)
 	_assert(falas_benedito.size() == 3 and is_equal_approx(falas_benedito[0].global_position.y, posicao_falas), "as falas ficam no mesmo lugar")
+	# #190: quem tem mais clipes do Mixamo que botões cabem na linha (o viajante tem seis) os leva num menu dourado
+	# "Mixamo (6)", e a linha segue com a mesma altura; escolher um item toca o clipe na prévia.
+	painel._abrir("viajante")
+	await _frames(3)
+	var menu_mixamo := painel._lista.find_child("ClipesMixamo", true, false) as MenuButton
+	_assert(menu_mixamo != null and menu_mixamo.text == "Mixamo (6)" and menu_mixamo.get_popup().item_count == 6 and str(menu_mixamo.get_meta("origem", "")) == "Mixamo", "a ficha do viajante leva os seis clipes do Mixamo num menu")
+	_assert(painel._lista.find_child("Clipe_jump", true, false) == null, "o viajante não tem um botão por clipe")
+	_assert(is_equal_approx((painel._lista.find_child("Animacoes", true, false) as Control).size.y, painel.ALTURA_DA_LINHA_DE_ANIMACOES), "a linha Animações do viajante tem a altura de sempre")
+	if painel._tocador_da_previa() != null:
+		menu_mixamo.get_popup().index_pressed.emit(2)
+		_assert(painel._clipe_na_previa == "mixamo/jump" and painel._tocador_da_previa().current_animation == &"mixamo/jump", "o item do menu toca o pulo na prévia")
+		menu_mixamo.get_popup().index_pressed.emit(2)
+		_assert(painel._clipe_na_previa == "", "o mesmo item de novo volta a prévia à pose parada")
+	painel._abrir("benedito")
+	await _frames(3)
 	if painel._botao_gravar != null and not AjustesConteudo.tem_pendencias():
 		_assert(painel._botao_gravar.disabled and painel._botao_gravar.tooltip_text == painel.tr("Nada para gravar"), "GRAVAR desativado sem ajuste pendente")
 	# Edita o Benedito pelo EDITAR do cabeçalho.
