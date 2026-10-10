@@ -102,6 +102,10 @@ func _run() -> void:
 		capoeira.button_pressed = true
 		capoeira.pressed.emit()
 		_assert(painel._clipe_na_previa == "mixamo/capoeira" and painel._tocador_da_previa().current_animation == &"mixamo/capoeira", "o clique na Capoeira a toca na prévia")
+		await process_frame
+		var nome_clipe := painel._lista.find_child("NomeDoClipe", true, false) as Label
+		_assert(nome_clipe != null and nome_clipe.visible and nome_clipe.text.contains("apoeira") and nome_clipe.get_global_rect().end.x <= fundo.get_global_rect().end.x and nome_clipe.get_global_rect().end.y <= fundo.get_global_rect().end.y and nome_clipe.get_global_rect().position.y > fundo.get_global_rect().get_center().y, "o nome da animação aparece no canto de baixo à direita da prévia")
+		_assert(capoeira.get_child(0).cor == capoeira.get_child(0).OURO and do_tripo[0].get_child(0).cor == do_tripo[0].get_child(0).CREME, "só o ícone que toca fica em ouro; os outros em creme")
 		_assert(painel._preview_viewport.render_target_update_mode == SubViewport.UPDATE_ALWAYS, "com o clipe tocando a prévia se redesenha a cada quadro")
 		capoeira.button_pressed = false
 		capoeira.pressed.emit()
@@ -122,7 +126,10 @@ func _run() -> void:
 		tocar.pressed.emit()
 		_assert(painel._fala_tocando == tocar and tocar.get_meta("icone").tipo == "pausar", "tocar mostra a pausa")
 		tocar.pressed.emit()
-		_assert(painel._fala_tocando == null and not painel._voz.playing and tocar.get_meta("icone").tipo == "tocar", "segundo clique para a fala")
+		_assert(painel._fala_tocando == tocar and painel._voz.stream_paused and tocar.get_meta("icone").tipo == "tocar", "o segundo clique pausa a fala, sem parar")
+		tocar.pressed.emit()
+		_assert(not painel._voz.stream_paused and tocar.get_meta("icone").tipo == "pausar", "o terceiro clique continua de onde parou")
+		painel._parar_fala()
 	# Girar a prévia com o mouse.
 	var giro_antes: float = painel._preview_pivo.rotation.y
 	var arrasto := InputEventMouseMotion.new()
@@ -157,7 +164,10 @@ func _run() -> void:
 	_assert(is_instance_valid(painel._leitor), "expandir abre o leitor")
 	var texto_inteiro := painel._leitor.find_child("TextoDaFala", true, false) as Label
 	_assert(texto_inteiro.text == "“%s”" % str(falas_do_pedro[0].get("texto", "")) and texto_inteiro.autowrap_mode != TextServer.AUTOWRAP_OFF, "o leitor mostra a fala inteira, com quebra de linha")
-	_assert(painel._leitor.find_child("Tocar", true, false) != null, "o leitor tem o ▶")
+	var tocar_leitor := painel._leitor.find_child("Tocar", true, false) as Button
+	_assert(tocar_leitor != null and tocar_leitor.get_parent().find_child("NavegacaoDoLeitor", false, false) == null and tocar_leitor.get_index() == tocar_leitor.get_parent().get_child_count() - 2, "o ▶ do leitor fica no cabeçalho, ao lado do ×")
+	var nav := painel._leitor.find_child("NavegacaoDoLeitor", true, false) as HBoxContainer
+	_assert(nav.find_child("Tocar", true, false) == null, "a navegação do leitor é só setas e contador")
 	await _capturar("leitor")
 	painel._input(direita_tecla())
 	await _frames(1)

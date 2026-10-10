@@ -2,7 +2,8 @@ extends Control
 ## O ÍCONE DE UMA ANIMAÇÃO na ficha de MODELOS: um boneco de traço, de perfil (virado
 ## para a direita), na pose que lembra o clipe, às vezes com o objeto da ação (a vara,
 ## a pá, a porta, a água). Desenha na grade de 24, como o `HudIcon`; quem usa põe o
-## tamanho e a escala. Os clipes do Mixamo desenham em ouro e os do Tripo em creme.
+## tamanho e a escala. Todos em creme; só o do clipe que está tocando (o botão apertado) fica em
+## ouro. A origem (Mixamo ou Tripo) fica na dica do botão.
 ##
 ## A pose é feita de ângulos absolutos, em graus, a partir do "para baixo": 0 aponta
 ## para o chão, 90 para a frente (direita), 180 para o alto e -90 para trás. Cada
@@ -81,10 +82,9 @@ var pose := "parado"
 var cor := CREME
 
 
-## Ícone do clipe `clipe`, em ouro (Mixamo) ou creme (Tripo).
-func configurar(clipe: String, do_mixamo: bool):
+## Ícone do clipe `clipe` (`_do_mixamo` só vale para a dica, que o botão já leva).
+func configurar(clipe: String, _do_mixamo: bool):
 	pose = String(DO_CLIPE.get(clipe, "parado"))
-	cor = OURO if do_mixamo else CREME
 	return self
 
 
@@ -105,6 +105,8 @@ func _membro(inicio: Vector2, angulos: Array, medidas: Array) -> Vector2:
 
 
 func _draw() -> void:
+	var botao := get_parent() as BaseButton
+	cor = OURO if botao != null and botao.button_pressed else CREME
 	var p: Dictionary = POSES.get(pose, POSES["parado"])
 	var quadril: Vector2 = p.get("quadril", QUADRIL)
 	var inclinacao := float(p.get("tronco", 0))

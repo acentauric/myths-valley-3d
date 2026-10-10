@@ -791,6 +791,9 @@ func _animacoes(pai: Control, id: String) -> void:
 		botao.custom_minimum_size = Vector2(lado, lado)
 		botao.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		botao.set_meta("origem", MixamoUso.ORIGEM if dados[3] else "Tripo")
+		# O nome do clipe, que aparece no canto da prévia enquanto ele toca.
+		botao.set_meta("rotulo", String(dados[2]).get_slice("
+", 0).get_slice(" · ", 0))
 		var icone: Control = IconeAnimacao.new().configurar(nome, dados[3])
 		icone.size = Vector2(24, 24)
 		icone.scale = Vector2.ONE * (lado * 0.8 / 24.0)
@@ -810,6 +813,7 @@ func _tocar_na_previa(nome: String, botao: Button) -> void:
 	for outro in _lista.find_children("Clipe*", "Button", true, false):
 		if outro != botao:
 			(outro as Button).set_pressed_no_signal(false)
+	_redesenhar_icones_de_clipe.call_deferred()
 	var tocador := _tocador_da_previa()
 	var real := _clipe_real(tocador, nome)
 	if tocador == null or real.is_empty() or (botao != null and not botao.button_pressed) or real == _clipe_na_previa:
@@ -818,8 +822,28 @@ func _tocar_na_previa(nome: String, botao: Button) -> void:
 		_parar_clipe_da_previa()
 		return
 	_clipe_na_previa = real
+	_nome_do_clipe(String(botao.get_meta("rotulo", "")) if botao != null else "")
 	tocador.play(real, 0.2)
 	_preview_viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
+
+
+## O NOME DA ANIMAÇÃO no canto de baixo à direita da prévia, enquanto ela toca.
+func _nome_do_clipe(texto: String) -> void:
+	if not is_instance_valid(_lista):
+		return
+	var rotulo := _lista.find_child("NomeDoClipe", true, false) as Label
+	if rotulo != null:
+		rotulo.text = texto
+		rotulo.visible = texto != ""
+
+
+## Só o ícone do clipe que toca fica em ouro: os outros voltam ao creme.
+func _redesenhar_icones_de_clipe() -> void:
+	if not is_instance_valid(_lista):
+		return
+	for outro in _lista.find_children("Clipe*", "Button", true, false):
+		for icone in (outro as Node).get_children():
+			(icone as CanvasItem).queue_redraw()
 
 
 ## O nome do clipe no tocador da prévia: a biblioteca do Mixamo ou o clipe do GLB
@@ -846,6 +870,8 @@ func _tocador_da_previa() -> AnimationPlayer:
 ## Volta a prévia à pose parada (o idle, pausado) e ao redesenho sob demanda.
 func _parar_clipe_da_previa() -> void:
 	_clipe_na_previa = ""
+	_nome_do_clipe("")
+	_redesenhar_icones_de_clipe.call_deferred()
 	var tocador := _tocador_da_previa()
 	if tocador != null:
 		var parado := _clipe_real(tocador, "idle")
@@ -939,6 +965,19 @@ func _montar_previa(pai: Control, chave: String, altura: float = 0) -> void:
 	suporte.tooltip_text = tr("Arrastar: girar · roda: zoom · botão direito: mover · duplo clique: centralizar")
 	suporte.gui_input.connect(_girar_previa)
 	fundo.add_child(suporte)
+	var nome_do_clipe := Label.new()
+	nome_do_clipe.name = "NomeDoClipe"
+	nome_do_clipe.visible = false
+	nome_do_clipe.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	nome_do_clipe.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	nome_do_clipe.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
+	nome_do_clipe.grow_horizontal = Control.GROW_DIRECTION_BEGIN
+	nome_do_clipe.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	nome_do_clipe.offset_right = -12.0
+	nome_do_clipe.offset_bottom = -10.0
+	Identidade.papel_rotulo(nome_do_clipe, 13, DOURADO)
+	Identidade.sombra_texto(nome_do_clipe)
+	fundo.add_child(nome_do_clipe)
 	var viewport := SubViewport.new()
 	_preview_viewport = viewport
 	viewport.size = Vector2i(PREVIA)
@@ -1171,14 +1210,19 @@ func _botao_tocar(fala: Dictionary) -> Button:
 	tocar.tooltip_text = tr("Ouvir a fala")
 	tocar.pressed.connect(func() -> void:
 		Audio.efeito("ui_confirmar")
+		# O ❚❚ PAUSA, e não para (10/10/2026): o segundo clique segura a fala onde está, e o
+		# terceiro continua dali. Outra fala, ou fechar, é que para de vez.
 		if _fala_tocando == tocar:
-			_parar_fala()
+			_voz.stream_paused = not _voz.stream_paused
+			icone.configurar("tocar" if _voz.stream_paused else "pausar")
+			icone.queue_redraw()
+			tocar.tooltip_text = tr("Ouvir a fala") if _voz.stream_paused else tr("Pausar a fala")
 			return
 		_tocar(caminho)
 		_fala_tocando = tocar
 		icone.configurar("pausar")
 		icone.queue_redraw()
-		tocar.tooltip_text = tr("Parar a fala"))
+		tocar.tooltip_text = tr("Pausar a fala"))
 	return tocar
 
 
@@ -1235,13 +1279,23 @@ func _abrir_leitor(indice: int, com_som: bool = true) -> void:
 	coluna.add_child(rodape)
 	var mudar := func(passo: int) -> void: _abrir_leitor(_indice_no_leitor + passo, false)
 	rodape.add_child(_seta(-1, tr("Anterior"), _indice_no_leitor == 0, mudar))
-	rodape.add_child(_botao_tocar(fala))
 	var contador := Label.new()
 	contador.text = "%d / %d" % [_indice_no_leitor + 1, _falas_da_ficha.size()]
 	contador.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	contador.custom_minimum_size.x = 64
 	rodape.add_child(contador)
 	rodape.add_child(_seta(1, tr("Próximo"), _indice_no_leitor >= _falas_da_ficha.size() - 1, mudar))
+	# O ▶ fica no cabeçalho, à esquerda do ×, no formato dele; o rodapé é só a navegação, centrada.
+	var tocar := _botao_tocar(fala)
+	tocar.custom_minimum_size = fechar.custom_minimum_size
+	tocar.size_flags_vertical = fechar.size_flags_vertical
+	var icone_tocar: Control = tocar.get_meta("icone")
+	icone_tocar.scale = Vector2.ONE
+	icone_tocar.position = (fechar.custom_minimum_size - Vector2(24, 24)) * 0.5
+	var cabeca := fechar.get_parent() as HBoxContainer
+	cabeca.add_theme_constant_override("separation", 8)
+	cabeca.add_child(tocar)
+	cabeca.move_child(tocar, fechar.get_index())
 	fechar.grab_focus()
 
 
@@ -1254,6 +1308,7 @@ func _fechar_leitor() -> void:
 
 ## Para a fala e devolve o ▶ ao botão que tocava.
 func _parar_fala() -> void:
+	_voz.stream_paused = false
 	if _voz.playing:
 		_voz.stop()
 	if is_instance_valid(_fala_tocando):
