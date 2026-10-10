@@ -28,7 +28,7 @@ OPENAI_ENDPOINT = "https://api.openai.com/v1/chat/completions"
 # Terceiro nível (#239): o autor escolheu o GPT-6 Luna. `OPENAI_TEXT_MODEL` no .env continua
 # mandando. A tarifa abaixo serve só ao teto local da sessão: CONFIRMAR o id e os preços na
 # conta da OpenAI antes da primeira chamada real, e atualizar os dois juntos.
-GPT_MODELO_PADRAO = "gpt-6-luna"
+GPT_MODELO_PADRAO = "gpt-5.6-luna"
 GPT_PRECO_ENTRADA = Decimal("0.25") / 1_000_000
 GPT_PRECO_SAIDA = Decimal("2.00") / 1_000_000
 GPT_SAIDA_MAXIMA = 4000  # tokens de saída (raciocínio incluso) reservados por chamada

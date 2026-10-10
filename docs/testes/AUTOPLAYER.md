@@ -129,7 +129,7 @@ Os três últimos são sinais leves: só valem depois de 8 ações sem progresso
    orçamento acabarem. Cada etapa vai para o relatório (`blocked_prompt`, `blocked_choice`,
    `alternate_route`). Não há atalho de teste que pule passo, e o testador nunca altera a missão.
 
-O GPT padrão é o **GPT-6 Luna** (`gpt-6-luna`; `OPENAI_TEXT_MODEL` no `.env` manda), com até
+O GPT padrão é o **GPT-5.6 Luna** (`gpt-5.6-luna`, o mesmo do site; `OPENAI_TEXT_MODEL` no `.env` manda), com até
 4000 tokens de saída e `reasoning_effort: low`. Resposta vazia ou JSON inválido grava
 `gpt_invalid_answer` (o `finish_reason` e os primeiros 200 caracteres, sem chaves) e repete a
 chamada uma vez.

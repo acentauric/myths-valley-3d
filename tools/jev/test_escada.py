@@ -522,7 +522,7 @@ class SessaoComApoiosTests(unittest.TestCase):
         corpo = json.loads(pedido.call_args.args[0].data)
         self.assertEqual((corpo["model"], corpo["reasoning_effort"], corpo["max_completion_tokens"]),
                          (GPT_MODELO_PADRAO, "low", 4000))
-        self.assertEqual(GPT_MODELO_PADRAO, "gpt-6-luna")
+        self.assertEqual(GPT_MODELO_PADRAO, "gpt-5.6-luna")
         self.assertEqual(decisoes[-1]["level"], GPT)
         invalida = next(e for e in self.eventos() if e["kind"] == "gpt_invalid_answer")
         self.assertEqual((invalida["finish_reason"], invalida["empty"]), ("length", True))
