@@ -113,7 +113,9 @@ func _run() -> void:
 			if camera.global_position.y < jogador.global_position.y + 2.5:
 				mais_perto = minf(mais_perto, perto)
 			var agora := Time.get_ticks_msec()
-			if agora - ultimo_ms >= 100:
+			# Janelas de 0,3 s: sem tela os quadros saem desiguais (um de 140 ms, outro de 10), e numa janela de 0,1 s
+			# o deslize de dois quadros caía inteiro numa só, dobrando a velocidade medida.
+			if agora - ultimo_ms >= 300:
 				var dt := float(agora - ultimo_ms) / 1000.0
 				var frente: Vector3 = -camera.global_basis.z
 				maior_velocidade = maxf(maior_velocidade, camera.global_position.distance_to(ultimo_pos) / dt)
@@ -162,15 +164,20 @@ func _run() -> void:
 	Input.parse_input_event(tecla)
 	await _frames(2)
 	_conferir(bool(cenas.pulando()) or not bool(cenas.em_cena()), "o E, depois de ESPERA_PARA_PULAR, não pulou a cena")
-	var pulou := await _ate(func() -> bool: return not bool(cenas.em_cena()), 6.0)
-	_conferir(pulou, "a cena pulada não acabou em 6 s")
+	# Pulada, a cena acaba já, menos a volta da câmera ao jogador, que sempre desliza (até TETO_DO_PLANO).
+	var pulou := await _ate(func() -> bool: return not bool(cenas.em_cena()), Cena.TETO_DO_PLANO + 3.0)
+	_conferir(pulou, "a cena pulada não acabou em %.0f s" % (Cena.TETO_DO_PLANO + 3.0))
 	var d_depois: float = _plano(pedro.global_position, tonho.global_position)
 	_conferir(d_depois < d_antes - 1.0 or d_depois < 3.5, "pulada a cena, o Pedro não chegou ao Tonho (%.1f → %.1f)" % [d_antes, d_depois])
 	_conferir(jogador.is_physics_processing(), "pulada a cena o jogador não voltou a andar")
 	_conferir(root.get_camera_3d() == camera_do_jogador, "pulada a cena a câmera não voltou para a do jogador")
 	_conferir(float(guia.espera) < 100.0, "pulada a cena a fila continua segura (espera %.1f)" % float(guia.espera))
 	var resumo_seguinte := str(guia.resumo_do_passo(guia.passos[i_correr + 1]))
-	var anunciou := await _ate(func() -> bool: return str(vale.hud.get("_objective")).contains(resumo_seguinte), 6.0)
+	# O anúncio abre o passo seguinte no caderno. O HUD segue a missão ACOMPANHADA, e aqui o foco ficou no
+	# desembarque, que o portão pulou ao pôr a fila direto no `correr`: pergunta-se ao caderno, e não ao HUD.
+	var caderno := root.get_node("/root/CadernoDoVale")
+	var no_caderno: String = guia._id_no_caderno(guia.passos[i_correr + 1])
+	var anunciou := await _ate(func() -> bool: return caderno.tem(no_caderno) and str(caderno.de(no_caderno).get("resumo", "")).contains(resumo_seguinte), 6.0)
 	_conferir(anunciou, "pulada a cena, o passo seguinte ('%s') não foi anunciado" % resumo_seguinte)
 	_conferir(hud_layer.visible, "pulada a cena a interface do vale não voltou")
 
@@ -185,7 +192,7 @@ func _run() -> void:
 	await _frames(2)
 	_conferir(bool(cenas.pulando()) or not bool(cenas.em_cena()), "o Esc, na cena, não a pulou")
 	_conferir(str(vale.telas.aberta()) == "", "o Esc que pulou a cena abriu a tela '%s'" % str(vale.telas.aberta()))
-	await _ate(func() -> bool: return not bool(cenas.em_cena()), 6.0)
+	await _ate(func() -> bool: return not bool(cenas.em_cena()), Cena.TETO_DO_PLANO + 3.0)
 	_conferir(not bool(cenas.em_cena()) and jogador.is_physics_processing(), "pulada pelo Esc, a cena não devolveu o jogador")
 	_fechar()
 
