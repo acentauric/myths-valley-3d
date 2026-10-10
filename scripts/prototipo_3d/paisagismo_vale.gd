@@ -679,7 +679,7 @@ static func plantar(regiao: Node3D, plantas: Array, receitas: Dictionary) -> Dic
 			# O pé do tronco, e não o ponto de plantio, apoia a árvore na encosta (#141).
 			var chao_do_pe := chao
 			if bool(dados.get("tronco", false)):
-				var apoio_pe: float = regiao.desnivel_do_pe(modelo.mesh, base, transformacao, ponto, chao, float(dados.get("raio", 0.3)) * escala)
+				var apoio_pe: float = regiao.desnivel_do_pe(modelo.mesh, transformacao, ponto, chao, float(dados.get("raio", 0.3)) * escala)
 				transformacao.origin.y += apoio_pe
 				chao_do_pe += apoio_pe
 			transforms.append(transformacao)

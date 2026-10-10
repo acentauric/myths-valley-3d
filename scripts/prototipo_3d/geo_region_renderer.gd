@@ -2326,7 +2326,7 @@ func _build_forest(configuration: Dictionary) -> void:
 			var ground := ground_height_at(Vector3(point.x, 0, point.y))
 			var transformacao := Transform3D(Basis.from_euler(Vector3(0, yaw, 0)).scaled(Vector3.ONE * scale), Vector3(point.x, ground - ARVORE_AFUNDADA, point.y)) * base
 			# O pé do tronco, e não o ponto de plantio, apoia a árvore na encosta (#141).
-			var apoio := desnivel_do_pe(built.mesh, base, transformacao, point, ground, float(built.tronco) * scale)
+			var apoio := desnivel_do_pe(built.mesh, transformacao, point, ground, float(built.tronco) * scale)
 			if apoio != 0.0:
 				ground += apoio
 				transformacao.origin.y += apoio
@@ -2512,7 +2512,7 @@ func _build_margens_do_rio(rng: RandomNumberGenerator) -> void:
 					elif tem_inga and rng.randf() < 0.55:
 						var na_beira := Transform3D(giro, Vector3(ponto.x, chao - ARVORE_AFUNDADA, ponto.y)) * (inga.base as Transform3D)
 						# O pé do tronco, e não o ponto de plantio, apoia o ingazeiro na barranca (#141).
-						var apoio_inga := desnivel_do_pe(inga.mesh, inga.base, na_beira, ponto, chao, float(inga.tronco) * escala)
+						var apoio_inga := desnivel_do_pe(inga.mesh, na_beira, ponto, chao, float(inga.tronco) * escala)
 						na_beira.origin.y += apoio_inga
 						do_inga.append(na_beira)
 						_tree_trunks.append({"point": ponto, "ground": chao + apoio_inga, "height": minf(float(inga.altura) * escala, 4.0), "radius": float(inga.tronco) * escala, "especie": "ingazeiro", "transformacao": na_beira})
@@ -2687,7 +2687,7 @@ func _build_coast_palms(rng: RandomNumberGenerator) -> void:
 					if not _em_clareira(candidate) and not _no_vao_do_sobrevoo(candidate):
 						var na_restinga := Transform3D(Basis.from_euler(Vector3(0, giro_livre, 0)).scaled(Vector3.ONE * scale), Vector3(candidate.x, ground - ARVORE_AFUNDADA, candidate.y)) * (malha_local.base as Transform3D)
 						# O pé do tronco, e não o ponto de plantio, apoia a árvore da restinga (#141).
-						var apoio_restinga := desnivel_do_pe(malha_local.mesh, malha_local.base, na_restinga, candidate, ground, float(malha_local.tronco) * scale)
+						var apoio_restinga := desnivel_do_pe(malha_local.mesh, na_restinga, candidate, ground, float(malha_local.tronco) * scale)
 						na_restinga.origin.y += apoio_restinga
 						(transforms_restinga[local] as Array[Transform3D]).append(na_restinga)
 						_tree_trunks.append({"point": candidate, "ground": ground + apoio_restinga, "height": minf(float(malha_local.altura) * scale, 4.0), "radius": float(malha_local.tronco) * scale, "especie": local, "transformacao": na_restinga})
@@ -2961,14 +2961,16 @@ func troncos_para_o_conjunto(ponto: Vector2) -> Array[Dictionary]:
 ## para o PÉ DO TRONCO, e não o ponto de plantio, ficar no chão. O ponto de plantio é o meio da
 ## caixa do GLB, e o tronco sai de até um metro e meio dele (a aroeira a 1,6 u): o pé fica a até 0,5 u
 ## (aroeira) e 0,7 u (ingazeiro) do chão do ponto, na encosta. Plantada pelo chão do ponto, a árvore flutuava
-## de um lado e se enterrava do outro. Mede-se o pé uma vez por malha (`CatalogoAssets.tronco_da_malha`,
-## com a transformação-base, no tamanho de referência), põe-se o pé na transformação já plantada e
+## de um lado e se enterrava do outro. Mede-se o pé uma vez por malha e faixa de tamanho
+## (`CatalogoAssets.tronco_da_malha` com a transformação já plantada, como `base_do_tronco`, que a
+## colisão, a malha de navegação e o corte leem: medido no tamanho de referência, o pé da jequitibá e
+## do angico, de raiz tabular, caía noutro lugar e a árvore seguia fora do chão), põe-se o pé nela e
 ## pergunta-se o chão ali. Quem planta soma o resultado ao `ground` e à altura da transformação.
 ## Zero fora do estilo Tripo, sem tronco medido, ou com o pé além do que a copa explica (medida errada).
-func desnivel_do_pe(malha: Mesh, base: Transform3D, transformacao: Transform3D, ponto: Vector2, ground: float, raio: float) -> float:
+func desnivel_do_pe(malha: Mesh, transformacao: Transform3D, ponto: Vector2, ground: float, raio: float) -> float:
 	if not _estilo_tripo or malha == null:
 		return 0.0
-	var local := CatalogoAssets.tronco_da_malha(malha, base)
+	var local := CatalogoAssets.tronco_da_malha(malha, transformacao)
 	if not local.is_finite():
 		return 0.0
 	var pe: Vector3 = transformacao * local
