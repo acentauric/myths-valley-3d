@@ -1,8 +1,10 @@
 extends Control
 ## MODELOS: painel do menu com os moradores do vale e as peças do catálogo, no mesmo
 ## formato nas duas abas: cartões paginados com filtro por nome e, ao escolher um cartão,
-## a ficha (prévia 3D à esquerda, dados em linhas fixas à direita, navegação no rodapé,
-## também pelas setas do teclado). Clicar na aba de novo volta aos cartões.
+## a ficha (prévia 3D à esquerda com os ícones das animações embaixo; à direita os blocos
+## DADOS, em linhas fixas, e NARRAÇÕES, uma linha por fala com ▶ e expandir; navegação no
+## rodapé, também pelas setas do teclado). Cartões e ficha têm o mesmo tamanho (TAMANHO).
+## Clicar na aba de novo volta aos cartões.
 ## A prévia tem tamanho fixo e uma escala comum entre os moradores (a altura de cada um
 ## aparece), luz de cima e sombra no chão; arrastar gira, a roda aproxima, o botão
 ## direito move e o duplo clique (ou o botão do canto) centraliza.
@@ -20,13 +22,14 @@ const Identidade = preload("res://scripts/prototipo_3d/identidade.gd")
 const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
 const HudIcon = preload("res://scripts/prototipo_3d/hud_icon.gd")
 const MixamoUso = preload("res://scripts/prototipo_3d/mixamo_uso.gd")
+const IconeAnimacao = preload("res://scripts/prototipo_3d/icone_animacao.gd")
 ## Cartão da grade: tamanho mínimo e separação. Colunas e linhas por página saem do espaço
 ## que o modal deixa à lista (`_capacidade()`), e os cartões esticam para preencher a grade.
-## O cartão é BAIXO (#213): 42 px de mínimo e 64 de teto, para a grade ganhar linhas (6 colunas
+## O cartão é BAIXO (#213): 42 px de mínimo e 72 de teto, para a grade ganhar linhas (6 colunas
 ## por 5 ou mais, sem rolagem) em vez de poucos cartões altos. A fonte é 12, e o nome que não
 ## cabe numa linha quebra em duas pelo espaço entre as palavras (ver `_nome_no_cartao`).
 const CARTAO_MIN := Vector2(140, 42)
-const ALTURA_MAX_CARTAO := 64.0
+const ALTURA_MAX_CARTAO := 72.0
 const FONTE_CARTAO := 12
 const SEPARACAO_GRADE := 8
 ## Margens internas do modal (as da moldura) e separação entre os blocos da coluna.
@@ -36,10 +39,11 @@ const SEPARACAO_COLUNA := 10
 ## Pode fechar: o anfitrião volta à Home e libera o painel.
 signal fechado
 
-## Mesma altura dos outros modais do menu (histórico, créditos); só a largura é maior.
-const TAMANHO := Vector2(940, 600)
+## O mesmo tamanho nos cartões e na ficha (10/10/2026): a ficha esticava o modal e a
+## lista parecia menor. É o tamanho em que a ficha cabe inteira, sem crescer.
+const TAMANHO := Vector2(1016, 620)
 ## Prévia 3D: tamanho fixo para todo modelo.
-const PREVIA := Vector2(320, 340)
+const PREVIA := Vector2(320, 280)
 ## Altura de referência que enquadra os moradores: cada um aparece na sua altura.
 const ALTURA_QUADRO := 2.0
 const CAMINHO_NPCS := "res://data/npcs_3d.json"
@@ -101,6 +105,12 @@ var _ancoras: Array[String] = []
 var _capacidade_montada := Vector2i.ZERO
 ## O clipe tocando na prévia (o nome no tocador), ou "" com o modelo parado na pose do idle.
 var _clipe_na_previa := ""
+## As falas e o nome do morador da ficha aberta (o leitor navega por todas as falas).
+var _falas_da_ficha: Array = []
+var _nome_da_ficha := ""
+## O leitor das narrações, aberto por cima do painel, e a fala que ele mostra.
+var _leitor: Control
+var _indice_no_leitor := 0
 
 
 ## Monta o painel centrado, no estilo dos outros painéis do menu (tema recebido).
@@ -296,6 +306,16 @@ func _input(evento: InputEvent) -> void:
 	var tecla := evento as InputEventKey
 	if tecla == null or not tecla.pressed or tecla.echo or not (tecla.keycode in [KEY_LEFT, KEY_RIGHT]):
 		return
+	# Com o leitor aberto, as setas passam de uma fala a outra.
+	if is_instance_valid(_leitor):
+		get_viewport().set_input_as_handled()
+		var passo := 1 if tecla.keycode == KEY_RIGHT else -1
+		if _indice_no_leitor + passo < 0 or _indice_no_leitor + passo >= _falas_da_ficha.size():
+			Audio.efeito("ui_trava")
+			return
+		Audio.efeito("ui_hover")
+		_abrir_leitor(_indice_no_leitor + passo, false)
+		return
 	if editando or is_instance_valid(_confirmacao):
 		return
 	var foco := get_viewport().gui_get_focus_owner()
@@ -314,6 +334,9 @@ func _input(evento: InputEvent) -> void:
 
 ## Com ajuste não gravado no projeto, pergunta antes de fechar; sem, fecha.
 func pedir_fechar() -> void:
+	if is_instance_valid(_leitor):
+		_fechar_leitor()
+		return
 	if is_instance_valid(_confirmacao):
 		_fechar_confirmacao()
 		return
@@ -437,6 +460,8 @@ func _trocar_aba(nova: int) -> void:
 
 
 func _reconstruir_lista() -> void:
+	_fechar_leitor()
+	_falas_da_ficha = []
 	for pai: Node in [_lista, _rodape]:
 		for filho in pai.get_children():
 			pai.remove_child(filho)
@@ -629,8 +654,15 @@ func _montar_ficha() -> void:
 		ficha.name = "Ficha"
 		ficha.add_theme_constant_override("separation", 22)
 		_lista.add_child(ficha)
+		# À esquerda, a prévia e, embaixo dela, os ícones das animações do morador.
+		var coluna_previa := VBoxContainer.new()
+		coluna_previa.name = "ColunaPrevia"
+		coluna_previa.add_theme_constant_override("separation", 10)
+		ficha.add_child(coluna_previa)
 		var altura := float(pessoa.get("altura", 1.7)) if aba == 0 else 0.0
-		_montar_previa(ficha, selecionado, altura)
+		_montar_previa(coluna_previa, selecionado, altura)
+		if aba == 0:
+			_animacoes(coluna_previa, selecionado)
 		var detalhes := VBoxContainer.new()
 		detalhes.name = "Detalhes"
 		detalhes.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -678,7 +710,20 @@ func _linhas(linhas: Array) -> void:
 		grade.add_child(valor)
 
 
-## Morador: altura, voz, os cinco períodos, nota e três falas com ▶ (vagas reservadas).
+## O cabeçalho de um bloco da ficha (DADOS, NARRAÇÕES): o nome em versalete dourado e
+## um filete que corre até a borda.
+func _cabecalho_bloco(texto: String, nome: String) -> void:
+	var linha := HBoxContainer.new()
+	linha.name = nome
+	linha.add_theme_constant_override("separation", 10)
+	linha.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_lista.add_child(linha)
+	linha.add_child(Identidade.rotulo(texto, 12, Color(DOURADO, 0.9)))
+	linha.add_child(Identidade.filete(true))
+
+
+## Morador: o bloco DADOS (altura, voz, os cinco períodos e a nota) e o bloco NARRAÇÕES,
+## com três falas de uma linha cada (vagas reservadas); as animações vão sob a prévia.
 func _dados_morador(pessoa: Dictionary) -> void:
 	var id := str(pessoa.get("id", ""))
 	var voz: Dictionary = pessoa.get("voz", {})
@@ -693,90 +738,73 @@ func _dados_morador(pessoa: Dictionary) -> void:
 	if nota.is_empty() and postos.is_empty() and id == "pedro":
 		nota = tr("Sem posto fixo: acompanha o viajante pelo vale.")
 	linhas.append([tr("Nota"), nota])
+	_cabecalho_bloco(tr("Dados"), "BlocoDados")
 	_linhas(linhas)
-	_animacoes(id)
-	var falas: Array = pessoa.get("falas", [])
+	_cabecalho_bloco(tr("Narrações"), "BlocoNarracoes")
+	_falas_da_ficha = (pessoa.get("falas", []) as Array).filter(func(f) -> bool: return f is Dictionary)
+	_nome_da_ficha = str(pessoa.get("nome", id))
 	for i in FALAS_NA_FICHA:
-		_linha_fala(falas[i] if i < falas.size() and falas[i] is Dictionary else {})
+		_linha_fala(i)
 
 
-## A altura (px) da linha Animações, com ou sem botão do Mixamo.
-const ALTURA_DA_LINHA_DE_ANIMACOES := 30.0
-## Até quantos clipes do Mixamo a linha mostra um botão cada; com mais, eles vão para um menu dourado
-## ("Mixamo (6)"), como os do Tripo: o viajante tem seis, e a linha estouraria a largura do modal sem
-## mudar de altura para os outros.
-const BOTOES_DO_MIXAMO_NA_LINHA := 2
+## Ícones das animações: duas linhas sob a prévia, na largura dela. O ícone tem no máximo
+## este lado e encolhe quando são muitos clipes (o viajante tem 19, dez por linha).
+const ICONE_ANIMACAO := 34.0
+const SEPARACAO_ICONES := 4
+const LINHAS_DE_ICONES := 2
 
 
-## AS ANIMAÇÕES DO MORADOR (#190), numa linha só, como as outras da ficha: os clipes
-## do Mixamo, cada um num botão com o selo dourado ("Capoeira · Mixamo"), e os do
-## Tripo num menu ("Tripo (8)"). O clique toca o clipe na prévia; o segundo, no
-## mesmo botão, volta à pose parada. A linha existe para todo morador, com ou sem
-## Mixamo, para a ficha não mudar de forma. Com mais de `BOTOES_DO_MIXAMO_NA_LINHA`
-## clipes do Mixamo, eles vão num menu dourado ("Mixamo (6)").
-func _animacoes(id: String) -> void:
-	var linha := HBoxContainer.new()
-	linha.name = "Animacoes"
-	linha.add_theme_constant_override("separation", 6)
-	# A ALTURA É A MESMA PARA TODOS: o botão do Mixamo saía um pixel mais alto que o menu do Tripo, e a
-	# ficha de quem tem Mixamo descia as falas meio pixel em relação à de quem não tem.
-	linha.custom_minimum_size.y = ALTURA_DA_LINHA_DE_ANIMACOES
-	_lista.add_child(linha)
-	var rotulo := Label.new()
-	rotulo.text = tr("Animações")
-	rotulo.custom_minimum_size.x = 96
-	rotulo.add_theme_font_size_override("font_size", 13)
-	rotulo.add_theme_color_override("font_color", Color(DOURADO, 0.8))
-	linha.add_child(rotulo)
+## AS ANIMAÇÕES DO MORADOR (#190), em ícones sob a prévia: um boneco na pose de cada
+## clipe (`icone_animacao.gd`), primeiro os do Mixamo, em ouro, e depois os do Tripo,
+## em creme, divididos em duas linhas. O nome e o gatilho ficam na dica. O clique toca o
+## clipe na prévia; o segundo, no mesmo ícone, volta à pose parada. As duas linhas têm
+## sempre a mesma altura, com ou sem clipes, para a ficha não mudar de forma.
+func _animacoes(pai: Control, id: String) -> void:
+	var bloco := VBoxContainer.new()
+	bloco.name = "Animacoes"
+	bloco.add_theme_constant_override("separation", SEPARACAO_ICONES)
+	pai.add_child(bloco)
 	var campo := func(dados: Dictionary, chave: String) -> String: return str(IdiomaMenu.campo(dados, chave))
-	var do_mixamo: Array = MixamoUso.clipes(id)
-	if do_mixamo.size() > BOTOES_DO_MIXAMO_NA_LINHA:
-		var dourado := MenuButton.new()
-		dourado.name = "ClipesMixamo"
-		dourado.text = "%s (%d)" % [MixamoUso.ORIGEM, do_mixamo.size()]
-		dourado.tooltip_text = tr("Clipes do Mixamo deste personagem: escolha um para ver na prévia")
-		dourado.flat = false
-		dourado.add_theme_font_size_override("font_size", 12)
-		dourado.add_theme_color_override("font_color", DOURADO)
-		dourado.add_theme_color_override("font_hover_color", DOURADO)
-		dourado.set_meta("origem", MixamoUso.ORIGEM)
-		var popup := dourado.get_popup()
-		for i in do_mixamo.size():
-			var clipe: Dictionary = do_mixamo[i]
-			popup.add_item(str(campo.call(clipe, "rotulo")))
-			popup.set_item_tooltip(i, "%s
-%s: %s" % [campo.call(clipe, "gatilho"), MixamoUso.ORIGEM, str(clipe.get("descricao_mixamo", ""))])
-		popup.index_pressed.connect(func(indice: int) -> void: _tocar_na_previa(str(do_mixamo[indice].get("id", "")), null))
-		linha.add_child(dourado)
-		do_mixamo = []
-	for clipe: Dictionary in do_mixamo:
+	# [nome no tocador, nome do botão, dica, do Mixamo]
+	var clipes: Array = []
+	for clipe: Dictionary in MixamoUso.clipes(id):
 		var nome := str(clipe.get("id", ""))
+		clipes.append([nome, "Clipe_" + nome, "%s · %s\n%s\n%s: %s" % [campo.call(clipe, "rotulo"), MixamoUso.ORIGEM,
+			campo.call(clipe, "gatilho"), MixamoUso.ORIGEM, str(clipe.get("descricao_mixamo", ""))], true])
+	for nome in MixamoUso.personagem(id).get("clipes_tripo", []):
+		clipes.append([str(nome), "ClipeTripo_" + str(nome), "%s · Tripo" % MixamoUso.rotulo_tripo(str(nome), campo), false])
+	var por_linha := maxi(1, ceili(float(clipes.size()) / LINHAS_DE_ICONES))
+	var lado := minf(ICONE_ANIMACAO, floorf((PREVIA.x - SEPARACAO_ICONES * (por_linha - 1)) / por_linha))
+	var linhas: Array[HBoxContainer] = []
+	for i in LINHAS_DE_ICONES:
+		var linha := HBoxContainer.new()
+		linha.name = "LinhaAnimacoes%d" % (i + 1)
+		linha.alignment = BoxContainer.ALIGNMENT_CENTER
+		linha.add_theme_constant_override("separation", SEPARACAO_ICONES)
+		linha.custom_minimum_size.y = ICONE_ANIMACAO
+		bloco.add_child(linha)
+		linhas.append(linha)
+	for i in clipes.size():
+		var dados: Array = clipes[i]
+		var nome: String = dados[0]
 		var botao := Button.new()
-		botao.name = "Clipe_" + nome
-		botao.text = "%s · %s" % [campo.call(clipe, "rotulo"), MixamoUso.ORIGEM]
-		botao.tooltip_text = "%s\n%s: %s" % [campo.call(clipe, "gatilho"), MixamoUso.ORIGEM, str(clipe.get("descricao_mixamo", ""))]
+		botao.name = dados[1]
+		botao.tooltip_text = dados[2]
 		botao.toggle_mode = true
 		botao.focus_mode = Control.FOCUS_NONE
-		botao.add_theme_font_size_override("font_size", 12)
-		botao.add_theme_color_override("font_color", DOURADO)
-		botao.add_theme_color_override("font_pressed_color", DOURADO)
-		botao.add_theme_color_override("font_hover_color", DOURADO)
-		botao.set_meta("origem", MixamoUso.ORIGEM)
+		botao.theme_type_variation = &"BotaoIcone"
+		botao.custom_minimum_size = Vector2(lado, lado)
+		botao.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		botao.set_meta("origem", MixamoUso.ORIGEM if dados[3] else "Tripo")
+		var icone: Control = IconeAnimacao.new().configurar(nome, dados[3])
+		icone.size = Vector2(24, 24)
+		icone.scale = Vector2.ONE * (lado * 0.8 / 24.0)
+		icone.position = Vector2.ONE * (lado * 0.1)
+		icone.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		botao.add_child(icone)
+		botao.mouse_entered.connect(func() -> void: Audio.efeito("ui_hover"))
 		botao.pressed.connect(func() -> void: _tocar_na_previa(nome, botao))
-		linha.add_child(botao)
-	var tripo: Array = MixamoUso.personagem(id).get("clipes_tripo", [])
-	var menu := MenuButton.new()
-	menu.name = "ClipesTripo"
-	menu.text = "Tripo (%d)" % tripo.size()
-	menu.tooltip_text = tr("Clipes que vieram com o modelo do Tripo: escolha um para ver na prévia")
-	menu.flat = false
-	menu.disabled = tripo.is_empty()
-	menu.add_theme_font_size_override("font_size", 12)
-	menu.set_meta("origem", "Tripo")
-	for nome in tripo:
-		menu.get_popup().add_item(MixamoUso.rotulo_tripo(str(nome), campo))
-	menu.get_popup().index_pressed.connect(func(indice: int) -> void: _tocar_na_previa(str(tripo[indice]), null))
-	linha.add_child(menu)
+		linhas[mini(i / por_linha, LINHAS_DE_ICONES - 1)].add_child(botao)
 
 
 ## O CLIPE NA PRÉVIA: toca `nome` (o id do Mixamo ou o nome-base do Tripo) no modelo
@@ -784,7 +812,7 @@ func _animacoes(id: String) -> void:
 ## mesmo botão de novo (ou um nome que o modelo não tem) volta à pose parada.
 func _tocar_na_previa(nome: String, botao: Button) -> void:
 	Audio.efeito("ui_confirmar")
-	for outro in _lista.find_children("Clipe_*", "Button", true, false):
+	for outro in _lista.find_children("Clipe*", "Button", true, false):
 		if outro != botao:
 			(outro as Button).set_pressed_no_signal(false)
 	var tocador := _tocador_da_previa()
@@ -846,6 +874,7 @@ func _dados_peca(spec: Dictionary) -> void:
 		marcacoes.append(tr("caixa"))
 	if spec.has("girar"):
 		marcacoes.append(tr("girar"))
+	_cabecalho_bloco(tr("Dados"), "BlocoDados")
 	_linhas([
 		[tr("Arquivo"), str(spec.get("tripo", "")).get_file()],
 		[tr("Medida"), medida],
@@ -1083,58 +1112,149 @@ func _desenhar_fundo_previa(fundo: Control) -> void:
 		fundo.draw_colored_polygon(PackedVector2Array([c + Vector2(0, -4), c + Vector2(4, 0), c + Vector2(0, 4), c + Vector2(-4, 0)]), DOURADO)
 
 
-## Uma fala: ▶ (toca assets/audio/vozes/<audio>.mp3) e o texto ao lado, em até duas
-## linhas (o inteiro fica na dica). Sem fala, a vaga fica reservada e vazia.
-func _linha_fala(fala: Dictionary) -> void:
+## Uma fala da ficha: ▶ (toca assets/audio/vozes/<audio>.mp3), o botão de expandir e o
+## texto numa linha só, cortado com reticências. Expandir abre o leitor com a fala
+## inteira e a navegação por todas as falas do morador. Sem fala, a vaga fica reservada
+## e vazia.
+func _linha_fala(indice: int) -> void:
 	var linha := HBoxContainer.new()
 	linha.name = "Fala"
-	linha.custom_minimum_size.y = 40
-	linha.add_theme_constant_override("separation", 10)
+	linha.custom_minimum_size.y = 34
+	linha.add_theme_constant_override("separation", 8)
 	_lista.add_child(linha, true)
-	if fala.is_empty():
+	if indice >= _falas_da_ficha.size():
 		return
-	var icone: HudIcon = HudIcon.new().configurar("tocar")
-	var tocar := Button.new()
-	tocar.set_meta("icone", icone)
-	tocar.theme_type_variation = &"BotaoIcone"
-	tocar.custom_minimum_size = Vector2(32, 32)
-	tocar.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
-	tocar.focus_mode = Control.FOCUS_NONE
-	# O ícone desenha na grade de 24 e aparece com 16, no centro dos 32 do botão.
+	var fala: Dictionary = _falas_da_ficha[indice]
+	linha.add_child(_botao_tocar(fala))
+	var expandir := _botao_pequeno(HudIcon.new().configurar("expandir"))
+	expandir.name = "Expandir"
+	expandir.tooltip_text = tr("Ver a fala inteira")
+	expandir.pressed.connect(func() -> void: _abrir_leitor(indice))
+	linha.add_child(expandir)
+	var texto := Label.new()
+	texto.text = "“%s”" % str(fala.get("texto", ""))
+	texto.mouse_filter = Control.MOUSE_FILTER_PASS
+	texto.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	texto.clip_text = true
+	texto.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	texto.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	Identidade.papel_leitura(texto, 13)
+	linha.add_child(texto)
+
+
+## Botão de ícone de 32 (o ícone de 24 aparece com 16, no centro).
+func _botao_pequeno(icone: HudIcon) -> Button:
+	var botao := Button.new()
+	botao.set_meta("icone", icone)
+	botao.theme_type_variation = &"BotaoIcone"
+	botao.custom_minimum_size = Vector2(32, 32)
+	botao.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	botao.focus_mode = Control.FOCUS_NONE
 	icone.size = Vector2(24, 24)
 	icone.scale = Vector2.ONE * (16.0 / 24.0)
 	icone.position = Vector2(8, 8)
 	icone.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	tocar.add_child(icone)
+	botao.add_child(icone)
+	botao.mouse_entered.connect(func():
+		if not botao.disabled:
+			Audio.efeito("ui_hover"))
+	return botao
+
+
+## O ▶ de uma fala: vira ❚❚ enquanto toca e para no segundo clique.
+func _botao_tocar(fala: Dictionary) -> Button:
+	var tocar := _botao_pequeno(HudIcon.new().configurar("tocar"))
+	tocar.name = "Tocar"
+	var icone: HudIcon = tocar.get_meta("icone")
 	var audio := str(fala.get("audio", ""))
 	var caminho := PASTA_VOZES + audio + ".mp3"
 	if audio.is_empty() or not ResourceLoader.exists(caminho):
 		tocar.disabled = true
 		icone.modulate.a = 0.35
 		tocar.tooltip_text = tr("Áudio ainda não gravado")
-	else:
-		tocar.tooltip_text = tr("Ouvir a fala")
-		tocar.pressed.connect(func() -> void:
-			Audio.efeito("ui_confirmar")
-			if _fala_tocando == tocar:
-				_parar_fala()
-				return
-			_tocar(caminho)
-			_fala_tocando = tocar
-			icone.configurar("pausar")
-			icone.queue_redraw()
-			tocar.tooltip_text = tr("Parar a fala"))
-	linha.add_child(tocar)
+		return tocar
+	tocar.tooltip_text = tr("Ouvir a fala")
+	tocar.pressed.connect(func() -> void:
+		Audio.efeito("ui_confirmar")
+		if _fala_tocando == tocar:
+			_parar_fala()
+			return
+		_tocar(caminho)
+		_fala_tocando = tocar
+		icone.configurar("pausar")
+		icone.queue_redraw()
+		tocar.tooltip_text = tr("Parar a fala"))
+	return tocar
+
+
+## O LEITOR DAS NARRAÇÕES: por cima do painel, a fala `indice` inteira, com ▶ e as setas
+## (ou ← →) para ir de uma fala a outra, por todas as do morador, e não só as três da
+## ficha. Esc, o × ou um clique fora fecham.
+func _abrir_leitor(indice: int, com_som: bool = true) -> void:
+	if _falas_da_ficha.is_empty():
+		return
+	if com_som:
+		Audio.efeito("ui_confirmar")
+	_parar_fala()
+	_fechar_leitor()
+	_indice_no_leitor = clampi(indice, 0, _falas_da_ficha.size() - 1)
+	var fala: Dictionary = _falas_da_ficha[_indice_no_leitor]
+	_leitor = Control.new()
+	_leitor.name = "Leitor"
+	_leitor.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_leitor.mouse_filter = Control.MOUSE_FILTER_STOP
+	add_child(_leitor)
+	var sombra := ColorRect.new()
+	sombra.color = Color(0, 0, 0, 0.55)
+	sombra.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	sombra.gui_input.connect(func(evento: InputEvent) -> void:
+		if evento is InputEventMouseButton and evento.pressed and evento.button_index == MOUSE_BUTTON_LEFT:
+			Audio.efeito("ui_voltar")
+			_fechar_leitor())
+	_leitor.add_child(sombra)
+	var caixa := PanelContainer.new()
+	caixa.add_theme_stylebox_override("panel", TemaMenu.estilo_painel())
+	caixa.custom_minimum_size = Vector2(640, 0)
+	caixa.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+	caixa.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	caixa.grow_vertical = Control.GROW_DIRECTION_BOTH
+	_leitor.add_child(caixa)
+	Tela.vincular_componente(caixa, "pergunta", Vector2(0.5, 0.5))
+	var coluna := VBoxContainer.new()
+	coluna.add_theme_constant_override("separation", 14)
+	caixa.add_child(coluna)
+	var fechar := PainelAjustes.cabecalho(coluna, _nome_da_ficha, func() -> void:
+		Audio.efeito("ui_voltar")
+		_fechar_leitor(), tr("Narrações"))
 	var texto := Label.new()
+	texto.name = "TextoDaFala"
 	texto.text = "“%s”" % str(fala.get("texto", ""))
-	texto.tooltip_text = texto.text
-	texto.mouse_filter = Control.MOUSE_FILTER_PASS
 	texto.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	texto.max_lines_visible = 2
-	texto.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	texto.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	Identidade.papel_leitura(texto, 13)
-	linha.add_child(texto)
+	texto.custom_minimum_size = Vector2(584, 110)
+	Identidade.papel_leitura(texto, 16)
+	coluna.add_child(texto)
+	var rodape := HBoxContainer.new()
+	rodape.name = "NavegacaoDoLeitor"
+	rodape.alignment = BoxContainer.ALIGNMENT_CENTER
+	rodape.add_theme_constant_override("separation", 14)
+	coluna.add_child(rodape)
+	var mudar := func(passo: int) -> void: _abrir_leitor(_indice_no_leitor + passo, false)
+	rodape.add_child(_seta(-1, tr("Anterior"), _indice_no_leitor == 0, mudar))
+	rodape.add_child(_botao_tocar(fala))
+	var contador := Label.new()
+	contador.text = "%d / %d" % [_indice_no_leitor + 1, _falas_da_ficha.size()]
+	contador.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	contador.custom_minimum_size.x = 64
+	rodape.add_child(contador)
+	rodape.add_child(_seta(1, tr("Próximo"), _indice_no_leitor >= _falas_da_ficha.size() - 1, mudar))
+	fechar.grab_focus()
+
+
+func _fechar_leitor() -> void:
+	if is_instance_valid(_leitor):
+		_parar_fala()
+		_leitor.queue_free()
+	_leitor = null
 
 
 ## Para a fala e devolve o ▶ ao botão que tocava.

@@ -1,6 +1,6 @@
 extends Control
 ## Ícones vetoriais dos botões de canto do HUD, no mesmo traço do som e do relógio:
-## "casa" (HOME), "ajustes" (engrenagem), "restaurar" (seta circular), "mapa", "ajuda" (?), "tela_cheia" (cantos para fora em janela, para dentro em tela cheia), "fechar" (×), "minimizar" (—) e "maximizar" (□) do painel do mapa, "salvar" (disquete), "tocar" (play), "pausar", "concluir" (✓), "externo" (link que sai do jogo), "camera" (anel dourado quando travada), "velocidade" (setas conforme
+## "casa" (HOME), "ajustes" (engrenagem), "restaurar" (seta circular), "mapa", "ajuda" (?), "tela_cheia" (cantos para fora em janela, para dentro em tela cheia), "fechar" (×), "minimizar" (—) e "maximizar" (□) do painel do mapa, "expandir" (setas para os cantos: a fala inteira em MODELOS), "salvar" (disquete), "tocar" (play), "pausar", "concluir" (✓), "externo" (link que sai do jogo), "camera" (anel dourado quando travada), "velocidade" (setas conforme
 ## a Passagem do tempo, 0–3), "fala" (ondas de som em ouro que acendem uma a uma: o selo do viajante falando,
 ## `selo_do_viajante.gd`, com o `nivel` de 0 a 3 dizendo quantas ondas estão acesas) e "som", "cenario", "interface", "teclado" e "esforco" (as abas de Ajustes, com o "ajustes" na Geral), "estilo" (cubo para Tripo, chaves para Procedural), "editar" (lápis, um só:
 ## o do nome da vaga e o do painel MODELOS) e "apagar" (lixeira, vermelha pedindo a confirmação) dos
@@ -150,6 +150,13 @@ func _draw() -> void:
 		"minimizar":
 			# O traço de janela que se recolhe: o painel do mapa vira o botão do canto.
 			draw_line(Vector2(6, 17), Vector2(18, 17), tinta, 2.2, true)
+		"expandir":
+			# Duas setas para os cantos: abre a fala inteira na ficha de MODELOS.
+			var cor_expandir := ouro if ativo else tinta
+			draw_line(Vector2(13.5, 10.5), Vector2(19, 5), cor_expandir, 1.7, true)
+			draw_polyline(PackedVector2Array([Vector2(14, 5), Vector2(19, 5), Vector2(19, 10)]), cor_expandir, 1.7, true)
+			draw_line(Vector2(10.5, 13.5), Vector2(5, 19), cor_expandir, 1.7, true)
+			draw_polyline(PackedVector2Array([Vector2(5, 14), Vector2(5, 19), Vector2(10, 19)]), cor_expandir, 1.7, true)
 		"maximizar":
 			# A janela inteira, com a barra de cima mais grossa: traz o painel do mapa de volta.
 			var cor_janela := ouro if ativo else tinta

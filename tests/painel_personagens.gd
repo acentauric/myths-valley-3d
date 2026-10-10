@@ -64,6 +64,8 @@ func _run() -> void:
 		_assert(not (botao.text in ["FECHAR", "GRAVAR NO PROJETO", "Voltar ao catálogo"]), "sem botões antigos no corpo: %s" % botao.text)
 	for rotulo in painel.find_children("*", "Label", true, false):
 		_assert(not rotulo.text.begins_with("Os ajustes valem") and not rotulo.text.begins_with("Selecione"), "sem avisos que a interface já comunica")
+	# A lista e a ficha têm o mesmo tamanho: a caixa fica no TAMANHO nas duas, sem a ficha esticar o modal.
+	_assert(painel._caixa.size.is_equal_approx(painel.TAMANHO), "os cartões ficam no tamanho do modal (%s)" % painel._caixa.size)
 	await _capturar("cartoes")
 	# A ficha do Pedro: prévia real, dados à direita e as três falas, sem navegar entre falas.
 	painel._abrir("pedro")
@@ -82,12 +84,22 @@ func _run() -> void:
 	_assert(not painel._campo_filtro.visible and painel._botao_editar.visible, "na ficha o filtro some e EDITAR aparece")
 	var falas: Array = painel._lista.find_children("Fala*", "HBoxContainer", true, false)
 	_assert(falas.size() == 3, "as três falas na ficha")
-	# #190: a linha Animações traz os clipes do Mixamo com o selo ("Capoeira · Mixamo", no idioma do menu) e os do
-	# Tripo num menu, e o clique toca o clipe na prévia.
+	_assert(painel._caixa.size.is_equal_approx(painel.TAMANHO), "a ficha tem o mesmo tamanho dos cartões (%s)" % painel._caixa.size)
+	# A ficha em dois blocos com cabeçalho: DADOS (as linhas) e NARRAÇÕES (as falas, logo abaixo).
+	var bloco_dados := painel._lista.find_child("BlocoDados", true, false) as Control
+	var bloco_narracoes := painel._lista.find_child("BlocoNarracoes", true, false) as Control
+	_assert(bloco_dados != null and bloco_narracoes != null, "a ficha tem os cabeçalhos DADOS e NARRAÇÕES")
+	_assert(bloco_dados.global_position.y < (painel._lista.find_child("Linhas", true, false) as Control).global_position.y and bloco_narracoes.global_position.y < falas[0].global_position.y, "cada cabeçalho vem antes do seu bloco")
+	# #190: as animações são ícones sob a prévia, em duas linhas na largura dela; os do Mixamo e os do Tripo, cada
+	# um com o nome na dica, e o clique toca o clipe na prévia.
+	var animacoes := painel._lista.find_child("Animacoes", true, false) as Control
+	var fundo := painel._lista.find_child("FundoPrevia", true, false) as Control
+	_assert(animacoes != null and animacoes.get_parent() == fundo.get_parent() and animacoes.global_position.y > fundo.global_position.y, "as animações ficam sob a prévia")
+	_assert(animacoes.get_child_count() == 2, "as animações em duas linhas")
 	var capoeira := painel._lista.find_child("Clipe_capoeira", true, false) as Button
-	_assert(capoeira != null and capoeira.text.contains("apoeira") and capoeira.text.ends_with(" · Mixamo") and str(capoeira.get_meta("origem", "")) == "Mixamo", "a ficha do Pedro mostra 'Capoeira · Mixamo'")
-	var menu_tripo := painel._lista.find_child("ClipesTripo", true, false) as MenuButton
-	_assert(menu_tripo != null and menu_tripo.get_popup().item_count >= 7, "os clipes do Tripo ficam no menu da linha Animações")
+	_assert(capoeira != null and capoeira.text.is_empty() and capoeira.tooltip_text.contains("apoeira") and capoeira.tooltip_text.contains("Mixamo") and str(capoeira.get_meta("origem", "")) == "Mixamo", "a Capoeira do Pedro é um ícone com o nome e o Mixamo na dica")
+	var do_tripo: Array = painel._lista.find_children("ClipeTripo_*", "Button", true, false)
+	_assert(do_tripo.size() >= 7 and str(do_tripo[0].get_meta("origem", "")) == "Tripo" and do_tripo[0].tooltip_text.ends_with(" · Tripo"), "os clipes do Tripo também viram ícones")
 	if capoeira != null and painel._tocador_da_previa() != null:
 		capoeira.button_pressed = true
 		capoeira.pressed.emit()
@@ -97,8 +109,9 @@ func _run() -> void:
 		capoeira.pressed.emit()
 		_assert(painel._clipe_na_previa == "", "o segundo clique volta a prévia à pose parada")
 	for fala: HBoxContainer in falas:
-		var texto := fala.get_child(1) as Label
-		_assert(texto.max_lines_visible == 2 and texto.get_visible_line_count() <= 2, "fala em até duas linhas")
+		var texto := fala.get_child(2) as Label
+		_assert(texto.autowrap_mode == TextServer.AUTOWRAP_OFF and texto.clip_text and texto.text_overrun_behavior == TextServer.OVERRUN_TRIM_ELLIPSIS, "a fala fica numa linha, cortada com reticências")
+		_assert(fala.get_child(1).name == "Expandir", "ao lado do ▶, o botão de expandir")
 	_assert(painel._rodape.find_children("Navegacao", "", true, false).size() == 1 and painel._lista.find_children("Navegacao", "", true, false).is_empty(), "só a navegação entre fichas, no rodapé")
 	_assert(painel._lista.find_child("FundoPrevia", true, false) != null and painel._preview_viewport.transparent_bg, "prévia sobre o fundo de azulejo")
 	var fundo_pedro: Control = painel._lista.find_child("FundoPrevia", true, false)
@@ -139,10 +152,22 @@ func _run() -> void:
 	_assert(is_equal_approx(painel._distancia, painel._distancia_inicial) and painel._alvo.is_equal_approx(painel._alvo_inicial) and is_zero_approx(painel._preview_pivo.rotation.y), "duplo clique centraliza")
 	_assert(painel._rolagem.get_global_rect().encloses(painel._lista.get_global_rect()), "ficha cabe sem rolagem")
 	await _capturar("morador")
-	var direita := InputEventKey.new()
-	direita.keycode = KEY_RIGHT
-	direita.pressed = true
-	painel._input(direita)
+	# Expandir abre o leitor com a fala inteira; as setas (e ← →) passam por todas as falas; Esc fecha só o leitor.
+	(falas[0].get_node("Expandir") as Button).pressed.emit()
+	await _frames(2)
+	var falas_do_pedro: Array = painel._falas_da_ficha
+	_assert(is_instance_valid(painel._leitor), "expandir abre o leitor")
+	var texto_inteiro := painel._leitor.find_child("TextoDaFala", true, false) as Label
+	_assert(texto_inteiro.text == "“%s”" % str(falas_do_pedro[0].get("texto", "")) and texto_inteiro.autowrap_mode != TextServer.AUTOWRAP_OFF, "o leitor mostra a fala inteira, com quebra de linha")
+	_assert(painel._leitor.find_child("Tocar", true, false) != null, "o leitor tem o ▶")
+	await _capturar("leitor")
+	painel._input(direita_tecla())
+	await _frames(1)
+	_assert(painel._indice_no_leitor == 1 and (painel._leitor.find_child("TextoDaFala", true, false) as Label).text.contains(str(falas_do_pedro[1].get("texto", "")).left(20)), "→ passa à fala seguinte no leitor")
+	painel.pedir_fechar()
+	await _frames(1)
+	_assert(not is_instance_valid(painel._leitor) and not fechou[0] and painel._lista.get_meta("ficha") == "pedro", "Esc fecha o leitor e deixa a ficha")
+	painel._input(direita_tecla())
 	await _frames(3)
 	_assert(painel._lista.get_meta("ficha") == "benedito", "a seta → vai para o Benedito")
 	_assert(painel._preview_modelo.name.begins_with("Benedito"), "prévia acompanha o morador")
@@ -153,19 +178,28 @@ func _run() -> void:
 	_assert((painel._lista.find_child("Linhas", true, false) as GridContainer).get_child_count() == linhas_pedro, "as mesmas linhas para todos")
 	var falas_benedito: Array = painel._lista.find_children("Fala*", "HBoxContainer", true, false)
 	_assert(falas_benedito.size() == 3 and is_equal_approx(falas_benedito[0].global_position.y, posicao_falas), "as falas ficam no mesmo lugar")
-	# #190: quem tem mais clipes do Mixamo que botões cabem na linha (o viajante tem seis) os leva num menu dourado
-	# "Mixamo (6)", e a linha segue com a mesma altura; escolher um item toca o clipe na prévia.
+	# #190: o viajante tem 19 clipes (6 do Mixamo e 13 do Tripo): todos viram ícones, nas mesmas duas linhas e na
+	# largura da prévia, e a ficha não muda de tamanho.
+	var altura_das_animacoes: float = (painel._lista.find_child("Animacoes", true, false) as Control).size.y
 	painel._abrir("viajante")
 	await _frames(3)
-	var menu_mixamo := painel._lista.find_child("ClipesMixamo", true, false) as MenuButton
-	_assert(menu_mixamo != null and menu_mixamo.text == "Mixamo (6)" and menu_mixamo.get_popup().item_count == 6 and str(menu_mixamo.get_meta("origem", "")) == "Mixamo", "a ficha do viajante leva os seis clipes do Mixamo num menu")
-	_assert(painel._lista.find_child("Clipe_jump", true, false) == null, "o viajante não tem um botão por clipe")
-	_assert(is_equal_approx((painel._lista.find_child("Animacoes", true, false) as Control).size.y, painel.ALTURA_DA_LINHA_DE_ANIMACOES), "a linha Animações do viajante tem a altura de sempre")
-	if painel._tocador_da_previa() != null:
-		menu_mixamo.get_popup().index_pressed.emit(2)
-		_assert(painel._clipe_na_previa == "mixamo/jump" and painel._tocador_da_previa().current_animation == &"mixamo/jump", "o item do menu toca o pulo na prévia")
-		menu_mixamo.get_popup().index_pressed.emit(2)
-		_assert(painel._clipe_na_previa == "", "o mesmo item de novo volta a prévia à pose parada")
+	var animacoes_viajante := painel._lista.find_child("Animacoes", true, false) as Control
+	var icones: Array = animacoes_viajante.find_children("Clipe*", "Button", true, false)
+	_assert(icones.size() == 19, "os 19 clipes do viajante em ícones (%d)" % icones.size())
+	var largura_previa: float = (painel._lista.find_child("FundoPrevia", true, false) as Control).size.x
+	for linha_de_icones: Control in animacoes_viajante.get_children():
+		_assert(linha_de_icones.size.x <= largura_previa + 0.5, "a linha de ícones cabe na largura da prévia")
+	_assert(is_equal_approx(animacoes_viajante.size.y, altura_das_animacoes), "as animações do viajante têm a altura das do Benedito")
+	_assert(painel._caixa.size.is_equal_approx(painel.TAMANHO), "a ficha do viajante tem o mesmo tamanho dos cartões (%s)" % painel._caixa.size)
+	var pulo := animacoes_viajante.find_child("Clipe_jump", true, false) as Button
+	if pulo != null and painel._tocador_da_previa() != null:
+		pulo.button_pressed = true
+		pulo.pressed.emit()
+		_assert(painel._clipe_na_previa == "mixamo/jump" and painel._tocador_da_previa().current_animation == &"mixamo/jump", "o ícone do pulo toca o pulo na prévia")
+		pulo.button_pressed = false
+		pulo.pressed.emit()
+		_assert(painel._clipe_na_previa == "", "o mesmo ícone de novo volta a prévia à pose parada")
+	await _capturar("viajante")
 	painel._abrir("benedito")
 	await _frames(3)
 	if painel._botao_gravar != null and not AjustesConteudo.tem_pendencias():
@@ -226,7 +260,7 @@ func _run() -> void:
 	painel._abrir("mangueira")
 	await _frames(3)
 	_assert(not painel._lista.has_node("GradeAssets") and painel._preview_modelo != null, "cartão abre só o registro e o modelo")
-	_assert(painel._lista.get_node("Ficha/Detalhes") != null and painel._lista.get_node("Ficha/FundoPrevia/Previa3D") != null, "ficha da peça no formato da do morador")
+	_assert(painel._lista.get_node("Ficha/Detalhes") != null and painel._lista.get_node("Ficha/ColunaPrevia/FundoPrevia/Previa3D") != null and painel._lista.find_child("Animacoes", true, false) == null, "ficha da peça no formato da do morador, sem animações")
 	_assert(not painel._campo_filtro.visible, "registro da peça sem filtro")
 	await _capturar("registro")
 	painel._botao_editar.pressed.emit()
@@ -271,6 +305,13 @@ func _run() -> void:
 		_assert(fechou[0], "sem pendência o × fecha")
 	print("PAINEL_PERSONAGENS_OK")
 	quit()
+
+
+func direita_tecla() -> InputEventKey:
+	var direita := InputEventKey.new()
+	direita.keycode = KEY_RIGHT
+	direita.pressed = true
+	return direita
 
 
 func _capturar(nome: String) -> void:
