@@ -2,6 +2,14 @@
 
 ## Em desenvolvimento — 10/10/2026
 
+- **As fichas de árvore e os epitáfios do cemitério falam inglês e espanhol.** O almanaque, a ficha do E
+  perto da árvore e a lápide leem o nome, as páginas, o grupo e a história no idioma do jogo (`_en`/`_es`
+  nos JSON); o título do painel ("ÁRVORE", "LÁPIDE"), o "E: fechar", o "E: próxima" e as dicas saíram do
+  código para o mesmo dado. As 18 árvores que só tinham português ganharam as duas línguas, e o portão
+  `idiomas` passa a cobrar `arvores_3d.json` e `lapides_3d.json` (cópia do português reprova). O `pedro.json`
+  e o `aldeoes.json` seguem em `FALTAM_TRADUCAO` com a razão atualizada: nenhum código do 3D lê as falas
+  deles (#6). Falta o Ramon revisar o registro das duas línguas.
+
 - **Na cena do vale só ficam o balão de fala e as tarjas, a câmera desliza e o E pula.** Com uma cena
   tocando (a apresentação do Tonho, a vista da praça, a casa do tio), o painel de missão, o relógio e as
   barras, os atalhos, o minimapa, a barra de mão, a seta da missão, as plaquinhas, o "?"/"!" sobre as

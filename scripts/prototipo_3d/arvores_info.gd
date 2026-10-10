@@ -133,7 +133,7 @@ func configurar(world: Node3D, jogador: Node3D, hud, hud_layer: Control) -> void
 			_por_quadra[quadra] = []
 		_por_quadra[quadra].append(_pontos.size())
 		_pontos.append({"especie": especie, "pos": pos})
-	_dica = DicaTecla.criar(hud.map_layer(), Atalhos.letra("interagir"), "Sobre a árvore")
+	_dica = DicaTecla.criar(hud.map_layer(), Atalhos.letra("interagir"), _rotulo("dica_ficha", "Sobre a árvore"))
 	_dica.set_meta("interacao_arvore", true)
 	add_to_group(FocoDoE.GRUPO)
 	add_to_group("arvores_do_vale")
@@ -190,7 +190,7 @@ func _process(_delta: float) -> void:
 		_dica.visible = false
 		return
 	var ficha: Dictionary = _fichas[arvore_info["especie"]]
-	DicaTecla.mostrar_em(_dica, camera, arvore_info["pos"] + Vector3(0, ALTURA_DICA, 0), String(ficha.get("nome", "Árvore")))
+	DicaTecla.mostrar_em(_dica, camera, arvore_info["pos"] + Vector3(0, ALTURA_DICA, 0), String(IdiomaMenu.campo(ficha, "nome", "Árvore")))
 
 
 func _unhandled_key_input(event: InputEvent) -> void:
@@ -202,7 +202,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	if not _jogador.is_physics_processing() or not FocoDoE.e_dele(self):
 		return
 	if _aberta >= 0:
-		var paginas: Array = _fichas[_pontos[_aberta]["especie"]].get("paginas", [])
+		var paginas: Array = IdiomaMenu.campo(_fichas[_pontos[_aberta]["especie"]], "paginas", [])
 		if _pagina < paginas.size() - 1:
 			_mostrar(_aberta, _pagina + 1)
 		else:
@@ -271,18 +271,23 @@ func _corte_vale_a_tecla() -> bool:
 	return _perto < 0 or _distancia_da_cortavel(_cortavel_perto) <= _distancia(_perto)
 
 
+## Um rótulo da ficha (título do painel, "E: fechar", a dica), no idioma do jogo, de `acoes.arvore`.
+func _rotulo(chave: String, padrao: String) -> String:
+	return str(IdiomaMenu.campo(_acoes.get("arvore", {}), chave, padrao))
+
+
 func ficha_aberta() -> int:
 	return _aberta
 
 
 func _mostrar(indice: int, pagina: int) -> void:
 	var ficha: Dictionary = _fichas[_pontos[indice]["especie"]]
-	var paginas: Array = ficha.get("paginas", [])
+	var paginas: Array = IdiomaMenu.campo(ficha, "paginas", [])
 	_aberta = indice
 	_pagina = clampi(pagina, 0, maxi(paginas.size() - 1, 0))
-	var rodape := "\n\nE: próxima (%d/%d)" % [_pagina + 1, paginas.size()] if _pagina < paginas.size() - 1 else "\n\nE: fechar"
+	var rodape := "\n\n" + (_rotulo("proxima", "E: próxima (%d/%d)") % [_pagina + 1, paginas.size()] if _pagina < paginas.size() - 1 else _rotulo("fechar", "E: fechar"))
 	Audio.efeito("ui_confirmar")
-	_hud.show_house_info("%s · %s\n%s%s" % [ficha.get("nome", ""), ficha.get("cientifico", ""), paginas[_pagina] if not paginas.is_empty() else "", rodape], "ÁRVORE")
+	_hud.show_house_info("%s · %s\n%s%s" % [IdiomaMenu.campo(ficha, "nome", ""), ficha.get("cientifico", ""), paginas[_pagina] if not paginas.is_empty() else "", rodape], _rotulo("titulo_ficha", "ÁRVORE"))
 	_hud.set("painel_dono", self)
 
 

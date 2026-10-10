@@ -155,6 +155,12 @@ const TRADUZIDOS := {
 	# As animações da ficha em Modelos (#190): o rótulo de cada clipe, do Tripo e do Mixamo, e o gatilho dele
 	# no jogo (a dica do botão), nos quatro idiomas.
 	"res://data/mixamo_uso.json": ["rotulo", "gatilho"],
+	# As fichas de árvore (#6): o nome, as páginas, os grupos do almanaque, o que o painel diz (título, "E: fechar",
+	# a dica) e o aviso de quem não se corta. O nome científico é latim e não se traduz.
+	"res://data/arvores_3d.json": ["nome", "resumo", "paginas", "texto", "titulo_ficha", "proxima", "fechar", "dica_ficha"],
+	# Os epitáfios do cemitério (#6): a história de cada cova, o painel, a dica e as broncas do coveiro. Nome e datas
+	# são de gente e não se traduzem, a não ser nas covas que se chamam pelo ofício ou pela idade.
+	"res://data/lapides_3d.json": ["historia", "titulo", "fechar", "dica", "texto"],
 }
 
 ## Os arquivos que também nascem em chinês (`campo_zh`): o jogo tem quatro idiomas no menu, e o chinês cai no
@@ -178,14 +184,10 @@ const FALTAM_TRADUCAO := {
 	"res://scripts/prototipo_3d/popups_do_mundo.gd": "#51/#6: textos compostos desta interface ainda precisam sair do GDScript para JSON pt/en/es; a escolha de idioma persiste e o texto sem traducao usa o original",
 	"res://scripts/prototipo_3d/dica_tecla.gd": "#51/#6: textos compostos desta interface ainda precisam sair do GDScript para JSON pt/en/es; a escolha de idioma persiste e o texto sem traducao usa o original",
 	"res://scripts/ui/mochila.gd": "#51/#6: rotulos e descricoes compostos da mochila ainda aguardam catalogo JSON pt/en/es; texto original permanece como fallback",
-	"res://data/arvores_3d.json":
-		"as fichas de árvore do painel; nome popular e nome científico, e o popular muda de região antes de mudar de língua",
-	"res://data/lapides_3d.json":
-		"os epitáfios do cemitério; são de 1887 e a forma importa mais que a letra",
 	"res://data/dialogos/aldeoes.json":
-		"os sete moradores vindos do 2D: apresentação, reação ao presente e fala por grau. É o que a Afinidade lê para saber de quem é cada gosto. TRADUÇÃO COM O RAMON — registro regional, 26 KB",
+		"os 22 moradores vindos do 2D: apresentação, reação ao presente e fala por grau. NENHUM código do 3D lê essas falas (só `nome`, `fe`, `gosta` e `desgosta`, que não se traduzem; a conversa de hoje mora em npcs_3d.json e afinidade_3d.json, já nos quatro idiomas), então é arquivo do 2D esperando decisão: traduzir 52 KB de prosa regional ou aposentar as falas. TRADUÇÃO COM O RAMON",
 	"res://data/dialogos/pedro.json":
-		"o tutorial inteiro do 2D, 27 passos com objetivo e arremate. TRADUÇÃO COM O RAMON — 32 KB, e é o maior bloco de prosa do projeto",
+		"o tutorial do 2D, 27 passos com objetivo e arremate. O 3D só lê a `travessia` (já nos três idiomas); os passos hoje moram em missoes_guia.json, traduzido, então o resto é arquivo do 2D esperando decisão: traduzir 32 KB de prosa regional ou aposentar. TRADUÇÃO COM O RAMON",
 	"res://data/colecionaveis/cordeis.json":
 		"os dez cordéis do 2D, com título, autor e versos. É poesia de feira em redondilha, e traduzir é recompor a rima. TRADUÇÃO COM O RAMON",
 	"res://data/colecionaveis/sinais.json":
@@ -324,8 +326,11 @@ func _varrer(no, campos: Array, onde: String) -> int:
 	return achados
 
 
-## Exceção estreita: "Tronco caído" tem a mesma grafia em português e espanhol.
+## Exceções estreitas: "Tronco caído" tem a mesma grafia em português e espanhol, e seis nomes de árvore não mudam de língua.
 ## Não libera cópias de outros campos, recursos ou idiomas.
 func _cognato_revisado(onde: String, quem: String, campo: String, sufixo: String, base: String) -> bool:
+	# Árvore que as três línguas chamam pelo nome tupi ou pelo nome da terra: o jatobá, o jequitibá e o resto.
+	if onde == "arvores_3d.json" and campo == "nome":
+		return base in ["Jatobá", "Jequitibá", "Massaranduba", "Angico", "Aroeira"] or (sufixo == "_es" and base == "Gameleira")
 	return onde == "recursos_3d.json" and campo == "nome" and sufixo == "_es" and base == "Tronco caído" and quem in [
 		"lenha_rocado_a", "lenha_rocado_b", "galhada_cemiterio_a", "galhada_cemiterio_b", "galhada_cemiterio_c"]
