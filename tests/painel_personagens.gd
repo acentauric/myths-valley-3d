@@ -18,7 +18,8 @@ func _confere_nomes(painel, grade: GridContainer, rotulo: String) -> void:
 		_assert(linhas.size() <= 2, "%s: o nome de '%s' ocupa %d linhas" % [rotulo, cartao.name, linhas.size()])
 		for linha in linhas:
 			_assert(fonte.get_string_size(linha, HORIZONTAL_ALIGNMENT_LEFT, -1, tamanho).x <= util, "%s: '%s' corta no cartão (%.0f de %.0f px)" % [rotulo, linha, fonte.get_string_size(linha, HORIZONTAL_ALIGNMENT_LEFT, -1, tamanho).x, util])
-		_assert(cartao.size.y <= painel.ALTURA_MAX_CARTAO + 0.5, "%s: o cartão '%s' tem %.0f px de altura; o teto é %.0f" % [rotulo, cartao.name, cartao.size.y, painel.ALTURA_MAX_CARTAO])
+		_assert(is_equal_approx(cartao.size.y, painel.CARTAO_MIN.y), "%s: o cartão '%s' tem %.0f px de altura; todos têm %.0f" % [rotulo, cartao.name, cartao.size.y, painel.CARTAO_MIN.y])
+		_assert(cartao.get_theme_font_size("font_size") == painel.FONTE_CARTAO, "%s: o cartão '%s' não usa a fonte dos cartões" % [rotulo, cartao.name])
 		_assert(cartao.size.y >= linhas.size() * fonte.get_height(tamanho) + caixa.get_margin(SIDE_TOP) + caixa.get_margin(SIDE_BOTTOM) - 1.0, "%s: o cartão '%s' não comporta as linhas do nome" % [rotulo, cartao.name])
 
 
@@ -44,12 +45,9 @@ func _run() -> void:
 	# Com os moradores novos de 05/10 são mais de uma página de cartões: a primeira vem cheia, e o viajante fecha a lista.
 	var capacidade: Vector2i = painel._capacidade()
 	_assert(cartoes.columns == capacidade.x and cartoes.get_child_count() == mini(painel._pessoas.size(), capacidade.x * capacidade.y), "moradores em cartões")
-	# #171 e #213: a grade ocupa o modal, no mínimo 6 colunas por 5 linhas, de cartões baixos, e a faixa vazia
-	# embaixo é menos que uma linha de cartões.
+	# #171 e #213: a grade ocupa o modal, no mínimo 6 colunas por 5 linhas, de cartões baixos. Os moradores não
+	# enchem a página, e os cartões não esticam: têm a altura dos de ASSETS (a faixa vazia é conferida lá).
 	_assert(capacidade.x >= 6 and capacidade.y >= 5, "grade de cartões com ao menos 6 x 5 (%s)" % capacidade)
-	var vazio_embaixo: float = painel._rodape.get_global_rect().position.y - cartoes.get_global_rect().end.y
-	var uma_linha: float = painel.ALTURA_MAX_CARTAO + painel.SEPARACAO_GRADE + painel.SEPARACAO_COLUNA
-	_assert(vazio_embaixo < uma_linha, "sobra menos que uma linha de cartões entre a grade e a navegação (%.0f px)" % vazio_embaixo)
 	_assert(painel._rolagem.get_global_rect().encloses(cartoes.get_global_rect()), "a grade cabe na rolagem")
 	_assert(not painel._rolagem.get_v_scroll_bar().visible, "a grade de moradores não rola")
 	_confere_nomes(painel, cartoes, "moradores")
@@ -248,6 +246,10 @@ func _run() -> void:
 	_assert(str(grade.get_child(0).tooltip_text).begins_with(str(grade.get_child(0).text).replace("\n", " ").strip_edges().trim_suffix("•").strip_edges()), "o tooltip do cartão traz o nome inteiro")
 	_assert(not painel._rolagem.get_v_scroll_bar().visible, "a grade de assets não rola")
 	_confere_nomes(painel, grade, "assets")
+	# A página cheia de ASSETS ocupa a altura: sobra menos que uma linha de cartões acima da navegação.
+	var vazio_embaixo: float = painel._rodape.get_global_rect().position.y - grade.get_global_rect().end.y
+	var uma_linha: float = painel.CARTAO_MIN.y + painel.SEPARACAO_GRADE + painel.SEPARACAO_COLUNA
+	_assert(vazio_embaixo < uma_linha, "sobra menos que uma linha de cartões entre a grade e a navegação (%.0f px)" % vazio_embaixo)
 	_assert(painel._lista.find_children("*", "SpinBox", true, false).is_empty(), "grade não abre editores")
 	_assert(painel._rolagem.get_global_rect().encloses(painel._lista.get_global_rect()), "grade cabe sem rolagem")
 	for chave: String in CatalogoAssets.PECAS:

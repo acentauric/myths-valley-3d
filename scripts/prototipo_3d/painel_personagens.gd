@@ -1,4 +1,4 @@
-extends Control
+﻿extends Control
 ## MODELOS: painel do menu com os moradores do vale e as peças do catálogo, no mesmo
 ## formato nas duas abas: cartões paginados com filtro por nome e, ao escolher um cartão,
 ## a ficha (prévia 3D à esquerda com os ícones das animações embaixo; à direita os blocos
@@ -23,14 +23,14 @@ const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
 const HudIcon = preload("res://scripts/prototipo_3d/hud_icon.gd")
 const MixamoUso = preload("res://scripts/prototipo_3d/mixamo_uso.gd")
 const IconeAnimacao = preload("res://scripts/prototipo_3d/icone_animacao.gd")
-## Cartão da grade: tamanho mínimo e separação. Colunas e linhas por página saem do espaço
-## que o modal deixa à lista (`_capacidade()`), e os cartões esticam para preencher a grade.
-## O cartão é BAIXO (#213): 42 px de mínimo e 72 de teto, para a grade ganhar linhas (6 colunas
-## por 5 ou mais, sem rolagem) em vez de poucos cartões altos. A fonte é 12, e o nome que não
-## cabe numa linha quebra em duas pelo espaço entre as palavras (ver `_nome_no_cartao`).
-const CARTAO_MIN := Vector2(140, 42)
-const ALTURA_MAX_CARTAO := 72.0
-const FONTE_CARTAO := 12
+## Cartão da grade: largura mínima, altura e separação. Colunas e linhas por página saem do
+## espaço que o modal deixa à lista (`_capacidade()`); os cartões esticam só na largura.
+## O cartão é BAIXO (#213) e tem A MESMA ALTURA E A MESMA FONTE nas duas abas (10/10/2026):
+## antes a página que não enchia a grade (os 24 moradores) esticava os cartões, e MORADORES
+## e ASSETS saíam diferentes. A fonte é 11, e o nome que não cabe numa linha quebra em duas
+## pelo espaço entre as palavras (ver `_nome_no_cartao`).
+const CARTAO_MIN := Vector2(140, 44)
+const FONTE_CARTAO := 11
 const SEPARACAO_GRADE := 8
 ## Margens internas do modal (as da moldura) e separação entre os blocos da coluna.
 const MARGEM_CAIXA := Vector2(56, 44)
@@ -569,12 +569,7 @@ func _montar_cartoes() -> void:
 	grade.add_theme_constant_override("h_separation", SEPARACAO_GRADE)
 	grade.add_theme_constant_override("v_separation", SEPARACAO_GRADE)
 	_lista.add_child(grade)
-	# Cartões mais altos que o mínimo ocupam a sobra, até o teto (ALTURA_MAX_CARTAO). A
-	# página que não enche a grade (24 moradores numa grade de 30) divide a altura pelas
-	# linhas que usa, até o teto, para a última página filtrada não virar tijolo.
 	var da_pagina := itens.slice(_paginas[aba] * por_pagina, (_paginas[aba] + 1) * por_pagina)
-	var linhas := clampi(ceili(float(da_pagina.size()) / capacidade.x), 1, capacidade.y)
-	var altura_cartao := minf(floorf((_espaco_cartoes().y - SEPARACAO_GRADE * (linhas - 1)) / linhas), ALTURA_MAX_CARTAO)
 	var largura_cartao := floorf((_espaco_cartoes().x - SEPARACAO_GRADE * (capacidade.x - 1)) / capacidade.x)
 	for item: Array in da_pagina:
 		var chave: String = item[0]
@@ -584,7 +579,7 @@ func _montar_cartoes() -> void:
 		cartao.tooltip_text = str(item[1]) if str(item[1]) == chave else "%s\n%s" % [item[1], chave]
 		cartao.clip_text = true
 		cartao.add_theme_font_size_override("font_size", FONTE_CARTAO)
-		cartao.custom_minimum_size = Vector2(CARTAO_MIN.x, maxf(CARTAO_MIN.y, altura_cartao))
+		cartao.custom_minimum_size = CARTAO_MIN
 		cartao.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		cartao.pressed.connect(func() -> void: _abrir(chave))
 		grade.add_child(cartao)
