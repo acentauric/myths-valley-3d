@@ -75,6 +75,8 @@ function Wait-LTXVideo {
             if (-not $url) { $url = ($estado.result.PSObject.Properties | Select-Object -First 1).Value }
             $pasta = Split-Path -Parent $Destino
             if ($pasta -and -not (Test-Path $pasta)) { New-Item -ItemType Directory -Force $pasta | Out-Null }
+            # Sem a barra de progresso: no PowerShell 5.1 ela deixa o download a ~100 KB/s.
+            $ProgressPreference = 'SilentlyContinue'
             Invoke-WebRequest -Uri $url -OutFile $Destino -TimeoutSec 600 -UseBasicParsing
             return "completed"
         }

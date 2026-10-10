@@ -144,6 +144,11 @@ static func video_em_laco(tela: Control, caminho: String) -> void:
 	_video(tela, caminho)
 
 
+## O player cresce até cobrir `caixa` (corte central 16:9), para quem monta o próprio vídeo.
+static func cobrir_com_video(caixa: Control, player: VideoStreamPlayer) -> void:
+	_cobrir_com_video(caixa, player)
+
+
 static func _cobrir_com_video(caixa: Control, player: VideoStreamPlayer) -> void:
 	var area := caixa.size
 	if area.x <= 0.0 or area.y <= 0.0:
