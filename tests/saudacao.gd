@@ -153,9 +153,10 @@ func _run() -> void:
 		if saudou:
 			_conferir(ditas[0] == fala_longa,
 				"o aviso de %s não levou a fala inteira: '%s'" % [nome, ditas[0]])
+			# A fala vai inteira ao aviso do canto; o balão fica só com o sinal de fala (10/10/2026).
 			var no_balao: String = sem_missao.balao._texto.text
-			_conferir(no_balao == sem_missao.balao_curto(fala_longa) and no_balao.length() < fala_longa.length(),
-				"o balão de %s não ficou curto: '%s'" % [nome, no_balao])
+			_conferir(no_balao == "• • •",
+				"o balão de %s devia mostrar só o sinal de fala, com a fala no aviso: '%s'" % [nome, no_balao])
 			print("  %-9s balão '%s' (fala de %d letras)" % [nome, no_balao, fala_longa.length()])
 
 	# --- 4. O PEDRO DE DEPOIS DO TUTORIAL NÃO SE APRESENTA DE NOVO --------------

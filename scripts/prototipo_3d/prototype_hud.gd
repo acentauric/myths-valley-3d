@@ -313,12 +313,23 @@ func _ready() -> void:
 	_notice_panel.offset_top = MARGEM_DO_CANTO + 96.0 + FOLGA_DA_COLUNA
 	_notice_panel.offset_bottom = _notice_panel.offset_top + 30.0
 	_notice_panel.visible = not _notice.is_empty()
+	# A fala de um morador no aviso: o nome em ouro numa linha própria, e a fala embaixo
+	# (`set_fala`); os outros avisos não têm nome.
+	var coluna_do_aviso := VBoxContainer.new()
+	coluna_do_aviso.add_theme_constant_override("separation", 0)
+	coluna_do_aviso.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_notice_panel.add_child(coluna_do_aviso)
+	_quem_fala = _label("", 14, GOLD)
+	_quem_fala.name = "QuemFala"
+	_quem_fala.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TITULO, 600, 1))
+	_quem_fala.visible = false
+	coluna_do_aviso.add_child(_quem_fala)
 	_notice_label = _label(_notice, 16, Identidade.TEXTO)
 	_notice_label.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TEXTO, 600))
 	_notice_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_notice_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	_notice_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_notice_panel.add_child(_notice_label)
+	coluna_do_aviso.add_child(_notice_label)
 
 	# Relógio do vale: o ícone na coluna 1, centrado na vertical; a hora e o
 	# período na coluna 2. O conjunto (ícone + texto) é centrado na placa, para as
@@ -878,7 +889,21 @@ func _posicionar_aviso() -> void:
 		_notice_panel.offset_bottom += delta
 
 
+## A FALA NO AVISO DO CANTO (10/10/2026): o nome de quem fala em ouro e a fala embaixo. O balão
+## sobre a cabeça fica só com o sinal de fala (`npc._comecar_a_fala`): a fala não aparece duas vezes.
+var _quem_fala: Label
+
+
+func set_fala(nome: String, texto: String, segundos: float = -1.0) -> void:
+	set_notice(texto, segundos)
+	if is_instance_valid(_quem_fala):
+		_quem_fala.text = nome
+		_quem_fala.visible = not nome.is_empty() and not texto.is_empty()
+
+
 func set_notice(value: String, segundos: float = -1.0) -> void:
+	if is_instance_valid(_quem_fala) and value != _notice:
+		_quem_fala.visible = false
 	if value == _notice:
 		return
 	_notice_revision += 1

@@ -1626,7 +1626,7 @@ func _on_periodo_mudou(periodo: String) -> void:
 
 
 func _on_saudacao(morador: MoradorNPC, texto: String) -> void:
-	hud.set_notice("%s: %s" % [String(morador.dados.get("nome", "Morador")), texto])
+	hud.set_fala(String(morador.dados.get("nome", "Morador")), texto)
 
 
 ## O QUE UMA CADEIA ANUNCIA SÓ VAI AO HUD QUANDO NÃO HÁ MISSÃO ABERTA.
@@ -2722,9 +2722,13 @@ func _ler_documento(id: String) -> void:
 	var dados = JSON.parse_string(FileAccess.get_file_as_string(DOCUMENTOS))
 	var papel: Dictionary = dados.get(id, {}) if dados is Dictionary and dados.get(id) is Dictionary else {}
 	var linhas = IdiomaMenu.campo(papel, "linhas", [])
+	# LER É O GESTO, E O AVISO VAI NA HORA (10/10/2026: "está travando após ler a carta"): o aviso
+	# esperava a caixa fechar, e a caixa espera a vez dela (outra caixa, uma narração do vale); se
+	# ela não chegava a abrir ou a fechar, a chegada ficava presa em "Leia o convite". As cadeias
+	# ficam sabendo antes, e a caixa mostra o papel em seguida.
+	_avisar_as_cadeias("leu:" + id)
 	if linhas is Array and not (linhas as Array).is_empty():
 		await Dialogo.falar(str(IdiomaMenu.campo(papel, "nome", Catalogo.nome(id))), linhas)
-	_avisar_as_cadeias("leu:" + id)
 
 
 ## O passo em curso da missão acompanhada (o dicionário do passo, com a `meta`), ou {}: é o que as dicas dos
