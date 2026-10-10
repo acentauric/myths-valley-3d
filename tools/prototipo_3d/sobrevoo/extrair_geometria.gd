@@ -395,6 +395,9 @@ func _regravar_regiao(cenario: Node3D, regiao_no: Node, tripo: bool, blocos_vivo
 	# E os vaos que o voo do menu pede livres na fileira da orla: sem eles a copia
 	# planta o mangue que o vale vivo deixou de plantar, e a contagem nao bate.
 	(copia.get("vaos_do_sobrevoo") as Array).assign(regiao_no.get("vaos_do_sobrevoo"))
+	# E os coqueiros e mangues postos à mão na composição (a orla de 10/10): o vale
+	# vivo planta os do autor no lugar dos sorteados, e a copia tem de plantar os mesmos.
+	copia.set("vegetacao_autoral", (regiao_no.get("vegetacao_autoral") as Dictionary).duplicate(true))
 	var dados: Dictionary = cenario.call("_active_region_data")
 	await copia.call("build_region", String(dados["geometry"]), String(dados["scenario"]))
 	# O paisagismo (pomares, roças, mata ciliar, cercas) entra no vale vivo depois da
