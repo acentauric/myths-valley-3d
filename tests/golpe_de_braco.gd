@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## O GOLPE É DE BRAÇO: SÓ SAI ENCOSTADO E DE FRENTE PARA O ALVO (#208).
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/golpe_de_braco.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste golpe_de_braco
 ##
 ## O viajante dava machadadas no ar: o alcance do golpe era 3,2 m somados à meia-pegada
 ## da peça, e o E valia de muito longe, com o corpo parado olhando para outro lado.

@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere OS PONTOS DE RESTAURAÇÃO das vagas.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/pontos_de_restauracao.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste pontos_de_restauracao
 ##
 ## "Aproveite e implemente uma política de 'ponto de restauração', assim impede
 ## a pessoa de perder o save caso encontre algum bug grave." Seis perguntas:

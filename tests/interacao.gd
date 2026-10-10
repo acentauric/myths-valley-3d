@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere O E NOS MORADORES e A CONQUISTA DA MISSÃO.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/interacao.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste interacao
 ##     ... -- --falsificar-fila        (o portão TEM de reprovar: o vale sem a fila de falas)
 ##
 ## "Quando fui falar com Dona Candinha para pegar a chave, não consegui

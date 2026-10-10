@@ -1,8 +1,8 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## OS PEDIDOS DO ARRAIAL QUE A CHEGADA ABRE: a roça do Cosme e o mutirão da
 ## carroça do Seu Benedito (docs/mundo/CHEGADA_E_MUTIROES.md).
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/pedidos_do_arraial.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste pedidos_do_arraial
 ##
 ## O que o portão da chegada (`cadeia_das_missoes.gd`) não cobre:
 ##
@@ -20,6 +20,9 @@ extends SceneTree
 ##
 ## As esperas são em segundo real, pela razão do cabeçalho do portão da chegada:
 ## a palavra dos moradores é medida em relógio de parede.
+
+## Recebe o vale montado do zero: reprovava no vale deixado pelos casos anteriores (a suíte, #242).
+const VALE_NOVO := true
 
 const PovoadoLiberado = preload("res://tests/fixtures/povoado_liberado.gd")
 const ConversaDoE = preload("res://tests/fixtures/conversa_do_e.gd")

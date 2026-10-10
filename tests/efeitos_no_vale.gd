@@ -1,4 +1,4 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## #130/#135: efeito real em exterior/interior, dia/noite e conclusÃµes seguidas.
 var falhas := 0
 var vale

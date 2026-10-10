@@ -1,4 +1,4 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Escalas secundárias, retângulos e clique real com fonte global ampliada.
 var falhas := 0
 func _initialize() -> void:
@@ -55,7 +55,7 @@ func _run() -> void:
 			root.size = tamanho
 			await process_frame
 			await process_frame
-			canto.reaplicar(self)
+			canto.reaplicar(arvore)
 			var util: Rect2 = root.get_visible_rect()
 			conferir(util.encloses(painel_controles.get_global_rect()), "controles cabem na janela")
 			conferir(util.encloses(painel_apoios.get_global_rect()), "apoios cabem na janela")

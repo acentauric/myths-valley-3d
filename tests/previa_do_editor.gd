@@ -1,4 +1,4 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Executar também com --editor para provar o carregamento sob editor_hint real.
 var falhas := 0
 func _initialize() -> void:

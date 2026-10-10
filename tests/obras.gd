@@ -1,8 +1,8 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere as OBRAS no vale (#15): onde se toca obra, o plano antes do
 ## material, e o ganho da obra no corpo — uma vez só.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/obras.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste obras
 ##
 ## A regra é o autoload `Obras`, e o catálogo é o `obras.json` local
 ## (conferido em `tests/dados.gd`). Este portão pergunta o que é do vale:

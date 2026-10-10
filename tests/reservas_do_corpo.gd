@@ -1,9 +1,9 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## AS TRÊS CONTAS DO CORPO (#82): a reserva do dia, o vigor e o fôlego do nado.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/reservas_do_corpo.gd
-##     ... --script res://tests/reservas_do_corpo.gd -- --somente-hud      (só a interface)
-##     ... --script res://tests/reservas_do_corpo.gd -- --falsificar       (tem de reprovar)
+##     .\tools\prototipo_3d\testar.ps1 -Teste reservas_do_corpo
+##     .\tools\prototipo_3d\testar.ps1 -Teste reservas_do_corpo -Extra --somente-hud      (só a interface)
+##     .\tools\prototipo_3d\testar.ps1 -Teste reservas_do_corpo -Extra --falsificar       (tem de reprovar)
 ##
 ## Entre 04/10 e 06/10 a reserva (`Energia`) espelhou o vigor do corpo, e o
 ## vigor volta sozinho: a comida, a cama e os talentos de reserva perderam a

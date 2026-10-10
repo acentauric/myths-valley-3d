@@ -1,8 +1,8 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## O E CONTROLA A CONVERSA (#220): a fala da missão e a conversa que o jogador abriu não somem sozinhas
 ## com ele perto; o E passa a página, e na última a fecha.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/fala_pelo_e.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste fala_pelo_e
 ##     ... -- --falsificar-espera        (o portão TEM de reprovar: a fala passa pelo tempo, sem esperar o E)
 ##
 ## Playtest: o Pedro falava andando e o balão sumia quando o tempo acabava; em fala longa, com várias
@@ -19,6 +19,9 @@ extends SceneTree
 ##   5. O CUMPRIMENTO DE QUEM PASSA, e a fala que pede `"por_e": false` (a cena, o aviso solto), passam sozinhos.
 ##   6. O TEMPO DO PORTÃO: sem janela (--headless) a fala não espera o E, para os outros portões seguirem; este
 ##      liga a espera à mão (`FilaDeFalas.ligar_a_espera_pelo_e`).
+
+## Recebe o vale montado do zero: reprovava no vale deixado pelos casos anteriores (a suíte, #242).
+const VALE_NOVO := true
 
 const MISSAO := 1
 const FALA_CURTA := "Bom dia, moço."

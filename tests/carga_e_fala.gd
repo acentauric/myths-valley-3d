@@ -1,4 +1,4 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## #137: a fila não inicia voz durante montagem nem durante o fade da carga.
 class CenaEmCarga extends Node:
 	signal carga_concluida

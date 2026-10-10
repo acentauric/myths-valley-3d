@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere que TODO MÓVEL DOS CÔMODOS É SÓLIDO NA MEDIDA DELE.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/moveis.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste moveis
 ##
 ## "Revise a área de colisão de todos os móveis." Na casa herdada só a cama e o
 ## baú tinham corpo, com a medida escrita à mão; a mesa, o fogão, o barril, a

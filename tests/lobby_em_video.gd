@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere O LOBBY EM VÍDEO DO MENU, e o pedido que traz o vale 3D de volta.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/lobby_em_video.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste lobby_em_video
 ##
 ## "Vídeo do lobby em toda build e no editor (F5)": o menu abre com o sobrevoo pintado do LTX
 ## em laço, e o vale 3D de fundo — que levava ~27 s só para montar por trás do voo — nem nasce

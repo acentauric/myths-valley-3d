@@ -1,4 +1,4 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## As filas reais ensinam os quatro golpes e recebem os sinais de combate (#53).
 var falhas := 0
 func _initialize() -> void:

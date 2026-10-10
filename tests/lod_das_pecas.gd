@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## O ALCANCE DAS PEÇAS DO CENÁRIO: o que é caro e está longe deixa de ser desenhado.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/lod_das_pecas.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste lod_das_pecas
 ##
 ## "Adotamos a estratégia de deixar procedurais as árvores longe para as montanhas
 ## cobrir e deu certo, mas poderíamos fazer isso em tudo, nas casas também, que estão
@@ -318,10 +318,10 @@ func _mapa_alto(todas: Array[Node3D]) -> void:
 	print("")
 	print("4. o mapa alto")
 	var antes := _estado(pecas)
-	CatalogoAssets.modo_mapa(self, true)
+	CatalogoAssets.modo_mapa(arvore, true)
 	_conferir(_todas_sem_corte(pecas), "no mapa alto nenhuma peça tem corte (chamada direta)")
 	_conferir(_substitutos_escondidos(pecas, true), "no mapa alto os substitutos se escondem (chamada direta)")
-	CatalogoAssets.modo_mapa(self, false)
+	CatalogoAssets.modo_mapa(arvore, false)
 	_conferir(_estado(pecas) == antes, "a volta ao passeio repõe o corte e os substitutos (chamada direta)")
 	# Pela câmera ortográfica, que é o que o mapa, o menu e a foto do minimapa fazem.
 	var camera := Camera3D.new()

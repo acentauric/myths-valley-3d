@@ -1,4 +1,4 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Contrato local do roteiro: apresentações, caderneta e cabra (#65).
 var falhas := 0
 func _initialize() -> void:

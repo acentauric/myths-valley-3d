@@ -1,8 +1,8 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere O SEGUNDO TUTORIAL — o quintal e o pomar (docs/projeto/MISSOES_DO_2D.md, 2;
 ## data/missoes_quintal.json; scripts/prototipo_3d/curral_vale.gd; #160).
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/quintal.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste quintal
 ##
 ## Oito perguntas:
 ##

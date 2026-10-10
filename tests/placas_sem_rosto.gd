@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## A PLACA DE NOME NÃO CAI NO ROSTO DE NINGUÉM E ESMAECE ATRÁS DO QUE ESTÁ MAIS PERTO (#184).
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/placas_sem_rosto.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste placas_sem_rosto
 ##     $env:MV_FALSIFICAR = "rosto"    (o portão TEM de reprovar: a placa sem a silhueta de ninguém)
 ##
 ## "'Dona Zefa' cobre o rosto e o chapéu dela, a poucos metros do jogador. O mesmo pode
@@ -29,6 +29,9 @@ extends SceneTree
 ##
 ## A cena do vale é a de `popups_na_tela.gd`: o jogador na praça, o Pedro fora do caminho, os
 ## moradores parados onde o portão os põe (`_quadro`).
+
+## Recebe o vale montado do zero: reprovava no vale deixado pelos casos anteriores (a suíte, #242).
+const VALE_NOVO := true
 
 const PopupsDoMundo = preload("res://scripts/prototipo_3d/popups_do_mundo.gd")
 const RelogioDeJogo = preload("res://tests/fixtures/relogio_de_jogo.gd")

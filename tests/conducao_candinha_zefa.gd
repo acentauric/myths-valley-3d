@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## A CONDUÇÃO DO PEDRO, DA CANDINHA À DONA ZEFA E DEPOIS (#237).
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/conducao_candinha_zefa.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste conducao_candinha_zefa
 ##
 ## No passo 5/16 ("Siga o Pedro até a Dona Zefa e busque a chave") o Pedro entrava no corredor entre
 ## as cercas das roças, não passava, e o "Pedro voltou para te buscar" o levava de volta à cidade.
@@ -18,6 +18,9 @@ extends SceneTree
 ##      jogador colado atrás do Pedro: ele chega ao destino dentro do tempo-limite (a distância pela rota
 ##      a passo de ANDAR, e mais a folga), sem nenhum "voltou para te buscar" (o jogador nunca ficou para
 ##      trás, e então nenhuma volta é culpa da rota dele).
+
+## Recebe o vale montado do zero: reprovava no vale deixado pelos casos anteriores (a suíte, #242).
+const VALE_NOVO := true
 
 const DESVIO_MAXIMO := 1.8
 const SOBRA_DA_ROTA := 25.0

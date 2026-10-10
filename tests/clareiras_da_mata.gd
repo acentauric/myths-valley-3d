@@ -1,8 +1,8 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere AS CLAREIRAS-DESTAQUE DA MATA (data/mapas/clareiras_da_mata.json,
 ## GeoRegionRenderer.clareiras_da_mata, WorldBuilder._build_clareiras_da_mata).
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/clareiras_da_mata.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste clareiras_da_mata
 ##
 ## A mata perdeu metade das árvores para aliviar o quadro, e no lugar ficaram
 ## clareiras isoladas. O que se cobra:

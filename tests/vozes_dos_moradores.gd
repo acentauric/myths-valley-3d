@@ -1,8 +1,8 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere AS VOZES E OS QUATRO IDIOMAS DOS MORADORES (data/npcs_3d.json): toda fala nos quatro idiomas
 ## do menu e toda fala de quem tem voz com a voz gerada, importada e tocando pela fila de falas.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/vozes_dos_moradores.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste vozes_dos_moradores
 ##     ... -- --falsificar-vozes        (o portão TEM de reprovar: ver `_falsificar_o_arquivo` e `_falsificar_no_vale`)
 ##
 ## "Vamos gerar nas 4 linguagens os textos, mas o áudio por enquanto apenas em português" (playtest da Build 9B,

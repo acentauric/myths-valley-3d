@@ -1,8 +1,8 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere O CAPÍTULO 7, O REVOAR DAS ASAS NEGRAS (docs/projeto/MISSOES_DO_2D.md, 4;
 ## docs/enredo/capitulo-07.md; data/missoes_revoar.json; scripts/prototipo_3d/revoar_vale.gd; #31).
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/revoar.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste revoar
 ##
 ## Dez perguntas:
 ##

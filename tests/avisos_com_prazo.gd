@@ -1,4 +1,4 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## #133/#157: avisos expiram sem evento seguinte; falas mantêm sua vez e limpam.
 
 class Balao extends Control:

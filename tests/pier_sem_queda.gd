@@ -1,8 +1,8 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## O PEDRO NÃO CAI NA ÁGUA DO PÍER QUANDO ABRE PASSAGEM PARA O JOGADOR (#236).
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/pier_sem_queda.gd
-##     ... --script res://tests/pier_sem_queda.gd -- --falsificar
+##     .\tools\prototipo_3d\testar.ps1 -Teste pier_sem_queda
+##     .\tools\prototipo_3d\testar.ps1 -Teste pier_sem_queda -Extra --falsificar
 ##
 ## Ao entrar no píer o jogador vem pelo tabuado estreito, o Pedro "abre passagem" (`dar_passagem`) e escolhe
 ## um lado que é mar: `test_move` só diz que nada barra o passo, e a água não barra. Agora cada saída

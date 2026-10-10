@@ -1,4 +1,4 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Verifica alvos de casas, acesso ao terreno e rota a partir do píer.
 
 

@@ -1,4 +1,4 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## The current hull mesh drives a double-sided collision body recognized by the swimmer.
 
 func _initialize() -> void:

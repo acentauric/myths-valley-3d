@@ -1,8 +1,8 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere AS CONSTRUÇÕES POR DENTRO, a começar pela igreja (#26) — dentro da
 ## própria construção, no lugar dela no vale.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/interiores.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste interiores
 ##
 ## `interiores_procedural.gd` faz o outro estilo: lá a casca é outra (a torre no
 ## meio da fachada, o cruzeiro a um passo dela), e o cômodo mede a casca que há.

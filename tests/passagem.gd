@@ -1,8 +1,8 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere que NINGUÉM PRENDE O JOGADOR NUMA PORTA — e que o Pedro para de
 ## seguir depois do tutorial.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/passagem.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste passagem
 ##
 ## "Ao entrar na casa para dormir, o Pedro me seguiu e bloqueou a porta. Não
 ## consigo mais sair de casa." Três perguntas:
@@ -18,6 +18,9 @@ extends SceneTree
 ##
 ## As esperas são em SEGUNDO REAL e contam passos de física: andar é física, e
 ## com a máquina ocupada cabem menos passos por segundo.
+
+## Recebe o vale montado do zero: reprovava no vale deixado pelos casos anteriores (a suíte, #242).
+const VALE_NOVO := true
 
 var falhas := 0
 

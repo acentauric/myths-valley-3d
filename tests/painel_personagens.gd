@@ -1,4 +1,4 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Painel MODELOS: as duas abas abrem em cartões e cada cartão abre a ficha no mesmo
 ## formato (prévia 3D e dados, todas as falas, sem filtro); EDITAR e GRAVAR ficam no
 ## cabeçalho; edita um morador (altura, posto, fala) e uma peça (medida), confere que os

@@ -1,8 +1,8 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## AS CERCAS DE VARAS DAS ROÇAS, BEM POSTAS (playtest de 07/10: "as cercas continuam mal
 ## posicionadas... também aumente elas para realmente serem cercas que impedem a passagem").
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/cercas.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste cercas
 ##
 ## O cercado de cada roça é traçado em lances retos de canto a canto sobre o contorno
 ## simplificado da roça (`PaisagismoVale._lances_do_cercado`), plantado em pé e com corpo

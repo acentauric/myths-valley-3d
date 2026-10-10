@@ -1,8 +1,8 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere que o CALENDÁRIO do jogo 2D chegou ao vale, e que ele não brigou
 ## com o relógio que já estava aqui.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/calendario.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste calendario
 ##
 ## Este é o ponto em que os dois projetos se sobrepunham: o `Dia` conta hora, e
 ## o `Relogio` do 2D também. A saída não foi escolher um — foi dividir o

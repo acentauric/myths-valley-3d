@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## A SAUDAÇÃO DE APROXIMAÇÃO: quem tem missão não cumprimenta, e o balão é curto.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/saudacao.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste saudacao
 ##
 ## "Quando encostar no NPC com missão, o NPC não [deve] falar a fala de
 ## aproximação. Isso tá deixando o jogador confuso. Os textos das falas de

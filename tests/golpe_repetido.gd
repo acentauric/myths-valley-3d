@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## O E REPETIDO NUM ALVO DE TRABALHO COBRA SÓ O GOLPE QUE ACONTECE (#112).
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/golpe_repetido.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste golpe_repetido
 ##
 ## "Eu aperto E várias vezes e consome a stamina várias vezes. Mas só acontece
 ## uma animação e o item não vai parar no inventário até que a animação termine"
@@ -20,6 +20,9 @@ extends SceneTree
 ##      que golpes.
 ##   3. NA ÁRVORE, com o machado, o E repetido não interrompe o corte: os
 ##      golpes avançam, e cada um custa o seu (bater × dureza da madeira).
+
+## Recebe o vale montado do zero: reprovava no vale deixado pelos casos anteriores (a suíte, #242).
+const VALE_NOVO := true
 
 ## O E cai a cada tanto (ms), e por quanto tempo (ms) em cada prova.
 const ENTRE_ES := 150

@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## AS CERCAS ACOMPANHAM O CHÃO (#93).
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/cercas_na_encosta.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste cercas_na_encosta
 ##
 ## Cada lance de cerca era assentado por uma amostra do terreno no centro dele,
 ## e na encosta uma ponta flutuava e a outra se enterrava — "cercas desniveladas

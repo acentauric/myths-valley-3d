@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## JOGA A HISTÓRIA INTEIRA DO TONHO — a rede, a conta e o primeiro peixe.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/cadeia_do_tonho.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste cadeia_do_tonho
 ##
 ## Veio do jogo 2D (`data/dialogos/arraial.json`, passos pescador_ver /
 ## pescador_rede / tonho_divida / tonho_terra). Ele mostra a água, pede corda e
@@ -47,6 +47,9 @@ extends SceneTree
 ##      quitada o passo fecha. Voltar ao Tonho fecha o
 ##      último, é ele quem responde, e o robalo — o primeiro peixe — chega.
 ##   7. A CADEIA ENTRA NO CADERNO DO VALE e sobrevive a recarregar.
+
+## Recebe o vale montado do zero: reprovava no vale deixado pelos casos anteriores (a suíte, #242).
+const VALE_NOVO := true
 
 const PovoadoLiberado = preload("res://tests/fixtures/povoado_liberado.gd")
 const ConversaDoE = preload("res://tests/fixtures/conversa_do_e.gd")

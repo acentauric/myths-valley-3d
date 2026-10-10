@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## AS FALAS DO VIAJANTE (#187): o personagem do jogador comenta o que acontece, SÓ EM VOZ e sem balão.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/falas_do_viajante.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste falas_do_viajante
 ##
 ## O viajante era mudo. Seis perguntas:
 ##

@@ -1,8 +1,8 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere que AS ÁRVORES DO VALE SE CORTAM, E VOLTAM EM UM ANO — e que a
 ## madeira e a pedra duras pedem o talento e a ferramenta de aço.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/corte_das_arvores.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste corte_das_arvores
 ##
 ## "Pode tornar as árvores cortáveis, com respawn de 1 ano no calendário do
 ## jogo. Para isso ela tem que progredir até ficar 'adulta'. Também já vai
@@ -43,6 +43,9 @@ extends SceneTree
 ## 1,70 s e 6,50 s) são do JOGO, que é de onde o tween os conta. Com
 ## `MV_QUADRO_LENTO_MS=150` no ambiente o portão roda como na bateria no pior; com
 ## `MV_FALSIFICAR=parede` ele volta a esperar em parede, e então TEM de reprovar.
+
+## Recebe o vale montado do zero: reprovava no vale deixado pelos casos anteriores (a suíte, #242).
+const VALE_NOVO := true
 
 const DIAS_DO_ANO := 112
 const RelogioDeJogo = preload("res://tests/fixtures/relogio_de_jogo.gd")

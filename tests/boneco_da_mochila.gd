@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere O BONECO DA MOCHILA.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/boneco_da_mochila.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste boneco_da_mochila
 ##
 ## "No inventário, ao lado dos itens equipados, coloque o 3D do boneco com os
 ## itens equipados, igual nos jogos de RPG. Assim ele pode ver as alterações

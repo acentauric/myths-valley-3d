@@ -1,9 +1,9 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere AS FRENTES DO 2D que não pedem lugar novo no vale: as armas e o ofício
 ## do Pedro, a capoeira do Cosme, a meta dos caititus, a caderneta e a primeira
 ## refeição (docs/projeto/MISSOES_DO_2D.md, 1.2, 1.5, 1.6, 3.9 a 3.11).
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/frentes.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste frentes
 ##
 ## Os acontecimentos chegam pelo fio do vale — o `Luta` emite o golpe e o bote
 ## esquivado, a `Pesca` o peixe, a teia o talento —, e não por
@@ -26,6 +26,9 @@ extends SceneTree
 ##   9. A CONTA SOBREVIVE A RECARREGAR: o save leva quantas vezes já aconteceu.
 ##  10. A CAPOEIRA ATÉ O FIM: a meia-lua volta ao Cosme, a rasteira (duas tonteadas, mungunzá) e a
 ##      volta final fecham a fila.
+
+## Recebe o vale montado do zero: reprovava no vale deixado pelos casos anteriores (a suíte, #242).
+const VALE_NOVO := true
 
 const PovoadoLiberado = preload("res://tests/fixtures/povoado_liberado.gd")
 const ConversaDoE = preload("res://tests/fixtures/conversa_do_e.gd")

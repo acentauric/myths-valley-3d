@@ -1,4 +1,4 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## #121/#124/#127/#132: controles reais, nomes em tela e obstáculos físicos reais.
 const Popups = preload("res://scripts/prototipo_3d/popups_do_mundo.gd")
 

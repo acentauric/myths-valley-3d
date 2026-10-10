@@ -1,8 +1,8 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## #160 (e #18): os talentos de produção do quintal têm quem os leia — `pastoreio`,
 ## `pressa_do_curral`, `rendimento_do_morador` e `pericia_do_morador`.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/producao_do_quintal.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste producao_do_quintal
 ##
 ## Sem o vale: a conta do serviço (`servico_do_morador.gd`), a postura adiantada
 ## (`curral_vale.gd`) e a recompensa do passo com `trabalho_do` (`cadeia_de_missoes.gd`).

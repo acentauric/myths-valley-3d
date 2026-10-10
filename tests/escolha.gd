@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere A FALA LONGA DO VALE, com a escolha de Sim e Não (#21).
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/escolha.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste escolha
 ##
 ## A caixa é a do 2D, adaptada (`dialogo_vale.gd`). As perguntas de 4 a 6 são
 ## as do `tools/gdscript/testar_escolha.gd` de lá, que atravessa com ela (#18):

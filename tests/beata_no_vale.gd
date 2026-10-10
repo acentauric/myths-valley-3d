@@ -1,4 +1,4 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 var falhas := 0
 
 func _initialize() -> void:
@@ -53,7 +53,7 @@ func _run() -> void:
 					var seguro := true
 					for fase in [0.0, 0.25, 0.5, 0.75, 1.0]:
 						var p := a.lerp(b, fase)
-						seguro = seguro and mundo.is_walkable_point(p) and not casas.dentro_de_casa(self, p, 0.5)
+						seguro = seguro and mundo.is_walkable_point(p) and not casas.dentro_de_casa(arvore, p, 0.5)
 					if seguro:
 						percurso = [a, b]
 						break

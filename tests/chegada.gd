@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere A CHEGADA PELO SAVEIRO, o começo do jogo jogado como o jogador joga.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/chegada.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste chegada
 ##
 ## "O jogador tem que começar com o boneco posicionado em cima de um saveiro, no
 ## pier. [...] No fim do primeiro dia, o saveiro obviamente some do mapa. Nesse

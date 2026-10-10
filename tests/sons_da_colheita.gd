@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## O GOLPE TEM SOM: a pedra, o tronco, o capim e a ostra deixam de bater em silêncio.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/sons_da_colheita.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste sons_da_colheita
 ##
 ## Do playtest da Build 9B: "adicione o efeito sonoro de marretada na pedra e os
 ## demais faltantes". O `Recursos3D._aplicar_golpe` — o ponto onde a picareta bate

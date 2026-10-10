@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## O GOLPE TEM REAÇÃO VISUAL: LASCAS DO MATERIAL E UM TRANCO NA TELA (#16).
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/reacoes_visuais.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste reacoes_visuais
 ##
 ## O `Efeitos` do 2D fazia a partícula e a sacudida de tela; no 3D elas moram em `ReacoesVisuais`
 ## e saem do impacto de `recursos_3d._aplicar_golpe`.
@@ -16,6 +16,9 @@ extends SceneTree
 ##
 ## FALSIFICAÇÃO: tire o `_reagir_ao_golpe` de `_aplicar_golpe` e a 5 reprova; faça `sacudir_tela` ignorar
 ## o movimento reduzido e a 4 reprova; esqueça o `_encerrar_sacudida` e a câmera fica torta (a 3 reprova).
+
+## Recebe o vale montado do zero: reprovava no vale deixado pelos casos anteriores (a suíte, #242).
+const VALE_NOVO := true
 
 var falhas := 0
 

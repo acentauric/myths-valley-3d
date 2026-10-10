@@ -1,8 +1,8 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere que A COLISÃO DE TODA CASA ACOMPANHA A PAREDE VISÍVEL (#205): o viajante para
 ## encostado, e nunca com o ombro dentro do reboco.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/colisao_das_casas.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste colisao_das_casas
 ##
 ## "Na casa da Dona Zefa o viajante aparece entrando na parede: metade do corpo atravessa a quina
 ## da fachada, ao lado da porta." Duas causas, as duas na colisão que o cômodo põe no lugar da caixa

@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## O MUTIRÃO DO POÇO (#80): o trecho da chegada que travou o teste ao vivo de 05/10.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/mutirao_do_poco.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste mutirao_do_poco
 ##     ... -- --falsificar      (sem o E no poço: tem de reprovar)
 ##
 ## "Não tá interagindo. A missão é consertar o poço." O passo `mutirao_poco`

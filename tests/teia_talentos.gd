@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere A TEIA DE TALENTOS do vale — a tela, não o sistema.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/teia_talentos.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste teia_talentos
 ##
 ## O SISTEMA JÁ TEM PORTÃO, e é do 2D: o `testar_talentos.gd` de lá cobra os 37
 ## nós, os campos de efeito e que nenhum espere mecânica que não existe; o

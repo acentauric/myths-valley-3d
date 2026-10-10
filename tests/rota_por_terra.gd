@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere que O PEDRO NÃO ENTRA NO MAR para encurtar caminho.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/rota_por_terra.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste rota_por_terra
 ##
 ## A queixa foi: "eu subo no píer e o Pedro fica tentando vir pelo mar". Ele
 ## andava em linha reta, o corpo sabia nadar, e a reta até o píer passa por

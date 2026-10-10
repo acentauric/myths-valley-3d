@@ -1,8 +1,8 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## O PEDRO ATRAVESSA A PONTE NOS DOIS SENTIDOS (#219).
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/pedro_atravessa_a_ponte.gd
-##     ... --script res://tests/pedro_atravessa_a_ponte.gd -- --falsificar
+##     .\tools\prototipo_3d\testar.ps1 -Teste pedro_atravessa_a_ponte
+##     .\tools\prototipo_3d\testar.ps1 -Teste pedro_atravessa_a_ponte -Extra --falsificar
 ##
 ## No passo 6/16 ("Abra a casa do seu tio e entre") o Pedro ficou parado na cabeceira da ponte,
 ## encostado no pilar, e a chegada travou: o caminho da rua chegava à ponte em reta de vértice a

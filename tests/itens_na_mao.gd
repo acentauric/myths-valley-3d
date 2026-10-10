@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere OS ITENS NA MÃO.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/itens_na_mao.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste itens_na_mao
 ##     (só alguns: ... -- --itens=enxada,balde)
 ##
 ## "Corrija itens desproporcionais ou mal encaixados na mão (por exemplo a
@@ -123,7 +123,7 @@ func _itens_pedidos() -> Array:
 
 ## O CORPO DO JOGADOR SOZINHO, num mundo vazio, sem física nem teclado: só o
 ## `_process` dele, que veste e posa a peça da mão.
-static func montar_jogador(arvore: SceneTree) -> Node3D:
+static func montar_jogador(arvore) -> Node3D:
 	var mundo := Node3D.new()
 	mundo.name = "Palco"
 	arvore.root.add_child(mundo)
@@ -146,8 +146,8 @@ static func montar_jogador(arvore: SceneTree) -> Node3D:
 ## peça nasce, e logo depois de um golpe ou de um passo essa pose ainda é a
 ## mistura com o clipe de antes (0,18 s de transição) — a peça de cada item
 ## nascia num lugar diferente conforme o que o item anterior tinha feito.
-static func por_na_mao(arvore: SceneTree, jogador: Node3D, id: String) -> Node3D:
-	var inventario := arvore.root.get_node("/root/Inventario")
+static func por_na_mao(arvore, jogador: Node3D, id: String) -> Node3D:
+	var inventario: Node = arvore.root.get_node("/root/Inventario")
 	inventario.selecionar(-1)
 	jogador.set("velocity", Vector3.ZERO)
 	jogador.get("animator").update_motion(0.0, 0.016)
@@ -169,7 +169,7 @@ static func peca_na_mao(jogador: Node3D) -> Node3D:
 
 ## LEVA O CORPO A UM ESTADO e o segura nele para a medida: "parado", "andando",
 ## "golpe@0.30" (fração do `chop`), "uso". Depois da medida, `sair_do_estado`.
-static func ir_ao_estado(arvore: SceneTree, jogador: Node3D, estado: String) -> void:
+static func ir_ao_estado(arvore, jogador: Node3D, estado: String) -> void:
 	var animador = jogador.get("animator")
 	if estado == "parado":
 		jogador.set("velocity", Vector3.ZERO)
@@ -205,7 +205,7 @@ static func ir_ao_estado(arvore: SceneTree, jogador: Node3D, estado: String) -> 
 		await arvore.process_frame
 
 
-static func sair_do_estado(arvore: SceneTree, jogador: Node3D) -> void:
+static func sair_do_estado(arvore, jogador: Node3D) -> void:
 	var animador = jogador.get("animator")
 	var tocador: AnimationPlayer = animador.get("animation_player")
 	if tocador != null and not tocador.is_playing() and tocador.current_animation != &"":
@@ -217,7 +217,7 @@ static func sair_do_estado(arvore: SceneTree, jogador: Node3D) -> void:
 	await arvore.process_frame
 
 
-static func _segundos(arvore: SceneTree, s: float) -> void:
+static func _segundos(arvore, s: float) -> void:
 	var ate := Time.get_ticks_msec() + int(s * 1000.0)
 	while Time.get_ticks_msec() < ate:
 		await arvore.process_frame

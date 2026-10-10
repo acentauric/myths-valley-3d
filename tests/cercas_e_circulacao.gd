@@ -1,4 +1,4 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Cercas visíveis são obstáculos reais, e Candinha ainda chega à Zefa (#125).
 var falhas := 0
 

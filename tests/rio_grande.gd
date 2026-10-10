@@ -1,8 +1,8 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## O RIO GRANDE NÃO DÁ PASSAGEM FORA DA PONTE (#81), E QUEM CAI NELE VOLTA PELA
 ## MARGEM DE CÁ (#115).
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/rio_grande.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste rio_grande
 ##
 ## No 2D o rio tem barranco e só se cruza pela ponte: a fazenda do convite fica
 ## do outro lado, e a ponte caída é a trava da jornada. No vale o rio do norte

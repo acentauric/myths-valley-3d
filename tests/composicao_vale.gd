@@ -1,4 +1,4 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Salvar no editor precisa mudar o mundo, não apenas a aparência da prévia.
 
 const Composicao = preload("res://scripts/prototipo_3d/composicao_vale.gd")

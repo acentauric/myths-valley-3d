@@ -1,8 +1,8 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere que o SISTEMA DE MISSÕES do jogo 2D roda no vale, apontando para
 ## lugares daqui.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/missoes.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste missoes
 ##
 ## É a chave de abóbada da migração. `Missoes` dependia de `Inventario` e de
 ## `Fe`, e as duas atravessaram nas fatias anteriores; o que sobrava era a

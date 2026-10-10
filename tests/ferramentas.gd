@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere AS FERRAMENTAS E ONDE BATER: o trabalho existe no vale.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/ferramentas.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste ferramentas
 ##
 ## Até aqui a migração trouxe a regra do trabalho — `Energia`, `Inventario`,
 ## `Catalogo`, `Missoes` — e o vale não tinha em que bater. Esta fatia põe os

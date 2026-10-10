@@ -1,8 +1,8 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## OS MORADORES ANDAM COM FOLGA DAS PAREDES E DAS ÁRVORES (07/10: "tem muito NPC andando colado na
 ## parede, batendo em árvore; o deslocamento entre esses objetos deve ser suave").
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/folga_dos_moradores.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste folga_dos_moradores
 ##
 ## A malha dos moradores é assada com o raio curto (0,2) por causa das portas; o caminho dela
 ## passa a dois palmos das paredes e dos troncos, e o corpo (0,26) raspa. A malha LARGA (0,6,

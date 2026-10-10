@@ -1,4 +1,4 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## #196: o chevron da missão ORBITA o jogador em vez de grudar na borda da tela.
 ##
 ## Fora da visão ele fica numa elipse ao redor do personagem na tela (raio de 18 a 25% da

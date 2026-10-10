@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere AS PEGADAS DO CURUPIRA E O MAPA DOIDO QUE ELAS PROVOCAM.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/rastro_do_curupira.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste rastro_do_curupira
 ##
 ## "adicione trilhas no mapa que serão do curupira, ao contrário... na verdade pegadas dele e faça o
 ## mapa ficar 'doido' quando você achar essas pegadas bem dentro da mata."

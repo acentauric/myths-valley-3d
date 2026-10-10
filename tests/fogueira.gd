@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## A FOGUEIRA DO TERREIRO (#86): o modelo certo, e a chama que apaga de dia.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/fogueira.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste fogueira
 ##
 ## "O asset da fogueira tá errado." Desde 04/10 (`8413ae7`) o catálogo apontava
 ## a pilha de lenha (`lenha_tripo.glb`) para a peça `fogueira`, e o jogador via

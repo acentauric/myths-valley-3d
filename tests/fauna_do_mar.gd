@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere A FAUNA D'ÁGUA DO VALE (fauna_vale.gd, cardume.gd, tubarao.gd).
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/fauna_do_mar.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste fauna_do_mar
 ##
 ## "Mais cardumes em cada barco; peixes nas pedras e no rio, com inteligência
 ## algorítmica parecida; espécies diferentes; peixes maiores (cavala, sororoca) que
@@ -18,6 +18,9 @@ extends SceneTree
 ##      corpo é o GLB no estilo Tripo (os prismas no procedural).
 ##   7. O AVISO DO SUSTO ESTÁ NOS TRÊS IDIOMAS, fora do código.
 ##   8. ESPÉCIES DIFERENTES nos lugares diferentes, e as raias em bando.
+
+## Recebe o vale montado do zero: reprovava no vale deixado pelos casos anteriores (a suíte, #242).
+const VALE_NOVO := true
 
 var falhas := 0
 

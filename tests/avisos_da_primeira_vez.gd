@@ -1,8 +1,8 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere OS AVISOS DA PRIMEIRA VEZ (scripts/prototipo_3d/aviso_da_primeira_vez.gd,
 ## data/avisos.json).
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/avisos_da_primeira_vez.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste avisos_da_primeira_vez
 ##
 ## "Ao pegar o primeiro cordel no jogo, deve aparecer um pop-up informando que
 ## eles ficam localizados no almanaque. O mesmo vale para a primeira interação
@@ -22,6 +22,9 @@ extends SceneTree
 ##      da água funda — parar é boiar, e o ar volta —, com o vale parado.
 ##   6. O SEGUNDO NÃO, E O SAVE LEMBRA: sair e voltar ao nado não repete o
 ##      cartão, e `estado_para_salvar` guarda a marca.
+
+## Recebe o vale montado do zero: reprovava no vale deixado pelos casos anteriores (a suíte, #242).
+const VALE_NOVO := true
 
 const CORDEIS := ["peso_falso", "vendeu_a_chuva"]
 

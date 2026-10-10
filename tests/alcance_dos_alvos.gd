@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere que TODO ALVO DE TRABALHO É ALCANÇÁVEL — e diz onde cada um caiu.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/alcance_dos_alvos.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste alcance_dos_alvos
 ##
 ## Nasceu da queixa "na missão da pedreira, não consegui interagir com o
 ## objeto". O `tests/ferramentas.gd` já provava que o golpe funciona — mas ele

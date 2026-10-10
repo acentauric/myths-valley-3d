@@ -1,8 +1,8 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere o RELÓGIO DA PARTIDA: mexer nele pode, com aviso, confirmação e
 ## registro no save.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/relogio.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste relogio
 ##
 ## "Pode manter a possibilidade de alterar o relógio, desde que tenha o aviso,
 ## a confirmação e a alteração no backlog do save." A linha "Relógio" do menu

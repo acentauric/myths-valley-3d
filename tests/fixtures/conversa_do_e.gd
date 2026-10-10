@@ -31,7 +31,7 @@ static func usar(tecla: Node, morador: Node3D, teto_s: float = TETO_S) -> void:
 
 
 ## Espera `morador` calar: devolve se calou dentro do teto.
-static func calar(arvore: SceneTree, morador: Node3D, teto_s: float = TETO_S) -> bool:
+static func calar(arvore, morador: Node3D, teto_s: float = TETO_S) -> bool:
 	var limite := Time.get_ticks_msec() + int(teto_s * 1000.0)
 	while is_instance_valid(morador) and morador.has_method("falando_agora") and bool(morador.call("falando_agora")) \
 			and Time.get_ticks_msec() < limite:

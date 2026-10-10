@@ -1,8 +1,8 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere que A CANOA É SÓLIDA NA MEDIDA DO DESENHO — e que quem pula nela fica
 ## dentro.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/canoas.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste canoas
 ##
 ## "Precisa corrigir a área de colisão dos barcos também. Pulei neles e
 ## atravessei a parede." A colisão eram caixas finas medidas como fração da

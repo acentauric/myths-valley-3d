@@ -1,8 +1,8 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## A ATENÇÃO A QUEM A MISSÃO MANDA PROCURAR (#198): o morador que o passo aponta PARA e olha o
 ## jogador que chega perto, em vez de seguir a rotina.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/atencao_do_morador.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste atencao_do_morador
 ##
 ## Playtest: no passo "Volte ao Pedro e conte o que viu" o Pedro seguia andando, o jogador ia atrás dele,
 ## colado, e a dica "E Falar com Pedro" nunca firmava. Cinco perguntas:

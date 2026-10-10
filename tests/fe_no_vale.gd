@@ -1,8 +1,8 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere A FÉ NO CHÃO DO VALE (#52): os marcos, o que acontece neles e a teia
 ## da fé no K.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/fe_no_vale.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste fe_no_vale
 ##
 ## As três fés já estavam de pé (`tests/fe.gd` confere os autoloads); aqui se
 ## pergunta o que o vale fez com elas:

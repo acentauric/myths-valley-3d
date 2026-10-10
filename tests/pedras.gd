@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## PEDRA QUE SE QUEBRA NA MÃO É PEQUENA; PEDRA GRANDE SE QUEBRA DEVAGAR, COM AÇO E TALENTO.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/pedras.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste pedras
 ##
 ## Do playtest da Build 9B: "algumas pedras que são quebráveis estão grandes
 ## demais, precisam ficar pequenas; precisamos de pedras quebráveis pequenas e

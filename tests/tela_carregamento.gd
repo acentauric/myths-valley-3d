@@ -1,10 +1,8 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Tela de carregamento: a capa segue a hora (dia ou noite) para qualquer hora, ao entrar
 ## no jogo e ao voltar ao menu; na entrada o relógio espera a montagem do vale, e o
 ## jogador chega exatamente na hora inicial que escolheu a capa.
-## Run: Godot --headless --path prototipo_3d --script res://tests/tela_carregamento.gd
-
-
+## Run: .\tools\prototipo_3d\testar.ps1 -Teste tela_carregamento
 func _initialize() -> void:
 	_run.call_deferred()
 

@@ -1,4 +1,4 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## #132: disputa real dos retângulos do HUD com fala e interação, sem cenário.
 const Popups = preload("res://scripts/prototipo_3d/popups_do_mundo.gd")
 class Fala extends Control:

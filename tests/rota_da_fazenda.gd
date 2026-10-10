@@ -1,4 +1,4 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## A condução do convite precisa de malha até o portão, pátio e casarão.
 ## A área antiga acabava em z=-232: o caminho projetava o Pedro para trás
 ## e terminava 57 m antes do portão. A campanha não escreve estado por aqui.

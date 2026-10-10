@@ -1,4 +1,4 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## #9: preço histórico, confirmação nativa, posse/save e contorno no mapa real.
 class Morador extends Node3D:
 	var dados := {"id": "zefa", "nome": "Dona Zefa"}

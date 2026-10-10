@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere que TODA TELA DEVOLVE A CÂMERA COMO A ACHOU, e para o vale atrás dela.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/camera_volta.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste camera_volta
 ##
 ## Este portão existe porque o mesmo defeito apareceu QUATRO VEZES, em quatro
 ## lugares diferentes, e cada vez foi consertado só aquele:

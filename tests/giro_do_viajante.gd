@@ -1,9 +1,9 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere o GIRO DO VIAJANTE (#209): ele nunca anda de lado deslizando. O corpo
 ## gira para o rumo com velocidade angular limitada (sem salto de um quadro) e o
 ## passo só pega velocidade conforme o corpo se alinha com o rumo.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/giro_do_viajante.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste giro_do_viajante
 ##
 ##   1. A MATEMÁTICA DO GIRO (`passo_de_giro`): nunca passa do teto angular por
 ##      quadro, não ultrapassa o rumo, pega o caminho curto pela volta e chega

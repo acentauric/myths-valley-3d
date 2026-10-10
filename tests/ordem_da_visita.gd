@@ -1,11 +1,16 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Mede a distância entre os lugares da primeira missão, para a ordem dela
 ## deixar de ser "indo e vindo".
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/ordem_da_visita.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste ordem_da_visita
 ##
 ## Não é portão: é régua. Roda para responder uma pergunta — qual ordem faz o
 ## jogador andar menos — e imprime o percurso de cada uma.
+
+## Régua, não portão: mede e imprime, não reprova. Fica fora da bateria e roda
+## com `testar.ps1 -Longos` ou pelo nome.
+const LONGO := true
+
 
 func _initialize() -> void:
 	_run.call_deferred()

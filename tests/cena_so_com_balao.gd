@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## NA CENA SÓ FICAM O BALÃO E AS TARJAS, A CÂMERA DESLIZA E O E PULA (#215).
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/cena_so_com_balao.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste cena_so_com_balao
 ##     ... -- --falsificar-interface        (o portão TEM de reprovar: a cena sem recolher a interface)
 ##
 ## Playtest de 09/10: na chegada ao píer o painel de missão aparecia cortado pela tarja, o painel TESTANDO e a

@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## A FOGUEIRA E A BANCADA DO ROÇADO: sólidas, e a bancada se usa com o E.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/rocado.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste rocado
 ##
 ## Do playtest de 05/10/2026:
 ##
@@ -19,6 +19,9 @@ extends SceneTree
 ##   3. O E NA BANCADA ABRE A OFICINA, com a dica da tecla em cima dela, e o E na
 ##      fogueira abre o fogão.
 ##   4. LONGE DAS DUAS, o E não abre nada.
+
+## Recebe o vale montado do zero: reprovava no vale deixado pelos casos anteriores (a suíte, #242).
+const VALE_NOVO := true
 
 var falhas := 0
 

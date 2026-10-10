@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## AS LÁPIDES ESTÃO NO CHÃO, NO SEU LUGAR, TODAS PARA O MESMO LADO.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/lapides_no_chao.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste lapides_no_chao
 ##
 ## "As lápides estão mal posicionadas, precisamos ajustar." A grade de 4 x 3 era a das
 ## lajes procedurais (compridas em Z); a do Tripo é comprida em X, com a cruz no -X, e

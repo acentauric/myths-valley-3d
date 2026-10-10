@@ -1,8 +1,8 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere o SAVE do vale (#7): as vagas, a partida que zera, a ida e a volta
 ## do que o vale guarda, e que nenhum estado do 3D escapa da conta.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/salvamento.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste salvamento
 ##
 ## O `Salvamento` é o do 2D, e o `testar_salvamento`/`testar_slots` de lá
 ## seguram a regra dele: escrita atômica, migração, limpeza. Este portão

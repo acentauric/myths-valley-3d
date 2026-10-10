@@ -1,8 +1,8 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere O PAISAGISMO DO VALE (paisagismo_vale.gd, paisagismo_vale.tscn,
 ## data/paisagismo/receitas.json).
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/paisagismo.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste paisagismo
 ##
 ## "Faça o paisagismo do jogo INTEIRO: preencha áreas vazias e mortas; crie
 ## agrupamentos coerentes de uma espécie só; evite misturar espécies, porque a

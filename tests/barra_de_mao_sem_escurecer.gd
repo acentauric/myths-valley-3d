@@ -1,4 +1,4 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## #222: a barra de mão não fica escurecida, como desativada, depois de a explicação das barras
 ## e a caixa de fala passarem por cima dela. Duas mãos mexiam no mesmo `modulate`: o destaque
 ## (`destacar_barra`) apaga o HUD em cinza, e o foco da narração (`foco_da_narracao.gd`) recolhe o

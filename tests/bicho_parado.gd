@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## O BICHO DE QUATRO PATAS PARA NA POSE DE APOIO (#91).
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/bicho_parado.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste bicho_parado
 ##
 ## "Agora não sei por que os bichos quadrúpedes ficaram assim" — parados, eles
 ## congelavam no quadro em que o passo os pegou, com a pata no ar
@@ -12,6 +12,9 @@ extends SceneTree
 ##   1. ANDANDO, o clipe de andar toca.
 ##   2. PARADO, o clipe para numa pose de apoio, e não no meio do passo.
 ##   3. VOLTANDO A ANDAR, o clipe retoma.
+
+## Recebe o vale montado do zero: reprovava no vale deixado pelos casos anteriores (a suíte, #242).
+const VALE_NOVO := true
 
 var falhas := 0
 

@@ -1,4 +1,4 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## #135/#144: chegada, histerese e alvo seguinte sem concluir o trabalho.
 var falhas := 0
 func _initialize() -> void:

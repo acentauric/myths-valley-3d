@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere PESCA, COZINHA E OFICINA no vale (#11).
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/oficio.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste oficio
 ##
 ## As regras são o `Pesca`, o `Cozinha` e o `Oficina` compartilhados. Este
 ## portão pergunta o que é do vale:

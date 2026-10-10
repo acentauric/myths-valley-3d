@@ -1,8 +1,8 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere os BICHOS DE CASA do vale (#28): cães, gatos, porcos, cabras, o jumento
 ## e os bandos de aves do quintal e do adro, pelo `data/bichos_de_casa.json`.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/bichos_de_casa.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste bichos_de_casa
 ##
 ## O que este portão pergunta:
 ##
@@ -30,6 +30,9 @@ extends SceneTree
 ##
 ## FALSIFICAÇÃO: com `--falsificar-bichos` um cão passa para a camada 1 e uma
 ## galinha vai para dentro de uma casa; os dois testes têm de FALHAR.
+
+## Recebe o vale montado do zero: reprovava no vale deixado pelos casos anteriores (a suíte, #242).
+const VALE_NOVO := true
 
 var falhas := 0
 var falsificar := false

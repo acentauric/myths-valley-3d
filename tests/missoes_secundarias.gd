@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## AS MISSÕES SECUNDÁRIAS DOS MORADORES (docs/projeto/MISSOES_SECUNDARIAS.md).
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/missoes_secundarias.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste missoes_secundarias
 ##
 ## O vale tem 22 moradores e só oito tinham fila de missão. Os favores de cada um
 ## (data/favores_dos_moradores.json, fase 1) entram pendurados pela tabela, trancados

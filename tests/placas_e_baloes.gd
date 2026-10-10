@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## PLAQUINHAS DE NOME E BALÕES SÓ DE PERTO, E UM BALÃO POR VEZ (#90).
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/placas_e_baloes.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste placas_e_baloes
 ##
 ## Na live os nomes de toda a praça apareciam de longe (22 u) e dois balões
 ## saíam ao mesmo tempo. A equipe: nome e balão só por proximidade, e uma regra

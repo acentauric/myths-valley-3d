@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## NENHUM SOM QUE O JOGO PEDE FICA SEM ARQUIVO, NENHUM ARQUIVO FICA SEM DONO, E AS PORTAS SOAM.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/sons_do_jogo.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste sons_do_jogo
 ##
 ## Do playtest da Build 9B: "adicione o efeito sonoro de marretada na pedra e os demais faltantes".
 ## O defeito tinha duas caras, e as duas voltam sempre que alguém escreve um som novo:

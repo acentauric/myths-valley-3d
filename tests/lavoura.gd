@@ -1,8 +1,8 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere A LAVOURA DA CASA (#8): a fazenda do jogador, na frente da casa
 ## herdada, com a regra do roçado do 2D.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/lavoura.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste lavoura
 ##
 ## Oito perguntas:
 ##

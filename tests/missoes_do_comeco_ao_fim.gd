@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## AS MISSÕES DO COMEÇO AO FIM, jogadas com os controles do jogador.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/missoes_do_comeco_ao_fim.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste missoes_do_comeco_ao_fim
 ##     ... -- --ate=ponte          só até a fase (chegada, ponte, lombada, ... fazenda); para depurar
 ##     ... -- --guardar --ate=X    guarda a partida (vaga 1 do perfil) a cada passo fechado
 ##     ... -- --retomar            volta do último passo guardado, na fase em que parou
@@ -33,6 +33,11 @@ extends SceneTree
 ## Cada fila só abre quando a anterior a destranca (`CadeiaDeMissoes.esta_trancada`). Para parar na primeira
 ## fase que falha, as seguintes ficam sem jogar. Pesado (50 a 100 min de relógio): só roda com `-Tudo` ou
 ## pelo nome (`tools/prototipo_3d/testar.ps1`).
+
+## A partida inteira passa de uma hora de jogo: fica fora da bateria e roda com
+## `testar.ps1 -Longos` ou pelo nome. O teto é de quatro horas.
+const LONGO := true
+const TETO_S := 14400
 
 const Jogada = preload("res://tests/fixtures/jogada.gd")
 const RelogioDeJogo = preload("res://tests/fixtures/relogio_de_jogo.gd")

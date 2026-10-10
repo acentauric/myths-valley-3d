@@ -1,8 +1,8 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere que A CASA DO PEDRO E A DA DONA ZEFA ABREM POR DENTRO, e que as casas
 ## não são iguais.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/casas_dos_moradores.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste casas_dos_moradores
 ##
 ## "Produza o ambiente interno da casa de Pedro e Dona Zefa. Lembre de fazer
 ## algumas variações para todas as casas não serem iguais." Seis perguntas:
@@ -20,6 +20,9 @@ extends SceneTree
 ##   5. O MORADOR VOLTA PARA ELA: de noite o Pedro, a Zefa e o Cosme estão na
 ##      porta da casa deles.
 ##   6. ENTRA-SE ANDANDO: da porta do Pedro, a tecla de andar leva para dentro.
+
+## Recebe o vale montado do zero: reprovava no vale deixado pelos casos anteriores (a suíte, #242).
+const VALE_NOVO := true
 
 var falhas := 0
 ## Pelo caminho, e não pelo nome da classe: o portão compila antes dos autoloads.

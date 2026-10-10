@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere A BÚSSOLA DO CANTO: redonda, e apontando a missão em foco.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/minimapa.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste minimapa
 ##
 ## "No minimapa deve indicar o local da missão, como acontece na maioria dos
 ## jogos de RPG. Você pode aplicar uma máscara no HUD do minimapa para ficar

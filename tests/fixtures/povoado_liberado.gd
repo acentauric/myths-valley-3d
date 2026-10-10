@@ -22,7 +22,7 @@ extends RefCounted
 
 
 ## Solta todos os moradores, bichos de casa e bandos do vale. `arvore` é o próprio portão (SceneTree).
-static func todos(arvore: SceneTree, vale: Node) -> void:
+static func todos(arvore, vale: Node) -> void:
 	for i in 600:
 		if vale.get("apresentacao_do_povoado") != null:
 			break

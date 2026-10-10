@@ -1,8 +1,8 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere a LUTA no vale (#14): o bicho de caixa cinza, o bote anunciado, a
 ## ginga, o golpe no tempo do braço, e a mata que repõe quem caiu.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/luta.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste luta
 ##
 ## A regra do golpe é o `Luta` compartilhado, e a do bicho é a do 2D
 ## (`scripts/npcs/criatura.gd`) com os mesmos números — o `testar_luta` e o

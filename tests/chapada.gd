@@ -1,8 +1,8 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere A CHAPADA DO SEU BENEDITO, a frente do 2D que mostra terra que poderia
 ## ser do jogador (docs/projeto/MISSOES_DO_2D.md, 1.4; data/missoes_chapada.json).
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/chapada.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste chapada
 ##
 ## Quatro perguntas:
 ##

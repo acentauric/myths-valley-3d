@@ -1,4 +1,4 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Composição real da chegada: missão, fala e aviso de espera juntos (#120).
 var falhas := 0
 func _initialize() -> void:

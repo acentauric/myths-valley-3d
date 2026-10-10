@@ -1,4 +1,4 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## #122: contraste próprio, sem cobrir ícone nem ampliar o clique.
 var falhas := 0
 func _initialize() -> void:

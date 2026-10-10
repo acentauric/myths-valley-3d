@@ -1,9 +1,9 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## O botão TESTAR e o painel da sessão do testador (#183): o modal mostra o que a ponte
 ## achou, sem chave nenhuma; o painel diz quem decidiu, a ação em palavras, o motivo, a
 ## missão, quanto falta para zerar o jogo e o gasto.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/testador_sessao.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste testador_sessao
 ##
 ## A escada em si (sinais de trava, Jev, GPT, bloqueio, relatório) mora em
 ## tools/jev/test_escada.py, com respostas falsas e sem rede.
@@ -155,17 +155,23 @@ func _painel() -> void:
 		if (no as Label).text.begins_with("● ") and (no as Label).visible:
 			marcadores += 1
 	_conferir(marcadores == PainelSessao.MAX_DECISOES, "as últimas decisões aparecem em lista curta (%d)" % marcadores)
-	# Sem `manual_botao`, o botão do F7 (#206) fica escondido: o único visível é o Parar.
+	# OS COMANDOS NO MESMO PADRÃO (#234): F6 (minimizar), F7 (assumir) e F8 (parar), cada
+	# um com a plaqueta da tecla e o rótulo curto. Sem `manual_botao`, o F7 fica escondido:
+	# visíveis, o Minimizar e o Parar, da mesma altura, pequenos.
 	var botoes := painel.find_children("*", "Button", true, false).filter(func(b: Node) -> bool: return (b as Button).visible)
-	_conferir(botoes.size() == 1 and (botoes[0] as Button).text == "Parar", "o Parar é um botão curto")
-	_conferir((botoes[0] as Button).size.y <= 36.0 and (botoes[0] as Button).size.x <= 90.0, "o Parar é pequeno e discreto")
+	var parar := painel.find_child("Parar", true, false) as Button
+	_conferir(botoes.size() == 2 and parar != null and parar in botoes and PainelSessao.rotulo_de(parar) == "Parar", "o Parar é um botão curto (%d visíveis)" % botoes.size())
+	_conferir(parar != null and parar.size.y <= 36.0, "o Parar é pequeno e discreto")
+	_conferir(botoes.size() == 2 and is_equal_approx((botoes[0] as Button).size.y, (botoes[1] as Button).size.y), "os comandos têm a mesma altura")
+	_conferir(painel.find_child("Minimizar", true, false) in botoes, "o Minimizar (F6) aparece no painel")
 	var teclas: Array[String] = []
 	for no in painel.find_children("*", "Label", true, false):
 		if (no as Label).text == "F8":
 			teclas.append("F8")
 	_conferir(teclas.size() == 1, "a tecla F8 vem numa plaqueta ao lado do Parar")
 	_conferir(is_equal_approx(painel.size.x, PainelSessao.LARGURA) and painel.size.y > inicial.y, "o painel cresce com o conteúdo")
-	_conferir(painel.size.y <= 460.0, "o painel não passa de ~460 px (%.0f)" % painel.size.y)
+	# Os comandos empilhados (#234) somam uma linha ao painel de antes (~460 px).
+	_conferir(painel.size.y <= 500.0, "o painel não passa de ~500 px (%.0f)" % painel.size.y)
 	var moldura := painel.get_theme_stylebox("panel") as StyleBoxFlat
 	_conferir(moldura != null and moldura.border_width_left == 1 and moldura.corner_detail == 1, "o painel usa a laca com borda e canto chanfrado do HUD")
 	_conferir(moldura != null and moldura.bg_color.g > moldura.bg_color.r and moldura.border_color.r > moldura.border_color.b, "fundo verde-escuro e borda dourada")
@@ -174,12 +180,13 @@ func _painel() -> void:
 	_conferir(titulo.uppercase and titulo.get_theme_font("font") != ThemeDB.fallback_font, "o título tem destaque na fonte do jogo")
 	var parou := [false]
 	painel.parar_pedido.connect(func() -> void: parou[0] = true)
-	(botoes[0] as Button).pressed.emit()
+	if parar != null:
+		parar.pressed.emit()
 	_conferir(parou[0], "o Parar avisa a sessão")
 	# O F7 (#206) mora no painel novo: com `manual_botao`, o botão aparece e pede a troca de mãos.
 	painel.mostrar({"titulo": "Testando", "nivel": "", "sub": "", "acao": "", "decisoes": [], "manual_botao": _t("assumir")})
 	var manual := painel.find_child("Manual", true, false) as Button
-	_conferir(manual != null and manual.visible and manual.text == _t("assumir"), "o botão de assumir o controle (F7) aparece no painel")
+	_conferir(manual != null and manual.visible and PainelSessao.rotulo_de(manual) == _t("assumir"), "o botão de assumir o controle (F7) aparece no painel")
 	var trocou := [false]
 	painel.manual_pedido.connect(func() -> void: trocou[0] = true)
 	if manual != null:
@@ -220,14 +227,20 @@ func _modal() -> void:
 		"jev": {"disponivel": true, "motivo": "ok"}, "gpt": {"disponivel": false, "motivo": "sem_chave_openai"}},
 		"orcamento": {"padrao": 0.1, "teto": 0.5}, "ultima_sessao": {"percentual": 43.5, "capitulo": "O mirante",
 		"capitulo_feitos": 2, "capitulo_total": 6, "acoes": 412}, "erro": false}
+	# O modal lembra o último teste (#235), e este portão marca o Jev: cada abertura
+	# começa das preferências zeradas, e as de quem joga voltam no fim.
+	var Apoios = load("res://scripts/prototipo_3d/testador_apoios.gd")
+	var antes: Dictionary = Apoios.preferencias()
 	for tamanho in [Vector2i(1280, 720), Vector2i(1920, 1080)]:
 		root.size = tamanho
+		Apoios.guardar_preferencias(false, false, 0.1, 0, false)
 		abertura._modal_testador(deteccao)
 		await process_frame
 		await process_frame
 		var alternadores: Array[Button] = []
 		for no in abertura.panel.find_children("*", "Button", true, false):
-			if (no as Button).toggle_mode:
+			# Os apoios; as opções da sessão (continuar ou recomeçar, #235) vêm num ButtonGroup.
+			if (no as Button).toggle_mode and (no as Button).button_group == null:
 				alternadores.append(no)
 		_conferir(alternadores.size() == 3, "o modal lista Determinístico, Jev e GPT (%d)" % alternadores.size())
 		if alternadores.size() == 3:
@@ -252,4 +265,5 @@ func _modal() -> void:
 		for no in abertura.panel.find_children("*", "Control", true, false):
 			var texto := str(no.get("text")) if no.get("text") != null else ""
 			_conferir(not texto.to_lower().contains("sk-") and not texto.contains("API_KEY"), "o modal nunca mostra chave")
+	Apoios.guardar_preferencias(antes["jev"], antes["gpt"], antes["orcamento"] if antes["orcamento"] != null else 0.1, antes["duracao_min"], antes["continuar"])
 	abertura.queue_free()

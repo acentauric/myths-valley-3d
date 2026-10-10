@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere O SAVEIRO DO MESTRE QUIRINO e a missão da piaçava.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/saveiro.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste saveiro
 ##
 ## "Introduza uma missão de venda de piaçava 1x por mês para um NPC novo que
 ## chega ao porto. Na missão algum NPC irá ensinar ao jogador que o comprador
@@ -33,6 +33,9 @@ extends SceneTree
 ##   9. NA CHEGADA, O SAVEIRO ESTÁ ATRACADO: no primeiro dia do jogo o barco está
 ##      no píer — foi nele que o jogador veio —, sem o mestre e sem a aba de
 ##      compra; no dia seguinte, larga.
+
+## Recebe o vale montado do zero: reprovava no vale deixado pelos casos anteriores (a suíte, #242).
+const VALE_NOVO := true
 
 ##
 ## AS ESPERAS SÃO EM SEGUNDOS DE JOGO, E NÃO DE PAREDE (`tests/fixtures/relogio_de_jogo.gd`):

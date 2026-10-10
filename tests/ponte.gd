@@ -1,8 +1,8 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere A PONTE DO RIO GRANDE, a frente da trilha do 2D (docs/projeto/MISSOES_DO_2D.md,
 ## 1.3; data/missoes_ponte.json; scripts/prototipo_3d/ponte_vale.gd).
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/ponte.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste ponte
 ##
 ## Oito perguntas:
 ##
@@ -24,6 +24,9 @@ extends SceneTree
 ##   7. A OBRA TIRA A CERCA: ao pé da ponte o J tem a obra; feita, a cerca sai e o
 ##      passo fecha e paga; desfeita (a partida de antes da obra), a cerca volta.
 ##   8. O FIM NO PEDRO: o E nele fecha a frente, e o mirante passa a abrir.
+
+## Recebe o vale montado do zero: reprovava no vale deixado pelos casos anteriores (a suíte, #242).
+const VALE_NOVO := true
 
 var falhas := 0
 var vale

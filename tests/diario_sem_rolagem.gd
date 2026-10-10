@@ -1,8 +1,8 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere o DIÁRIO DE MISSÕES (J) QUE CABE NA TELA: sem coluna vazia, com a fala em
 ## resumo e o botão sempre à vista (#202).
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/diario_sem_rolagem.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste diario_sem_rolagem
 ##
 ## A queixa: coluna das categorias com um item só, lista com duas missões, e a ficha
 ## espremida — a fala do Pedro em oito linhas de itálico empurrava os objetivos, o

@@ -1,4 +1,4 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Uma entrada de roça não é uma porteira decorativa imóvel no caminho.
 const Paisagismo := preload("res://scripts/prototipo_3d/paisagismo_vale.gd")
 var falhas := 0

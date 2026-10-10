@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## O PEDRO VEM JUNTO QUANDO O JOGADOR APAGA (#92).
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/pedro_volta.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste pedro_volta
 ##
 ## Na live o jogador apagou nadando e acordou em casa; o Pedro ficou no mar.
 ## Enquanto o tutorial dura, quem apaga acorda com o Pedro esperando na porta,
@@ -10,6 +10,9 @@ extends SceneTree
 ##
 ##   1. ANTES, o Pedro está longe da casa (na prancha do saveiro).
 ##   2. CAÍDO, o jogador acorda em casa e o Pedro está na porta, em terra, sem nadar.
+
+## Recebe o vale montado do zero: reprovava no vale deixado pelos casos anteriores (a suíte, #242).
+const VALE_NOVO := true
 
 var falhas := 0
 

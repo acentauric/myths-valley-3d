@@ -1,9 +1,9 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere A JORNADA DA FAZENDA, fatias 6.1, A IDA, e 6.2, O CHAMADO (#114)
 ## (docs/projeto/MISSOES_DO_2D.md, 4; data/missoes_fazenda.json;
 ## scripts/prototipo_3d/fazenda_vale.gd).
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/fazenda.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste fazenda
 ##
 ## Oito perguntas (e as cabras da festa, que andam com o clipe de andar, no ritmo do chão —
 ## antes eram uma malha parada que escorregava):

@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere que A ÁRVORE DE ENCOSTA ASSENTA PELO PÉ DO TRONCO (#141).
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/pe_das_arvores_na_encosta.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste pe_das_arvores_na_encosta
 ##
 ## "A posição das árvores e suas bases estão estranhas em alguns pontos do cenário." O plantio
 ## punha a árvore na altura do chão do PONTO de plantio, que é o meio da caixa do GLB (o meio da

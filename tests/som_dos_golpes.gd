@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## CADA GOLPE NUM ALVO DE TRABALHO TEM SOM (#89).
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/som_dos_golpes.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste som_dos_golpes
 ##
 ## `recursos_3d._aplicar_golpe` não tocava som nenhum: a galhada, o lajedo e a
 ## lapa eram mudos, e `picareta.mp3` existia sem ninguém o chamar. Na live faltou

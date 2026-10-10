@@ -1,4 +1,4 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Presença gradual, processamento suspenso e disponibilidade das missões (#155).
 var falhas := 0
 func _initialize() -> void:

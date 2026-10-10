@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere A TEIA SOCIAL do vale — a tela, não o sistema.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/teia_social.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste teia_social
 ##
 ## O SISTEMA JÁ TEM PORTÃO: o `tests/fe.gd` daqui confere os sete moradores com
 ## gosto e desgosto lidos do `aldeoes.json`, e o `testar_afinidade.gd` do 2D

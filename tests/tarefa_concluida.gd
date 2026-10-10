@@ -1,8 +1,8 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## A TAREFA CONCLUÍDA SE VÊ E SE OUVE (07/10: "precisamos evidenciar melhor que o jogador
 ## concluiu uma tarefa da missão... talvez um efeito brilhante no balão de missão").
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/tarefa_concluida.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste tarefa_concluida
 ##
 ## A festa de tela inteira é só do fim da missão (tests/falas_em_fila.gd, conquista_da_missao).
 ## Cada passo do MEIO fechado ganha o pulso do quadro da missão, o risco "✓ tarefa" e o sinete.

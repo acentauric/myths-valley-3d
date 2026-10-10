@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## AS FALAS ESPERAM UMAS AS OUTRAS (fila_de_falas.gd).
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/falas_em_fila.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste falas_em_fila
 ##     ... -- --falsificar-fila        (o portão TEM de reprovar: o vale sem a fila)
 ##
 ## "As falas estão sendo sobrepostas, as falas precisam esperar umas as outras

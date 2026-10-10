@@ -1,4 +1,4 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## O botão de FPS não deve deixar uma dica gigante presa à coluna direita: abre um
 ## painel acima do minimapa, com todas as medições, e o recolhe junto com mapa e
 ## controles. Este portão também protege o encaixe quando a janela muda de tamanho.

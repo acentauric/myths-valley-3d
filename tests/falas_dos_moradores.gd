@@ -1,8 +1,8 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere AS FALAS DOS MORADORES: todo morador do vale fala — ou é mudo POR ESCRITO, com a
 ## razão —, e os catorze que eram mudos falam, nos três idiomas, pela fila de falas.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/falas_dos_moradores.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste falas_dos_moradores
 ##     ... -- --falsificar-falas        (o portão TEM de reprovar: ver `_falsificar`)
 ##
 ## "Crie as falas para os personagens que ainda não têm." (playtest da Build 9B, 06/10/2026).

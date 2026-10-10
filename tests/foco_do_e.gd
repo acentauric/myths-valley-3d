@@ -1,8 +1,8 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere O FOCO DO E (scripts/prototipo_3d/foco_do_e.gd): de tudo o que responde
 ## ao E, um só leva a tecla — o da frente do jogador, e mais perto.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/foco_do_e.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste foco_do_e
 ##
 ## "Ao tentar interagir com o cordel e tem um NPC próximo, ele foca somente na
 ## seleção do NPC e não consigo clicar no cordel. Imagino que o mesmo acontece
@@ -31,6 +31,9 @@ extends SceneTree
 ##      do que abriu —; nenhuma dica fica acesa com a tela aberta, e a do Tonho volta
 ##      ao fechar. O mesmo quando algo cobre o vale sem parar a árvore (a festa da
 ##      missão, a voz do mundo: `coberto`).
+
+## Recebe o vale montado do zero: reprovava no vale deixado pelos casos anteriores (a suíte, #242).
+const VALE_NOVO := true
 
 const FocoDoE = preload("res://scripts/prototipo_3d/foco_do_e.gd")
 const CORDEL := "moleque_do_pier"

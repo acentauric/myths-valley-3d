@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## O MORADOR NÃO SALTA NO CAMINHO LONGO QUANDO A CÂMERA VIRA (#84).
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/caminho_longo.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste caminho_longo
 ##
 ## "O padre teleportou em vários momentos que caminhava, eu vi a primeira vez
 ## saindo da igreja para o cemitério." A troca de posto a mais de CAMINHO_LONGO

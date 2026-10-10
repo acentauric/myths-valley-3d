@@ -1,8 +1,8 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Escala individual do aceite da missão e do aviso de primeira vez (#140): cada cartão tem o seu
 ## ajuste, cabe na janela em três resoluções e três idiomas, e mexer num não mexe no outro.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/interfaces_de_cartoes.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste interfaces_de_cartoes
 ##
 ## `--sem-escala` tira a transformação do aceite em memória e reprova a asserção correspondente.
 var falhas := 0

@@ -1,4 +1,4 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## O E no baú real abre a pergunta; Não preserva o saldo e Sim paga (#68).
 var falhas := 0
 func _initialize() -> void:

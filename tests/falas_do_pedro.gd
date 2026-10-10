@@ -1,8 +1,8 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## AS FALAS SITUACIONAIS DO PEDRO (#179): comentários curtos, cada um ligado a um gatilho do que acontece com
 ## o jogador enquanto ele conduz a chegada.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/falas_do_pedro.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste falas_do_pedro
 ##
 ## O Pedro tinha 21 falas com voz e ficava calado quando o jogador sumia, parava, caía na água ou ia para o lado
 ## errado. Cinco perguntas:

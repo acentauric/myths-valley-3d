@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere AS COLISÕES DO VALE E A CÂMERA QUE ANDA ENTRE ELAS.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/colisoes_do_vale.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste colisoes_do_vale
 ##
 ## Duas queixas do dono, na mesma noite: "revise todas as colisões, há
 ## anomalias" e "a câmera dá um pulo ao passar na frente do cruzeiro; mantenha a
@@ -32,6 +32,9 @@ extends SceneTree
 ## beiral), no lampião e no mastro (cilindro fora do poste), na mata_alta, na
 ## mata_larga e na aroeira (cilindro no meio da copa), no poço (raio curto), no
 ## convés do saveiro (a vela barra) e nas camadas (não existia a da câmera).
+
+## Recebe o vale montado do zero: reprovava no vale deixado pelos casos anteriores (a suíte, #242).
+const VALE_NOVO := true
 
 const Camadas = preload("res://scripts/prototipo_3d/camadas.gd")
 

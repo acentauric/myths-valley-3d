@@ -1,10 +1,10 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## A MISSÃO À VISTA (08/10: "continuo sem missões depois da introdução à vila; eu preciso falar
 ## com o NPC para destravar, mas isso não é óbvio para o jogador. Precisa seguir boas práticas de
 ## jogos de RPG e colocar uma exclamação em cima da cabeça do NPC com quest disponível. Também
 ## deve ter uma tela resumo sobre a missão para o jogador aceitar ela ou não").
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/missao_a_vista.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste missao_a_vista
 ##
 ##   1. O "!" SOBRE A CABEÇA: acabada a chegada, o Pedro tem a ponte por abrir no E dele — o
 ##      marcador dele diz "!" e está à vista. O Tonho, com o passo da rede esperando a entrega

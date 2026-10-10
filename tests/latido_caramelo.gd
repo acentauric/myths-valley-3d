@@ -1,4 +1,4 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 class Cao extends Node3D:
 	var jogador: Node3D
 	var perto := true

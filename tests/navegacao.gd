@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere A MALHA DE NAVEGAÇÃO DOS MORADORES (navegacao_vale.gd).
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/navegacao.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste navegacao
 ##
 ## Dez perguntas:
 ##
@@ -41,6 +41,9 @@ extends SceneTree
 ## com a física limitada a 3 passos por quadro, o jogo anda mais devagar que a parede
 ## com o quadro acima de 50 ms, e na bateria cheia ele passa. `MV_QUADRO_LENTO_MS=150`
 ## no ambiente roda este portão como na bateria no pior.
+
+## Recebe o vale montado do zero: reprovava no vale deixado pelos casos anteriores (a suíte, #242).
+const VALE_NOVO := true
 
 const RelogioDeJogo = preload("res://tests/fixtures/relogio_de_jogo.gd")
 

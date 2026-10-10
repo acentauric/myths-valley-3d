@@ -1,9 +1,9 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere O E NOS SÍTIOS DE OBRA (scripts/prototipo_3d/tecla_das_bancadas.gd): o poço,
 ## a ponte, o mirante, o cemitério e a carroça respondem ao E, e o E vai para a
 ## obra que a missão pede — não para o morador parado ao lado do jogador.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/obras_com_e.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste obras_com_e
 ##
 ## "O botão de interagir com o E está sendo sobreposto." / "Não consegui interagir
 ## com o poço, logo essa missão quebrou." Seis passos de missão fecham numa obra, e

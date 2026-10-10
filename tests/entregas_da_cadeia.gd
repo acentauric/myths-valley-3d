@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## O QUE O PASSO ENTREGA NÃO SE PERDE: nem no save, nem com a mochila cheia.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/entregas_da_cadeia.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste entregas_da_cadeia
 ##
 ## Duas travas que deixavam a missão sem saída (cadeia_de_missoes.gd):
 ##

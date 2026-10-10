@@ -1,4 +1,4 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## O mesmo painel muda de escala conforme a tela que ocupa, sem acumular sinais.
 var falhas := 0
 func _initialize() -> void:

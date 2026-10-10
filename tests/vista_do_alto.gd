@@ -1,4 +1,4 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## #18: a referência abre no alto; uma parede continua cortando o braço real.
 class Mundo extends Node3D:
 	var ancoras := {"Cabra do alto": Vector3(0, 3, 0)}

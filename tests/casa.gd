@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere A CASA HERDADA POR DENTRO e a CAMA QUE VIRA O DIA (#50, #26).
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/casa.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste casa
 ##
 ## `casa_procedural.gd` faz o outro estilo. Dez perguntas:
 ##

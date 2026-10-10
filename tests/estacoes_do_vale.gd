@@ -1,4 +1,4 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## A virada real do calendário muda mata, luz e mistura sonora (#17).
 var falhas := 0
 func _initialize() -> void:

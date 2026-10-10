@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere O MENU DO ESC — que recebeu a coluna de ícones do canto esquerdo.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/menu_pausa.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste menu_pausa
 ##
 ## "Os ícones na esquerda do HUD podem ser todos dentro do menu ESC." Eram nove
 ## botões redondos empilhados na borda, por cima do vale, o tempo todo, e sem

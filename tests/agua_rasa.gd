@@ -1,4 +1,4 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## O jogador entra no mar andando ao lado do píer: afunda aos poucos no fundo da
 ## batimetria, anda mais devagar, passa a nadar onde não dá pé (cabeça de fora, sem
 ## afundar), e depois volta nadando e andando até a areia, sem pular.
@@ -9,6 +9,11 @@ extends SceneTree
 ## caminhada de verdade).
 
 ## Quanto a câmera fica acima da água, no mínimo (a garantia é 0,35).
+## Atravessa o bracinho de mar a pé, com 14000 + 16000 quadros de física.
+const TETO_S := 700
+## Simulação longa: o tempo do jogo corre 4 vezes mais rápido durante o caso.
+const ACELERAR := 4
+
 const CAMERA_ACIMA_DA_AGUA := 0.30
 ## A menor distância da câmera ao pivô (a garantia é 1,25).
 const BRACO_MINIMO := 1.2

@@ -22,7 +22,7 @@ const DISTANCIA_DO_TELEPORTE := 15.0
 ## Segundos de jogo para o corpo andar o último trecho (15 u a ~4 u/s, com folga).
 const TETO_DA_CAMINHADA_S := 60.0
 
-var arvore: SceneTree
+var arvore
 var vale: Node
 var jogador: Node
 ## O `RelogioDeJogo` (tests/fixtures/relogio_de_jogo.gd): as esperas são em segundos de jogo.
@@ -42,7 +42,7 @@ var ultimo_motivo := ""
 var teleporte := true
 
 
-func _init(a: SceneTree, v: Node, r: Node, reprovar_: Callable, contar_: Callable) -> void:
+func _init(a, v: Node, r: Node, reprovar_: Callable, contar_: Callable) -> void:
 	arvore = a
 	vale = v
 	jogador = v.get("player")

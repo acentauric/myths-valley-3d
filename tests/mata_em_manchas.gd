@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere A MATA EM MANCHAS (especies_da_mata.gd, GeoRegionRenderer._build_forest).
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/mata_em_manchas.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste mata_em_manchas
 ##
 ## Monta só a região do vale, duas vezes, no estilo Tripo, e pergunta:
 ##

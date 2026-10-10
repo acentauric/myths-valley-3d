@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere que A BARRA DE MÃO APARECE — e não só que ela existe.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/barra_de_mao.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste barra_de_mao
 ##
 ## Este teste nasceu de um defeito que passou por quinze testes verdes: a barra
 ## estava criada, ligada e correta em lógica, e NÃO DESENHAVA. A causa era
@@ -25,6 +25,9 @@ extends SceneTree
 ##      inclusive o machado, que o número põe na mão.
 ##
 ## E, depois, o que a mão faz com o E: come (7–10, #105), e LÊ o papel (#113).
+
+## Recebe o vale montado do zero: reprovava no vale deixado pelos casos anteriores (a suíte, #242).
+const VALE_NOVO := true
 
 var falhas := 0
 var Inv: Node = null

@@ -1,8 +1,8 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere as ONÇAS do vale (#28): onde moram, o que enxergam, como caçam e o
 ## corpo que vestem.
 ##
-##     Godot_v4.7.2-stable-win64_console.exe --headless --path . --script res://tests/onca.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste onca
 ##
 ## O que este portão pergunta, e a luta (`luta.gd`) não:
 ##

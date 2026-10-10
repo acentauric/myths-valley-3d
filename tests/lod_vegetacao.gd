@@ -1,4 +1,4 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## O LOD precisa cortar blocos no passeio sem apagar a vegetação no mapa alto.
 
 var falhas := 0

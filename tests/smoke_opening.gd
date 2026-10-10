@@ -1,6 +1,5 @@
-extends SceneTree
-## Run: Godot --headless --path . --script res://tests/smoke_opening.gd
-
+extends "res://tests/suite/caso.gd"
+## Run: .\tools\prototipo_3d\testar.ps1 -Teste smoke_opening
 var falhas := 0
 
 func _conferir(ok: bool, rotulo: String) -> void:

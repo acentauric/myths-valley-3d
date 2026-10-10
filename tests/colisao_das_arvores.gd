@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere que O CORPO DE UMA ÁRVORE COBRE O TRONCO QUE SE VÊ.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/colisao_das_arvores.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste colisao_das_arvores
 ##
 ## Este portão nasceu de uma queixa que eu NÃO CONSEGUI REPRODUZIR: "a área de
 ## colisão de algumas árvores não está funcionando adequadamente. Nos coqueiros

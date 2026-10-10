@@ -1,4 +1,4 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
 ## Duas vagas reais no perfil isolado do runner: cancelar não grava;
 ## confirmar guarda a origem, recarrega o vale e preserva o destino.

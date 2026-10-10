@@ -1,9 +1,9 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere A LOMBADA, A LAPA E A CABRA, a frente do ofício do 2D
 ## (docs/projeto/MISSOES_DO_2D.md, 1.5; data/missoes_lombada.json;
 ## scripts/prototipo_3d/lombada_vale.gd).
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/lombada.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste lombada
 ##
 ## Sete perguntas:
 ##
@@ -20,6 +20,9 @@ extends SceneTree
 ##      que escorregava rampa abaixo).
 ##   6. A VOLTA: o E no Pedro fecha a frente, com a Santa Casa na fala.
 ##   7. O SAVE: a partida que volta tem a lapa caída e a cabra em casa.
+
+## Recebe o vale montado do zero: reprovava no vale deixado pelos casos anteriores (a suíte, #242).
+const VALE_NOVO := true
 
 const RelogioDeJogo = preload("res://tests/fixtures/relogio_de_jogo.gd")
 

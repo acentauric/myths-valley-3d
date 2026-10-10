@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere O VULTO DA MATA: o susto que fecha o jogo de mentira.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/fantasma_da_mata.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste fantasma_da_mata
 ##
 ## "adicione um fantasma na floresta que aparece aleatoriamente e fecha o jogo ao correr em direção ao
 ## personagem... vai parecer um bug mas não é (se o personagem não tirar a câmera da direção, ele some,
@@ -33,6 +33,9 @@ extends SceneTree
 ## FALSIFICAÇÃO: com `OLHAR_PARA_SUMIR` enorme (`fantasma_da_mata.gd`), a 4 reprova; com o `salvar` tirado
 ## de `_pegar`, a 5 reprova; com a guarda de `sem_tela` tirada de `_fechar_de_verdade`, o jogo fecha e o
 ## portão grita FALHA.
+
+## Recebe o vale montado do zero: reprovava no vale deixado pelos casos anteriores (a suíte, #242).
+const VALE_NOVO := true
 
 const RelogioDeJogo = preload("res://tests/fixtures/relogio_de_jogo.gd")
 

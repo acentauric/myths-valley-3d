@@ -1,6 +1,9 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Perfil isolado pelo runner. O início não pode carregar a abertura sem escolha.
 
+## Num Godot só dele: confere que o início não pré-carrega a abertura
+## (`ResourceLoader.has_cached`), e na suíte outros casos já a carregaram.
+const ISOLADO := true
 var falhas := 0
 
 
@@ -158,9 +161,10 @@ func _run() -> void:
 	_conferir(inicio.has_node("CanvasLayer/TelaCarregamento"), "mostra carregamento após escolher")
 	_conferir(inicio.get_node("CanvasLayer/TelaCarregamento/Capa").scale == Vector2.ONE, "carregamento também usa fundo estático")
 	var prazo := Time.get_ticks_msec() + 120000
-	while current_scene == inicio and Time.get_ticks_msec() < prazo:
+	# Durante a troca há quadro com current_scene nula: espera a abertura chegar.
+	while (current_scene == inicio or current_scene == null) and Time.get_ticks_msec() < prazo:
 		await process_frame
-	_conferir(current_scene != inicio, "transição para a abertura após escolha")
+	_conferir(current_scene != inicio and current_scene != null, "transição para a abertura após escolha")
 	var abertura := current_scene
 	_conferir(abertura.lines == dados_travessia("travessia_es"), "intro segue o espanhol confirmado")
 	var cenario := abertura.get_node("Cenario")

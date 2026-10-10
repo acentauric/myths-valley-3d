@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## JOGA O MIRANTE — as missões do arraial que o Pedro dá depois do tutorial.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/cadeia_do_mirante.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste cadeia_do_mirante
 ##
 ## Vieram do jogo 2D (`data/dialogos/arraial.json`: povo_conhecer,
 ## canteiro_material, canteiro_obra, mirante_ver, mirante_material,
@@ -25,6 +25,9 @@ extends SceneTree
 ##      tábua de sobra e nenhuma corda.
 ##   7. A OBRA FECHA O ÚLTIMO, E PAGA (#48): os 1200 réis da vaquinha do arraial
 ##      e o pirão do Pedro, uma vez — e o HUD diz o que veio.
+
+## Recebe o vale montado do zero: reprovava no vale deixado pelos casos anteriores (a suíte, #242).
+const VALE_NOVO := true
 
 const PovoadoLiberado = preload("res://tests/fixtures/povoado_liberado.gd")
 const ConversaDoE = preload("res://tests/fixtures/conversa_do_e.gd")

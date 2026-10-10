@@ -1,8 +1,8 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere QUE TODO MODAL ESCONDE O HUD DO VALE e que os papéis da tipografia
 ## existem e valem (#199).
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/modais_escondem_o_hud.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste modais_escondem_o_hud
 ##
 ## A queixa: com o Arraial (P) aberto, missão, relógio, atalhos, minimapa e barra de
 ## mão apareciam atrás do modal, só escurecidos. A #143 tinha resolvido isso só

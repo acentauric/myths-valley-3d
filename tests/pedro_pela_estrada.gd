@@ -1,9 +1,9 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## O PEDRO CONDUZ PELA ESTRADA E PELA PONTE (playtest de 07/10: "ao sair da praça, o Pedro tá
 ## correndo por trás da casa ao invés de pegar a estrada; o mesmo se repete na água do rio, ao
 ## invés dele passar na ponte").
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/pedro_pela_estrada.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste pedro_pela_estrada
 ##
 ## O caminho da malha é o mais curto, e o mais curto corta por trás das casas e beira a água.
 ## `Navegacao.caminho_pela_estrada` vai pela rua: da partida à rua pela malha, pela rua (as

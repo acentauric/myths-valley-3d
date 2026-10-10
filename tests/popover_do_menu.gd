@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## O POPOVER DOS BOTÕES DA ESQUERDA DO LOBBY (#232): uma caixa compacta com seta no lugar do tooltip em linha.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/popover_do_menu.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste popover_do_menu
 ##
 ## Seis perguntas:
 ##

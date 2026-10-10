@@ -1,8 +1,8 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere a COSTURA DOS LUGARES do lado 3D: nome de lugar vira posição no
 ## vale, e nome que o vale ainda não tem some em silêncio em vez de mentir.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/lugares.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste lugares
 ##
 ## O par deste teste é o `testar_lugares` do jogo 2D, na raiz. Os dois cobram o
 ## mesmo contrato: `ponto(nome)` devolve o lugar, nome desconhecido devolve

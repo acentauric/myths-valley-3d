@@ -1,4 +1,4 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## OS PAVÕES NÃO PISCAM (#193): o jogador anda e corre pela estrada da igreja, de 110 u
 ## do adro até colado nele e de volta, com a câmera atrás, girada para a frente e longe,
 ## e o gerente dos bichos de casa e a apresentação do povoado decidem a cada quadro quem
@@ -13,10 +13,13 @@ extends SceneTree
 ##      normal e o de cauda aberta, invisíveis ao mesmo tempo.
 ##   3. PISCAR: uma ave que liga e desliga mais de duas vezes numa travessia só.
 ##
-##   Godot --headless --path . --script res://tests/aves_sem_piscar.gd
+##   .\tools\prototipo_3d\testar.ps1 -Teste aves_sem_piscar
 ##   ... -- --falsificar-corte   volta ao corte de antes: `bando.visible` pela distância do
 ##                               CENTRO do terreiro a 80 u, sem o fade. O portão TEM de reprovar.
 ##   ... -- --sem-leque          não abre nem fecha o leque (só para medir o resto).
+
+## Recebe o vale montado do zero: reprovava no vale deixado pelos casos anteriores (a suíte, #242).
+const VALE_NOVO := true
 
 ## O maior salto de opacidade que um quadro pode dar: o fade do motor e o da apresentação
 ## (0,8 s) andam poucos centésimos por quadro; passar de 0 a 1 de uma vez é o pisca.

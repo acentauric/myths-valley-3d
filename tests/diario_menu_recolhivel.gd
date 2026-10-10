@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## O MENU DA ESQUERDA DO DIÁRIO RECOLHE, E A FALA E OS OBJETIVOS TÊM A MESMA LETRA (#221).
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/diario_menu_recolhivel.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste diario_menu_recolhivel
 ##
 ## No Diário (J), mesmo depois da #202, as colunas da esquerda (as abas e a lista de missões) ocupavam quase metade da
 ## largura com uma missão só, a fala de quem pediu saía maior que os objetivos, e os objetivos ainda rolavam. Cinco

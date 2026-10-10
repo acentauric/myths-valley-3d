@@ -1,9 +1,9 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## A MÚSICA ACOMPANHA O DIA, NO VALE DE VERDADE: o relógio anda pelos cinco períodos
 ## (madrugada, manhã, tarde, entardecer, noite) e a trilha que toca troca a cada um
 ## que tem trilha própria, em fusão — a atual desce, o fluxo muda no fundo, a nova sobe.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/musica_do_dia.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste musica_do_dia
 ##
 ## "Senti falta da mudança de trilha entre os períodos do dia" (playtest da Build 9B). O
 ## `audio_fade` só mexe nas trilhas do menu, com fluxos sintéticos; nada garantia que o

@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## JOGA A CADEIA DA DONA ZEFA — as ervas da serra e a história do Cosme.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/cadeia_da_zefa.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste cadeia_da_zefa
 ##
 ## Veio do jogo 2D (`data/dialogos/arraial.json`, passos zefa_ervas /
 ## zefa_cosme / zefa_conversa / zefa_terra). Ela manda subir a serra por cinco
@@ -64,6 +64,9 @@ extends SceneTree
 ## `MV_FALSIFICAR=parede` ele volta a esperar em parede, e então TEM de reprovar com
 ## essas quatro linhas (a moita é de um golpe só, e o laço dela tem folga: a 150 ms
 ## ainda passa).
+
+## Recebe o vale montado do zero: reprovava no vale deixado pelos casos anteriores (a suíte, #242).
+const VALE_NOVO := true
 
 const RelogioDeJogo = preload("res://tests/fixtures/relogio_de_jogo.gd")
 const Jogada = preload("res://tests/fixtures/jogada.gd")

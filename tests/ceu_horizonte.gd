@@ -1,10 +1,10 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## O CÉU E O HORIZONTE: o céu é o do CeuVale (shader próprio, névoa que tira a cor do
 ## céu), a névoa segue a regra que esconde o corte da mata sem virar sopa, a baixada tem
 ## neblina na alvorada, o céu não tem partícula, e a terra além do quadro sobe com o mesmo
 ## exagero do relevo do jogo (sem o degrau na borda).
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/ceu_horizonte.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste ceu_horizonte
 ##
 ## A REGRA DA NÉVOA, em QUALQUER hora do dia: a 280 u (onde a mata some por bloco) entre
 ## 22% e 45%; a 2 800 u (o far do jogador) 94% ou mais; a 4 400 u (a borda do mar vista

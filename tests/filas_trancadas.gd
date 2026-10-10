@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## AS FILAS TRANCADAS DIZEM O QUE FALTA, E O MORADOR SEM CAMINHO ESPERA PARADO.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/filas_trancadas.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste filas_trancadas
 ##
 ## DOIS DEFEITOS PEQUENOS DA MESMA NOITE DE JOGO (Build 9B, 06/10/2026):
 ##
@@ -29,6 +29,9 @@ extends SceneTree
 ## faça `GuiaPedro._repete_o_aviso` devolver true e a 1b reprova de novo (o Pedro repete a chapada);
 ## volte `REFAZER_SEM_CAMINHO` para 4.0, ou tire o `if not _esperando_a_malha` do passo do
 ## morador, e a seção 2 reprova.
+
+## Recebe o vale montado do zero: reprovava no vale deixado pelos casos anteriores (a suíte, #242).
+const VALE_NOVO := true
 
 const RelogioDeJogo = preload("res://tests/fixtures/relogio_de_jogo.gd")
 

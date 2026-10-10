@@ -1,8 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## A travessia em vídeo (#129): cada fala toca o seu clipe LTX atrás da legenda, a última
 ## espera o saveiro chegar à igreja, e voltar ao menu (ou entrar no jogo) fecha o vídeo.
-## Run: Godot --headless --path . --script res://tests/travessia_em_video.gd
-
+## Run: .\tools\prototipo_3d\testar.ps1 -Teste travessia_em_video
 var falhas := 0
 
 

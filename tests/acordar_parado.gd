@@ -1,9 +1,9 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere ACORDAR PARADO (#189): quem dorme correndo, andando, nadando ou de
 ## machado no golpe acorda em pé, quieto e no clipe do parado, em frente à cama,
 ## desde o primeiro quadro depois do escuro, pelas três portas da noite.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/acordar_parado.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste acordar_parado
 ##
 ##   1. O ANIMADOR larga o que fazia: depois de `acordar_parado`, o clipe é o
 ##      parado (sem mistura), na posição 0, sem gesto, golpe, pulo, trabalho ou nado.

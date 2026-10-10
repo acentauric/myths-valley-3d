@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere A CÂMERA RESILIENTE: nunca dentro do personagem, nunca debaixo d'água.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/camera_resiliente.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste camera_resiliente
 ##
 ## `camera_resiliente_procedural.gd` faz o outro estilo. Três queixas do dono,
 ## na noite do Build 9B: "já havíamos corrigido a questão da câmera não entrar
@@ -31,6 +31,9 @@ extends SceneTree
 ## FALSIFICAÇÃO: `-- --falsificar=braco` zera o braço mínimo (e desliga a subida),
 ## e a porta TEM de reprovar; `-- --falsificar=agua` zera a folga sobre a água, e a
 ## orla TEM de reprovar. A variável de ambiente `MV_FALSIFICAR` faz o mesmo.
+
+## Recebe o vale montado do zero: reprovava no vale deixado pelos casos anteriores (a suíte, #242).
+const VALE_NOVO := true
 
 const RelogioDeJogo = preload("res://tests/fixtures/relogio_de_jogo.gd")
 

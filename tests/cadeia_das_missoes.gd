@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## JOGA A CADEIA DE MISSÕES DO COMEÇO AO FIM, e confere que cada passo fecha.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/cadeia_das_missoes.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste cadeia_das_missoes
 ##
 ## Este portão existe porque a missão da picareta foi dada por consertada duas
 ## vezes e continuou quebrada. As duas vezes eu medi uma PARTE — que o alvo
@@ -45,6 +45,7 @@ extends SceneTree
 ##
 ## Medir espera de jogo em quadros só funciona enquanto quadro e segundo andam
 ## juntos — e em headless eles não andam.
+
 
 var falhas := 0
 ## Teto REAL por passo. Passo que não fecha nisto está preso.

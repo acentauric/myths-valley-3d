@@ -1,8 +1,8 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere que TODA CASA DO VALE ABRE POR DENTRO E TEM MÓVEIS, a começar pelo casarão
 ## da fazenda.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/casas_por_dentro.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste casas_por_dentro
 ##
 ## "Precisamos melhorar a casa grande no norte do mapa, com acesso interno como as demais
 ## casas pequenas têm; todas as casas devem ter acesso interno e móveis." Só quatro das

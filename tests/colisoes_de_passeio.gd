@@ -1,8 +1,8 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere AS COLISÕES NO CHÃO, andando: o corpo do jogador anda os caminhos do
 ## vale e as portas das construções, e o portão diz onde ele prendeu.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/colisoes_de_passeio.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste colisoes_de_passeio
 ##
 ## `colisoes_de_passeio_procedural.gd` faz o outro estilo. "Tem diversos pontos
 ## ruins de colisão que precisam ser revisados", disse o dono, sem apontar nenhum:
@@ -37,6 +37,9 @@ extends SceneTree
 ## primeiro caminho, e o portão TEM de achá-la (e de reprovar); `-- --falsificar=degrau`
 ## desliga a subida de borda de face torta do corpo (`sobe_borda_torta`), e o portão TEM
 ## de achar o corpo preso na faixa de rua, na cabeceira da ponte e na areia.
+
+## Recebe o vale montado do zero: reprovava no vale deixado pelos casos anteriores (a suíte, #242).
+const VALE_NOVO := true
 
 const PASSO := 0.1
 ## Quantos passos sem avanço fazem um "preso" (1,2 m de caminho sem andar).

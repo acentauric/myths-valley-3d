@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## JOGA A GARAPA DA PRAÇA — a cadeia que corta e entrega.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/cadeia_da_candinha.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste cadeia_da_candinha
 ##
 ## Veio do jogo 2D (`data/dialogos/arraial.json`, passo candinha_cana). A Dona
 ## Candinha mói cana no meio da praça e quer seis da do jogador, cortadas no
@@ -31,6 +31,9 @@ extends SceneTree
 ##   5. SEIS FECHA, E AS SEIS SAEM DA MOCHILA — não uma. Quem recebe responde.
 ##   6. A CADEIA SOBREVIVE A RECARREGAR: depois da entrega não sobra nada no
 ##      mundo que prove que ela houve.
+
+## Recebe o vale montado do zero: reprovava no vale deixado pelos casos anteriores (a suíte, #242).
+const VALE_NOVO := true
 
 const PovoadoLiberado = preload("res://tests/fixtures/povoado_liberado.gd")
 const ConversaDoE = preload("res://tests/fixtures/conversa_do_e.gd")

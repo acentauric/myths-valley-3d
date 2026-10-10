@@ -1,4 +1,4 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 var falhas := 0
 
 func _initialize() -> void:

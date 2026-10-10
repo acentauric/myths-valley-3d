@@ -1,4 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
+
+## Recebe o vale montado do zero: reprovava no vale deixado pelos casos anteriores (a suíte, #242).
+const VALE_NOVO := true
 const CameraMouse = preload("res://scripts/prototipo_3d/camera_mouse.gd")
 const Camadas = preload("res://scripts/prototipo_3d/camadas.gd")
 var falhas := 0

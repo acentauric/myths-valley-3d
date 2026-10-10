@@ -1,4 +1,4 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## O tubarão existe na água funda, persegue o jogador que nada lá, ataca (tela escura)
 ## e devolve o jogador à terra firme; o Pedro nunca é alvo.
 ##

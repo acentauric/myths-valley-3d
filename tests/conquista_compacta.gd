@@ -1,4 +1,4 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## #130: conclusão pelo caderno real, sem clarão aditivo sobre todo o vale.
 var falhas := 0
 func _initialize() -> void:

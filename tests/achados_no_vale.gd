@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere que O QUE SE ACHA NO VALE ESTÁ AO ALCANCE DE QUEM ANDA.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/achados_no_vale.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste achados_no_vale
 ##
 ## "Confira se os cordéis estão espalhados pelo mapa e acessíveis pelo jogador."
 ##

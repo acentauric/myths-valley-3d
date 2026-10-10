@@ -1,9 +1,9 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## AS CENAS DO VALE PELOS DADOS (07/10: "implementar a mesma lógica de cutscene que fizemos no 2D,
 ## travando a tela e comandos do jogador e a própria engine conduzindo os personagens para uma
 ## interação com fala; explorar a vista, o cenário, aproximar dos personagens, mexer os braços").
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/cenas_do_vale.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste cenas_do_vale
 ##
 ##   1. OS DADOS FECHAM: cada cena de data/cenas.json só usa comandos conhecidos, segura e solta;
 ##      `quem` é o Pedro ou um morador do vale; `de`/`para`/`ate`/`olha_de`/`olha_para` resolvem
@@ -15,6 +15,9 @@ extends SceneTree
 ##      tarjas descem, a fila fica segura até o `anuncia`, o Pedro anda até o Tonho; e no fim tudo
 ##      volta — jogador, câmera, tarjas, fila —, o passo seguinte foi anunciado e a cena coube no teto.
 ##   3. CENA DURANTE CENA ESPERA A VEZ: pedida outra no meio, ela toca depois, e não some.
+
+## Recebe o vale montado do zero: reprovava no vale deixado pelos casos anteriores (a suíte, #242).
+const VALE_NOVO := true
 
 const TETO_DA_CENA_S := 30.0
 

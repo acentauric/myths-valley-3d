@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## O ALTO DA TELA DIZ A TAREFA (#83), e não o texto da missão.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/tarefa_no_hud.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste tarefa_no_hud
 ##
 ## "As missões estão mostrando texto inteiro no HUD, enquanto na verdade deve
 ## mostrar apenas a task." Entre 04/10 e 06/10 o HUD recebia as páginas com a

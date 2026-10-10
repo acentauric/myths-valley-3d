@@ -1,8 +1,8 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## OS POPUPS DO MUNDO SÃO POUCOS E TÊM PESO (placas_nomes.gd, dica_tecla.gd, balao_fala.gd,
 ## seta_missao.gd, arvores_info.gd, suavizador_de_tela.gd, popups_do_mundo.gd).
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/popups_na_tela.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste popups_na_tela
 ##     $env:MV_FALSIFICAR = "popups"    (o portão TEM de reprovar: o jogo de antes, sem mola, sem
 ##                                       teto de placas e sem permanência do balão)
 ##
@@ -41,6 +41,9 @@ extends SceneTree
 ## Espera em segundos de JOGO (tests/fixtures/relogio_de_jogo.gd): a bateria cheia roda muitos
 ## Godot de uma vez, e o quadro devagar não pode reprovar o portão. A velocidade se mede em
 ## janelas de 0,1 s de jogo, e não quadro a quadro: o quadro da máquina cheia mede o relógio.
+
+## Recebe o vale montado do zero: reprovava no vale deixado pelos casos anteriores (a suíte, #242).
+const VALE_NOVO := true
 
 const SuavizadorDeTela = preload("res://scripts/prototipo_3d/suavizador_de_tela.gd")
 const PopupsDoMundo = preload("res://scripts/prototipo_3d/popups_do_mundo.gd")

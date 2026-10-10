@@ -1,4 +1,4 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Portão da prévia: a cena precisa guardar a mesma terra para as duas telas de
 ## composição e o runtime precisa descartá-la antes de construir o vale real.
 

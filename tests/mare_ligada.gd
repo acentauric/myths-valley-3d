@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## A MARÉ VEM LIGADA, SE VÊ NO JOGO E O VALE INTEIRO A SEGUE.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/mare_ligada.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste mare_ligada
 ##
 ## "Eu ainda não vi a maré, ela se mantém implementada?" (playtest da Build 9B). Ela estava
 ## inteira no código e DESLIGADA de fábrica ("Sem maré"), e a preferência do desenvolvedor

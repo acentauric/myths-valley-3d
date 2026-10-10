@@ -1,8 +1,8 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere as ANIMAÇÕES DOS BICHOS, uma por uma ("precisamos revisar as animações dos
 ## animais"): a esticada, a pausa, o clipe torto, a perna dura, a patinação e a cabra.
 ##
-##     Godot_v4.7.2-stable-win64_console.exe --headless --path . --script res://tests/animais_animacao.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste animais_animacao
 ##
 ## O que este portão pergunta, e nenhum outro:
 ##

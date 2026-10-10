@@ -1,4 +1,4 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Travessia: uma narração por legenda, nos tempos do Whisper, e a música própria.
 ## Toda legenda (nos três idiomas) tem o seu trecho; os trechos seguem a ordem da tomada;
 ## trocar de trecho com outro ainda soando espera o fade antes de começar.

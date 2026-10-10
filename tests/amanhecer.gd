@@ -1,8 +1,8 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere O AMANHECER NO VALE (#21): o cartão do dia que começa, lido no
 ## escuro da queda, e a fala de quem acorda na caixa de fala longa.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/amanhecer.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste amanhecer
 ##
 ## A tela pertence ao vale. O portão mede apresentação, queda e lembretes
 ## usando apenas os recursos deste projeto.

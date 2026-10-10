@@ -1,8 +1,8 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## OS MORADORES AJUDAM QUEM ESTÁ PERDIDO (#204): um morador que entende do assunto vem até o jogador, dá uma dica
 ## curta e volta à rotina.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/dicas_dos_moradores.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste dicas_dos_moradores
 ##
 ## Depois do tutorial o jogo deixava o jogador sozinho: a missão da lenha ficou em 2/36 por centenas de ações e
 ## ninguém disse nada. Sete perguntas:
@@ -21,6 +21,9 @@ extends SceneTree
 ##      balão, e solta o morador para a rotina; o mesmo assunto não volta antes do cooldown, e outro assunto também não
 ##      emenda; Desligadas ninguém vem.
 ##   7. SEM MORADOR PERTO, VEM O PEDRO: com o do assunto impedido de vir, a dica é a do Pedro.
+
+## Recebe o vale montado do zero: reprovava no vale deixado pelos casos anteriores (a suíte, #242).
+const VALE_NOVO := true
 
 const PASTA_VOZES := "res://assets/audio/vozes/"
 const SEGUNDOS_DE_CHEGADA := 40.0

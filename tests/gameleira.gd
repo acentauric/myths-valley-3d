@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## A GAMELEIRA DO SAMBAQUI ASSENTA NO CHÃO (#87).
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/gameleira.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste gameleira
 ##
 ## O monte e a árvore eram assentados por uma amostra do terreno, no centro
 ## (`world_builder._build_gameleira`); com o chão novo de 05/10 a encosta ali

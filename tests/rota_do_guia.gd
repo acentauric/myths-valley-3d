@@ -1,4 +1,4 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 
 func _initialize() -> void:
 	rodar.call_deferred()

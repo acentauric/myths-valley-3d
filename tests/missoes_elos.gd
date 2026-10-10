@@ -1,8 +1,8 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## OS ELOS DAS MISSÕES: cada passo das 23 filas tem para onde ir, a quem falar, de onde tirar o
 ## material, quem emita o acontecimento — e o E, do ponto onde o jogador chega, é de quem o passo manda.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/missoes_elos.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste missoes_elos
 ##
 ## É o portão RÁPIDO do par (o outro, `missoes_do_comeco_ao_fim`, joga tudo e leva minutos). Ele
 ## cobra, de `data/missoes_*.json` contra o vale construído:
@@ -27,6 +27,9 @@ extends SceneTree
 ## "Não consegui interagir com o poço, logo essa missão quebrou", e "Quando fui falar com Dona
 ## Candinha para pegar a chave, não consegui interagir": nenhum portão olhava de onde o jogador
 ## chega, nem quem leva a tecla ali.
+
+## Recebe o vale montado do zero: reprovava no vale deixado pelos casos anteriores (a suíte, #242).
+const VALE_NOVO := true
 
 const Jogada = preload("res://tests/fixtures/jogada.gd")
 const RelogioDeJogo = preload("res://tests/fixtures/relogio_de_jogo.gd")

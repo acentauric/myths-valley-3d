@@ -1,4 +1,4 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Independência, persistência, ancoragem e retângulos reais de componentes.
 var falhas := 0
 

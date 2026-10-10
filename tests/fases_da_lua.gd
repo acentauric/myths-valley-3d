@@ -1,9 +1,9 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## AS FASES DA LUA (#229): a noite deixa de ter sempre a mesma claridade. A fase sai do dia do
 ## calendário num ciclo de oito dias; a lua cheia é clara, a nova é escura, o disco leva a fase, as
 ## luzes locais ganham força na nova e as "Noites escuras: Sim / Suaves" encolhem a diferença.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/fases_da_lua.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste fases_da_lua
 ##
 ##   1. A CONTA (pura, sem vale): o ciclo repete a cada oito dias e passa pelas oito fases; a iluminação
 ##      vai de 0 (nova) a 1 (cheia) e volta; o dia 1 não é lua nova; a energia da lua, do ambiente e das

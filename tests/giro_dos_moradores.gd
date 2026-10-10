@@ -1,9 +1,9 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere o GIRO DOS MORADORES (#209): como o viajante, o morador nunca anda de
 ## lado deslizando. O corpo gira para o rumo com a velocidade angular limitada
 ## do viajante (sem salto de um quadro) e o passo espera o corpo virar.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/giro_dos_moradores.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste giro_dos_moradores
 ##
 ## Um morador do vale, com a rotina parada, recebe o rumo quadro a quadro pelo
 ## mesmo `_mover` que o dia dele usa:

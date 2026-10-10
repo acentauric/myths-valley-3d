@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere A ROTINA DOS MORADORES NOVOS: quem são, onde moram, o que fazem a cada hora.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/rotina_dos_moradores.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste rotina_dos_moradores
 ##     ... -- --falsificar-rotina        (o portão TEM de reprovar: ver `_falsificar`)
 ##
 ## "Novos NPCs sem diálogos mas com jornadas diárias, com novas casas para eles, cada NPC

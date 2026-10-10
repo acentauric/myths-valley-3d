@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere que A ÁRVORE BARRA O CORPO NO PEITO E DEIXA A COPA PASSAR (#150).
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/arvores_barram_o_corpo.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste arvores_barram_o_corpo
 ##
 ## `colisao_das_arvores` pergunta ONDE o cilindro está; este pergunta o que o
 ## jogador sente: com a cápsula do jogador (os mesmos 0,28 de raio), varrida de
@@ -23,6 +23,8 @@ const CORPO_RAIO := 0.28
 const FOLGA := 0.12
 ## Onde a varredura começa, de cada lado do eixo, e o quanto ela anda.
 const ARRANQUE := 1.2
+## Acima disto o tronco é torto (o coqueiro da orla): mede-se só que o cilindro barra.
+const INCLINACAO_MAXIMA_GRAUS := 10.0
 
 var falhas := 0
 var falsificar := ""
@@ -59,10 +61,12 @@ func _run() -> void:
 		return
 	var altura_do_corpo: float = jogador.character_height
 
+	# De cada espécie, o tronco mais em pé: o coqueiro da orla nasce torto (#orla,
+	# `base_tronco`/`alto_tronco`), e o cilindro dele acompanha a inclinação.
 	var por_especie: Dictionary = {}
 	for t in regiao._tree_trunks:
 		var especie := str(t.get("especie", "?"))
-		if not por_especie.has(especie):
+		if not por_especie.has(especie) or _inclinacao(t) < _inclinacao(por_especie[especie]):
 			por_especie[especie] = t
 	var nomes := por_especie.keys()
 	nomes.sort()
@@ -112,6 +116,32 @@ func _run() -> void:
 
 		var espaco: PhysicsDirectSpaceState3D = corpo.get_world_3d().direct_space_state
 
+		# TRONCO TORTO: a cápsula em pé encosta no tronco inclinado com a cabeça
+		# ou o pé antes de o peito chegar, e acima do cilindro ainda há tronco.
+		# A distância no peito e a copa só se medem no tronco quase em pé; no
+		# torto, cobra-se que um cilindro de árvore barre.
+		var graus := rad_to_deg(eixo_y.angle_to(Vector3.UP))
+		if graus > INCLINACAO_MAXIMA_GRAUS:
+			# A varredura de lado começa dentro do tronco torto (ele passa por cima
+			# do ponto de partida), e o cast_motion não conta o que já toca no
+			# começo: aqui a pergunta é direta, a cápsula em pé no eixo toca o cilindro.
+			var capsula := CapsuleShape3D.new()
+			capsula.radius = CORPO_RAIO
+			capsula.height = altura_do_corpo
+			var consulta := PhysicsShapeQueryParameters3D.new()
+			consulta.shape = capsula
+			consulta.collision_mask = 1
+			consulta.exclude = [(jogador as CollisionObject3D).get_rid()]
+			consulta.transform = Transform3D(Basis.IDENTITY, centro_antes)
+			var barrou := false
+			for toque in espaco.intersect_shape(consulta, 16):
+				if instance_from_id(int(toque.get("collider_id", 0))) == corpo:
+					barrou = true
+			_conferir(barrou, "em '%s' (tronco a %.0f°) o cilindro do tronco não barra a cápsula" % [especie, graus])
+			medidas += 1
+			print("  %-14s raio=%.2f altura=%.1f  tronco a %.0f°: %s" % [especie, forma.radius, altura_real, graus, "barra" if barrou else "NAO BARRA"])
+			continue
+
 		# --- PEITO: a cápsula varre os dois lados, atravessando o eixo --------
 		var h_peito := altura_do_corpo * 0.5 + 0.15
 		var no_eixo_peito := centro_antes + eixo_y * (h_peito - altura_real * 0.5)
@@ -159,6 +189,14 @@ func _run() -> void:
 
 	_conferir(medidas >= 8, "poucas esp�cies medidas (%d): o conjunto n�o acordou ao lado delas" % medidas)
 	_fechar()
+
+
+## O quanto o tronco se afasta da vertical, em graus (0 no tronco sem eixo próprio).
+func _inclinacao(tronco: Dictionary) -> float:
+	if not tronco.has("base_tronco") or not tronco.has("alto_tronco"):
+		return 0.0
+	var eixo: Vector3 = (tronco["alto_tronco"] as Vector3) - (tronco["base_tronco"] as Vector3)
+	return rad_to_deg(eixo.angle_to(Vector3.UP)) if eixo.length_squared() > 0.0001 else 0.0
 
 
 ## A vaga do conjunto cujo cilindro est� no tronco `ponto` (referencial da regi�o).

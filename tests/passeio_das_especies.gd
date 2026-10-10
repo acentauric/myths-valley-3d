@@ -1,4 +1,4 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Auditoria dos modelos do catálogo, sem construir o vale ou alterar saves.
 ## Confere o passeio sem salto artificial e o fim do passo de cada quadrúpede.
 

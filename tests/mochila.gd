@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere A MOCHILA NO VALE (#2) — a tela que veio do 2D, sobre o 3D.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/mochila.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste mochila
 ##
 ## A regra de dentro dela — trinta espaços, o que se veste, o que se come — é
 ## dos autoloads compartilhados, com portão no 2D. A tela também é arquivo do

@@ -1,11 +1,11 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## O MAPA DE SOLO é o que o shader do terreno lê para misturar as camadas e o que os
 ## passos consultam (`surface_at`): terra nas ruas e na praça, areia na costa, lama
 ## nas margens dos rios, pasto na fazenda, copa sob as árvores e trilhas de pé até
 ## as casas. Se o mapa sumir, o chão volta a ser um carpete de grama só e o passo
 ## na lama soa como grama. Ver docs/mundo/SOLO_E_FRANJAS.md.
 ##
-##   Godot --headless --path . --script res://tests/mapa_de_solo.gd
+##   .\tools\prototipo_3d\testar.ps1 -Teste mapa_de_solo
 ##   ... -- --falsificar-solo     zera o mapa: o portão TEM de reprovar.
 ##   ... -- --falsificar-quinas   publica o mapa sem suavização: as rampas TÊM de reprovar (#197).
 

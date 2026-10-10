@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## JOGA O PIRÃO DA DONA FILÓ — a primeira missão do vale que se cumpre LEVANDO.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/cadeia_da_filo.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste cadeia_da_filo
 ##
 ## Veio do jogo 2D (`data/dialogos/arraial.json`, passo filo_almoco). A Dona
 ## Filó faz pirão toda manhã e o Tonho sai antes; ela já não desce a ladeira do
@@ -33,6 +33,9 @@ extends SceneTree
 ##      missão não pode voltar a pedir.
 ##   6. O ARREMATE DESTA CADEIA NÃO É FALADO: quem fala no fim é o Tonho, pela
 ##      meta. O arremate é a nota que fica no objetivo.
+
+## Recebe o vale montado do zero: reprovava no vale deixado pelos casos anteriores (a suíte, #242).
+const VALE_NOVO := true
 
 const PovoadoLiberado = preload("res://tests/fixtures/povoado_liberado.gd")
 const ConversaDoE = preload("res://tests/fixtures/conversa_do_e.gd")

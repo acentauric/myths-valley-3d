@@ -1,8 +1,8 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere que A COLISÃO DA FACHADA SEGUE A MALHA NO ALPENDRE (#205): o pilar solto da parede é sólido, e o chão
 ## entre ele e a parede fica livre; o balcão colado na parede e o fundo do vão da porta seguem cheios.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/fachada_do_alpendre.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste fachada_do_alpendre
 ##
 ## "A saída de viés do restaurante prende no pilar do alpendre": a colisão da fachada (`comodo.gd`,
 ## `_montar_a_fachada_de_fora`) enchia da parede até a face da frente de cada coluna medida, e o pilar de um

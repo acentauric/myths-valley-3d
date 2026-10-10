@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere que O ALMANAQUE SE LÊ — a cadeia de índices, e não só as regras dela.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/almanaque.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste almanaque
 ##
 ## Este portão existe pela lição da barra de mão: quinze testes verdes com a
 ## barra invisível, porque todos perguntavam "a regra está certa?" e nenhum

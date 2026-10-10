@@ -1,9 +1,9 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere A FESTA DE CADA FÉ (#52): no dia dela, da uma da tarde até a
 ## meia-noite, quem é da fé troca o posto de sempre pela roda no marco maior
 ## dela — "à tarde, quem é da fé vai para o marco maior dela", como no 2D.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/festa_da_fe.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste festa_da_fe
 ##
 ##   1. FORA DA FESTA, À TARDE, todo morador está no posto de sempre.
 ##   2. NO DIA DA FESTA, DE MANHÃ, também: a festa é da tarde.

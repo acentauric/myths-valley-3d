@@ -1,4 +1,4 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 
 ## Teto de parede para a troca de cena (menu → vale → menu): o laço sai assim que ela acontece.
 const TETO_DA_TROCA_DE_CENA_MS := 120000

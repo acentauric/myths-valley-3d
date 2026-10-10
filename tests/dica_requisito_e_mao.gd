@@ -1,4 +1,4 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## #134/#120: layout real em três idiomas/resoluções e seleção sem rótulo persistente.
 ## Carregado no _run, não por preload: no --script o preload compila antes de os autoloads
 ## (o Tela da dica) virarem nomes globais, e o portão não abria.

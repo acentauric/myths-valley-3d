@@ -1,8 +1,8 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere O MACHADO QUE CHEGA NA PONTE (data/missoes_ponte.json, "buscar_machado";
 ## `prototype._ja_recebeu_o_machado`; `CadeiaDeMissoes._por_na_barra`).
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/machado.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste machado
 ##
 ## "Quando conclui a quest de agricultura regando com o balde, ele trocou
 ## automaticamente para o machado de madeira. Isso não deve acontecer. Também

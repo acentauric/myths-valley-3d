@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## AS ANIMAÇÕES DO MIXAMO NOS PERSONAGENS (#190).
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/animacoes_mixamo.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste animacoes_mixamo
 ##
 ## Os clipes do Mixamo entram redirecionados para o esqueleto Tripo de cada
 ## morador (`tools/prototipo_3d/mixamo/redirecionar.gd`), uma biblioteca por

@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere O FOLHETO NO VALE (#21): o cordel lido no papel.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/folheto.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste folheto
 ##
 ## O portão mede o papel na tela, a coleta e as teclas usando somente
 ## os recursos deste projeto.

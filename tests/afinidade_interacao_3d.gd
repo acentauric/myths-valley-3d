@@ -1,4 +1,4 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## #49: usa o controlador real de E, os autoloads e a pergunta real de Sim/Não.
 ## O morador e a missão são dublês: não exige carregar todo o cenário.
 

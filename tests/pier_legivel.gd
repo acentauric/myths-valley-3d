@@ -1,4 +1,4 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## A vara de cenário sai; peixe, pote, piso e ferramenta de pesca permanecem.
 var falhas := 0
 

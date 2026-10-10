@@ -1,8 +1,8 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## O INDICADOR DA MARÉ AO LADO DO RELÓGIO: "maré enchendo" / "maré vazando", com a dica do que a água faz na
 ## praia, nos três idiomas e fora do código (`data/hud_3d.json`, "mare").
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/mare_no_hud.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste mare_no_hud
 ##
 ## A maré vem ligada no jogo e o jogador, que a vê subir e descer na praia, não tinha como saber para que lado ela
 ## ia: "eu ainda não vi a maré". Três perguntas:

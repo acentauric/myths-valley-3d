@@ -1,8 +1,8 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## O PEDRO SEGUE ENQUANTO O JOGADOR O VÊ, E SÓ VOLTA QUANDO ELE SAI DA TELA (#238).
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/conducao_pela_vista.gd
-##     ... --script res://tests/conducao_pela_vista.gd -- --falsificar
+##     .\tools\prototipo_3d\testar.ps1 -Teste conducao_pela_vista
+##     .\tools\prototipo_3d\testar.ps1 -Teste conducao_pela_vista -Extra --falsificar
 ##
 ## Na condução o Pedro andava colado: o "Pedro voltou para te buscar" disparava a 5,5 u do jogador,
 ## e com o jogador um pouco lento (ou o testador hesitando) ele ia e voltava. A regra agora é a vista

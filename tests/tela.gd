@@ -1,4 +1,4 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Perfil isolado pelo runner. O jogo abre em tela cheia, F11 alterna e a
 ## escolha fica salva para a próxima abertura.
 

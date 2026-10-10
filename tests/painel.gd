@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere o PAINEL da tecla J no vale (#19).
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/painel.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste painel
 ##
 ## A regra de cada aba é dos autoloads compartilhados, com portão no 2D. Este
 ## pergunta o que é do vale:

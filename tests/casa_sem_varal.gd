@@ -1,4 +1,4 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## A variante de composição da casa herdada não estende roupas (#158).
 func _initialize() -> void:
 	_run.call_deferred()

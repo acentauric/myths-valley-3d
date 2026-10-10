@@ -1,8 +1,8 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere AS MISSÕES DA FÉ (#52): a fila da Dona Zefa e a missão própria de
 ## cada fé, do jogo 2D (arraial.json) trazidas para os marcos do vale.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/cadeia_da_fe.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste cadeia_da_fe
 ##
 ##   1. A FILA DA FÉ ESPERA O MIRANTE, e abre quando ele fica de pé.
 ##   2. A DONA ZEFA FALA quando o jogador chega nela, e os marcos ainda não
@@ -17,6 +17,9 @@ extends SceneTree
 ##      oferenda pronta no pé do terreiro anda — e volta a correr se ele voltar.
 ##   8. AS OSTRAS SE CATAM À MÃO, nas pedras da maré, e pagam o monte.
 ##   9. O SAVE LEVA AS FILAS DA FÉ.
+
+## Recebe o vale montado do zero: reprovava no vale deixado pelos casos anteriores (a suíte, #242).
+const VALE_NOVO := true
 
 const PovoadoLiberado = preload("res://tests/fixtures/povoado_liberado.gd")
 const ConversaDoE = preload("res://tests/fixtures/conversa_do_e.gd")

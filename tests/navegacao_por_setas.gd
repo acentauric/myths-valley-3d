@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## AS SETAS NAVEGAM NOS PAINÉIS COM LISTA, E O ENTER CONFIRMA COMO O E (#227).
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/navegacao_por_setas.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste navegacao_por_setas
 ##
 ## Na Oficina (painel do J) só W/S moviam a seleção; as setas, o jeito natural de andar num menu, ficavam mudas
 ## (o painel escutava as ações de movimento, e elas seguem "Teclas de movimento" de Ajustes: WASD no padrão), embora

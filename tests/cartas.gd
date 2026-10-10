@@ -1,9 +1,9 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere CARTAS E ACHADOS no vale (#12): cordéis no lugar deles, o sinal da
 ## Caipora na mata, a carta que espera o sinal, e o pacto firmado no lugar do
 ## mito ou no painel.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/cartas.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste cartas
 ##
 ## A regra é o `Cartas` e o `Colecao` compartilhados. Este portão pergunta o
 ## que é do vale:

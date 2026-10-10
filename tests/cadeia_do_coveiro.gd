@@ -1,7 +1,7 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## JOGA A MISSÃO DO CEMITÉRIO DO COMEÇO AO FIM — a primeira do vale que não é do Pedro.
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/cadeia_do_coveiro.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste cadeia_do_coveiro
 ##
 ## O intendente nomeou o Damião zelador do cemitério e lhe deu um papel com o
 ## nome dele. Nada além disso — nem foice, nem tostão. A missão é ele pedindo
@@ -76,6 +76,9 @@ extends SceneTree
 ## cascata do passo que não fechou. Com `MV_QUADRO_LENTO_MS=150` no ambiente o
 ## portão roda como na bateria no pior; com `MV_FALSIFICAR=parede` ele volta a
 ## esperar em parede, e então TEM de reprovar.
+
+## Recebe o vale montado do zero: reprovava no vale deixado pelos casos anteriores (a suíte, #242).
+const VALE_NOVO := true
 
 const RelogioDeJogo = preload("res://tests/fixtures/relogio_de_jogo.gd")
 

@@ -1,8 +1,8 @@
-extends SceneTree
+extends "res://tests/suite/caso.gd"
 ## Confere que a VIDA do jogo 2D chegou ao vale inteira: no HUD, e com a queda
 ## que leva para casa (#10).
 ##
-##     Godot_v4.7.2-stable_win64_console.exe --headless --path . --script res://tests/vida.gd
+##     .\tools\prototipo_3d\testar.ps1 -Teste vida
 ##
 ## O `Vida` não é código escrito para o 3D: é o arquivo do 2D, em
 ## `scripts/compartilhado/`, conferido byte a byte pelo `testar_compartilhado`
