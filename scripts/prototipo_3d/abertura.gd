@@ -99,6 +99,9 @@ const HISTORY_ESPACO := 6
 ## Setas de página, compactas e juntas do "N / M".
 const HISTORY_SETA := Vector2(44, 32)
 const GAME_SCENE := "res://scenes/prototipo_3d/vale.tscn"
+## O fundo da carga que o botão do mapa abre (lobby em vídeo): o mapa do vale visto de cima,
+## a mesma imagem do minimapa.
+const FUNDO_DA_CARGA_DO_MAPA := "res://assets/prototipo_3d/identidade/minimapa/mapa_vale.png"
 ## Equipe exibida em SOBRE.
 const CREDITS_HIGHLIGHTS := [
 	"histórias brasileiras", "Brazilian", "historias brasileñas",
@@ -1212,7 +1215,8 @@ func _open_map() -> void:
 			return
 		starting = true
 		mapa_apos_carga = true
-		TelaCarregamento.trocar_cena(get_tree(), scene_file_path, _show_loading())
+		# A carga do mapa mostra o próprio mapa do vale, e não a capa da carga do jogo.
+		TelaCarregamento.trocar_cena(get_tree(), scene_file_path, _show_loading(FUNDO_DA_CARGA_DO_MAPA, "Abrindo o mapa…"))
 		return
 	if not map_open:
 		_save_flyover_view()
@@ -2251,9 +2255,9 @@ func _start_game() -> void:
 
 ## Tela de carregamento sobre o menu (tela_carregamento.gd). Devolve a barra. A capa (dia
 ## ou noite) segue a hora em que o jogo vai começar, não a do cenário do menu.
-func _show_loading() -> ProgressBar:
+func _show_loading(fundo: String = "", mensagem: String = "Carregando o vale…") -> ProgressBar:
 	_close_help()
-	return TelaCarregamento.mostrar(panel.get_parent(), panel.theme, tr("Carregando o vale…"), Dia.hora_inicial)
+	return TelaCarregamento.mostrar(panel.get_parent(), panel.theme, tr(mensagem), Dia.hora_inicial, "", fundo)
 
 
 func _formatar_escala(meters_per_unit: float) -> String:

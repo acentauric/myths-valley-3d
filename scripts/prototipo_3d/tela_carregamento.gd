@@ -53,9 +53,11 @@ const NOTAS_NOITE := Identidade.NOTAS_NOITE
 ## Monta a tela sobre `pai` (CanvasLayer ou Control de tela cheia) e devolve a barra.
 ## `hora` escolhe a capa (dia ou noite); negativa, vale a hora atual do relógio.
 ## `video` (caminho de um .ogv) põe o vídeo em laço por cima da capa; vazio, só a capa.
-static func mostrar(pai: Node, tema: Theme, mensagem: String, hora: float = -1.0, video: String = "") -> ProgressBar:
+## `imagem_de_fundo` (caminho de uma imagem) troca a capa pintada por outra imagem (o mapa do vale, na
+## carga que o botão do mapa abre); vazio, a capa de dia ou de noite.
+static func mostrar(pai: Node, tema: Theme, mensagem: String, hora: float = -1.0, video: String = "", imagem_de_fundo: String = "") -> ProgressBar:
 	var noite: bool = Dia.eh_noite_em(Dia.hora if hora < 0.0 else hora)
-	var screen := mostrar_capa(pai, tema, noite)
+	var screen := mostrar_capa(pai, tema, noite, false, imagem_de_fundo)
 	screen.name = "TelaCarregamento"
 	screen.add_to_group("telas_de_carregamento")
 	_video(screen, video)
@@ -72,7 +74,7 @@ static func mostrar(pai: Node, tema: Theme, mensagem: String, hora: float = -1.0
 
 
 ## Capa e marca compartilhadas com a seleção inicial; só recursos de interface.
-static func mostrar_capa(pai: Node, tema: Theme, noite: bool = false, marca_central: bool = false) -> Control:
+static func mostrar_capa(pai: Node, tema: Theme, noite: bool = false, marca_central: bool = false, imagem_de_fundo: String = "") -> Control:
 	var screen := Control.new()
 	screen.name = "SelecaoIdioma"
 	screen.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -86,18 +88,19 @@ static func mostrar_capa(pai: Node, tema: Theme, noite: bool = false, marca_cent
 	fundo.color = Color(0.02, 0.02, 0.03)
 	_cobrir(fundo)
 	screen.add_child(fundo)
-	_capa(screen, noite)
+	_capa(screen, noite, imagem_de_fundo)
 	_veus(screen)
 	_marca(screen, marca_central)
 	return screen
 
 
 ## A capa pintada cobre a tela e permanece estática na seleção e no carregamento.
-static func _capa(tela: Control, noite: bool) -> void:
-	var espelhada := noite and ESPELHAR_NOITE
+static func _capa(tela: Control, noite: bool, imagem: String = "") -> void:
+	var outra := imagem != "" and ResourceLoader.exists(imagem)
+	var espelhada := noite and ESPELHAR_NOITE and not outra
 	var capa := TextureRect.new()
 	capa.name = "Capa"
-	capa.texture = load(CAPA_NOITE if noite else CAPA_DIA) as Texture2D
+	capa.texture = load(imagem if outra else (CAPA_NOITE if noite else CAPA_DIA)) as Texture2D
 	capa.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	capa.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 	capa.flip_h = espelhada

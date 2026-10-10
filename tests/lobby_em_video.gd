@@ -96,6 +96,12 @@ func _run() -> void:
 
 	# O clique real solicita o cenário somente agora e abre o mapa após a carga.
 	(menu.map_icon.get_parent() as Button).pressed.emit()
+	# A carga do mapa mostra o mapa do vale, e não a capa pintada da carga do jogo.
+	await process_frame
+	var tela_do_mapa := get_first_node_in_group("telas_de_carregamento")
+	var capa_do_mapa := tela_do_mapa.get_node_or_null("Capa") as TextureRect if tela_do_mapa != null else null
+	_conferir(capa_do_mapa != null and capa_do_mapa.texture != null and capa_do_mapa.texture.resource_path == menu.FUNDO_DA_CARGA_DO_MAPA,
+		"a carga aberta pelo Mapa não mostra o mapa do vale (%s)" % (capa_do_mapa.texture.resource_path if capa_do_mapa != null and capa_do_mapa.texture != null else "sem capa"))
 	var inicio := Time.get_ticks_msec()
 	while Time.get_ticks_msec() - inicio < 120000:
 		await process_frame
