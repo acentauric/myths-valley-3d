@@ -9,8 +9,11 @@ Myths' Valley 3D: projeto Godot independente na raiz.
 Assunto em **prosa, no presente, dizendo o que mudou no jogo** — e não um rótulo
 de categoria. A regra inteira, e por que ela não é `tipo(escopo):`, está em
 [.agents/rules/commits.md](.agents/rules/commits.md). Cada fatia é um commit,
-com teste e falsificação. Trabalha-se direto na `main`; ela sempre abre e
-roda, porque nada é enviado (`git push`) sem `testar.ps1 -Push` verde no estado final.
+com teste e falsificação. **O trabalho entra na `develop`** (desde 10/10/2026):
+ela é a branch do dia a dia, fluida, em que o autor testa o jogo, e lá não há
+bateria obrigatória — teste só roda quando o autor pedir. **A `main` só recebe a
+`develop` quando o autor decidir**, e é só aí que a bateria completa é obrigatória:
+nada vai para a `main` sem `testar.ps1 -Push` verde no estado final.
 
 ### Chaves
 
@@ -194,13 +197,13 @@ outro checkout.
 **Os testes (#242, 10/10/2026)** — detalhes em
 [docs/projeto/VALIDACAO.md](docs/projeto/VALIDACAO.md):
 
-- **No dia a dia:** `.\tools\prototipo_3d\testar.ps1` roda os testes de unidade
-  (GUT, `tests/unidade/`) num Godot só, em segundos. `-Teste nome` roda um teste
-  ou caso pelo nome.
-- **A bateria completa roda só antes de ir para a `main`:**
-  `.\tools\prototipo_3d\testar.ps1 -Push` (árvore limpa; unidade + a suíte do
-  vale + os isolados). Nunca por commit, por issue ou por lote, e nunca sem
-  o autor pedir.
+- **Na `develop`, teste só quando o autor pedir.** Aí, `.\tools\prototipo_3d\testar.ps1`
+  roda os testes de unidade (GUT, `tests/unidade/`) num Godot só, em segundos, e
+  `-Teste nome` roda um teste ou caso pelo nome.
+- **A bateria completa é obrigatória só ao levar a `develop` para a `main`**, e
+  quem decide quando é o autor: `.\tools\prototipo_3d\testar.ps1 -Push` (árvore limpa;
+  unidade + a suíte do vale + os isolados). Nunca por commit, por issue ou por
+  lote na `develop`.
 - **Nada de portão novo que monte o vale num processo próprio.** Regra nova
   (missão, inventário, cálculo, tela solta) ganha um `test_` em
   `tests/unidade/`, que estende `tests/unidade/base.gd`. O que precisa do vale

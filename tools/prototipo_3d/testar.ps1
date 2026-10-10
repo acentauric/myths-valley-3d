@@ -1,8 +1,8 @@
-# OS TESTES DO VALE 3D: unidade em segundos no dia a dia; o vale montado UMA vez, num Godot só, antes da main.
+# OS TESTES DO VALE 3D: unidade em segundos quando pedida; o vale montado UMA vez, num Godot só, antes da main.
 #
 #   .\tools\prototipo_3d\testar.ps1                  # rápido: os testes de unidade (GUT), em segundos
 #   .\tools\prototipo_3d\testar.ps1 -Completo        # unidade + a suíte do vale + os isolados
-#   .\tools\prototipo_3d\testar.ps1 -Push            # antes do git push para a main: árvore limpa e -Completo
+#   .\tools\prototipo_3d\testar.ps1 -Push            # ao levar a develop para a main: árvore limpa e -Completo
 #   .\tools\prototipo_3d\testar.ps1 -Teste casa,regras_missoes   # pelo nome (caso da suíte ou teste de unidade)
 #   .\tools\prototipo_3d\testar.ps1 -Completo -Longos            # também a partida inteira e as réguas
 #   .\tools\prototipo_3d\testar.ps1 -Completo -Paralelo 3        # a suíte dividida em 3 Godots (3 montagens do vale)
@@ -10,11 +10,13 @@
 #   .\tools\prototipo_3d\testar.ps1 -Explicar        # só diz o que rodaria
 #
 #
-# O FLUXO (#242, decisão do autor de 09/10/2026)
+# O FLUXO (#242, decisões do autor de 09 e 10/10/2026)
 #
-# A bateria completa roda SÓ ao juntar na main, antes do push: nunca por commit,
-# por issue ou por lote. No dia a dia roda o modo rápido, que são os testes de
-# unidade: regras, dados, cálculos, telas sem o vale, tudo num Godot headless.
+# O trabalho entra na develop, que é fluida: lá não há bateria obrigatória, e teste
+# roda quando o autor pedir (o modo rápido, que são os testes de unidade: regras,
+# dados, cálculos, telas sem o vale, tudo num Godot headless). A main só recebe a
+# develop quando o autor decidir, e só aí a bateria completa (-Push) é obrigatória:
+# nunca por commit, por issue ou por lote.
 #
 # A ANTIGA BATERIA abria um Godot por portão (~230), e quase todos montavam o
 # vale inteiro do zero: de 1 a 3 horas, 4 a 6 Godots em paralelo, CPU a 100%, e

@@ -7,7 +7,7 @@ erros; código de saída zero sozinho não demonstra que o jogo abriu.
 ```powershell
 .\tools\prototipo_3d\testar.ps1                  # dia a dia: os testes de unidade (GUT), em segundos
 .\tools\prototipo_3d\testar.ps1 -Completo        # unidade + a suíte do vale + os isolados
-.\tools\prototipo_3d\testar.ps1 -Push            # obrigatório antes de git push para a main
+.\tools\prototipo_3d\testar.ps1 -Push            # obrigatório só ao levar a develop para a main
 .\tools\prototipo_3d\testar.ps1 -Teste casa,regras_missoes
 .\tools\prototipo_3d\testar.ps1 -Completo -Longos  # também a partida inteira e as réguas
 .\tools\prototipo_3d\testar.ps1 -Completo -Paralelo 3  # a suíte dividida em 3 Godots, cada um monta o vale uma vez
@@ -22,8 +22,10 @@ Desde a #242 (10/10/2026) são três peças, e nenhuma abre um Godot por teste:
 | Suíte do vale | `tests/*.gd`, `extends "res://tests/suite/caso.gd"` | um Godot que monta o vale uma vez por estilo e roda os casos em sequência (`tests/suite/rodar.gd`) |
 | Isolados | caso com `const ISOLADO := true` | um Godot para cada um, depois da suíte |
 
-**A bateria completa roda só antes de ir para a `main`** (`-Push`). No dia a
-dia roda a unidade. Mudar texto ou tradução não dispara nada além dela, que já
+**O trabalho entra na `develop`, e lá não há bateria obrigatória**: teste roda
+quando o autor pedir (a unidade, em segundos, ou os casos pelo nome). **A bateria
+completa é obrigatória só ao levar a `develop` para a `main`** (`-Push`), quando o
+autor decidir. Mudar texto ou tradução não dispara nada além da unidade, que já
 inclui o `idiomas`.
 
 ## A suíte do vale

@@ -41,12 +41,14 @@ conta o quê.
 
 ## O que vale sempre
 
-- **`main` sempre abre e roda.** Trabalha-se direto nela; o que a protege é
-  o portão do push, não uma branch.
+- **O trabalho entra na `develop`; a `main` sempre abre e roda.** A `develop` é
+  fluida: o autor testa o jogo nela, e teste automático só roda quando ele pedir.
+  A `main` só recebe a `develop` quando o autor decidir, com a bateria completa
+  verde (`testar.ps1 -Push`).
 - **Cada fatia é um commit, com teste e falsificação** (regra 4 do
   [PLANO.md](../../docs/projeto/PLANO.md)): um `test_` de unidade ou uma
   conferência num caso da suíte do vale. Commit que muda comportamento sem
   mexer em teste nenhum é commit que ninguém vai conseguir defender depois.
-- Commite à vontade e rode `.\tools\prototipo_3d\testar.ps1` (os testes de
-  unidade, em segundos). A bateria completa, `testar.ps1 -Push`, roda só antes
-  de ir para a `main` (#242).
+- Commite à vontade na `develop`. Teste quando o autor pedir:
+  `.\tools\prototipo_3d\testar.ps1` (os testes de unidade, em segundos). A
+  bateria completa, `testar.ps1 -Push`, é obrigatória só para ir à `main` (#242).
