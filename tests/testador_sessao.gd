@@ -277,6 +277,13 @@ func _modal() -> void:
 			alternadores[1].button_pressed = true
 			_conferir((campos[0] as SpinBox).editable, "marcar o Jev libera o orçamento")
 		_conferir(root.get_visible_rect().encloses(abertura.panel.get_global_rect()), "o modal cabe na janela %s" % tamanho)
+		var colunas := abertura.panel.find_child("ColunasDosApoios", true, false) as HBoxContainer
+		_conferir(colunas != null and colunas.get_child_count() == 3, "os três apoios ficam em colunas")
+		var botao_iniciar := abertura.panel.find_child("IniciarTeste", true, false) as Button
+		var fechar_modal: Button = botao_iniciar.get_parent().get_child(botao_iniciar.get_index() + 1) if botao_iniciar != null and botao_iniciar.get_index() + 1 < botao_iniciar.get_parent().get_child_count() else null
+		_conferir(fechar_modal != null and botao_iniciar.get_index() == fechar_modal.get_index() - 1 and is_equal_approx(botao_iniciar.global_position.y + botao_iniciar.size.y * 0.5, fechar_modal.global_position.y + fechar_modal.size.y * 0.5), "o INICIAR fica no cabeçalho, ao lado do ×")
+		var historico_altura: float = abertura.HISTORY_SIZE.y
+		_conferir(is_equal_approx(abertura.TESTADOR_SIZE.y, historico_altura) and abertura.content.get_combined_minimum_size().y <= abertura.TESTADOR_SIZE.y + 1.0, "o modal tem a altura dos outros e o conteúdo cabe nela (%.0f)" % abertura.content.get_combined_minimum_size().y)
 		for no in abertura.panel.find_children("*", "Control", true, false):
 			var texto := str(no.get("text")) if no.get("text") != null else ""
 			_conferir(not texto.to_lower().contains("sk-") and not texto.contains("API_KEY"), "o modal nunca mostra chave")

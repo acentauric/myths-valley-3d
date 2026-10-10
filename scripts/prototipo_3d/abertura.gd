@@ -75,7 +75,9 @@ const TOLERANCIA_ANCORA_U := 0.05
 ## lerp antigo (7 m em média) cortava as curvas por dentro, em cima das árvores.
 const CHEGADA_SEGUNDOS := 2.0
 const HISTORY_SIZE := Vector2(640, 600)
-const TESTADOR_SIZE := Vector2(640, 700)
+## O mesmo tamanho do Histórico e dos outros modais do lobby (10/10/2026): os apoios ficam em
+## três colunas e o INICIAR sobe para o cabeçalho, e tudo cabe sem crescer.
+const TESTADOR_SIZE := Vector2(640, 600)
 ## O modal do nome (#214): largo para a ajuda caber em duas linhas nos três idiomas, e a ajuda no
 ## tamanho do corpo dos outros modais; o aviso de erro, um pouco menor.
 const NOME_LARGURA := 600.0
@@ -134,6 +136,7 @@ var version_link: Button
 var linha_atualizacao: Button
 var caption: Label
 var estado_testador: Label
+var _coluna_dos_apoios: HBoxContainer
 ## Quem abre a ponte do testador: o `OS.create_process` de verdade; o portão troca por um
 ## que só anota os argumentos, para apertar INICIAR sem abrir uma sessão.
 var lancar_testador: Callable = func(programa: String, argumentos: PackedStringArray) -> int: return OS.create_process(programa, argumentos)
@@ -1970,6 +1973,11 @@ func _modal_testador(deteccao: Dictionary) -> void:
 	_place_modal(TESTADOR_SIZE)
 	var voltar := _modal_header("Testar o jogo", _home, "Escolha quem joga e quanto pode gastar.")
 	var apoios: Dictionary = deteccao["apoios"]
+	var colunas := HBoxContainer.new()
+	colunas.name = "ColunasDosApoios"
+	colunas.add_theme_constant_override("separation", 10)
+	content.add_child(colunas)
+	_coluna_dos_apoios = colunas
 	_apoio_linha("Determinístico", "Base, sempre ligado: o robô local escolhe pelas regras do jogo, sem custo.", apoios["deterministic"], true)
 	# AS OPÇÕES DO ÚLTIMO TESTE (#235): Jev, GPT, orçamento e duração voltam como ficaram. Um apoio
 	# indisponível aparece desligado, e a preferência fica guardada para quando ele voltar.
@@ -2020,31 +2028,52 @@ func _modal_testador(deteccao: Dictionary) -> void:
 		guardar.call(retomar if continuar != null else bool(guardadas["continuar"]))
 		_iniciar_teste(jev.button_pressed, gpt.button_pressed, orcamento.value, int(duracao.value), retomar))
 	iniciar.name = "IniciarTeste"
+	# No cabeçalho, à esquerda do ×, na altura dele.
+	iniciar.get_parent().remove_child(iniciar)
+	var linha_do_cabecalho := voltar.get_parent()
+	iniciar.custom_minimum_size = Vector2(130, voltar.custom_minimum_size.y)
+	iniciar.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	linha_do_cabecalho.add_child(iniciar)
+	linha_do_cabecalho.move_child(iniciar, voltar.get_index())
+	(linha_do_cabecalho as HBoxContainer).add_theme_constant_override("separation", 10)
 	voltar.grab_focus()
 
 
 ## Uma linha de apoio: botão de alternar e, embaixo, o papel dele ou, desligado, o motivo.
 ## Devolve o botão. Indisponível fica desativado e explicado; o determinístico, ligado e fixo.
 func _apoio_linha(titulo: String, papel: String, apoio: Dictionary, fixo: bool, preferido := false) -> Button:
+	# Cada apoio é uma coluna: o botão (nome e estado em duas linhas) e o papel embaixo.
+	var coluna := VBoxContainer.new()
+	coluna.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	coluna.size_flags_stretch_ratio = 1.0
+	coluna.add_theme_constant_override("separation", 6)
+	_coluna_dos_apoios.add_child(coluna)
 	var botao := Button.new()
 	botao.toggle_mode = true
-	botao.custom_minimum_size.y = 44
-	botao.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	botao.custom_minimum_size = Vector2(0, 58)
+	botao.alignment = HORIZONTAL_ALIGNMENT_CENTER
+	botao.add_theme_font_size_override("font_size", 13)
 	var disponivel := bool(apoio["disponivel"])
 	botao.disabled = fixo or not disponivel
 	botao.button_pressed = fixo or (preferido and disponivel)
 	botao.mouse_entered.connect(func() -> void: Audio.efeito("ui_hover"))
 	var atualizar := func() -> void:
 		var estado := tr("SEMPRE LIGADO") if fixo else (tr("LIGADO") if botao.button_pressed else (tr("DESLIGADO") if disponivel else tr("INDISPONÍVEL")))
-		botao.text = "%s  ·  %s" % [tr(titulo), estado]
+		botao.text = "%s
+%s" % [tr(titulo), estado]
 	botao.toggled.connect(func(_ligado: bool) -> void:
 		Audio.efeito("ui_confirmar")
 		atualizar.call())
 	atualizar.call()
-	content.add_child(botao)
+	coluna.add_child(botao)
 	var texto := tr(papel) if (disponivel or fixo) else TestadorApoios.motivo(str(apoio["motivo"]))
-	var nota := _label(texto, 15)
+	var nota := _label(texto, 13)
+	if nota.get_parent() != null:
+		nota.get_parent().remove_child(nota)
+	nota.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	nota.custom_minimum_size.x = 1
 	nota.add_theme_color_override("font_color", Color("c9b98f") if (disponivel or fixo) else Color("e39475"))
+	coluna.add_child(nota)
 	return botao
 
 
