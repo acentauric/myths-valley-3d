@@ -68,6 +68,8 @@ func _run() -> void:
 	await _ate(func() -> bool: return fila.livre(), 40.0)
 	_pôr_o_jogador_a(jogador, mundo, tonho, 3.0)
 	await _esperar(1.4)
+	# Chegar a 3 u dele faz o Tonho cumprimentar quem passa: a fala de prova espera o cumprimento acabar.
+	await _ate(func() -> bool: return fila.livre(), 15.0)
 
 	# --- 1 e 3. A FALA CURTA: o tempo para, e um E fecha -------------------------------------
 	tonho.narrar("", FALA_CURTA, {"classe": MISSAO})
@@ -150,6 +152,8 @@ func _run() -> void:
 	await _ate(func() -> bool: return fila.livre(), 10.0)
 	_pôr_o_jogador_a(jogador, mundo, tonho, 3.0)
 	await _esperar(1.4)
+	# Chegar a 3 u dele faz o Tonho cumprimentar quem passa: a fala de prova espera o cumprimento acabar.
+	await _ate(func() -> bool: return fila.livre(), 15.0)
 	tonho.narrar("", FALA_CURTA, {"classe": MISSAO, "por_e": false})
 	var solta: bool = await _ate(func() -> bool: return fila.falando(tonho), 8.0)
 	_conferir(solta and not tonho.espera_o_e(), "a fala com \"por_e\": false esperou o E (a cena e o aviso solto passam sozinhos)")
