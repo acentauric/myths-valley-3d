@@ -43,9 +43,11 @@ signal fechado
 ## lista parecia menor. É o tamanho em que a ficha cabe inteira, sem crescer.
 const TAMANHO := Vector2(1016, 620)
 ## Prévia 3D: tamanho fixo para todo modelo.
-const PREVIA := Vector2(320, 280)
+const PREVIA := Vector2(320, 292)
 ## Altura de referência que enquadra os moradores: cada um aparece na sua altura.
 const ALTURA_QUADRO := 2.0
+## O quanto (m) o enquadramento dos moradores desce para deixar o rodapé da prévia livre.
+const MARGEM_DOS_PES := 0.22
 const CAMINHO_NPCS := "res://data/npcs_3d.json"
 const PASTA_VOZES := "res://assets/audio/vozes/"
 const DOURADO := Color("e2c47f")
@@ -652,7 +654,7 @@ func _montar_ficha() -> void:
 		# À esquerda, a prévia e, embaixo dela, os ícones das animações do morador.
 		var coluna_previa := VBoxContainer.new()
 		coluna_previa.name = "ColunaPrevia"
-		coluna_previa.add_theme_constant_override("separation", 10)
+		coluna_previa.add_theme_constant_override("separation", 6)
 		ficha.add_child(coluna_previa)
 		var altura := float(pessoa.get("altura", 1.7)) if aba == 0 else 0.0
 		_montar_previa(coluna_previa, selecionado, altura)
@@ -744,7 +746,7 @@ func _dados_morador(pessoa: Dictionary) -> void:
 
 ## Ícones das animações: duas linhas sob a prévia, na largura dela. O ícone tem no máximo
 ## este lado e encolhe quando são muitos clipes (o viajante tem 19, dez por linha).
-const ICONE_ANIMACAO := 34.0
+const ICONE_ANIMACAO := 30.0
 const SEPARACAO_ICONES := 4
 const LINHAS_DE_ICONES := 2
 
@@ -1061,7 +1063,9 @@ func _montar_previa(pai: Control, chave: String, altura: float = 0) -> void:
 	# maior medida, como antes.
 	var quadro := ALTURA_QUADRO if altura > 0 else maxf(maxf(dimensao.x, dimensao.y), dimensao.z)
 	_distancia_inicial = quadro * (1.95 if altura > 0 else 2.3)
-	_alvo_inicial = Vector3(0, quadro * 0.5 if altura > 0 else dimensao.y * 0.5, 0)
+	# Os pés do morador ficam acima do canto de baixo, onde aparece o nome da animação
+	# (10/10/2026): o centro do quadro desce um pouco, e o corpo sobe na prévia.
+	_alvo_inicial = Vector3(0, quadro * 0.5 - MARGEM_DOS_PES if altura > 0 else dimensao.y * 0.5, 0)
 	_centralizar_previa()
 
 

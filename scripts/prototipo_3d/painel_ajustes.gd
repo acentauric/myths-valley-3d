@@ -15,6 +15,8 @@ const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
 const CameraMouse = preload("res://scripts/prototipo_3d/camera_mouse.gd")
 const Identidade = preload("res://scripts/prototipo_3d/identidade.gd")
 const CaixaDePergunta = preload("res://scripts/prototipo_3d/caixa_de_pergunta.gd")
+## A letra da explicação do "?" de cada ajuste.
+const FONTE_DA_AJUDA := 15
 const SustosDaMata = preload("res://scripts/prototipo_3d/sustos_da_mata.gd")
 const DicasDosMoradores = preload("res://scripts/prototipo_3d/dicas_dos_moradores.gd")
 const SeloDoViajante = preload("res://scripts/prototipo_3d/selo_do_viajante.gd")
@@ -732,13 +734,22 @@ func _abrir_ajuda(titulo: String, chave: String) -> void:
 	coluna.add_theme_constant_override("separation", 14)
 	caixa.add_child(coluna)
 	var fechar := cabecalho(coluna, titulo, fechar_ajuda, "Como funciona este ajuste.")
-	var corpo := Label.new()
-	corpo.text = AjudaMenu.texto(chave, IdiomaMenu.indice())
-	corpo.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	corpo.custom_minimum_size.x = 584
-	# A explicação é para ler: a sans do HUD em creme (#199).
-	Identidade.papel_leitura(corpo, TemaMenu.FONTE_CORPO)
+	# A explicação é para ler: a sans do HUD em creme (#199), um pouco menor que o corpo dos
+	# modais (10/10/2026), e cada parágrafo num rótulo, com um respiro curto entre eles em vez da
+	# linha em branco inteira.
+	var corpo := VBoxContainer.new()
+	corpo.name = "CorpoDaAjuda"
+	corpo.add_theme_constant_override("separation", 8)
 	coluna.add_child(corpo)
+	for paragrafo in AjudaMenu.texto(chave, IdiomaMenu.indice()).split(char(10)):
+		if paragrafo.strip_edges().is_empty():
+			continue
+		var rotulo := Label.new()
+		rotulo.text = paragrafo.strip_edges()
+		rotulo.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		rotulo.custom_minimum_size.x = 584
+		Identidade.papel_leitura(rotulo, FONTE_DA_AJUDA)
+		corpo.add_child(rotulo)
 	fechar.grab_focus()
 
 
