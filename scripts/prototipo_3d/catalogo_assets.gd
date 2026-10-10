@@ -458,9 +458,11 @@ static func precisa_das_duas_faces(chave: String) -> bool:
 ##
 ## `alcance_ligado` falso devolve o vale de antes (ferramentas de medida e portões).
 static var alcance_ligado := true
-const FATOR_DO_ALCANCE := {"construcao": 22.0, "arvore": 22.0, "adereco": 30.0, "planta": 30.0}
-const ALCANCE_MINIMO := {"construcao": 100.0, "arvore": 70.0, "adereco": 60.0, "planta": 50.0}
-const ALCANCE_MAXIMO := {"construcao": 260.0, "arvore": 260.0, "adereco": 200.0, "planta": 90.0}
+## A árvore e a planta a 0,7 do que eram (10/10/2026, desempenho), como a vegetação em blocos
+## (`geo_region_renderer.ESCALA_DO_ALCANCE`); casa e adereço seguem como estavam.
+const FATOR_DO_ALCANCE := {"construcao": 22.0, "arvore": 15.4, "adereco": 30.0, "planta": 21.0}
+const ALCANCE_MINIMO := {"construcao": 100.0, "arvore": 49.0, "adereco": 60.0, "planta": 35.0}
+const ALCANCE_MAXIMO := {"construcao": 260.0, "arvore": 182.0, "adereco": 200.0, "planta": 63.0}
 ## A faixa em que o modelo desvanece, com substituto (casa e árvore) e sem ele.
 const MARGEM_DA_TROCA := 15.0
 const MARGEM_DO_DESVANECER := 8.0

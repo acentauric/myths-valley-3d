@@ -308,6 +308,11 @@ const LOD_COQUEIRO := 160.0
 const LOD_MATA := 170.0
 const LOD_MARGEM := 20.0
 const LOD_BIAS := 0.65
+## O ALCANCE DA VEGETAÇÃO MAIS CURTO (10/10/2026, pedido de desempenho): toda camada em blocos
+## (mata, sub-bosque, rio, restinga, coqueiros e paisagismo) some a 0,7 da distância das
+## constantes acima, e a copa de longe entra mais perto. O relatório de 05/10 mediu ~10 ms a
+## menos por quadro com × 0,7 (docs/projeto/DESEMPENHO_05_10_2026.md, seção 6).
+const ESCALA_DO_ALCANCE := 0.7
 var _blocos_vegetacao_lod: Array[Dictionary] = []
 var _camera_de_mapa := false
 
@@ -2579,6 +2584,7 @@ func _multimesh_em_blocos(nome: String, mesh: Mesh, transforms: Array[Transform3
 		if not blocos.has(chave):
 			blocos[chave] = []
 		blocos[chave].append(indice)
+	distancia_lod *= ESCALA_DO_ALCANCE
 	for chave in blocos.keys():
 		var lista: Array = blocos[chave]
 		var multimesh := MultiMesh.new()

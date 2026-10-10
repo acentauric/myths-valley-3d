@@ -23,7 +23,7 @@ func _run() -> void:
 	_verificar(decalque != null and decalque.visibility_range_end == 0.0, "decalque no pé da árvore não recebe LOD")
 	if visual != null:
 		if "--sem-corte" in OS.get_cmdline_user_args(): visual.visibility_range_end = 0.0
-		_verificar(visual.visibility_range_end == 85.0, "passeio usa corte por distância")
+		_verificar(is_equal_approx(visual.visibility_range_end, 85.0 * regiao.ESCALA_DO_ALCANCE), "passeio usa corte por distância (85 u na escala do alcance)")
 		_verificar(visual.lod_bias < 1.0, "LOD importado entra mais cedo")
 		_verificar(visual.visibility_range_fade_mode == GeometryInstance3D.VISIBILITY_RANGE_FADE_DISABLED, "corte sem custo de desvanecimento")
 		camera.projection = Camera3D.PROJECTION_ORTHOGONAL
@@ -31,7 +31,7 @@ func _run() -> void:
 		_verificar(visual.visibility_range_end == 0.0, "mapa alto mostra toda a vegetação")
 		camera.projection = Camera3D.PROJECTION_PERSPECTIVE
 		await _frames(3)
-		_verificar(visual.visibility_range_end == 85.0, "volta ao passeio restaura o LOD")
+		_verificar(is_equal_approx(visual.visibility_range_end, 85.0 * regiao.ESCALA_DO_ALCANCE), "volta ao passeio restaura o LOD")
 		regiao.call("_clear_region")
 		_verificar((regiao.get("_blocos_vegetacao_lod") as Array).is_empty(), "reconstrução descarta blocos antigos")
 		regiao.call("_multimesh_em_blocos", "Nova mata", BoxMesh.new(), posicoes, 85.0)

@@ -178,10 +178,16 @@ func _process(_delta: float) -> void:
 		return
 	if _corte_vale_a_tecla():
 		var arvore: Dictionary = _cortaveis[_cortavel_perto]
+		if esmaecida_em(get_tree(), arvore["pos"]):
+			_dica.visible = false
+			return
 		DicaTecla.mostrar_em(_dica, camera, (arvore["pos"] as Vector3) + Vector3(0, ALTURA_DICA, 0), _texto_do_corte(_cortavel_perto))
 		return
 	if _fibra_perto >= 0:
 		var palmeira: Dictionary = _cortaveis[_fibra_perto]
+		if esmaecida_em(get_tree(), palmeira["pos"]):
+			_dica.visible = false
+			return
 		DicaTecla.mostrar_em(_dica, camera, (palmeira["pos"] as Vector3) + Vector3(0, ALTURA_DICA, 0), _texto_da_fibra(_fibra_perto))
 		return
 	if _perto < 0 or _perto == _aberta:
@@ -192,8 +198,34 @@ func _process(_delta: float) -> void:
 	if Almanaque.conhece(String(arvore_info["especie"])):
 		_dica.visible = false
 		return
+	if esmaecida_em(get_tree(), arvore_info["pos"]):
+		_dica.visible = false
+		return
 	var ficha: Dictionary = _fichas[arvore_info["especie"]]
 	DicaTecla.mostrar_em(_dica, camera, arvore_info["pos"] + Vector3(0, ALTURA_DICA, 0), String(IdiomaMenu.campo(ficha, "nome", "Árvore")))
+
+
+## A ÁRVORE ESTÁ ESMAECIDA na frente do viajante (10/10/2026)? Com ela transparente a dica do E
+## dela some de vez: não fica uma placa boiando sobre uma árvore que não se vê. Vale para as
+## peças que a câmera do jogo esmaece (`obstaculos_camera.gd`) e para as cópias que a sessão de
+## teste esmaece no lugar das árvores em bloco (`tools/jev/copas_do_teste.gd`).
+const RAIO_DA_ESMAECIDA := 1.5
+const ESMAECIDA_A_PARTIR_DE := 0.3
+
+
+static func esmaecida_em(arvore: SceneTree, pos: Vector3) -> bool:
+	var candidatas: Array = arvore.get_nodes_in_group("obstaculos_visuais_da_camera") + arvore.get_nodes_in_group("copas_esmaecidas_do_teste")
+	for peca in candidatas:
+		if not (peca is Node3D) or not (peca as Node3D).is_inside_tree():
+			continue
+		var base := (peca as Node3D).global_position
+		if Vector2(base.x - pos.x, base.z - pos.z).length() > RAIO_DA_ESMAECIDA:
+			continue
+		var malhas: Array = [peca] if peca is MeshInstance3D else peca.find_children("*", "MeshInstance3D", true, false)
+		for malha in malhas:
+			if (malha as GeometryInstance3D).transparency >= ESMAECIDA_A_PARTIR_DE:
+				return true
+	return false
 
 
 func _unhandled_key_input(event: InputEvent) -> void:

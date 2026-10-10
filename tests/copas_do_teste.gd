@@ -76,6 +76,9 @@ func _run() -> void:
 		copas._sonda_s = 999.0
 		copas._process(1.0)
 		_conferir(copia.transparency > 0.5, "1. a cópia esmaece (%.2f)" % copia.transparency)
+		var ArvoresInfo = load("res://scripts/prototipo_3d/arvores_info.gd")
+		var pe_da_arvore: Vector3 = (visual.global_transform * (tronco["transformacao"] as Transform3D)).origin
+		_conferir(ArvoresInfo.esmaecida_em(arvore, pe_da_arvore), "1. esmaecida, a árvore some da dica do E (esmaecida_em)")
 		# 2. Fora da frente: a câmera ao lado do viajante.
 		for _i in 3:
 			if copas._troncos.has(indice):

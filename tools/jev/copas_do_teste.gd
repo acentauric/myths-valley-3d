@@ -154,6 +154,7 @@ func _tirar_do_bloco(indice: int, tronco: Dictionary, regiao: Node3D) -> void:
 	var transformacao: Transform3D = tronco["transformacao"]
 	var copia := MeshInstance3D.new()
 	copia.name = "CopaEsmaecidaDoTeste"
+	copia.add_to_group("copas_esmaecidas_do_teste")
 	copia.mesh = visual.multimesh.mesh
 	copia.cast_shadow = visual.cast_shadow
 	regiao.add_child(copia)
