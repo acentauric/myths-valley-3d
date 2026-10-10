@@ -43,7 +43,7 @@ func _run() -> void:
 	_conferir(painel.visible, "o clique não abre o painel")
 	for trecho in ["FPS", "Tripo · 1,78 m", "Estilo Tripo:", "tri", "draws", "MB VRAM"]:
 		_conferir(texto.contains(trecho), "o painel perdeu %s" % trecho)
-	_conferir(is_equal_approx(painel.position.x, 14.0), "o painel não alinha com o minimapa")
+	_conferir(is_equal_approx(painel.position.x, load("res://scripts/prototipo_3d/minimapa.gd").MARGEM), "o painel não alinha com o minimapa")
 	_conferir(is_equal_approx(painel.position.y + painel.size.y, hud._root.size.y - hud.Minimapa.MARGEM - hud.Minimapa.ALTURA - 8.0),
 		"o painel não está acima do minimapa")
 	_conferir(hud._performance_label.get_line_count() * hud._performance_label.get_line_height() <= painel.size.y - 14.0,

@@ -18,7 +18,8 @@ extends Control
 const LADO := 176.0
 const LARGURA := LADO
 const ALTURA := LADO
-const MARGEM := 14.0
+## A mesma margem do resto do HUD (18), à esquerda e embaixo.
+const MARGEM := 18.0
 ## Quanto o marcador para antes do aro, para o losango não ser cortado ao meio.
 const MARGEM_DO_ARO := 9.0
 ## Respiro entre a borda dourada da moldura e a vista do mundo.

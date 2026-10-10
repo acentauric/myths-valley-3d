@@ -44,19 +44,27 @@ class IconeModo extends Control:
 		custom_minimum_size = Vector2(22.0, 22.0)
 		mouse_filter = Control.MOUSE_FILTER_STOP
 
+	## O robô (cabeça com antena, olhos e boca), centrado em `c`, na escala `e` da grade.
+	func _robo(c: Vector2, e: float) -> void:
+		var p := func(v: Vector2) -> Vector2: return c + (v - Vector2(12, 12)) * e
+		draw_rect(Rect2(p.call(Vector2(5, 7)), Vector2(14, 11) * e), cor, false, 1.7, true)
+		draw_line(p.call(Vector2(12, 7)), p.call(Vector2(12, 4)), cor, 1.5, true)
+		draw_circle(p.call(Vector2(12, 3.5)), 1.3 * e, cor)
+		draw_circle(p.call(Vector2(9.2, 12)), 1.5 * e, cor)
+		draw_circle(p.call(Vector2(14.8, 12)), 1.5 * e, cor)
+		draw_line(p.call(Vector2(9.5, 15.5)), p.call(Vector2(14.5, 15.5)), cor, 1.3, true)
+
 	func _draw() -> void:
 		draw_set_transform(Vector2.ZERO, 0.0, size / 24.0)
 		match modo:
-			"deterministic", "local":
-				draw_rect(Rect2(5, 7, 14, 11), cor, false, 1.7, true)
-				draw_line(Vector2(12, 7), Vector2(12, 4), cor, 1.5, true)
-				draw_circle(Vector2(12, 3.5), 1.3, cor)
-				draw_circle(Vector2(9.2, 12), 1.5, cor)
-				draw_circle(Vector2(14.8, 12), 1.5, cor)
-				draw_line(Vector2(9.5, 15.5), Vector2(14.5, 15.5), cor, 1.3, true)
-				if modo == "local":
-					draw_arc(Vector2(18.5, 18.5), 4.0, deg_to_rad(-200), deg_to_rad(60), 10, Identidade.OURO, 1.6, true)
-					draw_colored_polygon(PackedVector2Array([Vector2(20.5, 21.6), Vector2(23.5, 20.0), Vector2(20.6, 18.0)]), Identidade.OURO)
+			"deterministic":
+				_robo(Vector2(12, 12), 1.0)
+			"local":
+				# Em recuperação: o robô menor, dentro de uma volta grossa com a ponta da seta, na mesma cor.
+				_robo(Vector2(12, 12.5), 0.62)
+				draw_arc(Vector2(12, 12), 10.5, deg_to_rad(-60), deg_to_rad(230), 24, cor, 2.4, true)
+				var ponta := Vector2(12, 12) + Vector2(cos(deg_to_rad(-60)), sin(deg_to_rad(-60))) * 10.5
+				draw_colored_polygon(PackedVector2Array([ponta + Vector2(-4.6, -1.2), ponta + Vector2(2.6, -3.2), ponta + Vector2(0.4, 4.0)]), cor)
 			"jev":
 				draw_line(Vector2(7, 8), Vector2(17, 16), cor, 1.6, true)
 				draw_line(Vector2(7, 8), Vector2(17, 6), cor, 1.6, true)
@@ -208,6 +216,12 @@ func montar(t: Callable) -> void:
 	_comandos_em_pe = VBoxContainer.new()
 	_comandos_em_pe.add_theme_constant_override("separation", 4)
 	caixa.add_child(_comandos_em_pe)
+	# Sobra de altura (o painel na altura da coluna de atalhos) fica acima dos comandos.
+	var mola := Control.new()
+	mola.name = "Mola"
+	mola.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	mola.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	caixa.add_child(mola)
 	_comandos_deitados = HBoxContainer.new()
 	_comandos_deitados.add_theme_constant_override("separation", 4)
 	_comandos_deitados.visible = false
@@ -528,6 +542,8 @@ var _modo_do_canto := false
 ## `coluna`, o retângulo da coluna de atalhos da direita (também é obstáculo).
 func posicionar(obstaculos: Array, coluna := Rect2()) -> void:
 	var janela := get_viewport_rect().size
+	# Aberto, o painel tem a altura da coluna de atalhos ao lado (do alto do primeiro ao fim do último).
+	custom_minimum_size.y = coluna.size.y if coluna.has_area() and not minimizado else 0.0
 	reset_size()
 	var tamanho := get_combined_minimum_size()
 	# Trocar entre minimizado e maximizado escolhe de novo, do preferido.

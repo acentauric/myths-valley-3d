@@ -13,9 +13,12 @@ const Identidade = preload("res://scripts/prototipo_3d/identidade.gd")
 ## Placa quadrada e passo entre placas, na escala 1 (era 52 e 64 antes de 04/10/2026).
 const LADO := 40.0
 const ESPACO := 50.0
-## Distância da coluna à borda direita e ao alto da tela (fixas, não escalam).
-const MARGEM := 36.0
-const TOPO := 32.0
+## Distância da coluna à borda direita e ao alto da tela (fixas, não escalam). O ALTO É O DO
+## RESTO DO HUD (10/10/2026): missão, relógio, barras e o painel do testador começam a 18 do
+## topo, e a coluna descia 14 a mais. À direita, 18 até a borda das plaquetas de tecla, que
+## ficam fora da placa: a placa fica a 30.
+const MARGEM := 30.0
+const TOPO := 18.0
 ## O ícone desenha numa grade de 24 e aparece com 16 na escala 1.
 const ICONE_VISIVEL := 16.0
 const FUNDO := Color(0.055, 0.09, 0.075, 0.94)
