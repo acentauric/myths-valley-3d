@@ -1648,8 +1648,9 @@ func _comecar_a_fala(fala: Dictionary) -> void:
 	# QUEM TRABALHA CONTINUA TRABALHANDO ENQUANTO FALA: o gesto de saudação pisava no clipe do
 	# ofício (a vassoura, a renda, a rede) e o corpo ficava parado até o próximo posto. Os
 	# moradores novos, que agora falam, trabalham parados no posto (`_acenar_mudo` já fazia assim).
-	if fala.has("gesto") and animador != null and animador.has_method("play_gesture") and not _trabalhando():
-		animador.play_gesture(int(fala["gesto"]))
+	if fala.has("gesto") and animador != null and animador.has_method("play_gesture"):
+		# Quem trabalha não larga o ofício para saudar, a não ser que a saudação seja um clipe do Mixamo, que se intercala.
+		_fazer_a_saudacao(int(fala["gesto"]), _trabalhando())
 	if bool(fala.get("aviso", false)):
 		saudou.emit(self, str(fala.get("inteira", fala.get("texto", ""))))
 
@@ -1795,8 +1796,30 @@ func falando_agora() -> bool:
 
 
 func _acenar() -> void:
-	if animador != null and animador.has_method("play_gesture"):
-		animador.play_gesture(_gesto_de_saudacao())
+	_fazer_a_saudacao(_gesto_de_saudacao())
+
+
+## O GESTO DE SAUDAÇÃO (#190): o clipe do Mixamo de quem tem um (o aceno da Candinha, do padre e da
+## quituteira, a continência do guarda), senão o do Tripo, `indice` em GESTURES. O aceno dura meio
+## segundo e recomeça até dar uns dois segundos. Quem trabalha (`so_mixamo`) intercala o clipe no
+## ofício, e sem clipe do Mixamo não faz nada. Devolve se fez algo.
+const SAUDACAO_DURA := 2.0
+
+
+func _fazer_a_saudacao(indice: int, so_mixamo: bool = false) -> bool:
+	if animador == null:
+		return false
+	var clipe := MixamoUso.clipe_do_gatilho(String(dados.get("id", "")), "saudacao")
+	if clipe != "" and animador.has_method("tem_clipe") and bool(animador.tem_clipe(clipe)):
+		var voltas := maxi(1, roundi(SAUDACAO_DURA / maxf(float(animador.duracao_do_clipe(clipe)), 0.1)))
+		if so_mixamo:
+			return animador.has_method("intercalar") and bool(animador.intercalar(clipe, voltas))
+		if animador.has_method("gesto") and bool(animador.gesto(clipe, voltas)):
+			return true
+	if so_mixamo or not animador.has_method("play_gesture"):
+		return false
+	animador.play_gesture(indice)
+	return true
 
 
 ## O POSTO DE AGORA, com a festa por cima. No dia da festa da fé do morador
@@ -2023,12 +2046,12 @@ func eh_mudo() -> bool:
 
 
 func _acenar_mudo() -> void:
-	if _trabalhando() or _recolhido:
+	if _recolhido:
 		return
-	_ultima_saudacao_ms = Time.get_ticks_msec()
-	if animador != null and animador.has_method("play_gesture"):
-		var chave := "gesto_tripo" if animador.has_method("is_using_authored_clips") else "gesto_saudacao"
-		animador.play_gesture(int(dados.get(chave, 0)))
+	var chave := "gesto_tripo" if animador != null and animador.has_method("is_using_authored_clips") else "gesto_saudacao"
+	var fez := _fazer_a_saudacao(int(dados.get(chave, 0)), _trabalhando())
+	if fez or not _trabalhando():
+		_ultima_saudacao_ms = Time.get_ticks_msec()
 
 
 ## A passada do morador: a de sempre, ou a dele (as crianças correm mais que os velhos).
@@ -2095,14 +2118,19 @@ func _vigiar_o_relogio() -> void:
 ## quando o posto muda, e na hora em que o morador nasce.
 func _aplicar_entrada() -> void:
 	_largar_o_que_leva()
-	_acao = ""
+	_acao = _acao_do_posto()
+	_variacao_em_ms = -1
+	_veio_andando = false
+	_porta_ate_ms = -1
 	if animador != null and animador.has_method("parar_trabalho"):
 		animador.parar_trabalho()
+	_aplicar_o_passo()
 	if _agenda.is_empty() or not _posto.begins_with(PREFIXO_AGENDA):
 		_recolher(false)
 		return
 	var entrada: Dictionary = _agenda[int(_posto.substr(PREFIXO_AGENDA.length()))]
 	_acao = String(entrada.get("acao", ""))
+	_aplicar_o_passo()
 	if _acao != "recolhido":
 		_recolher(false)
 	for onde in ["mao", "cabeca"]:
@@ -2110,6 +2138,26 @@ func _aplicar_entrada() -> void:
 		_levar_de(String(entrada.get(onde + "_andando", "")), onde, _levados_andando)
 	if _acao == "recolhido" and Vector2(_alvo.x - global_position.x, _alvo.z - global_position.z).length() < 0.8:
 		_atualizar_trabalho()
+
+
+## A AÇÃO DE QUEM NÃO TEM AGENDA (#190): quem só tem postos por período do dia (a Dona Zefa, o Tonho, o
+## Damião, o Quirino) ganha o período como ação ("posto:manha"), e é por ela que o `data/mixamo_uso.json` diz
+## o que ele faz no posto. No dia da festa, a ação é "festa" (o passo vaidoso do mestre do saveiro). Quem
+## tem agenda fica com a ação da entrada (`_aplicar_entrada`).
+func _acao_do_posto() -> String:
+	if _posto == POSTO_DA_FESTA:
+		return POSTO_DA_FESTA
+	if _agenda.is_empty() and _posto != "":
+		return MixamoUso.POSTO + _posto
+	return ""
+
+
+## O PASSO DA AÇÃO: a caminho dela o morador anda com o clipe do Mixamo que a ação pede (as crianças
+## a caminho da brincadeira, o guarda na ronda, o mestre do saveiro a caminho da festa), e não com o `walk`.
+func _aplicar_o_passo() -> void:
+	if animador == null or not animador.has_method("set_passo"):
+		return
+	animador.set_passo(MixamoUso.passo_da_acao(String(dados.get("id", "")), _acao))
 
 
 func _levar_de(peca: String, onde: String, lista: Array[Node]) -> void:
@@ -2169,19 +2217,26 @@ func _trabalhando() -> bool:
 ## é hora de se recolher, entra em casa. Saiu do posto, larga o trabalho. O que se leva
 ## só para andar ("mao_andando", "cabeca_andando") some quando ele chega.
 func _atualizar_trabalho() -> void:
-	if _agenda.is_empty():
+	if _agenda.is_empty() and not _vive_de_postos_com_clipe():
 		return
 	var chegou := Vector2(_alvo.x - global_position.x, _alvo.z - global_position.z).length() < 0.8
 	if chegou and _acao == "recolhido" and bool(dados.get("recolhe", false)):
+		if _abrindo_a_porta():
+			return
 		_recolher(true)
 		return
 	var parado := chegou and _velocidade_atual < 0.25
-	if parado and ACOES.has(_acao) and not _trabalhando():
+	if not parado:
+		_veio_andando = true
+	var id := String(dados.get("id", ""))
+	if parado and (ACOES.has(_acao) or MixamoUso.clipe_da_acao(id, _acao) != "") and not _trabalhando():
 		_comecar_o_trabalho()
 	elif not parado and _trabalhando():
 		animador.parar_trabalho()
 	elif parado and _trabalhando():
 		_intercalar_variacao()
+	elif parado:
+		_gesto_do_parado()
 	for no in _levados_andando:
 		if is_instance_valid(no):
 			(no as Node3D).visible = not parado
@@ -2191,23 +2246,71 @@ func _atualizar_trabalho() -> void:
 ## principal de tempos em tempos (o pescador lança a linha e volta a esperar). Longe
 ## (o esqueleto dormindo) e no meio de outra variação, espera.
 var _variacao_em_ms := -1
+## Chegou ao posto andando (e não nasceu nele): só quem anda até a porta de casa a abre.
+var _veio_andando := false
+## Até quando ele está abrindo a porta de casa (ms), ou -1.
+var _porta_ate_ms := -1
+## 1 se o morador tem clipe Mixamo que depende do período do posto, 0 se não, -1 sem ter olhado.
+var _com_clipe_de_posto := -1
 
 
 func _intercalar_variacao() -> void:
 	if _dormindo or animador == null or not animador.has_method("intercalar") or bool(animador.intercalando()):
 		return
+	var escolhida := _variacao_da_vez()
+	if not escolhida.is_empty():
+		animador.intercalar(String(escolhida.get("id", "")))
+
+
+## A variação desta ação que está na hora, ou {}. Na primeira chamada só marca a hora da primeira;
+## ao tocar, marca a da seguinte, sorteada entre o mínimo e o máximo do `a_cada`.
+func _variacao_da_vez() -> Dictionary:
 	var variacoes := MixamoUso.variacoes_da_acao(String(dados.get("id", "")), _acao)
 	if variacoes.is_empty():
-		return
+		return {}
 	var agora := Time.get_ticks_msec()
 	var escolhida: Dictionary = variacoes[randi() % variacoes.size()]
 	if _variacao_em_ms < 0:
 		_variacao_em_ms = agora + int(MixamoUso.espera_da_variacao(escolhida, randf()) * 1000.0)
-		return
+		return {}
 	if agora < _variacao_em_ms:
-		return
-	animador.intercalar(String(escolhida.get("id", "")))
+		return {}
 	_variacao_em_ms = agora + int(MixamoUso.espera_da_variacao(escolhida, randf()) * 1000.0)
+	return escolhida
+
+
+## A VARIAÇÃO DE QUEM NÃO TRABALHA (o Tonho conta nos dedos, o Quirino puxa a corda): do parado, de
+## tempos em tempos, e sem pisar em conversa, em gesto nem em fala.
+func _gesto_do_parado() -> void:
+	if _dormindo or _recolhido or animador == null or not animador.has_method("gesto") or not animador.has_method("gesture_ativa"):
+		return
+	if bool(animador.gesture_ativa()) or falando_agora() or _acao == "":
+		return
+	var escolhida := _variacao_da_vez()
+	if not escolhida.is_empty():
+		animador.gesto(String(escolhida.get("id", "")))
+
+
+func _vive_de_postos_com_clipe() -> bool:
+	if _com_clipe_de_posto < 0:
+		_com_clipe_de_posto = 1 if MixamoUso.tem_acao_de_posto(String(dados.get("id", ""))) else 0
+	return _com_clipe_de_posto == 1
+
+
+## A PORTA DE CASA (#190): chegando em casa para se recolher, quem tem o clipe `porta` abre a porta
+## antes de sumir (o clipe anda para dentro, e o corpo some quando ele acaba). Verdadeiro enquanto abre.
+## Só vale à vista (perto do jogador, com o corpo acordado) e para quem veio andando.
+func _abrindo_a_porta() -> bool:
+	var clipe := MixamoUso.clipe_do_gatilho(String(dados.get("id", "")), "porta")
+	if clipe == "" or animador == null or _dormindo or not _veio_andando or not animador.has_method("gesto") \
+			or not animador.has_method("tem_clipe") or not bool(animador.tem_clipe(clipe)):
+		return false
+	if _porta_ate_ms < 0:
+		if not animador.gesto(clipe):
+			return false
+		_porta_ate_ms = Time.get_ticks_msec() + int(float(animador.duracao_do_clipe(clipe)) * 1000.0)
+		return true
+	return Time.get_ticks_msec() < _porta_ate_ms
 
 
 func _comecar_o_trabalho() -> void:

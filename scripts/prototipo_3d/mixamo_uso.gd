@@ -11,10 +11,27 @@ extends RefCounted
 ##
 ##   `acao`       a ação da rotina (`npcs_3d.json`, agenda) que o toca no lugar do
 ##                clipe Tripo de sempre (o pescador pesca de vara, a beata reza de
-##                joelhos);
+##                joelhos). Pode ser uma lista. Quem não tem agenda, só postos por
+##                período do dia (a Dona Zefa, o Tonho, o Damião, o Quirino), usa
+##                "posto:<período>" ("posto:manha", "posto:tarde", "posto:entardecer",
+##                "posto:noite", "posto:madrugada") — o `npc.gd` dá a esses o período
+##                como ação;
 ##   `a_cada`     [mínimo, máximo] em segundos: o clipe se INTERCALA com o principal
-##                da mesma ação, de tempos em tempos (lançar a linha);
-##   `gatilho_id` um gatilho com código próprio (`treino` e `conducao`, o Pedro).
+##                da mesma ação, de tempos em tempos (lançar a linha). Quem não tem
+##                clipe principal na ação (o Tonho contando nos dedos) o faz do parado;
+##   `gatilho_id` um gatilho com código próprio:
+##                  `treino`, `conducao`   o Pedro (guia_pedro.gd);
+##                  `saudacao`             no lugar do gesto de saudação do Tripo (npc.gd);
+##                  `porta`                o morador abre a porta de casa ao se recolher (npc.gd);
+##                  `passo`                o passo da ação (com `acao`): anda assim a caminho
+##                                         dela (npc.gd, authored_animator.set_passo);
+##                  `pulo`, `soco`, `acordar_cama`, `acordar_chao`, `cansado`
+##                                         o viajante (player_controller, luta_vale, queda);
+##   `pendente`   o motivo de o gatilho ainda não existir no jogo (`assento`: sentar
+##                num banco que o vale não tem na rotina do morador; `porta_do_jogador`).
+##                O clipe fica na biblioteca e na ficha, mas nenhum código o toca: o
+##                portão confere que o motivo está escrito, e que ele sai desta
+##                lista quando o gatilho passa a existir.
 ##
 ## Sem autoload (portão rodado com `--script` não enxerga autoload pelo nome): um
 ## portão o confere sem montar o vale.
@@ -24,6 +41,8 @@ const PASTA := "res://assets/prototipo_3d/personagens/mixamo/"
 ## O nome da biblioteca no tocador do modelo, e o selo de origem na ficha.
 const BIBLIOTECA := "mixamo"
 const ORIGEM := "Mixamo"
+## O prefixo da ação de quem só tem postos por período: "posto:manha".
+const POSTO := "posto:"
 
 static var _dados: Dictionary = {}
 
@@ -64,11 +83,25 @@ static func biblioteca(modelo: String) -> AnimationLibrary:
 	return load(caminho) as AnimationLibrary
 
 
+## A ação `acao` está entre as do clipe (`acao` é um texto ou uma lista)?
+static func _tem_acao(c: Dictionary, acao: String) -> bool:
+	var das = c.get("acao", "")
+	if das is Array:
+		return acao in das
+	return acao != "" and str(das) == acao
+
+
+## O clipe espera um gatilho que ainda não existe no jogo?
+static func pendente(c: Dictionary) -> bool:
+	return c.has("pendente")
+
+
 ## O CLIPE PRINCIPAL DA AÇÃO para o personagem: o Mixamo que a `acao` toca sem
-## `a_cada`, ou "" (fica o clipe Tripo de sempre, `npc.ACOES`).
+## `a_cada`, ou "" (fica o clipe Tripo de sempre, `npc.ACOES`). O passo da ação
+## (`gatilho_id` "passo") tem `acao` e não é o trabalho dela.
 static func clipe_da_acao(id: String, acao: String) -> String:
 	for c: Dictionary in clipes(id):
-		if str(c.get("acao", "")) == acao and not c.has("a_cada"):
+		if _tem_acao(c, acao) and not c.has("a_cada") and not c.has("gatilho_id") and not pendente(c):
 			return str(c.get("id", ""))
 	return ""
 
@@ -77,9 +110,36 @@ static func clipe_da_acao(id: String, acao: String) -> String:
 static func variacoes_da_acao(id: String, acao: String) -> Array:
 	var lista: Array = []
 	for c: Dictionary in clipes(id):
-		if str(c.get("acao", "")) == acao and c.has("a_cada"):
+		if _tem_acao(c, acao) and c.has("a_cada") and not c.has("gatilho_id") and not pendente(c):
 			lista.append(c)
 	return lista
+
+
+## O PASSO DA AÇÃO: o clipe com que o personagem anda a caminho dela, ou "".
+static func passo_da_acao(id: String, acao: String) -> String:
+	for c: Dictionary in clipes(id):
+		if str(c.get("gatilho_id", "")) == "passo" and _tem_acao(c, acao) and not pendente(c):
+			return str(c.get("id", ""))
+	return ""
+
+
+## O clipe do gatilho com código `gatilho_id` ("saudacao", "porta", "pulo"...), ou "".
+static func clipe_do_gatilho(id: String, gatilho_id: String) -> String:
+	for c: Dictionary in clipes(id):
+		if str(c.get("gatilho_id", "")) == gatilho_id and not pendente(c):
+			return str(c.get("id", ""))
+	return ""
+
+
+## O personagem tem clipe que depende do período do posto ("posto:manha"...)? Só quem
+## tem sai do atalho do `npc._atualizar_trabalho`, que ignora quem não tem agenda.
+static func tem_acao_de_posto(id: String) -> bool:
+	for c: Dictionary in clipes(id):
+		var das = c.get("acao", "")
+		for acao in (das if das is Array else [das]):
+			if str(acao).begins_with(POSTO):
+				return true
+	return false
 
 
 ## Segundos até a próxima variação, sorteados entre o mínimo e o máximo do `a_cada`.

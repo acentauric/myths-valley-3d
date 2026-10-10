@@ -50,6 +50,8 @@ var _trabalho_base := ""
 ## A VARIAÇÃO NO MEIO DO TRABALHO (`intercalar`): o clipe que toca uma vez e devolve
 ## o corpo ao trabalho (o pescador lança a linha e volta a esperar o peixe).
 var _intercalado := ""
+## Quantas vezes a variação ainda recomeça quando acaba (o aceno de meio segundo, em quem trabalha).
+var _intercalado_repetir := 0
 ## PARAR NO FIM DO GOLPE (`parar_no_fim_do_golpe`): o instante do clipe de trabalho
 ## (s) em que ele para e volta ao parado; -1 sem parada pedida. `_posicao_antes` vê
 ## o laço dar a volta.
@@ -64,6 +66,23 @@ const MixamoUso = preload("res://scripts/prototipo_3d/mixamo_uso.gd")
 const MISTURA_MIXAMO := 0.45
 ## Os clipes do Mixamo deste corpo (os nomes-base), na ordem da biblioteca.
 var _mixamo: PackedStringArray = PackedStringArray()
+## O PASSO DA AÇÃO (`set_passo`): o clipe do Mixamo com que o corpo anda no lugar do
+## `walk` (as crianças a caminho da brincadeira, o guarda na ronda), ou "".
+var _passo := ""
+## O CORPO SEM FÔLEGO (`set_cansado`): parado, respira ofegante em vez do parado de sempre.
+var _cansado := false
+## O gesto do Mixamo que se repete (`gesto` com `repeticoes`): o clipe em curso e quantas
+## vezes ele ainda recomeça quando acaba (o aceno dura meio segundo; a saudação, umas quatro voltas).
+var _gesto_real := ""
+var _gesto_repetir := 0
+## O PULO DO MIXAMO (`play_gesture` 8): o clipe de 2,2 s agacha, salta, voa e cai; o pulo do
+## jogo dura 0,53 s no ar. Entra no fundo do agachamento e roda mais depressa, para o corpo estar
+## no ar quando os pés saem do chão e pousar quando eles voltam. Medido no `jump` do viajante.
+const PULO_INICIO := 0.45
+const PULO_RITMO := 1.7
+## O SOCO (`soco`): o clipe começa na guarda; o jab estica aos 0,58 s. Entra aos 0,33 s para a
+## mão chegar onde o golpe acerta (`Luta.GOLPES` impacto, 0,22 s).
+const SOCO_INICIO := 0.33
 
 
 func configure(model_root: Node, estabilizar_raiz: bool = false) -> bool:
@@ -122,10 +141,11 @@ func duracao_do_clipe(nome: String) -> float:
 	return animation_player.get_animation(real).length
 
 
-## O GESTO PELO NOME, uma vez (o Pedro aponta o caminho): como `play_gesture`, mas
-## para os clipes que não estão em GESTURES. Acaba sozinho, de volta ao parado, ou
-## quando o corpo anda.
-func gesto(nome: String) -> bool:
+## O GESTO PELO NOME (o Pedro aponta o caminho, o guarda bate continência): como
+## `play_gesture`, mas para os clipes que não estão em GESTURES. Acaba sozinho, de volta
+## ao parado, ou quando o corpo anda. `repeticoes` recomeça o clipe (o aceno dura meio
+## segundo); `inicio` (s) entra no meio dele e `ritmo` muda a velocidade (o soco, o pulo).
+func gesto(nome: String, repeticoes: int = 1, inicio: float = 0.0, ritmo: float = 1.0) -> bool:
 	var real := String(_clips.get(nome, ""))
 	if animation_player == null or real.is_empty():
 		return false
@@ -134,10 +154,38 @@ func gesto(nome: String) -> bool:
 	_gesture_active = true
 	_jump_active = false
 	_chop_repetitions_left = 0
+	_gesto_real = real
+	_gesto_repetir = maxi(repeticoes, 1) - 1
 	_current_motion = ""
-	animation_player.speed_scale = 1.0
+	animation_player.speed_scale = ritmo
 	animation_player.play(real, MISTURA_MIXAMO if nome in _mixamo else 0.18)
+	if inicio > 0.0:
+		animation_player.seek(inicio, true)
 	return true
+
+
+## O SOCO (#190): o jab do Mixamo no lugar do `chop`, no golpe de mão vazia. Falso sem o clipe.
+func soco() -> bool:
+	return "punching" in _mixamo and gesto("punching", 1, SOCO_INICIO, 1.0)
+
+
+## O PASSO DA AÇÃO: anda com o clipe `clipe` do Mixamo no lugar do `walk` ("" volta ao de sempre).
+func set_passo(clipe: String) -> void:
+	_passo = clipe if clipe in _mixamo else ""
+	_passada.erase("passo")
+
+
+func passo_atual() -> String:
+	return _passo
+
+
+## O CORPO SEM FÔLEGO: parado, respira ofegante (o `tired_breathing_idle`, quando o corpo o tem).
+func set_cansado(cansado: bool) -> void:
+	_cansado = cansado
+
+
+func cansado() -> bool:
+	return _cansado
 
 
 ## A beata chega com Hips deslocado quase um metro no clipe de corrida.
@@ -268,9 +316,12 @@ func update_motion(speed: float, _delta: float) -> void:
 	elif speed > _limite_da_corrida():
 		_play_motion("run", _escala_da_passada("run", speed, 2.7))
 	elif speed > 0.2:
-		_play_motion("walk", _escala_da_passada("walk", speed, 0.9))
+		var papel := "passo" if not _passo.is_empty() and _clips.has(_passo) else "walk"
+		if papel == "passo" and not _passada.has("passo"):
+			_passada["passo"] = _medir_passada("passo")
+		_play_motion(papel, _escala_da_passada(papel, speed, 0.9))
 	else:
-		_play_motion("idle", 1.0)
+		_play_motion("cansado" if _cansado and _clips.has("tired_breathing_idle") else "idle", 1.0)
 
 
 func play_gesture(index: int) -> String:
@@ -278,14 +329,20 @@ func play_gesture(index: int) -> String:
 		return ""
 	var entry: Dictionary = GESTURES[index]
 	var clip: String = _clips.get(entry["clip"], "")
+	var pulo_do_mixamo := index == 8 and "jump" in _mixamo
+	if pulo_do_mixamo:
+		clip = String(_clips["jump"])
 	if clip.is_empty():
 		return ""
 	_gesture_active = true
+	_gesto_repetir = 0
 	_chop_repetitions_left = 0
 	_jump_active = index == 8
 	_current_motion = ""
-	animation_player.speed_scale = 4.8 if _jump_active else 1.0
-	animation_player.play(clip, 0.18)
+	animation_player.speed_scale = (PULO_RITMO if pulo_do_mixamo else 4.8) if _jump_active else 1.0
+	animation_player.play(clip, 0.12 if pulo_do_mixamo else 0.18)
+	if pulo_do_mixamo:
+		animation_player.seek(PULO_INICIO, true)
 	var label: String = entry["label"]
 	return label
 
@@ -351,9 +408,9 @@ func stop_chop() -> void:
 
 ## Tempo entre dois passos (ou braçadas) do clipe em curso, na velocidade atual; 0 parado.
 func step_interval() -> float:
-	if animation_player == null or _current_motion in ["", "idle"]:
+	if animation_player == null or _current_motion in ["", "idle", "cansado"]:
 		return 0.0
-	var clip: String = _clips.get(MOTION_CLIPS.get(_current_motion, ""), "")
+	var clip := _clip_do_papel(_current_motion)
 	if clip.is_empty():
 		return 0.0
 	return animation_player.get_animation(clip).length * 0.5 / maxf(animation_player.speed_scale, 0.1)
@@ -381,7 +438,7 @@ func _escala_da_passada(role: String, speed: float, velocidade_padrao: float) ->
 ## (a maior variação horizontal dos pés), separa as amostras em que cada pé está no
 ## ponto mais baixo e tira a velocidade média dele nelas. 0 se não der para medir.
 func _medir_passada(role: String) -> float:
-	var clip: String = _clips.get(MOTION_CLIPS.get(role, ""), "")
+	var clip := _clip_do_papel(role)
 	var esqueletos := animation_player.get_parent().find_children("*", "Skeleton3D", true, false) if animation_player.get_parent() else []
 	if clip.is_empty() or esqueletos.is_empty() or not animation_player.is_inside_tree():
 		return 0.0
@@ -480,11 +537,12 @@ func trabalhando_em() -> String:
 ## UMA VARIAÇÃO NO MEIO DO TRABALHO: toca o clipe `clipe` uma vez e volta ao
 ## trabalho em curso, sem passar pelo parado (o pescador lança a linha, a beata
 ## descansa as mãos entre um terço e outro). Só com o corpo trabalhando.
-func intercalar(clipe: String) -> bool:
+func intercalar(clipe: String, voltas: int = 1) -> bool:
 	var real := String(_clips.get(clipe, ""))
 	if animation_player == null or real.is_empty() or _trabalho.is_empty() or not _intercalado.is_empty():
 		return false
 	_intercalado = _copia_de_trabalho(real, false)
+	_intercalado_repetir = maxi(voltas, 1) - 1
 	_parar_em = -1.0
 	animation_player.play(_intercalado, MISTURA_MIXAMO if clipe in _mixamo else 0.3)
 	return true
@@ -616,6 +674,16 @@ func acordar_parado(papel: String = "idle") -> String:
 	_jump_active = false
 	_chop_repetitions_left = 0
 	_swimming = false
+	# Acordar com um clipe do Mixamo (espreguiçar, levantar do chão): um gesto, que acaba no parado.
+	if papel in _mixamo:
+		var gesto_real := _copia_de_trabalho(String(_clips[papel]), false)
+		_gesture_active = true
+		_gesto_repetir = 0
+		_current_motion = ""
+		animation_player.speed_scale = 1.0
+		animation_player.play(gesto_real, 0.0)
+		animation_player.seek(0.0, true)
+		return gesto_real
 	var clip: String = _clips.get(MOTION_CLIPS.get(papel, papel), "")
 	if clip.is_empty():
 		clip = _clips.get(MOTION_CLIPS["idle"], "")
@@ -661,8 +729,19 @@ func is_using_authored_clips() -> bool:
 	return animation_player != null
 
 
+## O clipe de um papel de movimento: o do `MOTION_CLIPS`, ou o que o Mixamo põe no lugar
+## ("passo" é o `_passo`, "cansado" o parado ofegante).
+func _clip_do_papel(role: String) -> String:
+	match role:
+		"passo":
+			return String(_clips.get(_passo, ""))
+		"cansado":
+			return String(_clips.get("tired_breathing_idle", ""))
+	return String(_clips.get(MOTION_CLIPS.get(role, ""), ""))
+
+
 func _play_motion(role: String, speed_scale: float) -> void:
-	var clip: String = _clips.get(MOTION_CLIPS.get(role, ""), "")
+	var clip := _clip_do_papel(role)
 	if clip.is_empty():
 		return
 	animation_player.speed_scale = speed_scale
@@ -675,11 +754,19 @@ func _play_motion(role: String, speed_scale: float) -> void:
 func _on_animation_finished(animation_name: StringName) -> void:
 	# A variação acabou: o corpo volta ao trabalho em curso.
 	if not _intercalado.is_empty() and String(animation_name) == _intercalado:
+		if _intercalado_repetir > 0:
+			_intercalado_repetir -= 1
+			animation_player.play(_intercalado, 0.0)
+			return
 		_intercalado = ""
 		if not _trabalho.is_empty():
 			animation_player.play(_trabalho, MISTURA_MIXAMO)
 		return
 	if not _gesture_active or _jump_active:
+		return
+	if _gesto_repetir > 0 and String(animation_name) == _gesto_real:
+		_gesto_repetir -= 1
+		animation_player.play(_gesto_real, 0.0)
 		return
 	if _chop_repetitions_left > 0 and String(animation_name) == String(_clips.get("chop", "")):
 		golpe_concluido.emit()
