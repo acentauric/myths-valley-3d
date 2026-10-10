@@ -2719,6 +2719,13 @@ func _ao_deitar(motivo: String) -> void:
 const DOCUMENTOS := "res://data/documentos.json"
 
 func _ler_documento(id: String) -> void:
+	# O VALE FICAVA PARADO PARA SEMPRE (10/10/2026: "continua travando após ler a carta; mesmo
+	# clicando em assumir, o jogo está travado"). Ler pela mochila (F) fecha a mochila por dentro
+	# (`Mochila._ler` -> `fechar()`), sem passar pelas telas: o `tela_mudou` de fechar não saía, a
+	# conta das telas que param o vale (`_telas_que_param`) ficava com a mochila, e o vale, a cadeia
+	# da chegada e o jogador paravam juntos depois da caixa do papel. Avisa agora que ela fechou.
+	if not Mochila.aberta and is_instance_valid(telas) and _telas_que_param > 0 and not _fala_parou_o_vale:
+		telas.fechou_por_conta("mochila")
 	var dados = JSON.parse_string(FileAccess.get_file_as_string(DOCUMENTOS))
 	var papel: Dictionary = dados.get(id, {}) if dados is Dictionary and dados.get(id) is Dictionary else {}
 	var linhas = IdiomaMenu.campo(papel, "linhas", [])

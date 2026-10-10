@@ -1,0 +1,560 @@
+{
+"Afinidade": {
+"deu": {},
+"falou": {
+"candinha": 1,
+"tonho": 1,
+"zefa": 1
+},
+"pontos": {
+"candinha": 1,
+"tonho": 1,
+"zefa": 1
+}
+},
+"Cartas": {
+"desde": 0,
+"pacto": "",
+"pago": true,
+"sabidas": {},
+"usadas": {}
+},
+"Colecao": {
+"achados": {}
+},
+"Efeitos": {
+"ativos": {}
+},
+"Energia": {
+"atual": 100.0
+},
+"Equipamento": {
+"vestido": {
+"amuleto": "",
+"cabeca": "",
+"corpo": "",
+"maos": "",
+"pes": ""
+}
+},
+"Fe": {
+"ativa": "",
+"estados": {
+"caboclo": {
+"destravados": [],
+"teto": 1,
+"total": 0.0
+},
+"candomble": {
+"destravados": [],
+"teto": 1,
+"total": 0.0
+},
+"catolica": {
+"destravados": [],
+"teto": 1,
+"total": 0.0
+}
+}
+},
+"Inventario": {
+"espacos": [{
+"id": "peixe_assado",
+"qtd": 1
+}, {
+"id": "garapa",
+"qtd": 1
+}, {
+"id": "balde",
+"qtd": 1
+}, {
+"id": "cocada",
+"qtd": 3
+}, {
+"id": "enxada",
+"qtd": 1
+}, {
+"id": "beiju",
+"qtd": 2
+}, {
+"id": "mungunza",
+"qtd": 1
+}, {
+"id": "picareta",
+"qtd": 1
+}, {
+"id": "pedra",
+"qtd": 1
+}, {
+"id": "convite",
+"qtd": 1
+}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}],
+"selecionado": 7
+},
+"Jogo": {
+"dinheiro": 250,
+"nome_jogador": "Viajante de teste",
+"npc_1_nome": "Pedro",
+"npc_1_nome_completo": "Pedro Nolasco da Encarnação"
+},
+"Jornada": {
+"dia": 0
+},
+"Luta": {
+"abates": {},
+"aprendidos": []
+},
+"Missoes": {
+"ativas": [],
+"cumpridas": [],
+"em_foco": 0
+},
+"Mundo": {
+"arvores_cortadas": Array[Dictionary]([]),
+"avisou_agua_funda": false,
+"barra_de_ferramentas_migrada": true,
+"cadeias": {
+"beata_favor": {
+"despedida": false,
+"iniciado": false,
+"levados": ["evento:correu", "evento:entrou:casa", "evento:abriu_painel", "evento:arou", "evento:plantou", "evento:plantou:mandioca", "evento:regou", "evento:fabricou:corda", "evento:cozinhou:peixe_assado", "evento:abriu_arraial", "evento:dormiu"],
+"missao": -1
+},
+"beata_promessa": {
+"despedida": false,
+"iniciado": false,
+"levados": ["evento:correu", "evento:entrou:casa", "evento:abriu_painel", "evento:arou", "evento:plantou", "evento:plantou:mandioca", "evento:regou", "evento:fabricou:corda", "evento:cozinhou:peixe_assado", "evento:abriu_arraial", "evento:dormiu"],
+"missao": -1
+},
+"benedito_carroca": {
+"despedida": false,
+"iniciado": false,
+"levados": ["evento:correu", "evento:entrou:casa", "evento:abriu_painel", "evento:arou", "evento:plantou", "evento:plantou:mandioca", "evento:regou", "evento:fabricou:corda", "evento:cozinhou:peixe_assado", "evento:abriu_arraial", "evento:dormiu"],
+"missao": -1
+},
+"benedito_saveiro": {
+"despedida": false,
+"iniciado": false,
+"levados": ["evento:correu", "evento:entrou:casa", "evento:abriu_painel", "evento:arou", "evento:plantou", "evento:plantou:mandioca", "evento:regou", "evento:fabricou:corda", "evento:cozinhou:peixe_assado", "evento:abriu_arraial", "evento:dormiu"],
+"missao": -1
+},
+"candinha": {
+"despedida": false,
+"iniciado": false,
+"levados": ["evento:correu", "evento:entrou:casa", "evento:abriu_painel", "evento:arou", "evento:plantou", "evento:plantou:mandioca", "evento:regou", "evento:fabricou:corda", "evento:cozinhou:peixe_assado", "evento:abriu_arraial", "evento:dormiu"],
+"missao": -1
+},
+"carpinteiro_canoa": {
+"despedida": false,
+"iniciado": false,
+"levados": ["evento:correu", "evento:entrou:casa", "evento:abriu_painel", "evento:arou", "evento:plantou", "evento:plantou:mandioca", "evento:regou", "evento:fabricou:corda", "evento:cozinhou:peixe_assado", "evento:abriu_arraial", "evento:dormiu"],
+"missao": -1
+},
+"carpinteiro_favor": {
+"despedida": false,
+"iniciado": false,
+"levados": ["evento:correu", "evento:entrou:casa", "evento:abriu_painel", "evento:arou", "evento:plantou", "evento:plantou:mandioca", "evento:regou", "evento:fabricou:corda", "evento:cozinhou:peixe_assado", "evento:abriu_arraial", "evento:dormiu"],
+"missao": -1
+},
+"cosme_capoeira": {
+"despedida": false,
+"iniciado": false,
+"levados": ["evento:correu", "evento:entrou:casa", "evento:abriu_painel", "evento:arou", "evento:plantou", "evento:plantou:mandioca", "evento:regou", "evento:fabricou:corda", "evento:cozinhou:peixe_assado", "evento:abriu_arraial", "evento:dormiu"],
+"missao": -1
+},
+"cosme_roca": {
+"despedida": false,
+"iniciado": false,
+"levados": ["evento:correu", "evento:entrou:casa", "evento:abriu_painel", "evento:arou", "evento:plantou", "evento:plantou:mandioca", "evento:regou", "evento:fabricou:corda", "evento:cozinhou:peixe_assado", "evento:abriu_arraial", "evento:dormiu"],
+"missao": -1
+},
+"damiao": {
+"despedida": false,
+"iniciado": false,
+"levados": ["evento:correu", "evento:entrou:casa", "evento:abriu_painel", "evento:arou", "evento:plantou", "evento:plantou:mandioca", "evento:regou", "evento:fabricou:corda", "evento:cozinhou:peixe_assado", "evento:abriu_arraial", "evento:dormiu"],
+"missao": -1
+},
+"fe_caboclo": {
+"despedida": false,
+"iniciado": false,
+"levados": ["evento:correu", "evento:entrou:casa", "evento:abriu_painel", "evento:arou", "evento:plantou", "evento:plantou:mandioca", "evento:regou", "evento:fabricou:corda", "evento:cozinhou:peixe_assado", "evento:abriu_arraial", "evento:dormiu"],
+"missao": -1
+},
+"fe_candomble": {
+"despedida": false,
+"iniciado": false,
+"levados": ["evento:correu", "evento:entrou:casa", "evento:abriu_painel", "evento:arou", "evento:plantou", "evento:plantou:mandioca", "evento:regou", "evento:fabricou:corda", "evento:cozinhou:peixe_assado", "evento:abriu_arraial", "evento:dormiu"],
+"missao": -1
+},
+"fe_catolica": {
+"despedida": false,
+"iniciado": false,
+"levados": ["evento:correu", "evento:entrou:casa", "evento:abriu_painel", "evento:arou", "evento:plantou", "evento:plantou:mandioca", "evento:regou", "evento:fabricou:corda", "evento:cozinhou:peixe_assado", "evento:abriu_arraial", "evento:dormiu"],
+"missao": -1
+},
+"filo": {
+"despedida": false,
+"iniciado": false,
+"levados": ["evento:correu", "evento:entrou:casa", "evento:abriu_painel", "evento:arou", "evento:plantou", "evento:plantou:mandioca", "evento:regou", "evento:fabricou:corda", "evento:cozinhou:peixe_assado", "evento:abriu_arraial", "evento:dormiu"],
+"missao": -1
+},
+"guarda_favor": {
+"despedida": false,
+"iniciado": false,
+"levados": ["evento:correu", "evento:entrou:casa", "evento:abriu_painel", "evento:arou", "evento:plantou", "evento:plantou:mandioca", "evento:regou", "evento:fabricou:corda", "evento:cozinhou:peixe_assado", "evento:abriu_arraial", "evento:dormiu"],
+"missao": -1
+},
+"guarda_ronda": {
+"despedida": false,
+"iniciado": false,
+"levados": ["evento:correu", "evento:entrou:casa", "evento:abriu_painel", "evento:arou", "evento:plantou", "evento:plantou:mandioca", "evento:regou", "evento:fabricou:corda", "evento:cozinhou:peixe_assado", "evento:abriu_arraial", "evento:dormiu"],
+"missao": -1
+},
+"ladislau_favor": {
+"despedida": false,
+"iniciado": false,
+"levados": ["evento:correu", "evento:entrou:casa", "evento:abriu_painel", "evento:arou", "evento:plantou", "evento:plantou:mandioca", "evento:regou", "evento:fabricou:corda", "evento:cozinhou:peixe_assado", "evento:abriu_arraial", "evento:dormiu"],
+"missao": -1
+},
+"ladislau_luz": {
+"despedida": false,
+"iniciado": false,
+"levados": ["evento:correu", "evento:entrou:casa", "evento:abriu_painel", "evento:arou", "evento:plantou", "evento:plantou:mandioca", "evento:regou", "evento:fabricou:corda", "evento:cozinhou:peixe_assado", "evento:abriu_arraial", "evento:dormiu"],
+"missao": -1
+},
+"lavadeira_favor": {
+"despedida": false,
+"iniciado": false,
+"levados": ["evento:correu", "evento:entrou:casa", "evento:abriu_painel", "evento:arou", "evento:plantou", "evento:plantou:mandioca", "evento:regou", "evento:fabricou:corda", "evento:cozinhou:peixe_assado", "evento:abriu_arraial", "evento:dormiu"],
+"missao": -1
+},
+"lavadeira_rio": {
+"despedida": false,
+"iniciado": false,
+"levados": ["evento:correu", "evento:entrou:casa", "evento:abriu_painel", "evento:arou", "evento:plantou", "evento:plantou:mandioca", "evento:regou", "evento:fabricou:corda", "evento:cozinhou:peixe_assado", "evento:abriu_arraial", "evento:dormiu"],
+"missao": -1
+},
+"marisqueira_favor": {
+"despedida": false,
+"iniciado": false,
+"levados": ["evento:correu", "evento:entrou:casa", "evento:abriu_painel", "evento:arou", "evento:plantou", "evento:plantou:mandioca", "evento:regou", "evento:fabricou:corda", "evento:cozinhou:peixe_assado", "evento:abriu_arraial", "evento:dormiu"],
+"missao": -1
+},
+"marisqueira_mare": {
+"despedida": false,
+"iniciado": false,
+"levados": ["evento:correu", "evento:entrou:casa", "evento:abriu_painel", "evento:arou", "evento:plantou", "evento:plantou:mandioca", "evento:regou", "evento:fabricou:corda", "evento:cozinhou:peixe_assado", "evento:abriu_arraial", "evento:dormiu"],
+"missao": -1
+},
+"menina_favor": {
+"despedida": false,
+"iniciado": false,
+"levados": ["evento:correu", "evento:entrou:casa", "evento:abriu_painel", "evento:arou", "evento:plantou", "evento:plantou:mandioca", "evento:regou", "evento:fabricou:corda", "evento:cozinhou:peixe_assado", "evento:abriu_arraial", "evento:dormiu"],
+"missao": -1
+},
+"menina_roda": {
+"despedida": false,
+"iniciado": false,
+"levados": ["evento:correu", "evento:entrou:casa", "evento:abriu_painel", "evento:arou", "evento:plantou", "evento:plantou:mandioca", "evento:regou", "evento:fabricou:corda", "evento:cozinhou:peixe_assado", "evento:abriu_arraial", "evento:dormiu"],
+"missao": -1
+},
+"menino_caminho": {
+"despedida": false,
+"iniciado": false,
+"levados": ["evento:correu", "evento:entrou:casa", "evento:abriu_painel", "evento:arou", "evento:plantou", "evento:plantou:mandioca", "evento:regou", "evento:fabricou:corda", "evento:cozinhou:peixe_assado", "evento:abriu_arraial", "evento:dormiu"],
+"missao": -1
+},
+"menino_favor": {
+"despedida": false,
+"iniciado": false,
+"levados": ["evento:correu", "evento:entrou:casa", "evento:abriu_painel", "evento:arou", "evento:plantou", "evento:plantou:mandioca", "evento:regou", "evento:fabricou:corda", "evento:cozinhou:peixe_assado", "evento:abriu_arraial", "evento:dormiu"],
+"missao": -1
+},
+"mercador_favor": {
+"despedida": false,
+"iniciado": false,
+"levados": ["evento:correu", "evento:entrou:casa", "evento:abriu_painel", "evento:arou", "evento:plantou", "evento:plantou:mandioca", "evento:regou", "evento:fabricou:corda", "evento:cozinhou:peixe_assado", "evento:abriu_arraial", "evento:dormiu"],
+"missao": -1
+},
+"mercador_fiado": {
+"despedida": false,
+"iniciado": false,
+"levados": ["evento:correu", "evento:entrou:casa", "evento:abriu_painel", "evento:arou", "evento:plantou", "evento:plantou:mandioca", "evento:regou", "evento:fabricou:corda", "evento:cozinhou:peixe_assado", "evento:abriu_arraial", "evento:dormiu"],
+"missao": -1
+},
+"padre_favor": {
+"despedida": false,
+"iniciado": false,
+"levados": ["evento:correu", "evento:entrou:casa", "evento:abriu_painel", "evento:arou", "evento:plantou", "evento:plantou:mandioca", "evento:regou", "evento:fabricou:corda", "evento:cozinhou:peixe_assado", "evento:abriu_arraial", "evento:dormiu"],
+"missao": -1
+},
+"padre_sino": {
+"despedida": false,
+"iniciado": false,
+"levados": ["evento:correu", "evento:entrou:casa", "evento:abriu_painel", "evento:arou", "evento:plantou", "evento:plantou:mandioca", "evento:regou", "evento:fabricou:corda", "evento:cozinhou:peixe_assado", "evento:abriu_arraial", "evento:dormiu"],
+"missao": -1
+},
+"pedro_armas": {
+"despedida": false,
+"iniciado": false,
+"levados": ["evento:correu", "evento:entrou:casa", "evento:abriu_painel", "evento:arou", "evento:plantou", "evento:plantou:mandioca", "evento:regou", "evento:fabricou:corda", "evento:cozinhou:peixe_assado", "evento:abriu_arraial", "evento:dormiu"],
+"missao": -1
+},
+"pedro_arraial": {
+"despedida": false,
+"iniciado": false,
+"levados": ["evento:correu", "evento:entrou:casa", "evento:abriu_painel", "evento:arou", "evento:plantou", "evento:plantou:mandioca", "evento:regou", "evento:fabricou:corda", "evento:cozinhou:peixe_assado", "evento:abriu_arraial", "evento:dormiu"],
+"missao": -1
+},
+"pedro_chapada": {
+"despedida": false,
+"iniciado": false,
+"levados": ["evento:correu", "evento:entrou:casa", "evento:abriu_painel", "evento:arou", "evento:plantou", "evento:plantou:mandioca", "evento:regou", "evento:fabricou:corda", "evento:cozinhou:peixe_assado", "evento:abriu_arraial", "evento:dormiu"],
+"missao": -1
+},
+"pedro_fazenda": {
+"despedida": false,
+"iniciado": false,
+"levados": ["evento:correu", "evento:entrou:casa", "evento:abriu_painel", "evento:arou", "evento:plantou", "evento:plantou:mandioca", "evento:regou", "evento:fabricou:corda", "evento:cozinhou:peixe_assado", "evento:abriu_arraial", "evento:dormiu"],
+"missao": -1
+},
+"pedro_fe": {
+"despedida": false,
+"iniciado": false,
+"levados": ["evento:correu", "evento:entrou:casa", "evento:abriu_painel", "evento:arou", "evento:plantou", "evento:plantou:mandioca", "evento:regou", "evento:fabricou:corda", "evento:cozinhou:peixe_assado", "evento:abriu_arraial", "evento:dormiu"],
+"missao": -1
+},
+"pedro_lombada": {
+"despedida": false,
+"iniciado": false,
+"levados": ["evento:correu", "evento:entrou:casa", "evento:abriu_painel", "evento:arou", "evento:plantou", "evento:plantou:mandioca", "evento:regou", "evento:fabricou:corda", "evento:cozinhou:peixe_assado", "evento:abriu_arraial", "evento:dormiu"],
+"missao": -1
+},
+"pedro_metas": {
+"despedida": false,
+"iniciado": false,
+"levados": ["evento:correu", "evento:entrou:casa", "evento:abriu_painel", "evento:arou", "evento:plantou", "evento:plantou:mandioca", "evento:regou", "evento:fabricou:corda", "evento:cozinhou:peixe_assado", "evento:abriu_arraial", "evento:dormiu"],
+"missao": -1
+},
+"pedro_oficio": {
+"despedida": false,
+"iniciado": false,
+"levados": ["evento:correu", "evento:entrou:casa", "evento:abriu_painel", "evento:arou", "evento:plantou", "evento:plantou:mandioca", "evento:regou", "evento:fabricou:corda", "evento:cozinhou:peixe_assado", "evento:abriu_arraial", "evento:dormiu"],
+"missao": -1
+},
+"pedro_ponte": {
+"despedida": false,
+"iniciado": false,
+"levados": ["evento:correu", "evento:entrou:casa", "evento:abriu_painel", "evento:arou", "evento:plantou", "evento:plantou:mandioca", "evento:regou", "evento:fabricou:corda", "evento:cozinhou:peixe_assado", "evento:abriu_arraial", "evento:dormiu"],
+"missao": -1
+},
+"pedro_quintal": {
+"despedida": false,
+"iniciado": false,
+"levados": ["evento:correu", "evento:entrou:casa", "evento:abriu_painel", "evento:arou", "evento:plantou", "evento:plantou:mandioca", "evento:regou", "evento:fabricou:corda", "evento:cozinhou:peixe_assado", "evento:abriu_arraial", "evento:dormiu"],
+"missao": -1
+},
+"pedro_revoar": {
+"despedida": false,
+"iniciado": false,
+"levados": ["evento:correu", "evento:entrou:casa", "evento:abriu_painel", "evento:arou", "evento:plantou", "evento:plantou:mandioca", "evento:regou", "evento:fabricou:corda", "evento:cozinhou:peixe_assado", "evento:abriu_arraial", "evento:dormiu"],
+"missao": -1
+},
+"pescador_favor": {
+"despedida": false,
+"iniciado": false,
+"levados": ["evento:correu", "evento:entrou:casa", "evento:abriu_painel", "evento:arou", "evento:plantou", "evento:plantou:mandioca", "evento:regou", "evento:fabricou:corda", "evento:cozinhou:peixe_assado", "evento:abriu_arraial", "evento:dormiu"],
+"missao": -1
+},
+"pescador_madeira": {
+"despedida": false,
+"iniciado": false,
+"levados": ["evento:correu", "evento:entrou:casa", "evento:abriu_painel", "evento:arou", "evento:plantou", "evento:plantou:mandioca", "evento:regou", "evento:fabricou:corda", "evento:cozinhou:peixe_assado", "evento:abriu_arraial", "evento:dormiu"],
+"missao": -1
+},
+"quituteira_favor": {
+"despedida": false,
+"iniciado": false,
+"levados": ["evento:correu", "evento:entrou:casa", "evento:abriu_painel", "evento:arou", "evento:plantou", "evento:plantou:mandioca", "evento:regou", "evento:fabricou:corda", "evento:cozinhou:peixe_assado", "evento:abriu_arraial", "evento:dormiu"],
+"missao": -1
+},
+"rendeira_favor": {
+"despedida": false,
+"iniciado": false,
+"levados": ["evento:correu", "evento:entrou:casa", "evento:abriu_painel", "evento:arou", "evento:plantou", "evento:plantou:mandioca", "evento:regou", "evento:fabricou:corda", "evento:cozinhou:peixe_assado", "evento:abriu_arraial", "evento:dormiu"],
+"missao": -1
+},
+"rendeira_toalha": {
+"despedida": false,
+"iniciado": false,
+"levados": ["evento:correu", "evento:entrou:casa", "evento:abriu_painel", "evento:arou", "evento:plantou", "evento:plantou:mandioca", "evento:regou", "evento:fabricou:corda", "evento:cozinhou:peixe_assado", "evento:abriu_arraial", "evento:dormiu"],
+"missao": -1
+},
+"sacristao_favor": {
+"despedida": false,
+"iniciado": false,
+"levados": ["evento:correu", "evento:entrou:casa", "evento:abriu_painel", "evento:arou", "evento:plantou", "evento:plantou:mandioca", "evento:regou", "evento:fabricou:corda", "evento:cozinhou:peixe_assado", "evento:abriu_arraial", "evento:dormiu"],
+"missao": -1
+},
+"sacristao_pedra": {
+"despedida": false,
+"iniciado": false,
+"levados": ["evento:correu", "evento:entrou:casa", "evento:abriu_painel", "evento:arou", "evento:plantou", "evento:plantou:mandioca", "evento:regou", "evento:fabricou:corda", "evento:cozinhou:peixe_assado", "evento:abriu_arraial", "evento:dormiu"],
+"missao": -1
+},
+"tonho": {
+"despedida": false,
+"iniciado": false,
+"levados": ["evento:correu", "evento:entrou:casa", "evento:abriu_painel", "evento:arou", "evento:plantou", "evento:plantou:mandioca", "evento:regou", "evento:fabricou:corda", "evento:cozinhou:peixe_assado", "evento:abriu_arraial", "evento:dormiu"],
+"missao": -1
+},
+"zefa": {
+"despedida": false,
+"iniciado": false,
+"levados": ["evento:correu", "evento:entrou:casa", "evento:abriu_painel", "evento:arou", "evento:plantou", "evento:plantou:mandioca", "evento:regou", "evento:fabricou:corda", "evento:cozinhou:peixe_assado", "evento:abriu_arraial", "evento:dormiu"],
+"missao": -1
+},
+"zefa_metas": {
+"despedida": false,
+"iniciado": false,
+"levados": ["evento:correu", "evento:entrou:casa", "evento:abriu_painel", "evento:arou", "evento:plantou", "evento:plantou:mandioca", "evento:regou", "evento:fabricou:corda", "evento:cozinhou:peixe_assado", "evento:abriu_arraial", "evento:dormiu"],
+"missao": -1
+}
+},
+"caderno": {
+"ativas": Array[Dictionary]([{
+"alvo": Vector3(64.51694, 5.0968003, -212.2496),
+"dono": "pedro",
+"fala_curta": "Bom dia! O mungunzá foi minha avó que mandou de madrugada. E isto chegou de manhã cedo, preso em cada porta do arraial — esse estava na sua.",
+"feito": 0,
+"feitos": ["Desça do saveiro e fale com o Pedro (E)", "Corra até ali (Shift), um trecho", "Cumprimente o Tonho, que o Pedro apresenta  —  10 XP, 1 peixe", "Siga o Pedro até a Dona Candinha e pergunte pela chave  —  10 XP, 1 garapa", "Siga o Pedro até a Dona Zefa e busque a chave  —  1 chave da casa do tio, 10 XP, 1 cocada", "Abra a casa do seu tio e entre", "Pegue no baú a enxada, o balde e a maniva", "Aperte J e veja o que está aberto", "Abra, plante e regue uma leira  —  10 XP, 1 beiju", "Quebre galho seco para o fogo da casa (E)  —  10 XP, 1 beiju", "Tire pedra para calçar o poço", "Torça uma corda na bancada", "Conserte o poço: [E] no poço ou [J] › Obras  —  10 XP, 2 cocada", "Asse o peixe do Tonho na fogueira", "Durma na cama do seu tio  —  10 XP, 1 mungunzá"],
+"id": "pedro_convite",
+"linha": "Leia o convite que chegou",
+"missao": "Chegada ao arraial",
+"passo": 16,
+"passos": 16,
+"principal": true,
+"quem": "Pedro",
+"recompensa": {},
+"resumo": "Leia o convite que chegou",
+"texto": "Pedro: Bom dia! O mungunzá foi minha avó que mandou de madrugada. E isto chegou de manhã cedo, preso em cada porta do arraial — esse estava na sua. Lê você, que estudou na capital: eu leio devagar demais e o povo ri. Na mochila, F em cima do papel.",
+"titulo": "O papel sem assinatura",
+"total": 1
+}]),
+"cumpridas": Array[String](["pedro_desembarque", "pedro_correr", "pedro_bom_dia", "pedro_chave", "pedro_chave_zefa", "pedro_casa", "pedro_pegar", "pedro_caderneta", "pedro_roca", "pedro_lenha", "pedro_pedra_do_poco", "pedro_corda", "pedro_mutirao_poco", "pedro_janta", "pedro_dormir"]),
+"em_foco": 0,
+"foco": "pedro_dormir"
+},
+"caidos": Array[String](["pedra_cemiterio_c", "pedra_cemiterio_a"]),
+"casa": {
+"bau": [{
+"id": "beiju",
+"qtd": 2
+}, {
+"id": "semente_mandioca",
+"qtd": 3
+}],
+"comida_posta": true
+},
+"coleta_no_chao": [],
+"curral": {
+"dia_da_postura": -1,
+"ovos": 0,
+"servico": {}
+},
+"fiado_tonho": {
+"divida": 1900,
+"lido": false,
+"rede": false,
+"ultimo_dia": 3
+},
+"fogueira": 2,
+"folego_oceano": 100.0,
+"giro": 0.70481473,
+"hora": 6.083266011111118,
+"horas_decorridas": 47.08326601111268,
+"jogador": [63.570538, 5.352788, -212.8516],
+"lavoura": {
+"colheitas": 0,
+"leitos": {
+Vector2i(3, 2): {
+"cultura": "mandioca",
+"dias": 2,
+"espera": 0,
+"estagio": 1,
+"molhado": false,
+"regados": 1
+}
+}
+},
+"mortes": [],
+"pausado": false,
+"pedro": {
+"despedida": false,
+"iniciado": true,
+"levados": ["entregou:desembarque", "desembarque", "entregou:correr", "evento:correu", "entregou:bom_dia", "bom_dia", "entregou:chave", "disse:chegada_candinha", "chave", "entregou:chave_zefa", "chave_zefa", "entregou:casa", "explicou:corpo", "evento:entrou:casa", "entregou:pegar", "entregou:caderneta", "evento:abriu_painel", "entregou:roca", "evento:arou", "evento:plantou", "evento:plantou:mandioca", "evento:regou", "entregou:lenha", "entregou:pedra_do_poco", "entregou:corda", "evento:fabricou:corda", "entregou:mutirao_poco", "entregou:janta", "evento:cozinhou:peixe_assado", "entregou:dormir", "evento:abriu_arraial", "evento:dormiu", "entregou:convite"],
+"missao": 15,
+"passo": "convite"
+},
+"piacava_tirada": Array[Dictionary]([]),
+"registro_do_relogio": [],
+"relogio_alterado": false,
+"saveiro": {
+"entregue_em": -1,
+"vendido": {},
+"visita": -1
+},
+"segundos_apresentacao": 1057.7375796665654,
+"viajante": {
+"ditas": ["desceu_do_saveiro", "primeira_noite", "entrou_em_casa", "cansou_correndo"]
+},
+"visitados": ["kml_079f85c0a1420ccf8fc4", "kml_0309e40670420cd6378e", "kml_033627e243420ccfb6f4"]
+},
+"Obras": {
+"feitas": {
+"poco": ["poco_corda"]
+}
+},
+"Progressao": {
+"eficiencia": 1.0,
+"energia_maxima": 100.0,
+"nivel_de_ferramenta": {
+"enxada": 1,
+"foice": 1,
+"machado": 1,
+"picareta": 1
+},
+"recuperacao_ao_desmaiar": 15.0,
+"recuperacao_ao_dormir": 40.0,
+"vida_maxima": 30.0
+},
+"Receitas": {
+"aprendidas": ["tabua", "corda", "casca_varanda", "planta_quarto", "planta_salao", "mobilia_guardado", "oficio_bancada", "poco_corda", "peixe_assado"]
+},
+"Relogio": {
+"ano": 1,
+"dia": 3,
+"estacao": 0,
+"minutos": 364.9959606666671
+},
+"Talentos": {
+"destravados": [],
+"nivel": 3,
+"pontos": 2,
+"xp": 0.0
+},
+"Terras": {
+"posses": {
+"rocado": true
+}
+},
+"Vida": {
+"atual": 30.0,
+"veneno_por": 0.0,
+"veneno_ritmo": 0.0
+},
+"build": 10,
+"jogo": "0.11.0-dev",
+"quando": "2026-10-10T18:53:34",
+"versao": 2
+}
