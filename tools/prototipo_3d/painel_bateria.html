@@ -77,9 +77,15 @@ function render(e) {
   if (feitos && primeiroFeito === null) primeiroFeito = Date.now();
   const est = $('estado');
   est.className = 'estado';
+  const parou = !e.fim && (desconectado || e.parado_ha > 0);
   if (e.fim) {
     est.textContent = e.fim;
     est.classList.add(ruins.length || e.fim.startsWith('PUSH:') ? 'ruim' : 'ok');
+  } else if (parou) {
+    est.textContent = desconectado
+      ? `Parado: o painel foi desligado. A bateria parou em ${feitos} de ${total}, sem terminar.`
+      : `Parado: a bateria parou em ${feitos} de ${total} sem terminar (o log está sem novidade há ${Math.round(e.parado_ha / 60) || 1} min).`;
+    est.classList.add('ruim');
   } else if (!e.tem_log) {
     est.textContent = 'Esperando o log da bateria…';
   } else {
@@ -95,7 +101,11 @@ function render(e) {
   $('sec-falhas').hidden = !ruins.length;
   $('falhas').innerHTML = ruins.map((f) => `<li><b>${esc(f.nome)}</b> <em>${esc(f.status)}</em> · ${f.seg}s<br><small>${esc(f.msg)}</small></li>`).join('');
 
-  $('rodando').innerHTML = e.fim ? '<li class="vazio">acabou</li>'
+  $('n-rodando').textContent = e.fim || parou ? 0 : e.rodando.length;
+  if (parou) $('n-fila').textContent = 'rodando';
+  $('vivo').classList.toggle('off', parou || Boolean(e.fim));
+  $('sub').textContent = e.fim ? 'terminou' : parou ? 'parado' : 'ao vivo · ' + new Date().toLocaleTimeString('pt-BR');
+  $('rodando').innerHTML = e.fim ? '<li class="vazio">acabou</li>' : parou ? '<li class="vazio">nada: a bateria parou</li>'
     : (e.rodando.map((r) => `<li><b>${esc(r.nome)}</b><span>${esc(r.seg)}</span></li>`).join('') || '<li class="vazio">—</li>');
 
   const novos = feitos - vistos;
@@ -105,13 +115,17 @@ function render(e) {
   vistos = feitos;
 }
 
+let desconectado = false;
 function conectar() {
   const fonte = new EventSource('/eventos');
-  fonte.onopen = () => { $('vivo').classList.remove('off'); $('sub').textContent = 'ao vivo'; };
-  fonte.onmessage = (m) => render(JSON.parse(m.data));
-  fonte.onerror = () => { $('vivo').classList.add('off'); $('sub').textContent = 'sem conexão com o painel, tentando de novo…'; };
+  fonte.onopen = () => { desconectado = false; if (ultimoEstado) render(ultimoEstado); };
+  fonte.onmessage = (m) => { desconectado = false; render(JSON.parse(m.data)); };
+  // Painel desligado = a bateria acabou ou foi parada: congela no último estado e diz isso.
+  fonte.onerror = () => { desconectado = true; if (ultimoEstado) render(ultimoEstado); else { $('vivo').classList.add('off'); $('sub').textContent = 'painel desligado'; } };
 }
-setInterval(() => { if (ultimoEstado && !ultimoEstado.fim) $('sub').textContent = 'ao vivo · ' + new Date().toLocaleTimeString('pt-BR'); }, 1000);
+setInterval(() => {
+  if (ultimoEstado && !ultimoEstado.fim && !desconectado && !ultimoEstado.parado_ha) $('sub').textContent = 'ao vivo · ' + new Date().toLocaleTimeString('pt-BR');
+}, 1000);
 conectar();
 </script>
 </body>

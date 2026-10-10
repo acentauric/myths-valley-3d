@@ -54,8 +54,11 @@ def estado():
             fim = l.strip()
     nomes = {f['nome'] for f in feitos}
     rodando = [x for x in rodando if x['nome'] not in nomes]
+    # O testar.ps1 escreve no log a cada ~15 s enquanto há teste rodando: log parado
+    # há mais de 45 s sem a linha final quer dizer que a bateria foi interrompida.
+    parado_ha = int(time.time() - LOG.stat().st_mtime) if texto else 0
     return {'titulo': TITULO, 'total': total, 'feitos': feitos, 'rodando': rodando, 'fila': fila,
-            'fim': fim, 'tem_log': bool(texto),
+            'fim': fim, 'tem_log': bool(texto), 'parado_ha': parado_ha if not fim and parado_ha > 45 else 0,
             'inicio_painel': LOG.stat().st_ctime if LOG.exists() else INICIO}
 
 
