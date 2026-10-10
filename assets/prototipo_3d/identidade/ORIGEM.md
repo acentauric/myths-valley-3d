@@ -28,6 +28,9 @@ A capa da noite também foi a Direção B do mesmo estudo ("A Mata Não Dorme");
 só a arte. A moldura veio da rodada da home (29/09/2026, estudo "Home do Vale", proposta
 "Retábulo"): gerada em 1024×1536 com fundo transparente, recortada rente e com o interior
 substituído por laca chapada via script (`.assets-raw/openai/home/gerar_moldura.py`).
+`mapa_pintado.webp` (1536×1024): o vale pintado visto de cima, OpenAI `gpt-image-2`, feito
+para o site (`myths-valley-APP/public/images/pinturas/mapa_inteiro.webp`) e trazido sem
+mudança em 10/10/2026 para ser o fundo da carga que o botão do mapa abre no menu.
 Fontes da interface: Cinzel e Cormorant Garamond (`assets/fonts/`, licença OFL).
 
 Conferir as condições de uso comercial vigentes da OpenAI antes de publicar.

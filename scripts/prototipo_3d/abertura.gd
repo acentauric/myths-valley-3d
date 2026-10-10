@@ -99,9 +99,9 @@ const HISTORY_ESPACO := 6
 ## Setas de página, compactas e juntas do "N / M".
 const HISTORY_SETA := Vector2(44, 32)
 const GAME_SCENE := "res://scenes/prototipo_3d/vale.tscn"
-## O fundo da carga que o botão do mapa abre (lobby em vídeo): o mapa do vale visto de cima,
-## a mesma imagem do minimapa.
-const FUNDO_DA_CARGA_DO_MAPA := "res://assets/prototipo_3d/identidade/minimapa/mapa_vale.png"
+## O fundo da carga que o botão do mapa abre (lobby em vídeo): o vale pintado visto de cima
+## (`gpt-image-2`, a mesma pintura da página do mapa no site), e não a capa da carga do jogo.
+const FUNDO_DA_CARGA_DO_MAPA := "res://assets/prototipo_3d/identidade/mapa_pintado.webp"
 ## Equipe exibida em SOBRE.
 const CREDITS_HIGHLIGHTS := [
 	"histórias brasileiras", "Brazilian", "historias brasileñas",

@@ -303,8 +303,8 @@ static func _marca(tela: Control, central: bool = false) -> void:
 	_sombra_texto(nome)
 	lugar.add_child(nome)
 	lugar.add_child(_filete(true))
-	marca.modulate.a = 0.0
-	marca.create_tween().tween_property(marca, "modulate:a", 1.0, 1.2).set_delay(0.15)
+	# O logotipo entra inteiro, sem fade: na carga pesada os quadros travam, o fade parava
+	# no meio e o logotipo ficava meio apagado durante quase toda a barra.
 
 
 ## Nota do almanaque (ou dito do vale, à noite) no canto de baixo à esquerda, trocada a

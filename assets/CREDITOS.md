@@ -193,6 +193,7 @@ Gerados no Tripo Studio pela ponte do Playwright MCP (ver `docs/ferramentas/TRIP
 | Arquivos | O que são | Registro |
 | --- | --- | --- |
 | `assets/prototipo_3d/identidade/{logo_myths_valley.png,capa_dia.webp,capa_noite.webp,rosa_dos_ventos.png,moldura_retabulo.png}` | logotipo em talha dourada, capas pintadas de dia e de noite, a rosa dos ventos e a moldura de talha (NinePatch do menu) da identidade "Crônica do Recôncavo", OpenAI `gpt-image-2` | `identidade/ORIGEM.md` |
+| `assets/prototipo_3d/identidade/mapa_pintado.webp` | o vale pintado visto de cima, fundo da carga que o botão do mapa abre no menu; a mesma pintura da página do mapa no site (`myths-valley-APP/public/images/pinturas/mapa_inteiro.webp`), OpenAI `gpt-image-2` | `identidade/ORIGEM.md` |
 | `assets/fonts/Cinzel-Variavel.ttf` | fonte Cinzel, © The Cinzel Project Authors | SIL OFL 1.1, `assets/fonts/OFL-Cinzel.txt` |
 | `assets/fonts/CormorantGaramond-{Variavel,Italico-Variavel}.ttf` | fonte Cormorant Garamond, © the Cormorant Project Authors | SIL OFL 1.1, `assets/fonts/OFL-CormorantGaramond.txt` |
 
