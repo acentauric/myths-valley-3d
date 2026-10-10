@@ -20,7 +20,8 @@ const POR_CASA := {
 		# Nenhuma roupa estendida nesta residência (#158).
 		{"id": "Lenha", "tipo": "adereco", "chave": "lenha", "desloc": Vector3(3.6, 0, -0.4)},
 		{"id": "Pote", "tipo": "adereco", "chave": "pote", "desloc": Vector3(2.4, 0, 2.9)},
-		{"id": "Machado", "tipo": "item", "chave": "machado", "desloc": Vector3(3.9, 0.55, 0.6), "giro": 0.9, "no_chao": false},
+		# O machado encostado (a 0,55 do chão) ficou boiando quando o toco que o segurava saiu, e o
+		# machado só chega na missão da ponte, pelas mãos do Pedro: saiu (10/10/2026).
 		{"id": "Cesto", "tipo": "item", "chave": "cesto", "desloc": Vector3(1.6, 0, 3.4), "giro": 0.2},
 		{"id": "Moringa", "tipo": "item", "chave": "moringa", "desloc": Vector3(-1.0, 0, 3.1)},
 		{"id": "Candeeiro", "tipo": "candeeiro", "chave": "candeeiro", "desloc": Vector3(0.92, 2.45, 2.35), "no_chao": false},
