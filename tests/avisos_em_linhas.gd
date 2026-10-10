@@ -23,6 +23,15 @@ func _run() -> void:
   conferir(texto.size.y >= texto.get_minimum_size().y, "todas as linhas cabem")
   conferir(fundo.get_global_rect().encloses(texto.get_global_rect()), "fundo acompanha altura do texto")
   conferir(fundo.get_global_rect().position.x >= 0 and fundo.get_global_rect().end.x <= hud._root.get_viewport_rect().size.x, "aviso cabe na tela")
+  # O aviso tem a largura do bloco da missão acima dele, com qualquer escala dos dois (10/10/2026).
+  if tamanho.x >= 1280:
+   var missao: Rect2 = hud._retangulo_em_tela(hud._heading)
+   var aviso: Rect2 = hud._retangulo_em_tela(fundo)
+   conferir(absf(missao.size.x - aviso.size.x) <= 1.0 and absf(missao.position.x - aviso.position.x) <= 1.0, "o aviso tem a largura do bloco da missão (%.0f e %.0f)" % [aviso.size.x, missao.size.x])
+  hud.set_notice("Curto.")
+  for _i in 2: await process_frame
+  if tamanho.x >= 1280:
+   conferir(absf(hud._retangulo_em_tela(fundo).size.x - hud._retangulo_em_tela(hud._heading).size.x) <= 1.0, "o aviso curto também tem a largura da missão")
   if "--capturar" in OS.get_cmdline_user_args():
    await process_frame
    await RenderingServer.frame_post_draw

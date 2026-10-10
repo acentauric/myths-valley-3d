@@ -834,9 +834,12 @@ func _layout_notice() -> void:
 		# máxima (LARGURA_DO_AVISO, ou o que a janela e a escala dos avisos deixam)
 		# para a fala do Pedro, que então quebra a linha e cresce para baixo — o
 		# rótulo mora dentro da caixa, e ela acompanha a altura dele.
-		var font := _notice_label.get_theme_font("font")
-		var maxima := minf(LARGURA_DO_AVISO, maxf(160.0, _root.get_viewport_rect().size.x * 0.68 / Tela.escala_componente("avisos")))
-		var largura := minf(font.get_string_size(_notice, HORIZONTAL_ALIGNMENT_LEFT, -1, _notice_label.get_theme_font_size("font_size")).x + 60.0, maxima)
+		# A MESMA LARGURA DO BLOCO DA MISSÃO, logo acima (10/10/2026): os dois blocos do canto
+		# formam uma coluna só. Na tela, com a escala de cada um (a missão pode estar em 80%
+		# e os avisos em 100%), e sem passar do que a janela deixa.
+		var na_tela := HEADING_WIDTH * Tela.escala_componente("missao")
+		var maxima := maxf(160.0, _root.get_viewport_rect().size.x * 0.68 / Tela.escala_componente("avisos"))
+		var largura := minf(na_tela / Tela.escala_componente("avisos"), maxima)
 		_notice_panel.offset_left = MARGEM_DO_CANTO
 		_notice_panel.offset_right = MARGEM_DO_CANTO + largura
 		# Volta à altura de uma linha: o painel cresce de novo até o texto novo caber.
