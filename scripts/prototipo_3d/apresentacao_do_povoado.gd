@@ -89,7 +89,15 @@ func _escolher(atores: Array[Node], limite: int, moradores: bool, afastar: float
 	var jogador: Vector3 = _vale.player.global_position
 	var camera := get_viewport().get_camera_3d() if is_inside_tree() else null
 	var olho: Vector3 = camera.global_position if camera != null else jogador
-	atores.sort_custom(func(a, b): return onde_esta(a).distance_squared_to(jogador) < onde_esta(b).distance_squared_to(jogador))
+	# Bichos e bandos que já estão em cena contam primeiro no limite: medidos só pela distância, os
+	# recém-chegados (perto) tomavam as vagas e o bicho da introdução (longe, mas já visto) ficava
+	# por cima delas, e ao acabar a introdução entravam três em vez de dois (#155).
+	atores.sort_custom(func(a, b):
+		if not moradores:
+			var a_visto := _vistos.has(a.get_instance_id())
+			if a_visto != _vistos.has(b.get_instance_id()):
+				return a_visto
+		return onde_esta(a).distance_squared_to(jogador) < onde_esta(b).distance_squared_to(jogador))
 	var apresentados := 0
 	for ator in atores:
 		var visita := ator.has_meta("presenca_do_calendario")
