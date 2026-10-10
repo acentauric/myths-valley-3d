@@ -1439,30 +1439,6 @@ tipo = "arvore"
 chave = "coqueiro"
 tamanho = 1.02
 
-[node name="Coqueiro da orla 43" type="Node3D" parent="Avulsos/Coqueiros da orla/Sul" unique_id=285147715]
-transform = Transform3D(-0.949489, 0, -0.3138, 0, 1, 0, 0.3138, 0, -0.949489, 54.018, 0.138, 23.327)
-script = ExtResource("4_8bxw0")
-id = "Coqueiro da orla 43"
-tipo = "arvore"
-chave = "coqueiro"
-tamanho = 0.99
-
-[node name="Coqueiro da orla 44" type="Node3D" parent="Avulsos/Coqueiros da orla/Sul" unique_id=741064995]
-transform = Transform3D(-0.694916, 0, -0.719091, 0, 1, 0, 0.719091, 0, -0.694916, 49.024, 1.117, 19.656)
-script = ExtResource("4_8bxw0")
-id = "Coqueiro da orla 44"
-tipo = "arvore"
-chave = "coqueiro"
-tamanho = 0.89
-
-[node name="Coqueiro da orla 45" type="Node3D" parent="Avulsos/Coqueiros da orla/Sul" unique_id=1311518613]
-transform = Transform3D(-0.668138, 0, -0.744037, 0, 1, 0, 0.744037, 0, -0.668138, 50.91, 1.272, 16.094)
-script = ExtResource("4_8bxw0")
-id = "Coqueiro da orla 45"
-tipo = "arvore"
-chave = "coqueiro"
-tamanho = 1.0
-
 [node name="Coqueiro da orla 46" type="Node3D" parent="Avulsos/Coqueiros da orla/Sul" unique_id=1158334971]
 transform = Transform3D(-0.88838, 0, -0.45911, 0, 1, 0, 0.45911, 0, -0.88838, 56.731, 0.672, 14.3)
 script = ExtResource("4_8bxw0")
