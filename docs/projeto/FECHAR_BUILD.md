@@ -9,11 +9,15 @@ publicação. Quem decide quando uma build fecha é o autor; até lá o trabalho
 - **O build é o número que manda.** `build_numero` em `data/historico_3d.json` sobe 1 a
   cada build publicada, e é ele que o atualizador do jogo compara
   (`scripts/autoload/atualizacao.gd`). Nunca se repete nem desce.
-- **A versão acompanha o build:** `v0.<build>.<pacote>`.
+- **A versão acompanha o build:** `v0.<build>.0`.
   - O número do meio é o build: a Build 11 é a `v0.11.0`.
-  - O último número é outro pacote do mesmo build, sem build novo. Exemplo: a 9B
-    (Tripothon) é a `v0.9.1`, o mesmo código da 9 exportado com o recurso `tripothon`.
-  - Correção publicada com zip novo é build novo: sobe o número do meio.
+  - Outro pacote do mesmo build, sem build novo, leva um rótulo depois do `+`:
+    a 9B (Tripothon), o mesmo código da 9 exportado com o recurso `tripothon`, é a
+    `v0.9.0+tripothon`. O rótulo não muda a ordem das versões. Nada de letra nos
+    números (`v0.9B.0` não é versão válida: o GitHub e o git não ordenam), nem `-`
+    (`v0.9.0-tripothon` quer dizer "antes da 0.9.0").
+  - Correção publicada com zip novo é build novo: sobe o número do meio. O último
+    número fica 0 enquanto o build for a chave do atualizador.
   - O `1.0.0` fica para o lançamento, por decisão do autor.
 - **Na `develop` a versão leva `-dev`** (`0.11.0-dev`) e o `build_numero` continua o da
   última build publicada. Só no fechamento os dois andam juntos.
@@ -22,7 +26,7 @@ publicação. Quem decide quando uma build fecha é o autor; até lá o trabalho
 
 Tags que já existem (retroativas, criadas em 10/10/2026): `v0.1.0` e `v0.2.0`
 (reconstruídas: o histórico só começou a contar na Build 3) até `v0.10.0`, mais a
-`v0.9.1` da 9B. `git tag -l -n1` lista com a descrição.
+`v0.9.0+tripothon` da 9B. `git tag -l -n1` lista com a descrição.
 
 ## O passo a passo
 
@@ -75,9 +79,9 @@ Tags que já existem (retroativas, criadas em 10/10/2026): `v0.1.0` e `v0.2.0`
 
 ## A 9B e os pacotes
 
-Um pacote a mais do mesmo build (outra edição, outro preset) ganha só o último número
-(`v0.<N>.1`), não sobe o `build_numero` e não entra na linha do atualizador. A 9B
-(`v0.9.1`, preset Windows Tripothon) é o exemplo: travada para a Tripothon, sem
+Um pacote a mais do mesmo build (outra edição, outro preset) ganha um rótulo depois do
+`+` (`v0.<N>.0+<edicao>`), não sobe o `build_numero` e não entra na linha do
+atualizador. A 9B (`v0.9.0+tripothon`, preset Windows Tripothon) é o exemplo: travada para a Tripothon, sem
 atualização no jogo, com plataforma própria (`windows-b`) no `builds.json` do site.
 
 ## Para automatizar

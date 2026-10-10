@@ -86,7 +86,7 @@ luz, som ou moradores do 3D.
   Numerar build (`versao_atual`/`build_numero`) continua sendo decisão de
   release: só muda quando um build é fechado, pelo roteiro de
   [docs/projeto/FECHAR_BUILD.md](docs/projeto/FECHAR_BUILD.md). A versão acompanha o
-  build (`v0.<build>.<pacote>`; na `develop`, `0.<próximo>.0-dev`), e a `main` ganha
+  build (`v0.<build>.0`, e `+edicao` para outro pacote do mesmo build; na `develop`, `0.<próximo>.0-dev`), e a `main` ganha
   uma tag anotada por build fechada.
 - **Issue `modelos-3d` gasta crédito**: o custo do lote é aprovado na conversa
   antes de gerar, como manda "Geração paga".
