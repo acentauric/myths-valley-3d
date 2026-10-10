@@ -23,7 +23,6 @@ func terminar(animador: Node) -> void:
 
 func _run() -> void:
 	await process_frame
-	root.get_node("Estilo").modo = "tripo"
 	var T = load("res://tests/itens_na_mao.gd")
 	var jogador: Node3D = await T.montar_jogador(self)
 	var peca: Node3D = await T.por_na_mao(self, jogador, "enxada")

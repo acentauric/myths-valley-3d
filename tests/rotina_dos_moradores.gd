@@ -54,7 +54,6 @@ func _run() -> void:
 			falsificar = "tudo"
 		elif argumento.begins_with("--falsificar="):
 			falsificar = argumento.trim_prefix("--falsificar=")
-	root.get_node("/root/Estilo").modo = "tripo"
 	_conferir(change_scene_to_file("res://scenes/prototipo_3d/vale.tscn") == OK, "a cena do vale carrega")
 	await _quadros(4)
 	await _mundo_pronto()

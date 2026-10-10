@@ -186,7 +186,7 @@ func _run() -> void:
 	# na missão do cemitério por esse tronco caído"): o mato que não é embaúba é
 	# tronco caído, que sai no machado e rende lenha — e, no estilo Tripo, é o
 	# modelo dele, e não a pilha.
-	var tripo: bool = root.get_node("/root/Estilo").tripo()
+	var tripo := true
 	var troncos := 0
 	for id in recursos._alvos:
 		var ficha: Dictionary = recursos._alvos[id]["ficha"]
@@ -466,7 +466,7 @@ func _conferir_a_capelinha(jogo, mundo, jogador, recursos) -> void:
 	_conferir(mar != Vector3.ZERO, "não achei o mar a partir do cemitério")
 	# A CAPELINHA POBRE ("deve ser mais rudimentar, com um aspecto pobre"): no
 	# estilo Tripo, é a de taipa do catálogo, e não a capela colonial reduzida.
-	if root.get_node("/root/Estilo").tripo():
+	if true:
 		var construida: Dictionary = mundo.construcoes.get("Capelinha", {})
 		var modelo = construida.get("modelo", null)
 		_conferir(modelo != null and str(modelo.scene_file_path).ends_with("capelinha_tripo.glb"),

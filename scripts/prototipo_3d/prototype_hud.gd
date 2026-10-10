@@ -54,8 +54,6 @@ signal quests_requested
 ## Engrenagem do canto: pede os ajustes; `settings_closed` quando o modal fecha.
 signal settings_requested
 signal settings_closed
-## Estilo visual trocado nos ajustes: o vale precisa ser reconstruído.
-signal style_changed
 signal camera_lock_requested(locked: bool)
 signal house_info_close_requested
 signal controls_requested
@@ -1367,7 +1365,7 @@ func _create_corner_buttons() -> void:
 
 	top += 1
 	var style_icon = HudIcon.new().configurar("estilo")
-	style_icon.definir(Estilo.tripo())
+	style_icon.definir(true)
 	var style: Array = BotaoCanto.criar(_root, top, style_icon)
 	(style[1] as Label).text = "FPS"
 	_performance_button = style[0]
@@ -1528,7 +1526,6 @@ func open_settings() -> void:
 	_ajustes = PainelAjustes.new(true)
 	_ajustes.tema = tema
 	_ajustes.fechar_pedido.connect(close_settings)
-	_ajustes.estilo_mudou.connect(func() -> void: style_changed.emit())
 	overlay.ao_esc = func() -> void:
 		if _ajustes.ajuda_aberta():
 			_ajustes.fechar_ajuda()

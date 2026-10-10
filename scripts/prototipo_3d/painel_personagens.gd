@@ -19,7 +19,6 @@ const PainelAjustes = preload("res://scripts/prototipo_3d/painel_ajustes.gd")
 const Identidade = preload("res://scripts/prototipo_3d/identidade.gd")
 const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
 const HudIcon = preload("res://scripts/prototipo_3d/hud_icon.gd")
-const Humanoide = preload("res://scripts/prototipo_3d/personagem_procedural.gd")
 const MixamoUso = preload("res://scripts/prototipo_3d/mixamo_uso.gd")
 ## Cartão da grade: tamanho mínimo e separação. Colunas e linhas por página saem do espaço
 ## que o modal deixa à lista (`_capacidade()`), e os cartões esticam para preencher a grade.
@@ -942,14 +941,10 @@ func _montar_previa(pai: Control, chave: String, altura: float = 0) -> void:
 	mundo.add_child(_preview_pivo)
 	var modelo: Node3D
 	var dimensao := Vector3(1, maxf(altura, 1.7), 1)
-	if Estilo.tripo():
-		var escala := altura / float(AjustesConteudo.peca(chave).get("altura", altura)) if altura > 0 else 1.0
-		modelo = CatalogoAssets.instanciar(chave, _preview_pivo, Vector3.ZERO, escala)
-		if modelo != null:
-			dimensao = (modelo.get_meta("limites") as AABB).size
-	elif altura > 0:
-		modelo = Humanoide.novo(chave, altura)
-		_preview_pivo.add_child(modelo)
+	var escala := altura / float(AjustesConteudo.peca(chave).get("altura", altura)) if altura > 0 else 1.0
+	modelo = CatalogoAssets.instanciar(chave, _preview_pivo, Vector3.ZERO, escala)
+	if modelo != null:
+		dimensao = (modelo.get_meta("limites") as AABB).size
 	_preview_modelo = modelo
 	if modelo == null:
 		var aviso := Label.new()

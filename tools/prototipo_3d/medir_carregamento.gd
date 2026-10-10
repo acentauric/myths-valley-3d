@@ -15,7 +15,7 @@ extends SceneTree
 ## que chega depois do `_enter_tree` do mundo (que o põe no grupo) e antes do
 ## `_ready` dele (que começa a montar). Nenhuma etapa escapa.
 ##
-## Não mexe em arquivo do jogo nem grava preferência: o estilo e o mudo valem só
+## Não mexe em arquivo do jogo nem grava preferência: o mudo vale só
 ## nesta execução. Sem vaga escolhida o vale não salva (Partida.salvar).
 ##
 ## RODAR (sempre com teto; se travar, mate só o PID que você levantou, AGENTS.md):
@@ -29,7 +29,6 @@ extends SceneTree
 ## OPÇÕES (depois do "--"):
 ##   --cena=abertura|vale|abertura,vale  cenas medidas, em ordem (padrão abertura);
 ##                                       aceita também o caminho de uma .tscn
-##   --estilo=tripo|procedural           força o estilo só nesta execução
 ##   --tela=0                            sem a tela de carregamento por cima
 ##   --particulas=0                      a tela sem as bolinhas (A/B do custo delas)
 ##   --precarregar=1                     lê antes, em threads, todos os GLBs do catálogo
@@ -57,7 +56,7 @@ const TELA := "res://scripts/prototipo_3d/tela_carregamento.gd"
 const TEMA := "res://scripts/prototipo_3d/tema_menu.gd"
 const CATALOGO := "res://scripts/prototipo_3d/catalogo_assets.gd"
 const PADROES := {
-	"cena": "abertura", "estilo": "", "tela": "1", "particulas": "1", "precarregar": "0",
+	"cena": "abertura", "tela": "1", "particulas": "1", "precarregar": "0",
 	"quadros_depois": "30", "teto": "1500", "mudo": "0", "saida": "", "so_compilar": "0",
 	"soltar_mouse": "1",
 }
@@ -135,14 +134,9 @@ func _run() -> void:
 	create_timer(float(_opcoes["teto"])).timeout.connect(_estourou)
 	# Os autoloads só respondem depois do primeiro quadro (AGENTS.md).
 	await process_frame
-	var estilo := root.get_node("/root/Estilo")
-	if String(_opcoes["estilo"]) != "":
-		# Pelo campo, e não por `definir`, que gravaria a preferência do jogador.
-		estilo.set("modo", String(_opcoes["estilo"]))
 	if _opcoes["mudo"] == "1":
 		AudioServer.set_bus_mute(AudioServer.get_bus_index("Master"), true)
 	_resultado["opcoes"] = _opcoes
-	_resultado["estilo"] = String(estilo.get("modo"))
 	_resultado["headless"] = DisplayServer.get_name() == "headless"
 	_soltar_mouse = not bool(_resultado["headless"]) and _opcoes["soltar_mouse"] == "1"
 	_resultado["godot"] = String(Engine.get_version_info().get("string", ""))

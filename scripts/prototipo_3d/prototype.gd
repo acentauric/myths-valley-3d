@@ -1,7 +1,6 @@
 extends Node3D
 ## Cena do vale: cenário, jogador, HUD, som do lugar, moradores e o Pedro guia.
-## Estilo visual (Tripo/Procedural), hora do dia e velocidade do tempo vêm dos
-## autoloads Estilo e Dia, ajustados no menu (AJUSTAR).
+## A hora do dia e a velocidade do tempo vêm do autoload Dia, ajustado no menu (AJUSTAR).
 
 const NPCS := "res://data/npcs_3d.json"
 const TeclasMovimento = preload("res://scripts/prototipo_3d/teclas_movimento.gd")
@@ -340,20 +339,6 @@ func _ready() -> void:
 		abrir_o_painel(PainelVale.Aba.MISSOES))
 	hud.connect("settings_requested", Callable(self, "_open_settings"))
 	hud.connect("settings_closed", Callable(self, "_on_menu_cancelled"))
-	hud.connect("style_changed", func() -> void:
-		# Novo estilo visual: reconstrói o vale inteiro, com a tela de carregamento.
-		get_tree().paused = false
-		# Os ajustes seguravam o dia; a tela solta, e o relógio fica como o jogador o deixou.
-		_telas_que_param = 0
-		Dia.soltar(MOTIVO_DA_TELA)
-		_saindo = true
-		hud.esconder_ajustes()
-		_acertar_as_placas()
-		# Trocar o estilo RECARREGA o vale, e o vale recarregado lê a vaga:
-		# sem salvar aqui, o jogador voltaria ao último save.
-		Partida.salvar()
-		var barra := TelaCarregamento.mostrar(hud_layer, TemaMenu.criar(), tr("Trocando o estilo do vale…"))
-		TelaCarregamento.trocar_cena(get_tree(), scene_file_path, barra))
 	# O E NA BANCADA DA OFICINA E NA FOGUEIRA (tecla_das_bancadas.gd). Entra antes
 	# de todo mundo que ouve o E: quem entra depois o recebe primeiro, e a árvore,
 	# o lajedo, a pesca e os achados têm alvo mais preciso que "estar perto".
@@ -640,13 +625,9 @@ func _ready() -> void:
 	# tecla da câmera toda vez que entrava.
 	player.set_camera_modo(CameraMouse.modo())
 	hud.set_region_title(world.get_region_title())
-	if Estilo.procedural():
-		hud.set_model_status("Estilo procedural: personagem, casas e árvores por código")
-		hud.set_telemetry("Procedural · 1,78 m")
-	else:
-		var viajante := "viajante do Tripo" if player.model != null and player.model.scene_file_path.ends_with("viajante_tripo.glb") else "personagem GLB provisório"
-		hud.set_model_status("Estilo Tripo: modelos do Tripo Studio (%s)" % viajante)
-		hud.set_telemetry("Tripo · 1,78 m")
+	var corpo_do_jogador := "viajante do Tripo" if player.model != null and player.model.scene_file_path.ends_with("viajante_tripo.glb") else "personagem GLB provisório"
+	hud.set_model_status("Estilo Tripo: modelos do Tripo Studio (%s)" % corpo_do_jogador)
+	hud.set_telemetry("Tripo · 1,78 m")
 	hud.set_objective(_objetivo_sem_missao)
 	hud.set_notice("Bom Jesus dos Pobres, 1887 · 1 unidade = %s m" % _formatar(world.get_meters_per_unit()))
 	_montar_som()
@@ -932,7 +913,7 @@ func _ready() -> void:
 	if pedro != null:
 		pedro.missao_mudou.connect(func(_t: String, _a: Vector3, _i: int, _n: int) -> void: _conferir_a_chave_da_casa())
 	_atualizar_relogio()
-	print("PROTOTYPE_READY: estilo=%s hora=%s moradores=%d user_dir=%s" % [Estilo.modo, Dia.texto_hora(), moradores.size(), OS.get_user_data_dir()])
+	print("PROTOTYPE_READY: hora=%s moradores=%d user_dir=%s" % [Dia.texto_hora(), moradores.size(), OS.get_user_data_dir()])
 	_pedir_os_retratos()
 	carga_ok = true
 	carga_concluida.emit()

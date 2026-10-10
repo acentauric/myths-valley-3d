@@ -16,16 +16,16 @@ extends SceneTree
 ## explicação lá). O anfitrião carrega cada um na vez dele, chama `_initialize`
 ## e espera o `quit`, o teto de tempo ou o primeiro erro de script. O vale fica
 ## montado de um caso para o outro; só se remonta quando o caso pede outra cena,
-## outro estilo, ou recarrega o vale de propósito.
+## ou recarrega o vale de propósito.
 ##
 ## ENTRE UM CASO E OUTRO o anfitrião desfaz o que é do motor e não do jogo: tira
 ## a pausa, devolve a escala de tempo e os quadros de física, solta toda tecla
-## apertada, volta o estilo ao padrão e apaga o que o caso pendurou na raiz.
+## apertada e apaga o que o caso pendurou na raiz.
 ## O estado do jogo (missões, mochila, relógio) é do caso: o portão que mexe
 ## nisso devolve no fim, como já fazia, ou se declara ISOLADO.
 ##
 ## A ORDEM é fixa, para a contaminação ser reproduzível: primeiro os casos que
-## não usam o vale, depois os do vale no estilo Tripo, depois os do procedural.
+## não usam o vale, depois os do vale.
 
 const PASTA := "res://tests/"
 const BASE := "res://tests/suite/caso.gd"
@@ -83,8 +83,6 @@ class Captura extends Logger:
 
 var _captura := Captura.new()
 var _saida := ""
-var _estilo_padrao := ""
-var _estilo_montado := ""
 var _quadros_fisica := 60
 var _passos_fisica := 8
 var _max_fps := 0
@@ -94,7 +92,7 @@ var _resultados: Array[Dictionary] = []
 var _zerar_user := false
 ## O estado dos autoloads (e do user://) como num Godot recém-aberto...
 var _foto_inicial := {}
-## ...e logo depois de o vale ficar pronto, no estilo montado.
+## ...e logo depois de o vale ficar pronto.
 var _foto_vale := {}
 
 
@@ -125,9 +123,6 @@ func _rodar() -> void:
 		quit(1 if not plano["inexistentes"].is_empty() else 0)
 		return
 
-	var estilo := root.get_node_or_null("/root/Estilo")
-	if estilo != null:
-		_estilo_padrao = String(estilo.get("modo"))
 	_quadros_fisica = Engine.physics_ticks_per_second
 	_passos_fisica = Engine.max_physics_steps_per_frame
 	_max_fps = Engine.max_fps
@@ -221,9 +216,7 @@ func _planejar(pedidos: PackedStringArray, longos: bool) -> Dictionary:
 		if info["isolado"] and pedidos.is_empty():
 			isolados.append(nome)
 			continue
-		var grupo := 0
-		if info["vale"]:
-			grupo = 2 if info["procedural"] else 1
+		var grupo := 1 if info["vale"] else 0
 		todos.append({"nome": nome, "caminho": caminho, "teto": info["teto"], "grupo": grupo, "isolado": info["isolado"], "vale_novo": info["vale_novo"], "acelerar": info["acelerar"]})
 	todos.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
 		return a["grupo"] < b["grupo"] if a["grupo"] != b["grupo"] else a["nome"] < b["nome"])
@@ -236,7 +229,7 @@ func _planejar(pedidos: PackedStringArray, longos: bool) -> Dictionary:
 
 ## O que o texto do caso (e o dos portões de que ele herda) declara.
 func _ler_cadeia(caminho: String) -> Dictionary:
-	var info := {"caso": false, "isolado": false, "longo": false, "vale_novo": false, "acelerar": 1.0, "teto": TETO_PADRAO_S, "vale": false, "procedural": false}
+	var info := {"caso": false, "isolado": false, "longo": false, "vale_novo": false, "acelerar": 1.0, "teto": TETO_PADRAO_S, "vale": false}
 	var vistos := {}
 	var atual := caminho
 	var teto_achado := false
@@ -246,8 +239,6 @@ func _ler_cadeia(caminho: String) -> Dictionary:
 		var texto := FileAccess.get_file_as_string(atual)
 		if CENA_DO_VALE in texto:
 			info["vale"] = true
-		if "return \"procedural\"" in texto and atual == caminho:
-			info["procedural"] = true
 		var r := RegEx.create_from_string("(?m)^const TETO_S\\s*:?=\\s*([0-9.]+)")
 		var m := r.search(texto)
 		if m != null and not teto_achado:
@@ -292,7 +283,7 @@ func _rodar_caso(item: Dictionary, feitos: int, total: int) -> Dictionary:
 		if item.get("vale_novo", false):
 			_foto_vale = {}
 			await _descarregar_cena()
-		if not await _garantir_vale("procedural" if int(item["grupo"]) == 2 else _estilo_padrao):
+		if not await _garantir_vale():
 			_captura.parar()
 			veredito["status"] = "NAO ABRE"
 			veredito["resumo"] = "o vale nao ficou pronto"
@@ -389,9 +380,6 @@ func _arrumar(antes_na_raiz: Array[Node]) -> void:
 	for acao in InputMap.get_actions():
 		Input.action_release(acao)
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-	var estilo := root.get_node_or_null("/root/Estilo")
-	if estilo != null and _estilo_padrao != "":
-		estilo.set("modo", _estilo_padrao)
 	for filho in root.get_children():
 		if filho == current_scene or filho in antes_na_raiz:
 			continue
@@ -410,19 +398,15 @@ func _arrumar(antes_na_raiz: Array[Node]) -> void:
 # ---------------------------------------------------------------------------
 # O VALE PRONTO E A FOTO DO ESTADO.
 
-## Monta o vale no estilo pedido, se ele já não está montado assim, e fotografa
+## Monta o vale, se ele já não está montado, e fotografa
 ## os autoloads logo depois: é o estado que cada caso do vale recebe.
-func _garantir_vale(estilo_alvo: String) -> bool:
+func _garantir_vale() -> bool:
 	var atual := current_scene
 	if atual != null and is_instance_valid(atual) and not atual.is_queued_for_deletion() \
-			and atual.scene_file_path == CENA_DO_VALE and _estilo_montado == estilo_alvo and not _foto_vale.is_empty():
+			and atual.scene_file_path == CENA_DO_VALE and not _foto_vale.is_empty():
 		return true
 	await _descarregar_cena()
 	Estado.restaurar(root, _foto_inicial)
-	var estilo := root.get_node_or_null("/root/Estilo")
-	if estilo != null and estilo_alvo != "":
-		estilo.set("modo", estilo_alvo)
-	_estilo_montado = estilo_alvo
 	_foto_vale = {}
 	montagens += 1
 	if change_scene_to_file(CENA_DO_VALE) != OK:
@@ -463,18 +447,16 @@ func _primeiros(lista: PackedStringArray, quantos: int) -> PackedStringArray:
 
 func trocar_cena(caminho: String, primeira_do_caso: bool) -> Error:
 	var atual := current_scene
-	var estilo := _estilo_atual()
 	# Só o vale se empresta: outra cena (a abertura, o início) monta de novo, e o
 	# caso que espera `scene_changed` recebe o sinal.
 	if primeira_do_caso and caminho == CENA_DO_VALE and atual != null and is_instance_valid(atual) and not atual.is_queued_for_deletion() \
-			and atual.scene_file_path == caminho and estilo == _estilo_montado:
+			and atual.scene_file_path == caminho:
 		# O caso preparou algo antes de pedir o vale (uma partida nova, uma vaga, a
 		# hora): o vale monta de novo a partir disso, como num Godot por portão.
 		var mexeu := Estado.difere(root, _foto_vale)
 		if mexeu == "":
 			return OK
 		print("          (o caso mexeu em %s antes de pedir o vale: monta de novo)" % mexeu)
-	_estilo_montado = estilo
 	# O vale montado assim é do caso: o próximo recebe um montado do zero.
 	_foto_vale = {}
 	if caminho == CENA_DO_VALE:
@@ -483,13 +465,7 @@ func trocar_cena(caminho: String, primeira_do_caso: bool) -> Error:
 
 
 func trocar_cena_empacotada(cena: PackedScene) -> Error:
-	_estilo_montado = _estilo_atual()
 	return change_scene_to_packed(cena)
-
-
-func _estilo_atual() -> String:
-	var estilo := root.get_node_or_null("/root/Estilo")
-	return String(estilo.get("modo")) if estilo != null else ""
 
 
 # ---------------------------------------------------------------------------

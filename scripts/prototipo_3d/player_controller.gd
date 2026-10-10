@@ -1,6 +1,6 @@
 extends CharacterBody3D
 ## A colisão e a câmera pertencem ao controlador; o corpo é escolhido pelo estilo visual
-## (autoload Estilo): humanoide procedural ou a cena GLB configurada (modo Tripo).
+## (o GLB do viajante no catálogo do Tripo, ou a cena configurada de reserva).
 
 signal capture_changed(captured: bool)
 signal camera_lock_changed(locked: bool)
@@ -307,20 +307,15 @@ func _ready() -> void:
 	visual = Node3D.new()
 	visual.name = "Visual"
 	add_child(visual)
-	# Confere o rig e os clipes do viajante antes de usá-lo no estilo Tripo.
+	# Confere o rig e os clipes do viajante antes de usá-lo.
 	var scene: PackedScene = model_scene
 	var corpo_tripo := false
-	if Estilo.tripo() and CatalogoAssets.tem_tripo("viajante"):
+	if CatalogoAssets.tem_tripo("viajante"):
 		var candidato := CatalogoAssets.cena("viajante")
 		if candidato != null and _tem_animacoes(candidato):
 			scene = candidato
 			corpo_tripo = true
-	if Estilo.procedural():
-		var procedural := PersonagemProcedural.novo("viajante", character_height)
-		visual.add_child(procedural)
-		model = procedural
-		animator = procedural
-	elif scene:
+	if scene:
 		model = scene.instantiate() as Node3D
 		visual.add_child(model)
 		_measure_model(model)
@@ -1472,7 +1467,7 @@ func get_animation_names() -> PackedStringArray:
 func get_current_animation() -> StringName:
 	if animator and animator.has_method("get_current_animation"):
 		return animator.get_current_animation()
-	return &"procedural"
+	return &""
 
 
 ## Corre com vigor no corpo e a reserva do dia fora do fim: "no fim dele o corpo

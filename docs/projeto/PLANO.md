@@ -330,10 +330,11 @@ O retorno da água pela margem do vale junto à ponte está corrigido (#161,
 07/10/2026). A flutuação acompanha a altura local do rio. Isso não substitui
 o lote de pedras da #116 nem libera a travessia pelo barranco oposto.
 
-A direção visual é Tripo. Conforme a decisão de 29/09, reconciliada na #46
-em 07/10/2026, assets novos entram no catálogo sem exigir arte procedural nova.
-O procedural permanece como legado funcional, com seus testes e fallback,
-até uma migração própria autorizar sua retirada.
+A direção visual é Tripo, e só Tripo: o estilo procedural saiu do jogo em
+10/10/2026 (#58, `RETIRAR_PROCEDURAL.md`), com a opção de AJUSTAR, o personagem,
+a flora e as construções feitas por código e os onze portões do outro estilo.
+Peça que falta no catálogo é erro; a caixa cinza provisória fica só para morador,
+bicho ou bancada novos que ainda não tenham modelo.
 
 Exploração do vale, moradores (que andam pela malha de navegação), missões em
 âncoras com recompensa (#48) e diário de missões acompanhadas, calendário (com

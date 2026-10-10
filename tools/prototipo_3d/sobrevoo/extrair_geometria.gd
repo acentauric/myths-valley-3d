@@ -1,9 +1,8 @@
 extends SceneTree
-## EXTRAI A GEOMETRIA REAL DO VALE EM VOLTA DO SOBREVOO DO MENU, NUM ESTILO VISUAL.
+## EXTRAI A GEOMETRIA REAL DO VALE EM VOLTA DO SOBREVOO DO MENU.
 ##
-##   godot --headless --path . --script res://tools/prototipo_3d/sobrevoo/extrair_geometria.gd -- --estilo=tripo --saida=C:/.../sobrevoo
-##   godot ... -- --estilo=procedural --saida=...      (um estilo por vez: cada um monta o vale)
-##   godot ... -- --estilo=uniao --saida=...           (junta os dois ja extraidos, sem montar)
+##   godot --headless --path . --script res://tools/prototipo_3d/sobrevoo/extrair_geometria.gd -- --saida=C:/.../sobrevoo
+##   (`--estilo=tripo` ainda é aceito, mas o vale só tem o estilo Tripo)
 ##
 ## Por que triangulo e nao AABB: a tentativa reprovada media obstaculo pela caixa de
 ## cada malha, e a caixa do coqueiro do Tripo tem 38 m de altura por 49 m de largura.
@@ -11,8 +10,7 @@ extends SceneTree
 ## tronco inclinado (~3 m) e as pontas das folhas, que caem ate uns 10-12 m. A caixa
 ## inventava uma parede de 49 m e o voo fugia dela aos trancos.
 ##
-## O que faz: monta a abertura no estilo pedido (definindo Estilo.modo DIRETO, sem
-## definir(), que gravaria a preferencia do jogador), espera o vale, le ancoras e
+## O que faz: monta a abertura, espera o vale, le ancoras e
 ## escala, recorta a regiao da rota de hoje crescida de 120 m e rasteriza os
 ## triangulos de todo MeshInstance3D visivel e de toda instancia de MultiMesh (LOD0 e
 ## os LODs gerados pelo importador, em uniao) numa grade de 0,5 m: por celula, um
@@ -132,11 +130,8 @@ func _executar(args: Dictionary) -> void:
 	create_timer(teto).timeout.connect(func() -> void:
 		push_error("EXTRAIR: passou de %d s sem terminar" % int(teto))
 		quit(2))
-	if _estilo == "uniao":
-		_uniao()
-		return
-	if _estilo not in ["tripo", "procedural"]:
-		push_error("EXTRAIR: --estilo deve ser tripo, procedural ou uniao")
+	if _estilo != "tripo":
+		push_error("EXTRAIR: o vale so tem o estilo tripo (recebi --estilo=%s)" % _estilo)
 		quit(1)
 		return
 	await _extrair()
@@ -153,13 +148,10 @@ func _marca_tempo(nome: String, desde: int) -> int:
 
 
 # ---------------------------------------------------------------------------
-# Um estilo: monta o vale e rasteriza.
+# Monta o vale e rasteriza.
 # ---------------------------------------------------------------------------
 
 func _extrair() -> void:
-	# Direto no autoload: definir() gravaria a escolha na preferencia do jogador.
-	var estilo_no := root.get_node("/root/Estilo")
-	estilo_no.set("modo", _estilo)
 	# O LOBBY DO MENU É O VÍDEO, e a abertura libera o vale 3D na entrada: o voo só pode
 	# ser medido contra o vale se este script o pedir. `load` e não `preload`: a abertura
 	# cita autoload, e só depois de o `_initialize` ele está de pé (AGENTS.md).
@@ -190,12 +182,7 @@ func _extrair() -> void:
 	marco = _marca_tempo("montar_vale", marco)
 	var abertura: Node = current_scene
 	var cenario := mundo
-	var tripo_de_fato := bool(cenario.call("estilo_tripo"))
-	if tripo_de_fato != (_estilo == "tripo"):
-		push_error("EXTRAIR: pedi %s e o vale montou %s" % [_estilo, "tripo" if tripo_de_fato else "procedural"])
-		quit(1)
-		return
-	_log("vale montado no estilo %s" % _estilo)
+	_log("vale montado (%s)" % _estilo)
 	_s = float(cenario.call("get_meters_per_unit"))
 	var ancoras: Dictionary = cenario.get("ancoras")
 	var pier: Vector3 = ancoras.get("Pier", Vector3.ZERO)
@@ -206,7 +193,7 @@ func _extrair() -> void:
 	_sub_u = SUBDIVIDIR_M / _s
 	_gigante_u = GIGANTE_M / _s
 	# Regiao: a rota de hoje (e o alvo dela) crescida de MARGEM_M, alinhada a grade
-	# global de 0,5 m (multiplos da celula a partir da origem), para os estilos casarem.
+	# global de 0,5 m (multiplos da celula a partir da origem).
 	var minimo := Vector2(INF, INF)
 	var maximo := Vector2(-INF, -INF)
 	_rota = PackedVector2Array()
@@ -289,7 +276,7 @@ func _extrair() -> void:
 	# (get_instance_transform devolve a identidade). As transformacoes vem da regiao
 	# reconstruida com as mesmas sementes (regiao_gravada.gd), conferida contra o vale vivo.
 	marco = _marca_tempo("rasterizar_malhas", marco)
-	var regravada := await _regravar_regiao(cenario, regiao_no, tripo_de_fato, blocos)
+	var regravada := await _regravar_regiao(cenario, regiao_no, blocos)
 	marco = _marca_tempo("reconstruir_regiao", marco)
 	if not bool(regravada["ok"]):
 		push_error("EXTRAIR: a regiao reconstruida nao bate com o vale vivo: " + JSON.stringify(regravada["conferencia"]))
@@ -344,8 +331,7 @@ func _extrair() -> void:
 	var confere := _conferir_com_abertura(abertura, pier, praca, chao_real)
 	var pasta_candidatos := _saida.path_join("candidatos")
 	Geometria.salvar_json(pasta_candidatos.path_join("base_%s.json" % _estilo), base)
-	if _estilo == "tripo":
-		Geometria.salvar_json(pasta_candidatos.path_join("base.json"), base)
+	Geometria.salvar_json(pasta_candidatos.path_join("base.json"), base)
 	marco = _marca_tempo("linha_de_base", marco)
 	# Conferencias: chao bilinear, objetos reais (coqueiro, casa, arvore grande).
 	var validacao := await _validar(cenario, geo, chao_real)
@@ -383,12 +369,11 @@ func _extrair() -> void:
 ## Reconstroi a regiao numa copia que grava as transformacoes de MultiMesh e confere a
 ## copia contra o vale vivo: o ponto de plantio de cada arvore (_tree_trunks), a
 ## transformacao dos coqueiros registrados e a contagem de instancias por nome de bloco.
-func _regravar_regiao(cenario: Node3D, regiao_no: Node, tripo: bool, blocos_vivos: Array[MultiMeshInstance3D]) -> Dictionary:
+func _regravar_regiao(cenario: Node3D, regiao_no: Node, blocos_vivos: Array[MultiMeshInstance3D]) -> Dictionary:
 	var Gravada: GDScript = load("res://tools/prototipo_3d/sobrevoo/regiao_gravada.gd")
 	var copia: Node3D = Gravada.new()
 	copia.call("set_meters_per_unit", float(regiao_no.call("get_meters_per_unit")))
 	copia.call("set_vertical_exaggeration", float(regiao_no.call("get_vertical_exaggeration")))
-	copia.call("set_estilo_tripo", tripo)
 	# As clareiras que o vale pede antes de a mata nascer (o terreiro e a gameleira,
 	# #52): sem elas a copia planta oito arvores que o vale vivo nao tem.
 	(copia.get("clareiras") as Array).assign(regiao_no.get("clareiras"))
@@ -811,9 +796,6 @@ func _validar(cenario: Node3D, geo, chao_real: Callable) -> Dictionary:
 	var escolhidos := {}
 	escolhidos["coqueiro"] = _escolher(Callable(self, "_e_coqueiro"), false)
 	escolhidos["casa"] = _escolher(Callable(self, "_e_casa"), false)
-	if escolhidos["casa"] == null:
-		# Procedural: a casa sao caixas soltas; vale a caixa alta mais perto da rota.
-		escolhidos["casa"] = _escolher(Callable(self, "_e_caixa_alta"), false)
 	escolhidos["arvore_grande"] = _escolher(Callable(self, "_e_arvore"), true)
 	escolhidos["coqueiro_multimesh"] = _escolher(Callable(self, "_e_coqueiro_multimesh"), false)
 	escolhidos["coqueiro_nomeado"] = _escolher(Callable(self, "_e_coqueiro_nomeado"), false)
@@ -856,12 +838,6 @@ func _e_casa(o: Dictionary) -> bool:
 		if r.contains(chave):
 			return true
 	return false
-
-
-## Casa procedural: o corpo e uma caixa de ~20 x 12 x 17 m; poste e pilar ficam de fora.
-func _e_caixa_alta(o: Dictionary) -> bool:
-	var caixa: AABB = o["aabb"]
-	return String(o["rotulo"]).contains("BoxMesh") and caixa.size.y * _s > 8.0 and minf(caixa.size.x, caixa.size.z) * _s > 10.0
 
 
 func _e_arvore(o: Dictionary) -> bool:
@@ -1203,7 +1179,7 @@ func _conferir_troncos(cenario: Node3D, geo) -> Dictionary:
 
 
 # ---------------------------------------------------------------------------
-# Gravacao e uniao.
+# Gravacao.
 # ---------------------------------------------------------------------------
 
 func _gravar(nome: String, cabecalho: Dictionary, mascara: PackedInt32Array, chao: PackedFloat32Array, campo: PackedFloat32Array, alturas: PackedFloat32Array) -> void:
@@ -1257,115 +1233,6 @@ func _salvar_mapa(nome: String, pier: Vector3, praca: Vector3) -> void:
 		if ix >= 0 and iz >= 0 and ix < _nx and iz < _nz:
 			imagem.set_pixel(ix, iz, Color.BLACK)
 	imagem.save_png(_saida.path_join(nome))
-
-
-func _uniao() -> void:
-	var marco := Time.get_ticks_msec()
-	var fontes: Array = []
-	for estilo in ["tripo", "procedural"]:
-		var geo = Geometria.carregar(_saida.path_join("geometria_%s.json" % estilo))
-		if geo == null:
-			push_error("UNIAO: falta geometria_%s.json em %s" % [estilo, _saida])
-			quit(1)
-			return
-		fontes.append(geo)
-	var a = fontes[0]
-	var b = fontes[1]
-	if not is_equal_approx(a.celula, b.celula) or not is_equal_approx(a.escala, b.escala):
-		push_error("UNIAO: celula ou escala diferentes entre os estilos")
-		quit(1)
-		return
-	_c = a.celula
-	_inv_c = 1.0 / _c
-	_s = a.escala
-	_ox = minf(a.origem.x, b.origem.x)
-	_oz = minf(a.origem.y, b.origem.y)
-	_nx = roundi((maxf(a.origem.x + a.nx * _c, b.origem.x + b.nx * _c) - _ox) / _c)
-	_nz = roundi((maxf(a.origem.y + a.nz * _c, b.origem.y + b.nz * _c) - _oz) / _c)
-	_mascara = PackedInt32Array()
-	_mascara.resize(_nx * _nz)
-	_chao = PackedFloat32Array()
-	_chao.resize(_nx * _nz)
-	_chao.fill(NAN)
-	var pior_chao := 0.0
-	for geo in fontes:
-		var dx: int = roundi((geo.origem.x - _ox) / _c)
-		var dz: int = roundi((geo.origem.y - _oz) / _c)
-		if absf((geo.origem.x - _ox) / _c - dx) > 0.01 or absf((geo.origem.y - _oz) / _c - dz) > 0.01:
-			push_error("UNIAO: grades desalinhadas")
-			quit(1)
-			return
-		for iz in range(geo.nz):
-			var linha: int = (iz + dz) * _nx + dx
-			var linha_fonte: int = iz * geo.nx
-			for ix in range(geo.nx):
-				var m: int = geo.mascara[linha_fonte + ix]
-				if m != 0:
-					var w := (_mascara[linha + ix] & 0xFFFFFFFF) | (m & 0xFFFFFFFF)
-					_mascara[linha + ix] = w - 4294967296 if w >= 2147483648 else w
-				var g: float = geo.chao_celula[linha_fonte + ix]
-				if is_nan(_chao[linha + ix]):
-					_chao[linha + ix] = g
-				else:
-					pior_chao = maxf(pior_chao, absf(_chao[linha + ix] - g) * _s)
-	# Canto que nenhum estilo cobriu (longe da rota): repete a celula coberta mais perto
-	# na mesma linha (ou a linha de cima), so para o bilinear nao ler NaN.
-	var sem_chao := 0
-	for iz in range(_nz):
-		var atual := NAN
-		for ix in range(_nx):
-			if not is_nan(_chao[iz * _nx + ix]):
-				atual = _chao[iz * _nx + ix]
-				break
-		for ix in range(_nx):
-			var k := iz * _nx + ix
-			if is_nan(_chao[k]):
-				sem_chao += 1
-				if is_nan(atual):
-					atual = _chao[k - _nx] if iz > 0 else 0.0
-				_chao[k] = atual
-			else:
-				atual = _chao[k]
-	marco = _marca_tempo("juntar", marco)
-	var geo_u = Geometria.new()
-	geo_u.iniciar(Vector2(_ox, _oz), _c, _nx, _nz, _s, _mascara, _chao)
-	geo_u.calcular_campo(PackedFloat32Array(CAMADAS_CAMPO_M), TETO_CAMPO_M)
-	marco = _marca_tempo("campo_de_folga", marco)
-	var ca: Dictionary = a.cabecalho
-	var cb: Dictionary = b.cabecalho
-	var ancoras := {}
-	ancoras.merge(ca.get("ancoras_por_estilo", {}))
-	ancoras.merge(cb.get("ancoras_por_estilo", {}))
-	var dif_pier := (a.pier as Vector3).distance_to(b.pier) * _s
-	var dif_praca := (a.praca as Vector3).distance_to(b.praca) * _s
-	var bits := 0
-	var celulas := 0
-	for k in range(_mascara.size()):
-		var m := _mascara[k] & 0xFFFFFFFF
-		if m != 0:
-			celulas += 1
-			bits += _bits(m)
-	var cabecalho := {
-		"versao": Geometria.VERSAO, "tipo": "geometria_sobrevoo", "estilo": "uniao", "estilos": ["tripo", "procedural"],
-		"gerado_em": Time.get_datetime_string_from_system(true, true) + "Z",
-		"metros_por_unidade": _s, "celula_m": CELULA_M, "celula_u": _c, "faixa_m": Geometria.FAIXA_M,
-		"faixas": Geometria.FAIXAS, "altura_max_m": Geometria.FAIXAS * Geometria.FAIXA_M,
-		"origem_u": [_ox, _oz], "nx": _nx, "nz": _nz,
-		"indice": "i = iz * nx + ix; celula cobre [origem + i*celula, origem + (i+1)*celula] em x e z; chao no centro",
-		"pier": ca["pier"], "praca": ca["praca"],
-		"ancoras_por_estilo": ancoras,
-		"ancoras_nota": "pier/praca do cabecalho sao os do Tripo (linha mestra); o pier do procedural fica %.1f m adiante (a praca %.2f m)" % [dif_pier, dif_praca],
-		"diferenca_ancoras_m": {"pier": dif_pier, "praca": dif_praca},
-		"chao": {"maior_diferenca_entre_estilos_m": pior_chao, "celulas_sem_chao_preenchidas": sem_chao},
-		"ocupacao": {"celulas_ocupadas": celulas, "voxels_ocupados": bits},
-		"fontes": {"tripo": {"contagens": ca.get("contagens", {}), "tempos_s": ca.get("tempos_s", {}), "validacao_resumo": (ca.get("validacao", {}) as Dictionary).get("resumo", {})}, "procedural": {"contagens": cb.get("contagens", {}), "tempos_s": cb.get("tempos_s", {}), "validacao_resumo": (cb.get("validacao", {}) as Dictionary).get("resumo", {})}},
-		"tempos_s": _tempos,
-	}
-	_gravar("geometria_uniao", cabecalho, _mascara, _chao, geo_u.campo, PackedFloat32Array(CAMADAS_CAMPO_M))
-	_salvar_mapa("mapa_uniao.png", a.pier, a.praca)
-	print("EXTRAIR_JSON: ", JSON.stringify({"estilo": "uniao", "nx": _nx, "nz": _nz, "diferenca_ancoras_m": cabecalho["diferenca_ancoras_m"], "chao": cabecalho["chao"], "ocupacao": cabecalho["ocupacao"], "tempos_s": _tempos}))
-	_log("EXTRAIR_OK uniao")
-	quit(0)
 
 
 # ---------------------------------------------------------------------------

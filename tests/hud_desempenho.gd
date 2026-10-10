@@ -27,8 +27,8 @@ func _run() -> void:
 		quit(1)
 		return
 	_conferir(not painel.visible, "o painel começa aberto")
-	# O BOTÃO MOSTRA O NÚMERO. Ele levava o ícone de estilo, que no procedural
-	# é um par de chaves, e quem jogou viu "{}" no lugar do FPS.
+	# O BOTÃO MOSTRA O NÚMERO. Ele já levou um ícone que era um par de
+	# chaves, e quem jogou viu "{}" no lugar do FPS.
 	hud._update_telemetry()
 	var no_botao: Label = hud._fps_label
 	_conferir(no_botao != null and no_botao.is_inside_tree(), "o botão de FPS não tem o número escrito")

@@ -85,13 +85,12 @@ luz, som ou moradores do 3D.
 - **Issue `modelos-3d` gasta crédito**: o custo do lote é aprovado na conversa
   antes de gerar, como manda "Geração paga".
 
-- **Dois estilos, nunca misturados.** O autoload `Estilo` decide se o vale
-  inteiro é Tripo ou procedural. Peça Tripo nova entra em
-  `CatalogoAssets.PECAS` (`scripts/prototipo_3d/catalogo_assets.gd`). Conforme
-  a decisão do autor de 29/09 em `COMPOSICAO_AUTORAL_3D.md`, não exige arte
-  procedural equivalente: preserve o legado funcional e seus testes, sem
-  ampliar sua produção de arte. Nunca instancie um GLB do Tripo fora do catálogo nem
-  uma peça procedural dentro do estilo Tripo.
+- **O vale é só Tripo.** O estilo procedural (tudo construído por código) saiu
+  do jogo em 10/10/2026 (#58, `docs/projeto/RETIRAR_PROCEDURAL.md`). Peça nova
+  entra em `CatalogoAssets.PECAS` (`scripts/prototipo_3d/catalogo_assets.gd`);
+  GLB que falta é erro (`push_error`), nunca forma de código no lugar. A caixa
+  cinza provisória (bicho, bancada ou morador ainda sem modelo) é o único
+  substituto, e é temporária. Nunca instancie um GLB do Tripo fora do catálogo.
 - **O catálogo é a única fonte** de caminho, medida (`altura` ou `largura`),
   colisão (`tronco` ou `caixa`) e correções (`girar`, `afundar`, `piso`) de cada
   GLB. Os GLBs do Tripo chegam normalizados com 0,98 no maior eixo; confira com
@@ -115,7 +114,8 @@ luz, som ou moradores do 3D.
   saudação ou a narração curta).
 - **Sobrevoo do menu:** é um trajeto gravado (`data/sobrevoo_menu.json`) que contorna
   árvores e casas pelos lados, sem subir. Mexeu em árvore ou casa perto dele e
-  `sobrevoo_livre`/`sobrevoo_livre_procedural` reprovaram: replaneje pelo
+  `sobrevoo_livre` reprovou: veja o voo em `tools/prototipo_3d/sobrevoo/ver_sobrevoo.tscn`
+  e replaneje pelo
   `tools/prototipo_3d/sobrevoo/README.md` em vez de afrouxar o portão.
 - **Para depurar num lugar do vale sem refazer o caminho**: `JOGAR_3D.cmd -Lugar igreja`
   (ou `-- --lugar=igreja` no Godot); os nomes são os do `Lugares`. Os testes põem o
@@ -158,8 +158,6 @@ luz, som ou moradores do 3D.
   restante em [docs/arte/ASSETS_TRIPO.md](docs/arte/ASSETS_TRIPO.md).
 - Todo GLB promovido para `assets/` precisa de linha em `ORIGEM.md`
   (tarefa Tripo, faces, textura) e em [assets/CREDITOS.md](assets/CREDITOS.md).
-- O estilo procedural continua existindo (AJUSTAR → Estilo visual) apenas como
-  comparação; não crie arte nova nele.
 - Antes de mover um resultado para `assets/`, confira malha,
   materiais, escala, rig, nomes dos clipes e licença. Registre origem e hash ao
   promover o arquivo.
@@ -182,7 +180,7 @@ luz, som ou moradores do 3D.
 - Registre as tarefas num `tools/tripo/lote_*.json`; retopologia e exportação em
   massa com `tools/tripo/lote_studio.js` no console do Studio (aba visível);
   `sincronizar_downloads.py` copia de Downloads; `registrar_origem.py` escreve o
-  `ORIGEM.md` de cada pasta. Teste nos dois estilos antes de commitar. Mantenha
+  `ORIGEM.md` de cada pasta. Mantenha
   downloads temporários em `tools/tripo-studio/output/` e promova para
   `.assets-raw/tripo/` só o material escolhido. Instalação e operação em
   [docs/ferramentas/TRIPO_MCP.md](docs/ferramentas/TRIPO_MCP.md) e

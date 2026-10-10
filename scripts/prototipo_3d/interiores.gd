@@ -26,8 +26,7 @@ extends Node3D
 ##      provisória, numa camada só dela, desfeita em seguida): onde ficam as
 ##      paredes, o fundo, a fachada, o beiral e o chão; e, contra a colisão do
 ##      mundo, o patamar na porta, a quina do alicerce e o chão livre até o
-##      cruzeiro. Assim o cômodo acompanha o modelo, e o estilo procedural —
-##      cuja porta atravessa a torre — também.
+##      cruzeiro. Assim o cômodo acompanha o modelo.
 ##   2. TIRA A COLISÃO INTEIRA da construção, e o cômodo põe a dele: paredes um
 ##      palmo para dentro da casca, o vão da porta, e rampas onde degrau
 ##      travaria o pé — da nave ao patamar, e do patamar ao adro por cima da
@@ -88,24 +87,22 @@ enum { MONTOU, ADIAR, FALHOU }
 ##   ancora     a âncora do vale e o nome do lote (`world_builder.construcoes`)
 ##   nome       o que o HUD escreve lá dentro
 ##   colisao    o nome do corpo inteiro, para quando o lote não o guardou
-##   meio_lote  até onde, do meio, vai a casca (de lado, e de frente e fundo):
-##              no procedural, as malhas e os corpos do lote são os daí
 ##   porta_x    onde a porta fica na fachada, do meio para a direita de quem
 ##              olha a casa de frente; e o tamanho do vão da porta pintada
 ##   sonda      de que altura se procura o patamar na frente da porta: abaixo
 ##              do beiral, que na casa de taipa avança por cima da porta
 const CONSTRUCOES := {
 	"igreja": {"ancora": "Igreja", "nome": "Igreja do Bom Jesus", "colisao": "IgrejaColisao",
-		"meio_lote": Vector2(4.5, 8.0), "porta_x": 0.0, "largura_da_porta": 1.2, "altura_da_porta": 2.7, "sonda": 8.0},
+		"porta_x": 0.0, "largura_da_porta": 1.2, "altura_da_porta": 2.7, "sonda": 8.0},
 	"casa": {"ancora": "Casa de taipa", "nome": "Sua casa", "colisao": "Casa TaipaColisao",
-		"meio_lote": Vector2(3.4, 3.2), "porta_x": 0.92, "largura_da_porta": 1.05, "altura_da_porta": 2.15, "sonda": 1.6},
+		"porta_x": 0.92, "largura_da_porta": 1.05, "altura_da_porta": 2.15, "sonda": 1.6},
 	# AS CASAS DO PEDRO E DA DONA ZEFA: a mesma casa de taipa por fora, e por
 	# dentro a de quem mora (`InteriorCasa.perfil`). O lote é o que o vale
 	# escolheu para cada um (`WorldBuilder.casas_dos_moradores`).
 	"casa_pedro": {"morador": "pedro", "nome": "Casa do Pedro", "perfil": "pescador",
-		"meio_lote": Vector2(3.4, 3.2), "porta_x": 0.92, "largura_da_porta": 1.05, "altura_da_porta": 2.15, "sonda": 1.6},
+		"porta_x": 0.92, "largura_da_porta": 1.05, "altura_da_porta": 2.15, "sonda": 1.6},
 	"casa_zefa": {"morador": "zefa", "nome": "Casa da Dona Zefa", "perfil": "rezadeira",
-		"meio_lote": Vector2(3.4, 3.2), "porta_x": 0.92, "largura_da_porta": 1.05, "altura_da_porta": 2.15, "sonda": 1.6},
+		"porta_x": 0.92, "largura_da_porta": 1.05, "altura_da_porta": 2.15, "sonda": 1.6},
 }
 
 ## A camada de física das colisões provisórias da medida (só elas moram nela).
@@ -166,10 +163,9 @@ func configurar(mundo: Node3D, jogador: Node3D) -> void:
 		var resultado: int = await _abrir(qual)
 		if resultado == MONTOU:
 			_avisar_a_malha()
-	if Estilo.tripo():
-		for qual in _tabela:
-			if not CONSTRUCOES.has(qual) and not _construcoes.has(qual):
-				_pendentes.append(str(qual))
+	for qual in _tabela:
+		if not CONSTRUCOES.has(qual) and not _construcoes.has(qual):
+			_pendentes.append(str(qual))
 
 
 ## A tabela inteira: as quatro fixas e as do arquivo, menos as que o vale deu a outro
@@ -461,7 +457,7 @@ func _abrir(qual: String) -> int:
 	dado = _com_a_porta_do_modelo(dado, lote, modelo)
 	if dado.has("deslocar_z"):
 		centro += frente * float(dado["deslocar_z"])
-	var malhas := _malhas_da_casca(modelo, centro, frente, dado.get("meio_lote", Vector2(3.4, 3.2)))
+	var malhas := _malhas_da_casca(modelo)
 	if malhas.is_empty():
 		return ADIAR if preguicosa else FALHOU
 	var caixa_inteira: Node = lote.get("colisao") if is_instance_valid(lote.get("colisao")) else null
@@ -473,7 +469,7 @@ func _abrir(qual: String) -> int:
 	var sala := _nova_sala(qual, dado)
 	if sala == null:
 		return FALHOU
-	_tirar_a_colisao_inteira(caixa_inteira, modelo, centro, frente, medida)
+	_tirar_a_colisao_inteira(caixa_inteira)
 	if modelo != null:
 		_casca_so_por_fora(modelo)
 
@@ -616,23 +612,11 @@ func _frente(ancora: String) -> Vector3:
 	return frente.normalized() if frente.length() > 0.01 else Vector3.BACK
 
 
-## As malhas que formam a casca: as do modelo do Tripo, ou, no procedural, as
-## do mundo que estão dentro do lote da construção (`meio_lote`: de lado, e de
-## frente e fundo).
-func _malhas_da_casca(modelo: Node3D, centro: Vector3, frente: Vector3, meio_lote: Vector2) -> Array:
-	var lista: Array = []
-	if modelo != null:
-		for no in modelo.find_children("*", "MeshInstance3D", true, false):
-			lista.append(no)
-		return lista
-	var lado := frente.cross(Vector3.UP).normalized()
-	for no in _mundo.get_children():
-		if not (no is MeshInstance3D):
-			continue
-		var onde: Vector3 = (no as MeshInstance3D).global_position - centro
-		if absf(onde.dot(lado)) < meio_lote.x and absf(onde.dot(frente)) < meio_lote.y and onde.y > -0.5 and onde.y < 12.0:
-			lista.append(no)
-	return lista
+## As malhas que formam a casca: as do modelo do Tripo.
+func _malhas_da_casca(modelo: Node3D) -> Array:
+	if modelo == null:
+		return []
+	return modelo.find_children("*", "MeshInstance3D", true, false)
 
 
 ## A MEDIDA DA CASCA, por dentro e pela fachada, em unidades a partir do centro
@@ -647,7 +631,7 @@ func _malhas_da_casca(modelo: Node3D, centro: Vector3, frente: Vector3, meio_lot
 ##   chao     a altura do chão da nave: o da casca, ou a soleira, o que for maior
 ##   soleira  a altura do patamar de FORA, na porta: o que o corpo pisa ao
 ##            chegar — no Tripo, o topo da escadaria de pedra que o vale põe
-##            na frente da igreja; no procedural, o chão. Medido contra a
+##            na frente da igreja. Medido contra a
 ##            colisão do mundo, sem a caixa inteira que vai sair.
 func _medir(malhas: Array, centro: Vector3, frente: Vector3, caixa_inteira: Node, dado: Dictionary) -> Dictionary:
 	var corpo := StaticBody3D.new()
@@ -905,23 +889,11 @@ func _distancia(espaco: PhysicsDirectSpaceState3D, de: Vector3, direcao: Vector3
 	return (ponto - de).dot(direcao) if ponto.is_finite() else INF
 
 
-## TIRA A COLISÃO INTEIRA da construção: a caixa que o catálogo pôs no Tripo,
-## ou, no procedural, os corpos das caixas da construção dentro do lote. O
+## TIRA A COLISÃO INTEIRA da construção: a caixa que o catálogo pôs no Tripo. O
 ## cômodo põe a dele no lugar.
-func _tirar_a_colisao_inteira(caixa: Node, modelo: Node3D, centro: Vector3, frente: Vector3, medida: Dictionary) -> void:
-	if modelo != null:
-		if caixa != null:
-			caixa.queue_free()
-		return
-	var lado := frente.cross(Vector3.UP).normalized()
-	for no in _mundo.get_children():
-		if not (no is StaticBody3D) or str(no.name) == "MedidaDaCasca":
-			continue
-		var onde: Vector3 = (no as StaticBody3D).global_position - centro
-		if absf(onde.dot(lado)) <= float(medida["lado"]) + 0.6 \
-				and onde.dot(frente) <= float(medida["fachada"]) + 0.6 \
-				and onde.dot(frente) >= -float(medida["fundo"]) - 0.8 and onde.y < 12.0:
-			no.queue_free()
+func _tirar_a_colisao_inteira(caixa: Node) -> void:
+	if caixa != null:
+		caixa.queue_free()
 
 
 ## A CASCA SÓ POR FORA: material de dois lados desenharia a parede também de

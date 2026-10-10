@@ -76,7 +76,6 @@ func _run() -> void:
 	create_timer(900.0).timeout.connect(func() -> void:
 		push_error("LAPIDES_NO_CHAO: limite de 900 segundos excedido")
 		quit(2))
-	root.get_node("/root/Estilo").modo = _estilo_do_portao()
 	_conferir(change_scene_to_file("res://scenes/prototipo_3d/vale.tscn") == OK, "a cena do vale carrega")
 	await _frames(4)
 	await _mundo_pronto()

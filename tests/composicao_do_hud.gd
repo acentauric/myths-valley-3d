@@ -16,7 +16,6 @@ func _run() -> void:
 			tela.definir_componente(chave, 5)
 		# Contraste proposital: relógio pequeno junto de medidores grandes.
 		tela.definir_componente("relogio", 0)
-	root.get_node("Estilo").modo = "tripo"
 	change_scene_to_file("res://scenes/prototipo_3d/vale.tscn")
 	await process_frame
 	while current_scene == null or current_scene.get("carga_ok") != true:

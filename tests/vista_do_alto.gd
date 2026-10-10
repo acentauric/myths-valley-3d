@@ -11,8 +11,6 @@ func conferir(ok: bool, texto: String) -> void:
 		print("FALHA: ", texto)
 func _run() -> void:
 	var talentos = root.get_node("Talentos")
-	# Esta prova geométrica não precisa carregar o GLB do viajante.
-	root.get_node("Estilo").modo = "procedural"
 	root.get_node("Fe").ativa = ""
 	talentos.destravados.clear()
 	var mundo := Mundo.new()

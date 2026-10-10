@@ -24,7 +24,6 @@ func _initialize() -> void:
 
 func _run() -> void:
 	await process_frame
-	root.get_node("/root/Estilo").modo = "tripo"
 	Catalogo = load("res://scripts/prototipo_3d/catalogo_assets.gd")
 	var luz := DirectionalLight3D.new()
 	luz.rotation_degrees = Vector3(-35.0, 25.0, 0.0)

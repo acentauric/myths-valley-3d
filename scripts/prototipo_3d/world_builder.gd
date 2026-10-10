@@ -1,8 +1,7 @@
 extends Node3D
 ## O vale de Bom Jesus dos Pobres: terreno geográfico (KML) + peças perto dos pontos de
-## interesse. Cada peça existe em dois estilos escolhidos em AJUSTAR (autoload Estilo):
-## "tripo" usa os GLBs do catálogo (CatalogoAssets); "procedural" usa FloraReconcavo e os
-## construtores deste script. Terreno, ruas, rios e mar são iguais nos dois.
+## interesse. Toda peça é um GLB do catálogo (CatalogoAssets); se um GLB faltar, o
+## mundo avisa com `push_error` e não constrói nada no lugar.
 ## O catálogo de regiões separa a escala horizontal (`scale_m_per_unit`) da
 ## exageração artística do relevo (`vertical_exaggeration`).
 
@@ -23,10 +22,6 @@ const FazendaVale = preload("res://scripts/prototipo_3d/fazenda_vale.gd")
 const RevoarVale = preload("res://scripts/prototipo_3d/revoar_vale.gd")
 const CemiterioLayout = preload("res://scripts/prototipo_3d/cemiterio_layout.gd")
 const TERREIRO_CASA := preload("res://scenes/prototipo_3d/terreiro_casa.tscn")
-const CASA_TAIPA_CAL_TEXTURE := preload("res://assets/prototipo_3d/materiais/cal_taipa_envelhecida_v1.png")
-const TELHA_COLONIAL_TEXTURE := preload("res://assets/prototipo_3d/materiais/telha_colonial_envelhecida_v1.png")
-## Bancada de comparação (desenvolvimento): três mangueiras lado a lado ao sul da Praça.
-const COMPARAR_MANGUEIRAS := false
 ## Camada reservada para raycasts de interação com casas (bit 13 no inspetor).
 const HOUSE_INTERACTION_LAYER := 1 << 12
 const SITE_SEARCH_STEP := 1.5
@@ -112,7 +107,7 @@ func _clareiras_das_frentes() -> Array[Vector2]:
 
 ## Lote (posição e giro) de cada construção nomeada, decidido por _loteamento().
 var _lotes: Dictionary = {}
-## O MODELO E A COLISÃO INTEIRA de cada construção com nome, no estilo Tripo:
+## O MODELO E A COLISÃO INTEIRA de cada construção com nome:
 ## nome -> {"modelo": Node3D, "colisao": StaticBody3D}. O cômodo de dentro
 ## (`interiores.gd`) os acha por aqui, e não pelo nome do nó: há várias casas
 ## de taipa no vale, e o Godot renomeia as repetidas.
@@ -220,11 +215,11 @@ func _support_house(position: Vector3, footprint: Vector2, yaw: float, chave: St
 	return placed
 
 
-func _remember_house_position(name: String, position: Vector3, yaw: float, tripo: bool) -> void:
+func _remember_house_position(name: String, position: Vector3, yaw: float) -> void:
 	if name.is_empty():
 		return
 	ancoras[name] = position
-	ancoras[name + "Frente"] = Vector3(sin(yaw), 0.0, cos(yaw)) if tripo else Vector3.BACK
+	ancoras[name + "Frente"] = Vector3(sin(yaw), 0.0, cos(yaw))
 	if name == "Venda do Bar":
 		ancoras["Bar"] = position
 		ancoras["BarFrente"] = ancoras[name + "Frente"]
@@ -494,8 +489,8 @@ func na_mata_fechada(world_position: Vector3) -> bool:
 	return Vector2(praca.x, praca.z).distance_to(ponto) > 25.0
 
 
-## Rotação (yaw) que alinha o eixo X local — o comprimento da ponte, no modelo e no
-## procedural — com a rua mais próxima do ponto, para a ponte seguir a rua sobre o rio.
+## Rotação (yaw) que alinha o eixo X local — o comprimento da ponte no modelo —
+## com a rua mais próxima do ponto, para a ponte seguir a rua sobre o rio.
 func _road_yaw_at(point: Vector3) -> float:
 	if _region == null:
 		return 0.0
@@ -633,10 +628,6 @@ func get_region_title() -> String:
 	return region_title
 
 
-func estilo_tripo() -> bool:
-	return Estilo.tripo()
-
-
 func _enter_tree() -> void:
 	add_to_group("mundo")
 
@@ -674,7 +665,6 @@ func _montar() -> void:
 	add_child(_region)
 	_region.set_meters_per_unit(_meters_per_unit)
 	_region.set_vertical_exaggeration(_vertical_exaggeration)
-	_region.set_estilo_tripo(estilo_tripo())
 	_region.vegetacao_autoral = _vegetacao_autoral()
 	# A região vale 0 a 75% do progresso; a vila, o resto.
 	_region.etapa.connect(func(fracao: float, texto: String) -> void: progresso.emit(fracao * 0.75, texto))
@@ -700,7 +690,7 @@ func _montar() -> void:
 	if region_data["id"] == "bom_jesus_dos_pobres":
 		await _construir_vila()
 	var faltando := CatalogoAssets.relatorio_faltando()
-	if estilo_tripo() and not faltando.is_empty():
+	if not faltando.is_empty():
 		print("CATALOGO: ", faltando)
 	_concluir()
 
@@ -808,28 +798,24 @@ func _construir_vila() -> void:
 	_loteamento()
 	await _etapa(0.8, "Erguendo as casas")
 	# Casas da praça
-	_construcao("casa_taipa", taipa, 0.0, func(at: Vector3): _casa_de_taipa_referencia(at), 1.0, "Casa de taipa")
-	_construcao("casa_carro_quebrado", ancoras["Casa de Carro Quebrado"], 0.0, func(at: Vector3): _house(at, Color("e8dcc4"), Color("a8442f")), 1.0, "Casa de Carro Quebrado")
+	_construcao("casa_taipa", taipa, 0.0, 1.0, "Casa de taipa")
+	_construcao("casa_carro_quebrado", ancoras["Casa de Carro Quebrado"], 0.0, 1.0, "Casa de Carro Quebrado")
 	# Referência: 12°48'46.28"S 38°46'49.07"W; afastar a casa do eixo da Rua Principal.
 	var casa_estrada_referencia: Vector3 = _region.wgs84_to_world(-12.812855555555556, -38.780297222222224)
 	ancoras["Casa da estrada"] = _region.position_beside_road(casa_estrada_referencia, "Rua Principal", 10.0)
-	_construcao("casa_taipa", ancoras["Casa da estrada"], 0.0, func(at: Vector3): _house(at, Color("dfb980"), Color("ae6950")), 1.0, "Casa da estrada")
+	_construcao("casa_taipa", ancoras["Casa da estrada"], 0.0, 1.0, "Casa da estrada")
 	# As demais casas do arraial, nos lotes reservados pelo loteamento.
-	var paletas := [[Color("e4d7bd"), Color("a85a40")], [Color("d9c49a"), Color("8f5a44")], [Color("efe3c8"), Color("9c4f38")], [Color("cbb98f"), Color("7d5b46")]]
-	var casa_indice := 0
 	# Toda moradia da composição sobe aqui — as "Casa do arraial" e as casas dos
 	# moradores novos (a do guarda, a da lavadeira...) —, menos as que já subiram
 	# acima e as que sobem com os marcos. Casa nova cujo GLB ainda não chegou sobe
-	# com a casca da casa de taipa, e não com o boneco procedural.
+	# com a casca da casa de taipa.
 	for nome_lote in _lotes:
 		var chave_lote := String(_lotes[nome_lote]["chave"])
 		if not _is_house_key(chave_lote) or String(nome_lote) in ["Casa de taipa", "Casa de Carro Quebrado", "Casa da estrada", "Venda do Bar", "Restaurante"]:
 			continue
-		if estilo_tripo() and not CatalogoAssets.tem_tripo(chave_lote):
+		if not CatalogoAssets.tem_tripo(chave_lote):
 			chave_lote = "casa_taipa"
-		casa_indice += 1
-		var paleta: Array = paletas[casa_indice % paletas.size()]
-		_construcao(chave_lote, _lotes[nome_lote]["pos"], 0.0, func(at: Vector3): _house(at, paleta[0], paleta[1]), 1.0, String(nome_lote))
+		_construcao(chave_lote, _lotes[nome_lote]["pos"], 0.0, 1.0, String(nome_lote))
 		await _pausar()
 	_escolher_as_casas_dos_moradores()
 	await _etapa(0.84, "Cercando o roçado")
@@ -852,8 +838,6 @@ func _construir_vila() -> void:
 	await _etapa(0.975, "Plantando as árvores da vila")
 	_build_paisagismo()
 	_build_bases_das_arvores()
-	if COMPARAR_MANGUEIRAS:
-		_bancada_mangueiras(Vector3(-2, 0, -30))
 
 
 ## O PAISAGISMO DO VALE: os bananais, pomares, roças e a mata ciliar do arraial,
@@ -861,7 +845,7 @@ func _construir_vila() -> void:
 ## receitas de `data/paisagismo/receitas.json` (`paisagismo_vale.gd`). Vem depois
 ## de tudo o que tem lugar fixo — casas, nomeadas, âncoras, luzes — porque planta
 ## só no que sobrou, e antes dos pés das árvores, que o chão pinta. Só no estilo
-## Tripo (as espécies são os GLBs dele); o procedural segue sem pomar.
+## Tripo (as espécies são os GLBs dele).
 const PaisagismoVale := preload("res://scripts/prototipo_3d/paisagismo_vale.gd")
 ## O que o paisagismo plantou (ver `PaisagismoVale.gerar`), para os portões.
 var paisagismo_plantas: Array[Dictionary] = []
@@ -869,7 +853,7 @@ var paisagismo_aderecos: Array[Dictionary] = []
 
 
 func _build_paisagismo() -> void:
-	if not estilo_tripo() or _region == null:
+	if _region == null:
 		return
 	var receitas := PaisagismoVale.ler_receitas()
 	var plano := PaisagismoVale.planejar(self, PaisagismoVale.ler(), receitas)
@@ -916,8 +900,8 @@ func _escolher_as_casas_dos_moradores() -> void:
 		ancoras[str(pedido[2]) + "Frente"] = ancoras.get(melhor + "Frente", Vector3.BACK)
 
 
-## Construção: GLB do Tripo com colisão em caixa; senão o construtor procedural.
-func _construcao(chave: String, origin: Vector3, yaw: float, procedural: Callable, size: float = 1.0, nome: String = "") -> Node3D:
+## Construção: GLB do Tripo com colisão em caixa. Sem o GLB não se constrói nada.
+func _construcao(chave: String, origin: Vector3, yaw: float, size: float = 1.0, nome: String = "") -> Node3D:
 	if chave == "igreja" and nome.is_empty():
 		nome = "Igreja"
 	var autoria: Dictionary = _casas_autorais.get(nome, {})
@@ -934,87 +918,57 @@ func _construcao(chave: String, origin: Vector3, yaw: float, procedural: Callabl
 			return null
 	else:
 		placed_origin = ground_position(origin, maxf(origin.y - ground_height_at(origin), 0.0))
-	if not autoria.is_empty() and estilo_tripo():
+	if not autoria.is_empty():
 		placed_origin = autoria["pos"]
 		yaw = autoria["yaw"]
-	if estilo_tripo():
-		var node := CatalogoAssets.instanciar(chave, self, placed_origin, size, yaw)
-		if node != null:
-			var limites: AABB = node.get_meta("limites")
-			if is_house or chave == "igreja":
-				var original_y := placed_origin.y
-				placed_origin = _support_house(placed_origin, Vector2(limites.size.x, limites.size.z), yaw, chave, placed_origin.y if not autoria.is_empty() else NAN, 0.0, autoria.get("alicerce", {}))
-				node.position.y += placed_origin.y - original_y
-				if is_house:
-					_remember_house_position(nome, placed_origin, yaw, true)
-				else:
-					_remember_house_position("Igreja", placed_origin, yaw, true)
-			var corpo := CatalogoAssets.colisao(chave, node, self, placed_origin, size, yaw)
-			var quem := nome if nome != "" else ("Igreja" if chave == "igreja" else "")
-			if quem != "":
-				construcoes[quem] = {"modelo": node, "colisao": corpo, "chave": chave}
-			var piso := float(CatalogoAssets.PECAS[chave].get("piso", 0.0))
-			var piso_size := Vector3(limites.size.x + 1.6, 0.16, limites.size.z + 1.6)
-			var piso_position := placed_origin + Vector3(0, piso + 0.08, 0)
-			if chave == "pier":
-				# O modelo Tripo tem o próprio tabuado e recebe colisão pela malha.
-				var pier_deck_top := piso_position.y + piso_size.y * 0.5
-				ancoras["PierPiso"] = Vector3(placed_origin.x, pier_deck_top, placed_origin.z)
-			elif not chave.begins_with("ponte") and autoria.has("terreiro"):
-				# Terreiro autoral (Decal editado em composicao_vale.tscn), relativo à casa assentada.
-				var dados: Dictionary = autoria["terreiro"]
-				if bool(dados.get("visible", true)):
-					var decal := TERREIRO_CASA.instantiate() as Decal
-					decal.name = "Terreiro " + nome
-					decal.size = dados["size"]
-					decal.modulate = dados["modulate"]
-					add_child(decal)
-					decal.global_transform = Transform3D(Basis(Vector3.UP, yaw), placed_origin) * (dados["transform"] as Transform3D)
-			elif not chave.begins_with("ponte"):
-				# Terreiro de chão batido drapeado no próprio terreno (acompanha o declive):
-				# uma caixa plana ficava flutuando do lado baixo do lote.
-				var meio := Vector2(piso_size.x, piso_size.z) * 0.5
-				var cantos := PackedVector2Array()
-				for canto in [Vector2(-1, -1), Vector2(1, -1), Vector2(1, 1), Vector2(-1, 1)]:
-					var local: Vector2 = (canto * meio).rotated(-yaw)
-					cantos.append(Vector2(placed_origin.x, placed_origin.z) + local)
-				_region._add_polygon("Terreiro", cantos, 0.03, Color("958d79"), false, _terreiro_material())
+	var node := CatalogoAssets.instanciar(chave, self, placed_origin, size, yaw)
+	if node != null:
+		var limites: AABB = node.get_meta("limites")
+		if is_house or chave == "igreja":
+			var original_y := placed_origin.y
+			placed_origin = _support_house(placed_origin, Vector2(limites.size.x, limites.size.z), yaw, chave, placed_origin.y if not autoria.is_empty() else NAN, 0.0, autoria.get("alicerce", {}))
+			node.position.y += placed_origin.y - original_y
 			if is_house:
-				_register_house(nome if not nome.is_empty() else chave.capitalize(), chave, placed_origin, yaw, limites.size, "Tripo")
-			if _lotes.has(nome):
-				construcoes_editaveis[nome] = {"chave": chave, "pos": placed_origin, "yaw": yaw, "visual": node}
-			return node
-	if is_house:
-		# Os construtores procedurais usam a porta no +Z, sem o giro do lote.
-		var giro_legado := 0.0 if autoria.is_empty() else float(autoria["yaw"] - autoria["giro_inicial"])
-		var deslocamento_y := 0.0 if autoria.is_empty() else float(autoria["pos"].y - autoria["inicial"].y)
-		placed_origin = _support_house(placed_origin, Vector2(5.65, 4.85), giro_legado, "", NAN, deslocamento_y)
-		_remember_house_position(nome, placed_origin, giro_legado, not autoria.is_empty())
-		var filhos_antes := get_children()
-		procedural.call(placed_origin)
-		_girar_construcao_procedural(filhos_antes, placed_origin, giro_legado)
-		_register_house(nome if not nome.is_empty() else chave.capitalize(), chave, placed_origin, giro_legado, Vector3(5.9, 5.4, 5.1), "Procedural")
-	else:
-		var filhos_antes := get_children()
-		procedural.call()
-		if not autoria.is_empty():
-			var giro_legado := float(autoria["yaw"] - autoria["giro_inicial"])
-			_girar_construcao_procedural(filhos_antes, origin, giro_legado)
-			_remember_house_position(nome, origin, giro_legado, true)
+				_remember_house_position(nome, placed_origin, yaw)
+			else:
+				_remember_house_position("Igreja", placed_origin, yaw)
+		var corpo := CatalogoAssets.colisao(chave, node, self, placed_origin, size, yaw)
+		var quem := nome if nome != "" else ("Igreja" if chave == "igreja" else "")
+		if quem != "":
+			construcoes[quem] = {"modelo": node, "colisao": corpo, "chave": chave}
+		var piso := float(CatalogoAssets.PECAS[chave].get("piso", 0.0))
+		var piso_size := Vector3(limites.size.x + 1.6, 0.16, limites.size.z + 1.6)
+		var piso_position := placed_origin + Vector3(0, piso + 0.08, 0)
+		if chave == "pier":
+			# O modelo Tripo tem o próprio tabuado e recebe colisão pela malha.
+			var pier_deck_top := piso_position.y + piso_size.y * 0.5
+			ancoras["PierPiso"] = Vector3(placed_origin.x, pier_deck_top, placed_origin.z)
+		elif not chave.begins_with("ponte") and autoria.has("terreiro"):
+			# Terreiro autoral (Decal editado em composicao_vale.tscn), relativo à casa assentada.
+			var dados: Dictionary = autoria["terreiro"]
+			if bool(dados.get("visible", true)):
+				var decal := TERREIRO_CASA.instantiate() as Decal
+				decal.name = "Terreiro " + nome
+				decal.size = dados["size"]
+				decal.modulate = dados["modulate"]
+				add_child(decal)
+				decal.global_transform = Transform3D(Basis(Vector3.UP, yaw), placed_origin) * (dados["transform"] as Transform3D)
+		elif not chave.begins_with("ponte"):
+			# Terreiro de chão batido drapeado no próprio terreno (acompanha o declive):
+			# uma caixa plana ficava flutuando do lado baixo do lote.
+			var meio := Vector2(piso_size.x, piso_size.z) * 0.5
+			var cantos := PackedVector2Array()
+			for canto in [Vector2(-1, -1), Vector2(1, -1), Vector2(1, 1), Vector2(-1, 1)]:
+				var local: Vector2 = (canto * meio).rotated(-yaw)
+				cantos.append(Vector2(placed_origin.x, placed_origin.z) + local)
+			_region._add_polygon("Terreiro", cantos, 0.03, Color("958d79"), false, _terreiro_material())
+		if is_house:
+			_register_house(nome if not nome.is_empty() else chave.capitalize(), chave, placed_origin, yaw, limites.size, "Tripo")
+		if _lotes.has(nome):
+			construcoes_editaveis[nome] = {"chave": chave, "pos": placed_origin, "yaw": yaw, "visual": node}
+		return node
+	push_error("Construção sem GLB no catálogo: %s" % chave)
 	return null
-
-
-func _girar_construcao_procedural(filhos_antes: Array[Node], origem: Vector3, giro: float) -> void:
-	if is_zero_approx(giro):
-		return
-	var grupo := Node3D.new()
-	grupo.name = "ConstrucaoAutoralProcedural"
-	add_child(grupo)
-	grupo.position = origem
-	for filho in get_children():
-		if filho is Node3D and filho != grupo and filho not in filhos_antes:
-			filho.reparent(grupo, true)
-	grupo.rotation.y = giro
 
 
 func _is_house_key(chave: String) -> bool:
@@ -1048,7 +1002,7 @@ func _pecas_da_casa(nome: String) -> Array:
 			item["exato"] = true
 			resultado.append(item)
 		return resultado
-	var quintal := estilo_tripo() and CatalogoAssets.tem_tripo("pitangueira") and _lotes.has(nome)
+	var quintal := CatalogoAssets.tem_tripo("pitangueira") and _lotes.has(nome)
 	for item in PecasConstrucoes.padrao_da_casa(nome):
 		if item["chave"] == "pitangueira" and not quintal:
 			continue
@@ -1107,9 +1061,8 @@ func _montar_pecas(tipos: Array) -> void:
 						ancoras[String(nome) + "/" + chave_item] = pos
 						ancoras[String(nome) + "/" + chave_item + "Frente"] = Vector3(sin(yaw), 0.0, cos(yaw))
 				"item":
-					if estilo_tripo():
-						pos.y = maxf(pos.y, ground_height_at(pos))
-						CatalogoAssets.instanciar(chave_item, self, pos, tamanho, yaw)
+					pos.y = maxf(pos.y, ground_height_at(pos))
+					CatalogoAssets.instanciar(chave_item, self, pos, tamanho, yaw)
 				"candeeiro":
 					var luz := pos + Vector3(0.0, 0.1, 0.05).rotated(Vector3.UP, yaw)
 					_luzes.candeeiro(luz, _adereco(chave_item if not chave_item.is_empty() else "candeeiro", pos, yaw, tamanho))
@@ -1185,7 +1138,7 @@ func _arvore_avulsa(item: Dictionary) -> void:
 
 
 func _item_avulso(item: Dictionary) -> void:
-	if not bool(item["visivel"]) or not estilo_tripo():
+	if not bool(item["visivel"]):
 		return
 	var onde: Vector3 = item["pos"]
 	onde.y = maxf(onde.y, ground_height_at(onde))
@@ -1207,7 +1160,7 @@ func _montar_avulsos_extras(tipos: Array) -> void:
 			"item":
 				_item_avulso(item)
 			"construcao":
-				if bool(item["visivel"]) and estilo_tripo():
+				if bool(item["visivel"]):
 					var no := CatalogoAssets.instanciar(String(item["chave"]), self, item["pos"], float(item["tamanho"]), float(item["yaw"]))
 					if no != null:
 						CatalogoAssets.colisao(String(item["chave"]), no, self, item["pos"], float(item["tamanho"]), float(item["yaw"]))
@@ -1268,8 +1221,6 @@ func _loteamento() -> void:
 		if _casas_autorais.has(nome):
 			var autoria: Dictionary = _casas_autorais[nome]
 			lote = {"pos": autoria["pos"], "yaw": autoria["yaw"]}
-			if not estilo_tripo():
-				lote["pos"].y = autoria["lote_inicial"].y + autoria["pos"].y - autoria["inicial"].y
 			_house_sites.append({"position": lote["pos"], "radius": raio})
 		elif nome == "Igreja":
 			# A igreja fica exatamente no marco do KML (o lugar dela na vila real),
@@ -1294,7 +1245,7 @@ func _loteamento() -> void:
 		lote["inicial"] = lote["pos"]
 		_lotes[nome] = lote
 		ancoras[nome] = lote["pos"]
-		var yaw: float = lote["yaw"] if estilo_tripo() else 0.0
+		var yaw: float = lote["yaw"]
 		ancoras[nome + "Frente"] = Vector3(sin(yaw), 0.0, cos(yaw))
 	if ancoras.has("Venda do Bar"):
 		ancoras["Bar"] = ancoras["Venda do Bar"]
@@ -1528,38 +1479,15 @@ func _update_house_label(house: Area3D) -> void:
 		label.visible = false
 
 
-## Adereço: GLB do Tripo ou peça procedural de FloraReconcavo.
+## Adereço: GLB do Tripo com a colisão do catálogo. Sem o GLB, nada nasce.
 func _adereco(chave: String, origin: Vector3, yaw: float = 0.0, size: float = 1.0) -> Node3D:
 	origin.y = maxf(origin.y, ground_height_at(origin))
-	if estilo_tripo():
-		var node := CatalogoAssets.instanciar(chave, self, origin, size, yaw)
-		if node != null:
-			CatalogoAssets.colisao(chave, node, self, origin, size, yaw)
-			return node
-	var peca: Node3D = null
-	match chave:
-		"poco": peca = FloraReconcavo.poco()
-		"cruzeiro": peca = FloraReconcavo.cruzeiro()
-		"carroca": peca = FloraReconcavo.carroca()
-		"varal": peca = FloraReconcavo.varal()
-		"lenha": peca = FloraReconcavo.pilha_lenha()
-		"pote": peca = FloraReconcavo.pote_agua()
-		"banco": peca = FloraReconcavo.banco_praca()
-		"cerca": peca = FloraReconcavo.cerca(4.0 * size)
-		"lampiao_poste": peca = FloraReconcavo.lampiao_poste()
-		"fogueira": peca = FloraReconcavo.fogueira()
-		"tumulo": peca = FloraReconcavo.tumulo()
-		"pedras": peca = FloraReconcavo.pedras()
-		"mandioca_canteiro": peca = FloraReconcavo.canteiro_mandioca()
-		"moita": peca = FloraReconcavo.moita()
-		"candeeiro": peca = FloraReconcavo.candeeiro()
-		_:
-			return null
-	peca.position = origin
-	peca.rotation.y = yaw
-	peca.scale = Vector3.ONE * size
-	add_child(peca)
-	return peca
+	var node := CatalogoAssets.instanciar(chave, self, origin, size, yaw)
+	if node == null:
+		push_error("Adereço sem GLB no catálogo: %s" % chave)
+		return null
+	CatalogoAssets.colisao(chave, node, self, origin, size, yaw)
+	return node
 
 
 ## O lance das cercas soltas do quintal do roçado, como o do cercado do cemitério.
@@ -1568,11 +1496,11 @@ const LANCE_DO_QUINTAL := 2.0
 
 ## UMA CERCA SOLTA DO QUINTAL (#93): dois lances ao longo do X, centrados em
 ## `centro`, cada um de ponta a ponta no chão (`CatalogoAssets.lance_de_cerca`).
-func _cerca_do_quintal(centro: Vector3, tripo: bool, largura_do_lance: float) -> void:
+func _cerca_do_quintal(centro: Vector3, largura_do_lance: float) -> void:
 	for k in 2:
 		var de := ground_position(centro + Vector3((float(k) - 1.0) * LANCE_DO_QUINTAL, 0.0, 0.0))
 		var ate := ground_position(centro + Vector3(float(k) * LANCE_DO_QUINTAL, 0.0, 0.0))
-		CatalogoAssets.lance_de_cerca(self, de, ate, tripo, 1.0, largura_do_lance, 1.2, 0.3, "CercaDoQuintal", "CercaColisao")
+		CatalogoAssets.lance_de_cerca(self, de, ate, 1.0, largura_do_lance, 1.2, 0.3, "CercaDoQuintal", "CercaColisao")
 
 
 ## Caixa sólida na laje do túmulo: não se atravessa andando, mas dá para subir pulando.
@@ -1600,25 +1528,20 @@ func _colisao_tumulo(chao: Vector3, pegada: Vector3) -> void:
 ## eixos do MUNDO (a que o corpo sólido e `lapides.gd` leem); `tumulos[i]` o nó, com
 ## a marca `eixo_curto` (em volta de qual eixo da laje se levanta uma ponta).
 func _assentar_as_covas(cemetery: Vector3) -> void:
-	var tripo := estilo_tripo() and CatalogoAssets.tem_tripo("tumulo")
 	for index in range(CemiterioLayout.quantas()):
 		var lugar := CemiterioLayout.lugar(index)
 		var desvio: Vector2 = lugar["desvio"]
-		var giro := CemiterioLayout.giro_de_base(tripo) + float(lugar["giro"])
+		var giro := CemiterioLayout.giro_de_base(true) + float(lugar["giro"])
 		var tamanho := float(lugar["tamanho"])
 		var centro := ground_position(cemetery + Vector3(desvio.x, 0.0, desvio.y))
 		var tumulo := _adereco("tumulo", centro, giro, tamanho)
 		if tumulo == null:
 			push_warning("Não há túmulo para a cova %d." % index)
 			continue
-		# A laje no espaço dela (antes do giro): a do Tripo traz a caixa; a procedural
-		# é a pedra de 0,72 x 1,45 com a cruz, sempre a mesma.
-		var altura_da_laje := 0.15
-		var meio := Vector2(0.36, 0.725) * tamanho
-		if tumulo.has_meta("limites"):
-			var limites: AABB = tumulo.get_meta("limites")
-			meio = Vector2(limites.size.x, limites.size.z) * 0.5
-			altura_da_laje = limites.size.y * 0.62
+		# A laje no espaço dela (antes do giro): o modelo traz a caixa.
+		var limites: AABB = tumulo.get_meta("limites")
+		var meio := Vector2(limites.size.x, limites.size.z) * 0.5
+		var altura_da_laje := limites.size.y * 0.62
 		# Os cantos da pegada no mundo, e a altura do terreno sob cada um.
 		var menor := INF
 		var maior := -INF
@@ -1648,10 +1571,8 @@ func _assentar_as_covas(cemetery: Vector3) -> void:
 ## O lado do mar é o do ponto da costa mais perto (`lado_do_mar`), acertado ao
 ## eixo das covas, para a capelinha ficar no alinhamento delas e do cercado, que
 ## passa pelo meio dela (`cemiterio_vale.gd`): a porta dentro, os fundos fora.
-## No estilo Tripo é a capela do catálogo, pequena, no alicerce das casas — o
-## outeiro cai para o mar, e sem ele os fundos ficavam no ar; no procedural, o
-## cruzeiro faz as vezes de altar, que o procedural é só comparação e não ganha
-## arte nova.
+## É a capela do catálogo, pequena, no alicerce das casas — o outeiro cai para o
+## mar, e sem ele os fundos ficavam no ar.
 const CAPELINHA_TAMANHO := 0.5
 ## Do centro do cemitério ao meio da capelinha, para o lado do mar, e o quanto
 ## ela sai da linha do meio ao longo da beira (para longe da entrada do cercado).
@@ -1667,26 +1588,25 @@ func _capelinha_do_cemiterio(cemetery: Vector3) -> void:
 	centro.y = ground_height_at(centro)
 	var yaw := atan2(frente.x, frente.z)
 	var porta := Vector3.INF
-	if estilo_tripo():
-		# A CAPELINHA POBRE do cemitério, de taipa e cal rachada ("deve ser mais
-		# rudimentar, com um aspecto pobre"), ou, sem ela no catálogo, a capela
-		# colonial reduzida que estava ali.
-		var chave := "capelinha" if CatalogoAssets.tem_tripo("capelinha") else "capela"
-		var tamanho := 1.0 if chave == "capelinha" else CAPELINHA_TAMANHO
-		var capela := CatalogoAssets.instanciar(chave, self, centro, tamanho, yaw)
-		if capela != null:
-			var limites: AABB = capela.get_meta("limites")
-			var assentada := _support_house(centro, Vector2(limites.size.x, limites.size.z), yaw)
-			capela.position.y += assentada.y - centro.y
-			var corpo := CatalogoAssets.colisao(chave, capela, self, assentada, tamanho, yaw)
-			construcoes["Capelinha"] = {"modelo": capela, "colisao": corpo}
-			centro = assentada
-			porta = assentada + frente * (limites.size.z * 0.5)
-			# Lote tomado: o que se planta depois não nasce dentro dela.
-			_house_sites.append({"position": assentada, "radius": maxf(limites.size.x, limites.size.z) * 0.5})
+	# A CAPELINHA POBRE do cemitério, de taipa e cal rachada ("deve ser mais
+	# rudimentar, com um aspecto pobre"), ou, sem ela no catálogo, a capela
+	# colonial reduzida que estava ali.
+	var chave := "capelinha" if CatalogoAssets.tem_tripo("capelinha") else "capela"
+	var tamanho := 1.0 if chave == "capelinha" else CAPELINHA_TAMANHO
+	var capela := CatalogoAssets.instanciar(chave, self, centro, tamanho, yaw)
+	if capela != null:
+		var limites: AABB = capela.get_meta("limites")
+		var assentada := _support_house(centro, Vector2(limites.size.x, limites.size.z), yaw)
+		capela.position.y += assentada.y - centro.y
+		var corpo := CatalogoAssets.colisao(chave, capela, self, assentada, tamanho, yaw)
+		construcoes["Capelinha"] = {"modelo": capela, "colisao": corpo}
+		centro = assentada
+		porta = assentada + frente * (limites.size.z * 0.5)
+		# Lote tomado: o que se planta depois não nasce dentro dela.
+		_house_sites.append({"position": assentada, "radius": maxf(limites.size.x, limites.size.z) * 0.5})
 	if not porta.is_finite():
+		push_error("Capelinha do cemitério sem GLB no catálogo.")
 		porta = centro + frente * (float(CatalogoAssets.PECAS["capela"]["largura"]) * CAPELINHA_TAMANHO * 0.5)
-		_adereco("cruzeiro", ground_position(porta + mar * 0.4), yaw, 0.55)
 	ancoras["Capelinha"] = centro
 	ancoras["CapelinhaFrente"] = frente
 	ancoras["CapelinhaPorta"] = ground_position(porta)
@@ -1713,7 +1633,7 @@ func lado_do_mar(ponto: Vector3) -> Vector3:
 	return Vector3(0.0, 0.0, signf(rumo.y))
 
 
-## Árvore com nome: GLB do Tripo (colisão no tronco) ou espécie procedural.
+## Árvore com nome: GLB do Tripo (colisão no tronco). Sem o GLB, a árvore não nasce.
 func _arvore(especie: String, origin: Vector3, size: float = 1.0, yaw: float = 0.0, exato: bool = false) -> void:
 	var tree_radius := maxf(2.0, size * 2.4)
 	# Posição autoral (composição) é respeitada; as demais procuram chão livre.
@@ -1725,42 +1645,27 @@ func _arvore(especie: String, origin: Vector3, size: float = 1.0, yaw: float = 0
 	_manual_tree_sites.append({"position": placed_origin, "radius": tree_radius})
 	var registro := _arvores_nomeadas.size()
 	_arvores_nomeadas.append({"especie": especie, "pos": placed_origin, "raio": size * 0.5, "origem": placed_origin})
-	if estilo_tripo():
-		var node := CatalogoAssets.instanciar(especie, self, placed_origin - Vector3(0.0, _region.ARVORE_AFUNDADA, 0.0), size, yaw)
-		if node != null:
-			# O pé do tronco, e não o ponto de plantio, apoia a árvore na encosta (#141).
-			var apoio := _apoio_pelo_pe(especie, node, size, placed_origin.y)
-			if apoio != 0.0:
-				node.position.y += apoio
-				placed_origin.y += apoio
-				_arvores_nomeadas[registro]["pos"] = placed_origin
-			CatalogoAssets.colisao(especie, node, self, placed_origin, size, yaw)
-			_arvores_nomeadas[registro]["visual"] = node
-			var corpo := get_child(get_child_count() - 1) as StaticBody3D
-			_arvores_nomeadas[registro]["colisao"] = corpo
-			if especie == "cajueiro" and corpo != null:
-				var cilindro := (corpo.get_child(0) as CollisionShape3D).shape as CylinderShape3D
-				_arvores_nomeadas[registro]["pos"] = Vector3(corpo.position.x, placed_origin.y, corpo.position.z)
-				_arvores_nomeadas[registro]["raio"] = cilindro.radius
-			if especie == "coqueiro":
-				_alinhar_colisao_coqueiro(node, corpo)
-			return
-	var built: Dictionary = FloraReconcavo.especie(especie, size)
-	var instance := MeshInstance3D.new()
-	instance.name = especie.capitalize()
-	instance.mesh = built.mesh
-	instance.position = placed_origin
-	instance.rotation.y = yaw
-	add_child(instance)
-	var shape := CylinderShape3D.new()
-	shape.radius = float(built.trunk_radius) + 0.08
-	shape.height = float(built.trunk_height)
-	_body(shape, placed_origin + Vector3(0, float(built.trunk_height) * 0.5, 0))
-	_arvores_nomeadas[registro]["visual"] = instance
-	var corpo := get_child(get_child_count() - 1) as StaticBody3D
-	_arvores_nomeadas[registro]["colisao"] = corpo
-	if especie == "coqueiro":
-		_alinhar_colisao_coqueiro(instance, corpo)
+	var node := CatalogoAssets.instanciar(especie, self, placed_origin - Vector3(0.0, _region.ARVORE_AFUNDADA, 0.0), size, yaw)
+	if node != null:
+		# O pé do tronco, e não o ponto de plantio, apoia a árvore na encosta (#141).
+		var apoio := _apoio_pelo_pe(especie, node, size, placed_origin.y)
+		if apoio != 0.0:
+			node.position.y += apoio
+			placed_origin.y += apoio
+			_arvores_nomeadas[registro]["pos"] = placed_origin
+		CatalogoAssets.colisao(especie, node, self, placed_origin, size, yaw)
+		_arvores_nomeadas[registro]["visual"] = node
+		var corpo := get_child(get_child_count() - 1) as StaticBody3D
+		_arvores_nomeadas[registro]["colisao"] = corpo
+		if especie == "cajueiro" and corpo != null:
+			var cilindro := (corpo.get_child(0) as CollisionShape3D).shape as CylinderShape3D
+			_arvores_nomeadas[registro]["pos"] = Vector3(corpo.position.x, placed_origin.y, corpo.position.z)
+			_arvores_nomeadas[registro]["raio"] = cilindro.radius
+		if especie == "coqueiro":
+			_alinhar_colisao_coqueiro(node, corpo)
+		return
+	push_error("Árvore sem GLB no catálogo: %s" % especie)
+	_arvores_nomeadas.remove_at(registro)
 
 
 ## O APOIO PELO PÉ DO TRONCO da árvore nomeada (#141): quanto ela sobe (+) ou desce (−) para o pé do
@@ -1875,12 +1780,11 @@ func _build_farm() -> void:
 				crop.radial_segments = 5
 				_mesh(crop, ground_position(canteiro + Vector3(-2.3 + column * 0.75, 0, row * 1.35), 0.35), Color("8fa85e"))
 	# AS DUAS CERCAS DO QUINTAL, em lances deitados na encosta como toda cerca do
-	# vale (#93), e do tamanho das outras: por `_adereco("cerca", …, 2.0)` a do
-	# Tripo saía com 2,3 m de altura — o 2 era o comprimento da procedural.
-	var tripo := estilo_tripo()
-	var largura_do_lance := CatalogoAssets.largura_da_cerca(self, 1.0, LANCE_DO_QUINTAL) if tripo else LANCE_DO_QUINTAL
+	# vale (#93), e do tamanho das outras: por `_adereco("cerca", …, 2.0)` a cerca
+	# saía com 2,3 m de altura.
+	var largura_do_lance := CatalogoAssets.largura_da_cerca(self, 1.0, LANCE_DO_QUINTAL)
 	for recuo: float in [6.0, -3.0]:
-		_cerca_do_quintal(ground_position(origin + Vector3(-4.0, 0.0, recuo)), tripo, largura_do_lance)
+		_cerca_do_quintal(ground_position(origin + Vector3(-4.0, 0.0, recuo)), largura_do_lance)
 	_box(Vector3(0.85, 1.0, 0.85), ground_position(origin + Vector3(5.2, 0, 2), 0.5), WOOD, true)
 	_box(Vector3(0.95, 0.11, 0.95), ground_position(origin + Vector3(5.2, 0, 2), 1.0), Color("b1966c"))
 
@@ -1965,14 +1869,10 @@ func _erguer_ponte(point: Vector3, anchor: String) -> void:
 		bridge = autoral["pos"]
 		bridge_yaw = float(autoral["yaw"])
 		ancoras[anchor] = bridge
-	var modelo := _construcao(peca, bridge, bridge_yaw, func():
-		_box(Vector3(11, 0.35, 6), bridge + Vector3(0, 0.22, 0), Color("987b57"), true, null, bridge_yaw)
-		for side in [-2.8, 2.8]:
-			var rail_offset := Vector3(0, 0.95, side).rotated(Vector3.UP, bridge_yaw)
-			_box(Vector3(11, 0.18, 0.15), bridge + rail_offset, WOOD, true, null, bridge_yaw))
-	# AS MEDIDAS DA PONTE COMO ELA FICOU: as da caixa procedural (11 por 6, comprida
-	# no X dela) ou as do modelo do Tripo, comprido no eixo maior. Girar o yaw leva
-	# o X local para (cos, -sen) e o Z local para (sen, cos).
+	var modelo := _construcao(peca, bridge, bridge_yaw)
+	# AS MEDIDAS DA PONTE COMO ELA FICOU: as do modelo do Tripo, comprido no eixo
+	# maior (11 por 6 só enquanto o GLB não vem). Girar o yaw leva o X local para
+	# (cos, -sen) e o Z local para (sen, cos).
 	var ao_longo := Vector3(cos(bridge_yaw), 0.0, -sin(bridge_yaw))
 	var comprimento := 11.0
 	var largura := 6.0
@@ -1991,9 +1891,8 @@ func _erguer_ponte(point: Vector3, anchor: String) -> void:
 		pontes[anchor]["corrimao"] = Vector2(0.31, 0.52) * largura
 	# A PONTE CAÍDA (#94), no mesmo vão: o modelo de pé fica escondido e sem
 	# tabuleiro até a obra `ponte_levantar`, e a caída aparece no lugar — quem
-	# troca é o `ponte_vale.gd`, pela obra. Sem o modelo do Tripo (o estilo
-	# procedural), a ponte é só a de pé, cercada.
-	if modelo != null and estilo_tripo() and peca == "ponte":
+	# troca é o `ponte_vale.gd`, pela obra.
+	if modelo != null and peca == "ponte":
 		var caida := CatalogoAssets.instanciar("ponte_caida", self, bridge, 1.0, bridge_yaw)
 		if caida != null:
 			caida.name = "PonteCaidaTripo"
@@ -2014,45 +1913,40 @@ func _erguer_ponte(point: Vector3, anchor: String) -> void:
 func _build_landmark_details() -> void:
 	var church: Vector3 = ancoras["Igreja"]
 	var church_yaw: float = _lotes.get("Igreja", {}).get("yaw", 0.0)
-	_construcao("igreja", church, church_yaw, func(): _igreja_procedural(church))
+	_construcao("igreja", church, church_yaw)
 	# A capela antiga do vale segue de pé, bem afastada, no alto da rua do mirante.
 	if _lotes.has("Capela velha"):
 		var velha: Vector3 = _lotes["Capela velha"]["pos"]
-		_construcao("capela", velha, float(_lotes["Capela velha"]["yaw"]), func(): _igreja_procedural(velha), 1.0, "Capela velha")
-	_construcao("venda", ancoras["Venda do Bar"], 0.0, func(at: Vector3): _house(at, Color("c6a16d"), Color("8b523b")), 1.0, "Venda do Bar")
-	_construcao("casa_pasto", ancoras["Restaurante"], 0.0, func(at: Vector3): _house(at, Color("cdbb92"), Color("97563f")), 1.0, "Restaurante")
+		_construcao("capela", velha, float(_lotes["Capela velha"]["yaw"]), 1.0, "Capela velha")
+	_construcao("venda", ancoras["Venda do Bar"], 0.0, 1.0, "Venda do Bar")
+	_construcao("casa_pasto", ancoras["Restaurante"], 0.0, 1.0, "Restaurante")
 	var pier: Vector3 = _region.get_feature_center("Pier", "poi")
 	var pier_origin := pier
 	var pier_yaw := 0.0
 	var pier_direction := Vector3.FORWARD
-	if estilo_tripo():
-		var acesso_pier: PackedVector2Array = _region.shore_access_route("Pier")
-		if acesso_pier.size() >= 2:
-			# Alinha o modelo ao acesso e leva a maior parte dele para dentro d'água.
-			var eixo := (acesso_pier[acesso_pier.size() - 1] - acesso_pier[0]).normalized()
-			var centro := (acesso_pier[0] + acesso_pier[acesso_pier.size() - 1]) * 0.5 + eixo * 5.0
-			pier_origin = Vector3(centro.x, pier.y, centro.y)
-			pier_direction = Vector3(eixo.x, 0.0, eixo.y)
-			pier_yaw = atan2(eixo.x, eixo.y)
-		else:
-			pier_direction = (pier - _region.get_feature_center("Praça", "poi")).normalized()
-			pier_origin = pier + pier_direction * 9.0
-			pier_yaw = atan2(pier_direction.x, pier_direction.z)
-		pier_yaw += PI
+	var acesso_pier: PackedVector2Array = _region.shore_access_route("Pier")
+	if acesso_pier.size() >= 2:
+		# Alinha o modelo ao acesso e leva a maior parte dele para dentro d'água.
+		var eixo := (acesso_pier[acesso_pier.size() - 1] - acesso_pier[0]).normalized()
+		var centro := (acesso_pier[0] + acesso_pier[acesso_pier.size() - 1]) * 0.5 + eixo * 5.0
+		pier_origin = Vector3(centro.x, pier.y, centro.y)
+		pier_direction = Vector3(eixo.x, 0.0, eixo.y)
+		pier_yaw = atan2(eixo.x, eixo.y)
 	else:
-		pier_direction = Vector3(sin(pier_yaw), 0.0, cos(pier_yaw))
+		pier_direction = (pier - _region.get_feature_center("Praça", "poi")).normalized()
+		pier_origin = pier + pier_direction * 9.0
+		pier_yaw = atan2(pier_direction.x, pier_direction.z)
+	pier_yaw += PI
 	# O PÍER AUTORAL: posição e giro do grupo Avulsos; as âncoras (piso, direção,
 	# lado) saem dele, então pote, peixe, vara e candeeiro padrão o acompanham.
 	var pier_autoral := _avulso("Píer", "construcao", "pier", pier_origin, pier_yaw, 1.0, false, "Píer")
 	if bool(pier_autoral["exato"]):
 		pier_origin = pier_autoral["pos"]
 		pier_yaw = float(pier_autoral["yaw"])
-		pier_direction = Vector3(-sin(pier_yaw), 0.0, -cos(pier_yaw)) if estilo_tripo() else Vector3(sin(pier_yaw), 0.0, cos(pier_yaw))
+		pier_direction = Vector3(-sin(pier_yaw), 0.0, -cos(pier_yaw))
 	ancoras["Pier"] = pier_origin
 	var pier_base := ground_position(pier_origin, maxf(pier_origin.y - ground_height_at(pier_origin), 0.0))
-	var pier_floor_top := pier_base.y
-	if estilo_tripo():
-		pier_floor_top += float(CatalogoAssets.PECAS["pier"].get("piso", 0.0)) + 0.16
+	var pier_floor_top := pier_base.y + float(CatalogoAssets.PECAS["pier"].get("piso", 0.0)) + 0.16
 	ancoras["PierPiso"] = Vector3(pier_base.x, pier_floor_top, pier_base.z)
 	ancoras["PierDirecao"] = pier_direction
 	ancoras["PierLado"] = Vector3(cos(pier_yaw), 0.0, -sin(pier_yaw))
@@ -2068,11 +1962,7 @@ func _build_landmark_details() -> void:
 	var lado: Vector3 = ancoras["PierLado"]
 	ancoras["Areia"] = _ponto_em_terra([cabeca + para_a_terra * 3.0 + lado * 4.5, cabeca + para_a_terra * 3.0 - lado * 4.5,
 		cabeca + para_a_terra * 5.0 + lado * 3.0, cabeca + para_a_terra * 5.0 - lado * 3.0], ancoras["Corrida"])
-	_construcao("pier", pier_origin, pier_yaw, func():
-		_box(Vector3(4.5, 0.2, 17), pier + Vector3(0, -0.1, 0), Color("85684b"), true)
-		for offset in [-7.0, 0.0, 7.0]:
-			for side in [-1.8, 1.8]:
-				_box(Vector3(0.3, 1.5, 0.3), pier + Vector3(side, -0.75, offset), WOOD))
+	_construcao("pier", pier_origin, pier_yaw)
 	_erguer_ponte(_region.get_feature_center("Ponte", "poi"), "Ponte")
 	var central_bridge := _central_road_river_crossing()
 	if central_bridge.is_finite():
@@ -2082,11 +1972,7 @@ func _build_landmark_details() -> void:
 	var lookout: Vector3 = _region.get_feature_center("Mirante", "poi")
 	lookout.y = _footprint_height(lookout, 4.3) + 0.02
 	ancoras["Mirante"] = lookout
-	_construcao("mirante", lookout, 0.0, func():
-		_box(Vector3(6, 0.24, 6), lookout + Vector3(0, 0.65, 0), Color("9c7a52"), true)
-		for x in [-2.8, 2.8]:
-			for z in [-2.8, 2.8]:
-				_box(Vector3(0.22, 1.45, 0.22), lookout + Vector3(x, 0.73, z), WOOD))
+	_construcao("mirante", lookout, 0.0)
 	var cemetery: Vector3 = _region.get_feature_center("Cemitério", "poi")
 	ancoras["Cemitério"] = cemetery
 	_assentar_as_covas(cemetery)
@@ -2094,25 +1980,7 @@ func _build_landmark_details() -> void:
 	var pedras := _avulso("Pedras", "adereco", "pedras", _region.get_feature_center("Pedras", "poi"), 0.4, 1.4, false, "Marcos")
 	var stones: Vector3 = pedras["pos"]
 	ancoras["Pedras"] = stones
-	if _adereco_avulso(pedras) == null and bool(pedras["visivel"]):
-		for index in range(13):
-			var rock := SphereMesh.new()
-			rock.radius = 0.8 + (index % 3) * 0.4
-			rock.height = 0.8 + (index % 4) * 0.3
-			rock.radial_segments = 7
-			rock.rings = 4
-			_mesh(rock, ground_position(stones + Vector3((index % 5) * 2.8 - 5.6, 0, floorf(index / 5.0) * 2.9 - 2.9), 0.35), Color("929c92"))
-
-
-func _igreja_procedural(church: Vector3) -> void:
-	_box(Vector3(8, 0.25, 13), church + Vector3(0, 0.125, 0), Color("958d79"), true)
-	_box(Vector3(7.4, 5.2, 12), church + Vector3(0, 2.7, 0), Color("eee5cf"), true, null, 0.0, true)
-	var roof := PrismMesh.new()
-	roof.size = Vector3(8.8, 2.6, 13.3)
-	_mesh(roof, church + Vector3(0, 6.4, 0), Color("a55b3c"))
-	_box(Vector3(2.3, 8.2, 2.3), church + Vector3(0, 4.2, 6.0), Color("e5dcc8"), true, null, 0.0, true)
-	_box(Vector3(0.22, 2.0, 0.22), church + Vector3(0, 9.2, 6.0), WOOD)
-	_box(Vector3(1.4, 0.2, 0.22), church + Vector3(0, 9.45, 6.0), WOOD)
+	_adereco_avulso(pedras)
 
 
 ## Pé de cada árvore (plantadas, mata e coqueiros): decalque de terra escura, folhas
@@ -2174,7 +2042,7 @@ func _build_bases_das_arvores() -> void:
 ## Tripo (GLBs pedras_praia/pedra_mare); sem eles, nada muda.
 func _build_pedras() -> void:
 	var marco: Vector3 = _region.get_feature_center("Pedras", "poi")
-	if marco == Vector3.ZERO or not estilo_tripo():
+	if marco == Vector3.ZERO:
 		return
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 1108
@@ -2233,13 +2101,13 @@ func _build_pedras() -> void:
 ## espécie diferente no centro, no modelo cheio do catálogo (cortável, com a
 ## colisão do tronco), ou, em duas delas, uma casa de taipa isolada com o
 ## terreiro, e pedras em volta, com colisão. A trilha de terra até a rua e o chão
-## de cada uma já foram pintados no mapa de solo pela região. Só no estilo Tripo:
-## as peças são os GLBs dele (o procedural é só comparação).
+## de cada uma já foram pintados no mapa de solo pela região. As peças são os
+## GLBs do Tripo.
 const CASA_DA_CLAREIRA_TERREIRO := 1.6
 
 
 func _build_clareiras_da_mata() -> void:
-	if not estilo_tripo() or _region == null:
+	if _region == null:
 		return
 	for clareira: Dictionary in _region.clareiras_da_mata:
 		var centro: Vector2 = clareira["centro"]
@@ -2298,7 +2166,7 @@ func _build_canoas() -> void:
 	var canoas := Canoas.new()
 	canoas.name = "Canoas"
 	add_child(canoas)
-	canoas.montar(_region._coast, ancoras["PierPiso"], ancoras["PierDirecao"], water_level(), estilo_tripo())
+	canoas.montar(_region._coast, ancoras["PierPiso"], ancoras["PierDirecao"], water_level())
 	_build_cardume()
 
 
@@ -2315,7 +2183,7 @@ func _build_cardume() -> void:
 				var cardume := Cardume.new()
 				cardume.name = "Cardume"
 				add_child(cardume)
-				cardume.montar(Vector3(centro.x, water_level(), centro.z), water_level(), fundo, estilo_tripo())
+				cardume.montar(Vector3(centro.x, water_level(), centro.z), water_level(), fundo)
 				return
 
 
@@ -2337,7 +2205,7 @@ func _build_pecas() -> void:
 	var farm: Vector3 = _region.get_feature_center("Fazenda", "area")
 	_adereco_avulso(_avulso("Carroça", "adereco", "carroca", ground_position(farm + Vector3(8.5, 0, -5.5)), -0.6, 1.0, true, "Fazenda"))
 	_adereco_avulso(_avulso("Pote do píer", "adereco", "pote", _posicao_no_pier(-1.8, -3.0), 0.0, 1.0, false, "Píer"))
-	# Itens de mão espalhados como cenário (só no estilo Tripo, quando existirem).
+	# Itens de mão espalhados como cenário.
 	_item_avulso(_avulso("Enxada", "item", "enxada", farm + Vector3(5.6, 0.0, 1.2), 1.2, 1.0, true, "Fazenda"))
 	_item_avulso(_avulso("Balde", "item", "balde", ancoras["Poço"] + Vector3(1.3, 0, 0.4), 0.0, 1.0, true, "Praça"))
 	_item_avulso(_avulso("Peixe", "item", "peixe", _posicao_no_pier(1.2, 2.0), 1.0, 1.0, false, "Píer"))
@@ -2390,78 +2258,6 @@ func _build_luzes_epoca() -> void:
 	_luzes.aplicar_hora(Dia.hora)
 
 
-func _bancada_mangueiras(origin: Vector3) -> void:
-	var spacing := 10.0
-	var procedural: Dictionary = FloraReconcavo.especie("mangueira", 1.0)
-	var proc := MeshInstance3D.new()
-	proc.name = "ComparaProcedural"
-	proc.mesh = procedural.mesh
-	proc.position = origin + Vector3(-spacing, 0, 0)
-	add_child(proc)
-	var tripo := CatalogoAssets.instanciar("mangueira", self, origin + Vector3(spacing, 0, 0), 1.0, 0.0)
-	for entry in [["Procedural", proc, origin + Vector3(-spacing, 0, 0)], ["Tripo Malha Smart", tripo, origin + Vector3(spacing, 0, 0)]]:
-		if entry[1] == null:
-			continue
-		var label := Label3D.new()
-		label.text = "%s\n%s triângulos" % [entry[0], _milhar(_contar_triangulos(entry[1]))]
-		label.font_size = 64
-		label.outline_size = 12
-		label.pixel_size = 0.006
-		label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-		label.position = (entry[2] as Vector3) + Vector3(0, 9.2, 0)
-		add_child(label)
-
-
-func _contar_triangulos(node: Node) -> int:
-	var total := 0
-	var instances: Array = node.find_children("*", "MeshInstance3D", true, false)
-	if node is MeshInstance3D:
-		instances.append(node)
-	for child in instances:
-		var mesh: Mesh = (child as MeshInstance3D).mesh
-		if mesh == null:
-			continue
-		for surface in range(mesh.get_surface_count()):
-			var arrays := mesh.surface_get_arrays(surface)
-			var indices: PackedInt32Array = arrays[Mesh.ARRAY_INDEX]
-			total += indices.size() / 3 if indices.size() > 0 else (arrays[Mesh.ARRAY_VERTEX] as PackedVector3Array).size() / 3
-	return total
-
-
-func _milhar(value: int) -> String:
-	var text := str(value)
-	var result := ""
-	while text.length() > 3:
-		result = "." + text.substr(text.length() - 3) + result
-		text = text.substr(0, text.length() - 3)
-	return text + result
-
-
-# ---------------------------------------------------------------------------
-# Construtores procedurais (estilo "procedural"): casas de caixas e materiais simples.
-# ---------------------------------------------------------------------------
-
-func _house(origin: Vector3, wall: Color, roof_color: Color) -> void:
-	_box(Vector3(5.6, 0.25, 4.8), origin + Vector3(0, 0.125, 0), Color("96968b"), true)
-	_box(Vector3(5.0, 3.1, 4.2), origin + Vector3(0, 1.7, 0), wall, true, null, 0.0, true)
-	var roof := PrismMesh.new()
-	roof.size = Vector3(5.9, 2.0, 5.1)
-	_mesh(roof, origin + Vector3(0, 4.0, 0), roof_color)
-	_box(Vector3(0.58, 1.7, 0.62), origin + Vector3(1.65, 4.2, -0.9), Color("9b8b77"))
-	_box(Vector3(0.76, 0.18, 0.79), origin + Vector3(1.65, 5.1, -0.9), Color("c4b59c"))
-	_box(Vector3(1.12, 2.05, 0.13), origin + Vector3(0, 1.28, 2.14), WOOD)
-	_box(Vector3(1.6, 0.22, 0.8), origin + Vector3(0, 0.13, 2.5), Color("aea78d"), true)
-	_box(Vector3(5.08, 0.16, 0.17), origin + Vector3(0, 2.94, 2.16), WOOD)
-	for side in [-1.0, 1.0]:
-		_box(Vector3(0.17, 3.15, 0.17), origin + Vector3(side * 2.4, 1.73, 2.16), WOOD)
-		_box(Vector3(1.03, 1.0, 0.15), origin + Vector3(side * 1.5, 1.93, 2.17), WOOD)
-		_box(Vector3(0.8, 0.77, 0.17), origin + Vector3(side * 1.5, 1.93, 2.19), Color("b6d5cd"))
-		_box(Vector3(0.07, 0.85, 0.19), origin + Vector3(side * 1.5, 1.93, 2.21), WOOD)
-		_box(Vector3(0.85, 0.07, 0.19), origin + Vector3(side * 1.5, 1.93, 2.21), WOOD)
-		_box(Vector3(1.23, 0.27, 0.46), origin + Vector3(side * 1.5, 1.29, 2.35), WOOD)
-		_box(Vector3(1.09, 0.22, 0.37), origin + Vector3(side * 1.5, 1.49, 2.36), LEAVES)
-
-
 func _node_bounds(node: Node3D) -> AABB:
 	var combined := AABB()
 	var has_bounds := false
@@ -2475,58 +2271,7 @@ func _node_bounds(node: Node3D) -> AABB:
 	return combined
 
 
-func _casa_de_taipa_referencia(origin: Vector3) -> void:
-	# Casa pequena da rua do Carro Quebrado, reinterpretada para Bom Jesus em 1887.
-	# A volumetria simples deixa a porta e a janela de folha cega legíveis a pé.
-	var cal := Color("f2ead8")
-	var cal_suja := Color("d7c8a7")
-	var barro_exposto := Color("a9815d")
-	var telha := Color("a8442f")
-	var madeira_velha := Color("4b3327")
-	var parede_material := _material_de_superficie(CASA_TAIPA_CAL_TEXTURE, Vector3(1.65, 1.20, 1.0))
-	var telhado_material := _material_de_superficie(TELHA_COLONIAL_TEXTURE, Vector3(2.0, 1.55, 1.0))
-
-	# Alicerce baixo e piso de terreiro, antes das paredes caiadas de taipa.
-	_box(Vector3(5.65, 0.28, 4.85), origin + Vector3(0, 0.14, 0), Color("8c8879"), true)
-	_box(Vector3(6.5, 0.035, 1.4), origin + Vector3(0, 0.03, 2.65), PATH)
-	_box(Vector3(5.0, 3.1, 4.2), origin + Vector3(0, 1.83, 0), cal, true, parede_material, 0.0, true)
-
-	# Telhado de duas águas com beiral curto e fileiras de telha-canal desbotada.
-	var roof := PrismMesh.new()
-	roof.size = Vector3(5.9, 1.72, 5.1)
-	_mesh(roof, origin + Vector3(0, 3.82, 0), telha, telhado_material)
-
-	# Frente: porta escura à direita, janela única à esquerda, como a casa observada.
-	_box(Vector3(1.15, 2.26, 0.12), origin + Vector3(0.92, 1.27, 2.14), madeira_velha)
-	for plank in range(5):
-		var plank_color := Color("5b3d2d") if plank % 2 == 0 else madeira_velha
-		_box(Vector3(0.18, 2.15, 0.035), origin + Vector3(0.51 + plank * 0.20, 1.28, 2.215), plank_color)
-	_box(Vector3(1.36, 0.12, 0.33), origin + Vector3(0.92, 0.18, 2.39), Color("8b7354"))
-	_box(Vector3(0.10, 0.10, 0.06), origin + Vector3(1.34, 1.30, 2.29), Color("c8922e"))
-
-	_box(Vector3(1.08, 1.18, 0.10), origin + Vector3(-1.35, 1.91, 2.15), Color("332923"))
-	_box(Vector3(1.24, 0.12, 0.18), origin + Vector3(-1.35, 2.55, 2.21), madeira_velha)
-	_box(Vector3(1.24, 0.12, 0.18), origin + Vector3(-1.35, 1.27, 2.21), madeira_velha)
-	for plank in range(5):
-		var shutter_color := Color("80614b") if plank == 1 else madeira_velha
-		_box(Vector3(0.16, 1.13, 0.06), origin + Vector3(-1.76 + plank * 0.205, 1.91, 2.23), shutter_color)
-
-	# Cal descascada deixa aparecer barro nas partes baixas e perto da porta.
-	_box(Vector3(1.75, 0.34, 0.025), origin + Vector3(-1.45, 0.54, 2.115), cal_suja)
-	_box(Vector3(0.63, 0.22, 0.025), origin + Vector3(1.82, 0.67, 2.115), barro_exposto)
-	_box(Vector3(0.32, 0.54, 0.025), origin + Vector3(2.08, 2.06, 2.115), cal_suja)
-	_box(Vector3(0.58, 0.18, 0.025), origin + Vector3(-0.23, 2.76, 2.115), cal_suja)
-
-func _fence(origin: Vector3, count: int, spacing: float) -> void:
-	for i in range(count):
-		_box(Vector3(0.15, 1.12, 0.15), origin + Vector3(i * spacing, 0.56, 0), WOOD, true)
-	var width: float = (count - 1) * spacing
-	for height in [0.4, 0.87]:
-		_box(Vector3(width, 0.12, 0.12), origin + Vector3(width * 0.5, height, 0), Color("987650"), true)
-
-
-## `barra_camera`: o corpo barra também o braço da câmera (`camadas.gd`). No estilo
-## procedural só as paredes das casas e da igreja: poste, cerca e corrimão não.
+## `barra_camera`: o corpo barra também o braço da câmera (`camadas.gd`).
 func _box(size: Vector3, position: Vector3, color: Color, solid: bool = false, material_override: Material = null, yaw: float = 0.0, barra_camera: bool = false) -> MeshInstance3D:
 	var box := BoxMesh.new()
 	box.size = size
@@ -2556,16 +2301,6 @@ func _mesh(mesh: Mesh, position: Vector3, color: Color, material_override: Mater
 	return instance
 
 
-func _material_de_superficie(texture: Texture2D, uv_scale: Vector3) -> StandardMaterial3D:
-	var material := StandardMaterial3D.new()
-	material.albedo_texture = texture
-	material.texture_repeat = 1
-	material.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
-	material.uv1_scale = uv_scale
-	material.roughness = 0.92
-	return material
-
-
 func _body(shape: Shape3D, position: Vector3, body_name: String = "", yaw: float = 0.0, barra_camera: bool = false) -> void:
 	var body := StaticBody3D.new()
 	if barra_camera:
@@ -2585,10 +2320,9 @@ func _body(shape: Shape3D, position: Vector3, body_name: String = "", yaw: float
 ## O TERREIRO E A GAMELEIRA, os dois marcos de fé que o vale não tinha (o
 ## cruzeiro, a igreja, a capela velha e o cemitério já estavam). Feitos SÓ com o
 ## que o catálogo tem — a casa de taipa, o pote, a fogueira, a moita e a árvore
-## da mata larga, que o almanaque chama de gameleira —, nos dois estilos, como
-## manda a regra de não misturar. Os dois mastros com pano branco do terreiro e
-## as fitas no tronco da gameleira, que o 2D descreve, chegaram do Tripo no lote
-## de 03/10/2026 e entram só no estilo Tripo: o procedural não ganha peça nova.
+## da mata larga, que o almanaque chama de gameleira —; os dois mastros com
+## pano branco do terreiro e as fitas no tronco da gameleira, que o 2D descreve,
+## chegaram do Tripo no lote de 03/10/2026.
 ## Por código só o chão: o terreiro de chão batido e o monte de concha, que são
 ## relevo, como o terreno.
 func _build_marcos_de_fe() -> void:
@@ -2615,13 +2349,11 @@ func _build_terreiro() -> void:
 	_region._add_polygon("Terreiro de santo", cantos, 0.03, Color("958d79"), false, _terreiro_material())
 	# A casa, menor que a de morar, atrás do terreiro.
 	var casa := ground_position(centro - frente * 3.6)
-	var modelo: Node3D = null
-	if estilo_tripo():
-		modelo = CatalogoAssets.instanciar("casa_taipa", self, casa, 0.72, giro)
-		if modelo != null:
-			CatalogoAssets.colisao("casa_taipa", modelo, self, casa, 0.72, giro)
-	if modelo == null:
-		_house(casa, Color("efe8d8"), Color("8a6a3f"))
+	var modelo := CatalogoAssets.instanciar("casa_taipa", self, casa, 0.72, giro)
+	if modelo != null:
+		CatalogoAssets.colisao("casa_taipa", modelo, self, casa, 0.72, giro)
+	else:
+		push_error("Casa do terreiro de santo sem o GLB casa_taipa no catálogo.")
 	# Os potes de barro alinhados na parede da frente.
 	for i in 4:
 		var na_parede: Vector3 = casa + frente * 2.4 + lado * (-1.8 + float(i) * 1.2)
@@ -2630,12 +2362,11 @@ func _build_terreiro() -> void:
 	_fogo_do_terreiro = _adereco("fogueira", ground_position(centro + frente * 1.0), giro)
 	# OS DOIS MASTROS COM PANO BRANCO, um de cada lado da entrada do terreiro,
 	# do lado da rua — de onde se chega.
-	if estilo_tripo():
-		for sinal in [-1.0, 1.0]:
-			var pe_do_mastro := ground_position(centro + frente * 3.9 + lado * sinal * 3.8)
-			var mastro := CatalogoAssets.instanciar("mastro_pano", self, pe_do_mastro, 1.0, giro)
-			if mastro != null:
-				CatalogoAssets.colisao("mastro_pano", mastro, self, pe_do_mastro, 1.0, giro)
+	for sinal in [-1.0, 1.0]:
+		var pe_do_mastro := ground_position(centro + frente * 3.9 + lado * sinal * 3.8)
+		var mastro := CatalogoAssets.instanciar("mastro_pano", self, pe_do_mastro, 1.0, giro)
+		if mastro != null:
+			CatalogoAssets.colisao("mastro_pano", mastro, self, pe_do_mastro, 1.0, giro)
 	# A linha de árvores entre o terreiro e a rua, com moita nos vãos: de quem
 	# passa na rua, a casa fica atrás dela.
 	var especies := ["mata_alta", "jaqueira", "mata_larga", "embauba", "mata_alta"]
@@ -2774,50 +2505,34 @@ func _build_gameleira() -> void:
 	# o arraial construiu". Tem modelo próprio (`gameleira`, 11 m, com as
 	# sapopemas): é a única, e a mata em volta é de jatobá e jequitibá.
 	var tamanho := GAMELEIRA_TAMANHO
-	var arvore: Node3D = null
 	# O PÉ DA ÁRVORE É O CHÃO, e não o alto do monte (#228). As sapopemas se abrem a uns 5 m do
 	# tronco, quase o raio do monte, e o monte cai de 1 m no centro a zero na borda: com o pé no
 	# alto dele, as pontas das raízes ficavam 1 m acima da areia, pousadas numa bandeja com sombra
 	# por baixo. Com o pé no chão (o platô em volta é plano), as raízes nascem da areia, e o monte
 	# de concha cobre o miolo delas — "as raízes descem por cima de um monte baixo e branco".
 	var pe_da_arvore := Vector3(topo.x, chao.y - _region.ARVORE_AFUNDADA, topo.z)
-	if estilo_tripo():
-		arvore = CatalogoAssets.instanciar("gameleira", self, pe_da_arvore, tamanho, 0.7)
-		if arvore != null:
-			# O TRONCO NO MEIO DO MONTE: o pivô do modelo não é o pé do tronco, e
-			# a árvore nascia ao lado do sambaqui em vez de em cima dele.
-			var pe := _pe_do_tronco(arvore)
-			if pe.is_finite():
-				arvore.global_position += Vector3(topo.x - pe.x, 0.0, topo.z - pe.z)
-			CatalogoAssets.colisao("gameleira", arvore, self, pe_da_arvore, tamanho, 0.7)
-			# AS FITAS NO TRONCO: o pano branco amarrado em volta dele, com as
-			# fitas coloridas pendendo — "a gameleira é morada de Iroko". Acima
-			# das sapopemas, no trecho limpo do tronco (ALTURA_DAS_FITAS), e na
-			# medida do tronco ali, um tanto folgada.
-			var raio := _raio_do_tronco(arvore, pe_da_arvore, ALTURA_DAS_FITAS)
-			if raio > 0.1:
-				var roda := (raio + 0.15) * 2.0
-				var fitas := CatalogoAssets.instanciar("fitas_gameleira", self, pe_da_arvore, roda / float(CatalogoAssets.PECAS["fitas_gameleira"]["largura"]), 0.0)
-				if fitas != null:
-					# O pano é o alto da peça; as fitas pendem dele.
-					var alto: float = (fitas.get_meta("limites") as AABB).size.y
-					fitas.global_position.y += ALTURA_DAS_FITAS + MEIA_FAIXA_DAS_FITAS - alto
-	if arvore == null:
-		var feita: Dictionary = FloraReconcavo.especie("mata_alta", tamanho * 1.15)
-		var malha := MeshInstance3D.new()
-		malha.name = "Gameleira"
-		malha.mesh = feita.mesh
-		malha.position = topo
-		add_child(malha)
-		var tronco := StaticBody3D.new()
-		var forma_do_tronco := CollisionShape3D.new()
-		var cilindro := CylinderShape3D.new()
-		cilindro.radius = float(feita.get("trunk_radius", 0.6))
-		cilindro.height = 4.0
-		forma_do_tronco.shape = cilindro
-		tronco.add_child(forma_do_tronco)
-		tronco.position = topo + Vector3.UP * 2.0
-		add_child(tronco)
+	var arvore := CatalogoAssets.instanciar("gameleira", self, pe_da_arvore, tamanho, 0.7)
+	if arvore != null:
+		# O TRONCO NO MEIO DO MONTE: o pivô do modelo não é o pé do tronco, e
+		# a árvore nascia ao lado do sambaqui em vez de em cima dele.
+		var pe := _pe_do_tronco(arvore)
+		if pe.is_finite():
+			arvore.global_position += Vector3(topo.x - pe.x, 0.0, topo.z - pe.z)
+		CatalogoAssets.colisao("gameleira", arvore, self, pe_da_arvore, tamanho, 0.7)
+		# AS FITAS NO TRONCO: o pano branco amarrado em volta dele, com as
+		# fitas coloridas pendendo — "a gameleira é morada de Iroko". Acima
+		# das sapopemas, no trecho limpo do tronco (ALTURA_DAS_FITAS), e na
+		# medida do tronco ali, um tanto folgada.
+		var raio := _raio_do_tronco(arvore, pe_da_arvore, ALTURA_DAS_FITAS)
+		if raio > 0.1:
+			var roda := (raio + 0.15) * 2.0
+			var fitas := CatalogoAssets.instanciar("fitas_gameleira", self, pe_da_arvore, roda / float(CatalogoAssets.PECAS["fitas_gameleira"]["largura"]), 0.0)
+			if fitas != null:
+				# O pano é o alto da peça; as fitas pendem dele.
+				var alto: float = (fitas.get_meta("limites") as AABB).size.y
+				fitas.global_position.y += ALTURA_DAS_FITAS + MEIA_FAIXA_DAS_FITAS - alto
+	else:
+		push_error("Gameleira sem GLB no catálogo.")
 	# Os potes de barro entre as raízes, em cima do monte: o pote do catálogo.
 	var raio_do_tronco := float(CatalogoAssets.PECAS["gameleira"].get("tronco", 1.2)) * tamanho
 	for i in 4:

@@ -174,17 +174,11 @@ func _luz(mundo: Node3D, de_onde: Vector3, forca: float, cor: Color) -> void:
 	luz.look_at_from_position(de_onde, Vector3(0.0, _altura * 0.5, 0.0), Vector3.UP)
 
 
-## O MESMO CORPO DO JOGADOR: o boneco procedural no estilo procedural; no Tripo,
-## a mesma cena que o jogador carregou, com o transform e os materiais dele (os
-## de dois lados, que o jogador acerta para o torso não sumir).
+## O MESMO CORPO DO JOGADOR: a mesma cena que o jogador carregou, com o transform
+## e os materiais dele (os de dois lados, que o jogador acerta para o torso não
+## sumir).
 func _montar_o_modelo() -> void:
 	var do_jogador: Node3D = _jogador.get("model") if _jogador != null else null
-	if do_jogador is PersonagemProcedural or (do_jogador == null and Estilo.procedural()):
-		var procedural := PersonagemProcedural.novo("viajante", _altura)
-		corpo.add_child(procedural)
-		modelo = procedural
-		animador = procedural
-		return
 	if do_jogador == null or do_jogador.scene_file_path == "":
 		return
 	var cena := load(do_jogador.scene_file_path) as PackedScene
@@ -231,8 +225,6 @@ func _process(delta: float) -> void:
 		_arrastando = false
 		return
 	corpo.rotation.y = giro
-	if animador is PersonagemProcedural:
-		animador.update_motion(0.0, delta)
 	# Veste com o corpo já no idle: o machado se acerta pela pose da mão.
 	if _precisa_vestir:
 		_precisa_vestir = false

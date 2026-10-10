@@ -71,7 +71,6 @@ func _run() -> void:
 	create_timer(900.0).timeout.connect(func() -> void:
 		push_error("LOD_DAS_PECAS: limite de 900 segundos excedido")
 		quit(2))
-	root.get_node("/root/Estilo").modo = _estilo_do_portao()
 	if _estilo_do_portao() == "tripo":
 		_catalogo()
 	_conferir(change_scene_to_file("res://scenes/prototipo_3d/vale.tscn") == OK, "a cena do vale carrega")

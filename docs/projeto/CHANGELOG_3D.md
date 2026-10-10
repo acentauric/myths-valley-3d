@@ -2,6 +2,24 @@
 
 ## Em desenvolvimento — 10/10/2026
 
+- **O vale é só Tripo (#58).** O estilo procedural saiu do jogo: a opção "Estilo visual" de AJUSTAR
+  (com a ajuda e as traduções), o personagem procedural (`personagem_procedural.gd`), a flora e as
+  construções por código (`flora_reconcavo.gd`, `_igreja_procedural`, os `Callable` procedurais de
+  `_construcao`), os ramos procedurais da região, dos interiores, do cômodo, dos bichos, do cardume, do
+  tubarão, do saveiro e das canoas, e os onze portões `*_procedural`. GLB que falta agora é `push_error`,
+  e não forma de código no lugar; a caixa cinza provisória fica para quem ainda não tem modelo (hoje
+  ninguém). O autoload `Estilo` ficou com as plaquinhas de nome e o cursor. A suíte monta o vale uma vez
+  só, e as ferramentas perderam o `--estilo`.
+- **Os testes viáveis (#242).** Os portões viram casos de uma suíte que monta o vale uma vez
+  (`tests/suite/`), 37 portões de regra viram testes de unidade no GUT (`tests/unidade/`), e o
+  `testar.ps1` roda a unidade em segundos no dia a dia e a bateria completa só antes da `main`.
+  Achados no caminho: o Pedro parava de tomar o próprio animador por uma fila de missão (um erro de
+  script a cada quadro depois do tutorial, vindo da rodada 2 do Mixamo), o HUD deixava um lambda
+  pendurado no autoload Tela, e o conferidor do sobrevoo não replantava a orla posta à mão.
+- **O voo do menu volta a passar livre pela orla Sul.** Os coqueiros 43, 44 e 45 da orla, na volta do
+  voo da praça para o píer, saem da composição; a cena `tools/prototipo_3d/sobrevoo/ver_sobrevoo.tscn`
+  mostra o voo no Godot com a árvore que o aperta.
+
 - **A segunda rodada do Mixamo: 35 clipes em 18 personagens (#190).** Os clipes que o Ramon aprovou na
   prévia entram redirecionados para o esqueleto de cada um, e nenhum dos oito reprovados. Quem tem agenda os
   toca na ação da rotina: a marisqueira cava a areia, pega o marisco e enxuga o suor; a lavadeira enxuga o suor

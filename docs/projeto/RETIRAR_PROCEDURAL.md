@@ -1,5 +1,12 @@
 # Retirar o estilo procedural (#58)
 
+> **Feito em 10/10/2026.** O procedural saiu do jogo inteiro, nas fatias 1 a 8 deste
+> plano, numa só rodada (branch `estilo/sem-procedural`): ver o CHANGELOG_3D do dia.
+> Duas diferenças do plano: o autoload `Estilo` não foi renomeado (ficou com as
+> plaquinhas de nome e o cursor, e perdeu `modo`, `tripo()` e `procedural()`), e o
+> `vista_do_alto` passou para o Tripo com as mesmas conferências. Este documento fica
+> como o mapa do que existia.
+
 Inventário, riscos e plano em fatias. **Só mapeamento**: nenhum código de jogo
 foi removido nesta rodada (ver "O que já saiu"). Levantado por `grep` sobre
 `scripts/`, `tests/`, `tools/`, `scenes/`, `docs/` na `nuvem/base-10-10`; o

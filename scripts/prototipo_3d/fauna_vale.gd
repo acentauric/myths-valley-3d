@@ -61,7 +61,6 @@ var _proxima_olhada_saveiro := 0.0
 var _xareus: Array[Dictionary] = []
 var _bolas: Array = []
 var _bola_do_saveiro = null
-var _tripo := true
 var _rng := RandomNumberGenerator.new()
 var _perigos: Array = []
 
@@ -85,7 +84,6 @@ func _ready() -> void:
 func _montar() -> void:
 	if not _world.has_method("water_level") or not is_finite(float(_world.water_level())):
 		return
-	_tripo = Estilo.tripo()
 	_rng.seed = 1887
 	_adotar_o_do_pier()
 	_nas_canoas()
@@ -102,7 +100,6 @@ func _novo(nome: String, especie: String, ancora: Vector3, opcoes: Dictionary):
 	cardume.name = nome
 	cardume.coordenado = true
 	add_child(cardume)
-	opcoes["tripo"] = _tripo
 	opcoes["mundo"] = _world
 	cardume.montar_especie(especie, ancora, opcoes)
 	cardumes.append(cardume)

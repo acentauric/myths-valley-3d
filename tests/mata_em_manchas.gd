@@ -184,7 +184,6 @@ func _montar() -> Node3D:
 	var metros := float(dados.get("scale_m_per_unit", 1.0))
 	regiao.set_meters_per_unit(metros)
 	regiao.set_vertical_exaggeration(float(dados.get("vertical_exaggeration", 1.0)))
-	regiao.set_estilo_tripo(true)
 	# As mesmas clareiras do vale (terreiro e gameleira, `WorldBuilder`).
 	regiao.clareiras.assign([Vector2(-262, -238) / metros, Vector2(-300, 560) / metros])
 	await regiao.build_region(String(dados["geometry"]), String(dados["scenario"]))

@@ -21,7 +21,6 @@ func _run() -> void:
 	var prefixo := String(args.get("prefixo", "varais"))
 	DirAccess.make_dir_recursive_absolute(saida)
 	DisplayServer.window_set_size(Vector2i(1280, 720))
-	root.get_node("Estilo").set("modo", "tripo")
 	var cena := Node3D.new()
 	root.add_child(cena)
 	var ambiente := WorldEnvironment.new()

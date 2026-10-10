@@ -84,7 +84,6 @@ func _run() -> void:
 	var relido := Composicao.ler(caminho)
 	_verificar(relido["Casa de taipa"]["pos"].distance_to(esperado) < 0.0001, "posição sobrevive ao salvamento e reabertura")
 	_verificar(absf(float(relido["Casa de taipa"]["yaw"]) - giro) < 0.0001, "giro sobrevive ao salvamento e reabertura")
-	root.get_node("Estilo").modo = "tripo"
 	var mundo := (load("res://scripts/prototipo_3d/world_builder.gd") as Script).new() as Node3D
 	mundo.caminho_composicao = caminho
 	if "--falsificar-composicao" in OS.get_cmdline_user_args():
@@ -131,19 +130,11 @@ func _run() -> void:
 			_verificar(absf(angle_difference(filho.rotation.y, giro)) < 0.0001, "colisão acompanha o giro salvo")
 	_verificar(corpos == 1, "colisão da casa acompanha o deslocamento, sem duplicação")
 	_verificar(Composicao.ler()["Casa de taipa"]["pos"].distance_to(dados["Casa de taipa"]["pos"]) < 0.0001, "teste não altera a composição do projeto")
-	# O estilo legado continua funcional e aplica o giro relativo à forma original.
-	root.get_node("Estilo").modo = "procedural"
+	# Um construtor sem montagem, com a região do vale, para a conta do loteamento.
 	var legado := (load("res://tests/fixtures/construtor_sem_montagem.gd") as Script).new() as Node3D
 	root.add_child(legado)
 	legado._region = mundo._region
 	legado._casas_autorais = relido
-	legado._lotes = {"Casa de taipa": {"pos": esperado, "yaw": giro}}
-	legado._construcao("casa_taipa", esperado, giro, func(at: Vector3): legado._house(at, Color.WHITE, Color.RED), 1.0, "Casa de taipa")
-	var alvo_legado: Area3D = legado._house_targets[0]
-	_verificar(Vector2(alvo_legado.position.x, alvo_legado.position.z).distance_to(Vector2(esperado.x, esperado.z)) < 0.002, "procedural acompanha deslocamento horizontal")
-	_verificar(absf(angle_difference(alvo_legado.rotation.y, 0.2)) < 0.0001, "procedural aplica giro relativo à orientação inicial")
-	var grupo_legado := legado.get_node_or_null("ConstrucaoAutoralProcedural") as Node3D
-	_verificar(grupo_legado != null and grupo_legado.find_children("*", "StaticBody3D", true, false).size() > 0, "modelo e colisões procedurais giram juntos")
 	# Reimportar uma geografia com menos ruas não elimina lotes promovidos à autoria.
 	var ruas_originais: Array[Dictionary] = mundo._region._roads
 	mundo._region._roads = [] as Array[Dictionary]

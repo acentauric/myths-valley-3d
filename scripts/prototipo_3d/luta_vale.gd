@@ -316,7 +316,7 @@ func nascer(especie: String, onde: Vector3, pelagem: String = ""):
 ## O PENEDO COM LAPA do ninho da onça: fica atrás dela, com a boca da lapa
 ## virada para o ninho — e, portanto, para a vila, de onde o jogador vem. Uma vez
 ## só por ninho: a onça que a mata repõe volta ao mesmo penedo. No Tripo é o GLB
-## com a colisão da pegada; no procedural, três pedras cinza amassadas.
+## com a colisão da pegada; sem ele, três pedras cinza amassadas.
 func _montar_o_penedo(onca) -> void:
 	var nome := "Penedo da onça %s" % onca.pelagem
 	if _world.get_node_or_null(nome) != null:
@@ -331,7 +331,7 @@ func _montar_o_penedo(onca) -> void:
 	var centro: Vector3 = _world.ground_position(ninho - para_a_vila * PENEDO_ATRAS, 0.0)
 	raiz.global_position = centro
 	var giro := atan2(para_a_vila.x, para_a_vila.z) + PENEDO_GIRO
-	if Estilo.tripo() and CatalogoAssets.tem_tripo("penedo_lapa"):
+	if CatalogoAssets.tem_tripo("penedo_lapa"):
 		var modelo := CatalogoAssets.instanciar("penedo_lapa", raiz, Vector3.ZERO, PENEDO_TAMANHO, giro)
 		CatalogoAssets.colisao("penedo_lapa", modelo, raiz, Vector3.ZERO, PENEDO_TAMANHO, giro)
 		return
@@ -608,9 +608,8 @@ func _criatura_perto(raio: float):
 	return null
 
 
-## O BRAÇO. No estilo Tripo, o clipe `chop` do personagem (o gesto 7); no
-## procedural o gesto 7 é uma reverência, e o golpe vira o corpo jogado para
-## a frente — o fallback que a #14 aceita até haver clipe dos dois estilos.
+## O BRAÇO: o clipe `chop` do personagem (o gesto 7); sem ele, o golpe vira o
+## corpo jogado para a frente — o fallback que a #14 aceita.
 func _animar_o_golpe(repeticoes: int = 2, de_mao_vazia: bool = false) -> bool:
 	var animador = _player.animator
 	# De mão vazia o golpe sai como o soco do Mixamo (#190), quando o corpo o tem.

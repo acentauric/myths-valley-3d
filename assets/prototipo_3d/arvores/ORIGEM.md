@@ -55,8 +55,9 @@ Git. A redução usa `tools/modelos/reduzir_glb.py` (agrupamento de
 vértices em grade, preservando UVs e as texturas embutidas). `world_builder.gd`
 instancia esses modelos nas árvores nomeadas perto dos pontos de interesse
 (`_arvore`), normalizando a altura visual em `TRIPO_ARVORES_MEDIDAS`; a mata
-fechada e os coqueiros da orla continuam procedurais (`flora_reconcavo.gd`),
-porque centenas de instâncias desses modelos pesariam demais.
+fechada e os coqueiros da orla eram procedurais (`flora_reconcavo.gd`) quando
+este registro foi escrito; desde 10/10/2026 (#58) o vale é só Tripo, e a mata usa
+os modelos leves do catálogo em MultiMesh por blocos.
 
 ## Mangueira em Malha Smart (retopologia do Tripo)
 

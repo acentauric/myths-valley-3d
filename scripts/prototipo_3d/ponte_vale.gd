@@ -17,7 +17,7 @@ extends Node3D
 ## cerca de volta. É o trato do cercado do cemitério (`cemiterio_vale.gd`) ao
 ## contrário — lá a obra levanta a cerca, aqui a derruba e põe a ponte de pé —,
 ## com o lance de cerca feito do mesmo jeito: a cerca do catálogo esticada, com
-## caixa de colisão, ou a procedural.
+## caixa de colisão.
 
 const CONSTRUCAO := "ponte"
 const OBRA := "ponte_levantar"
@@ -118,8 +118,7 @@ func _cercar() -> void:
 	var atravessado := Vector3(-ao_longo.z, 0.0, ao_longo.x)
 	var ate_a_cabeceira := float(_ponte["comprimento"]) * 0.5 + FORA_DA_CABECEIRA
 	var meia_largura := float(_ponte["largura"]) * 0.5 + SOBRA_DOS_LADOS
-	var tripo: bool = _mundo.estilo_tripo()
-	var largura_do_lance: float = CatalogoAssets.largura_da_cerca(self, TAMANHO_DA_CERCA, 1.0) if tripo else 1.0
+	var largura_do_lance: float = CatalogoAssets.largura_da_cerca(self, TAMANHO_DA_CERCA, 1.0)
 	for lado in [-1.0, 1.0]:
 		# De ponta a ponta no chão, deitada na encosta da cabeceira (#93;
 		# `CatalogoAssets.lance_de_cerca`).
@@ -127,7 +126,7 @@ func _cercar() -> void:
 		var a: Vector3 = _mundo.ground_position(cabeceira - atravessado * meia_largura)
 		var b: Vector3 = _mundo.ground_position(cabeceira + atravessado * meia_largura)
 		_cercas.append({"a": a, "b": b,
-			"no": CatalogoAssets.lance_de_cerca(self, a, b, tripo, TAMANHO_DA_CERCA, largura_do_lance, ALTURA, GROSSURA, "CercaDaPonte", "CercaColisao")})
+			"no": CatalogoAssets.lance_de_cerca(self, a, b, TAMANHO_DA_CERCA, largura_do_lance, ALTURA, GROSSURA, "CercaDaPonte", "CercaColisao")})
 	_mostrar_caida(true)
 	_reassar()
 
@@ -146,8 +145,8 @@ func _descercar() -> void:
 
 ## A PONTE CAÍDA OU DE PÉ (#94): até a obra, o que se vê no vão é o modelo caído
 ## do Tripo, e o de pé fica escondido com o tabuleiro desligado — ninguém anda
-## por ele, nem morador pela malha; feita a obra, a de pé volta inteira. Sem os
-## dois modelos (o estilo procedural), a ponte é a de sempre, só cercada.
+## por ele, nem morador pela malha; feita a obra, a de pé volta inteira. Só a
+## ponte pequena tem os dois modelos; sem eles, a ponte é só cercada.
 func _mostrar_caida(caida: bool) -> void:
 	var modelos: Dictionary = _ponte.get("modelos", {})
 	if modelos.is_empty():

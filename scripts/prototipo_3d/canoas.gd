@@ -1,7 +1,6 @@
 extends Node3D
 ## Canoas de pescador fundeadas no raso diante da vila, como na foto aérea de Bom Jesus
-## dos Pobres: no estilo Tripo, o GLB "canoa" do catálogo; no procedural, um casco
-## montado aqui. Ficam onde a lâmina d'água da preamar tem de 0,8 a 2,6 m e balançam
+## dos Pobres: os GLBs de casco do catálogo (canoa, canoa_amarela, bote). Ficam onde a lâmina d'água da preamar tem de 0,8 a 2,6 m e balançam
 ## de leve.
 
 const Mar = preload("res://scripts/prototipo_3d/mar.gd")
@@ -14,10 +13,7 @@ const AFASTAMENTO_MIN := 8.0
 const AFASTAMENTO_MAX := 40.0
 const DISTANCIA_ENTRE_CANOAS := 7.0
 const LONGE_DO_PIER := 9.0
-## Casco procedural (unidades na escala dos personagens: ~5,5 m de canoa).
-const COMPRIMENTO := 5.6
-const BOCA := 0.9
-const PONTAL := 0.42
+## Quanto o casco afunda, quando a canoa não guardou o dela (`calado`).
 const CALADO := 0.12
 ## O GLB tem quilha e leme abaixo do casco: afunda mais para a água chegar ao costado.
 const CALADO_TRIPO := 0.32
@@ -34,7 +30,7 @@ var _nivel_preamar := 0.0
 
 
 ## `costa` em unidades (XZ), `pier` e `mar_adentro` do píer, `nivel` a superfície da água.
-func montar(costa: PackedVector2Array, pier: Vector3, mar_adentro: Vector3, nivel: float, tripo: bool) -> void:
+func montar(costa: PackedVector2Array, pier: Vector3, mar_adentro: Vector3, nivel: float) -> void:
 	# `nivel` chega já com a maré do momento; a base de tudo aqui é a preamar.
 	_nivel_preamar = nivel - Mare.nivel_offset()
 	var rng := RandomNumberGenerator.new()
@@ -72,7 +68,9 @@ func montar(costa: PackedVector2Array, pier: Vector3, mar_adentro: Vector3, nive
 				break
 		if not livre:
 			continue
-		var canoa := _criar(tripo)
+		var canoa := _criar()
+		if canoa == null:
+			return
 		canoa.rotation.y = rumo + rng.randf_range(-0.45, 0.45)
 		canoa.position = Vector3(ponto.x, nivel, ponto.y)
 		add_child(canoa)
@@ -107,26 +105,23 @@ func _physics_process(_delta: float) -> void:
 		canoa.rotation.x = sin(t * 0.5 + fase * 0.7) * 0.015 * (1.0 - encalhe)
 
 
-func _criar(tripo: bool) -> Node3D:
-	var raiz := Node3D.new()
-	raiz.name = "Canoa"
+func _criar() -> Node3D:
 	var chave: String = FROTA[_proximo_da_frota % FROTA.size()]
 	_proximo_da_frota += 1
 	if not CatalogoAssets.tem_tripo(chave):
 		chave = "canoa"
-	if tripo and CatalogoAssets.tem_tripo(chave):
-		# instanciar() põe a base na origem: afunda o casco até a linha d'água. Os GLBs
-		# vêm com o comprimento em Z; o giro os deita no eixo X, como o casco procedural.
-		var modelo := CatalogoAssets.instanciar(chave, raiz, Vector3(0, -CALADO_TRIPO, 0), 1.0, PI * 0.5)
-		if modelo != null:
-			raiz.add_child(_colisao_do_casco(modelo, raiz))
-			# O calado decide quando a maré baixa encalha a canoa (unidades).
-			raiz.set_meta("calado", CALADO_TRIPO)
-			return raiz
-	var casco := _casco_procedural()
-	raiz.add_child(casco)
-	raiz.add_child(_colisao_do_casco(casco, raiz))
-	raiz.set_meta("calado", CALADO)
+	var raiz := Node3D.new()
+	raiz.name = "Canoa"
+	# instanciar() põe a base na origem: afunda o casco até a linha d'água. Os GLBs
+	# vêm com o comprimento em Z; o giro os deita no eixo X.
+	var modelo := CatalogoAssets.instanciar(chave, raiz, Vector3(0, -CALADO_TRIPO, 0), 1.0, PI * 0.5)
+	if modelo == null:
+		push_error("Canoa sem GLB no catálogo: %s" % chave)
+		raiz.free()
+		return null
+	raiz.add_child(_colisao_do_casco(modelo, raiz))
+	# O calado decide quando a maré baixa encalha a canoa (unidades).
+	raiz.set_meta("calado", CALADO_TRIPO)
 	return raiz
 
 
@@ -198,67 +193,3 @@ static func _relativo(no: Node3D, ate: Node3D) -> Transform3D:
 			transformacao = (atual as Node3D).transform * transformacao
 		atual = atual.get_parent()
 	return transformacao
-
-
-## Casco de canoa de tábuas: seções em meia elipse ao longo do comprimento, mais
-## estreitas e mais altas nas pontas; branco com faixa azul e borda vermelha, dois
-## bancos e um remo.
-static func _casco_procedural() -> Node3D:
-	var casco := SurfaceTool.new()
-	casco.begin(Mesh.PRIMITIVE_TRIANGLES)
-	var angulos := [0.0, 0.14, 0.4, 0.8, 1.2, PI * 0.5, PI - 1.2, PI - 0.8, PI - 0.4, PI - 0.14, PI]
-	var secoes := 14
-	var aneis: Array[PackedVector3Array] = []
-	for s in secoes:
-		var u := float(s) / float(secoes - 1)
-		var x := (u - 0.5) * COMPRIMENTO
-		var afina := pow(sin(PI * clampf(u, 0.02, 0.98)), 0.55)
-		var tosado := 0.14 * pow(2.0 * u - 1.0, 2.0)
-		var anel := PackedVector3Array()
-		for a: float in angulos:
-			anel.append(Vector3(x, PONTAL + tosado - PONTAL * sin(a) * (0.35 + 0.65 * afina) - CALADO, BOCA * 0.5 * afina * cos(a)))
-		aneis.append(anel)
-	var branco := Color("e9e4d6")
-	var azul := Color("2f5f9e")
-	var vermelho := Color("a8322a")
-	for s in secoes - 1:
-		for k in angulos.size() - 1:
-			var faixa := mini(k, angulos.size() - 2 - k)
-			var cor := vermelho if faixa == 0 else azul if faixa == 1 else branco
-			var a := aneis[s][k]
-			var b := aneis[s + 1][k]
-			var c := aneis[s + 1][k + 1]
-			var d := aneis[s][k + 1]
-			for v in [a, b, c, a, c, d]:
-				casco.set_color(cor)
-				casco.add_vertex(v)
-	casco.generate_normals()
-	var material := StandardMaterial3D.new()
-	material.vertex_color_use_as_albedo = true
-	material.roughness = 0.85
-	# Casco fino visto dos dois lados: o Godot inverte a normal da face de trás.
-	material.cull_mode = BaseMaterial3D.CULL_DISABLED
-	var visual := MeshInstance3D.new()
-	visual.name = "Casco"
-	visual.mesh = casco.commit()
-	visual.material_override = material
-	var madeira := StandardMaterial3D.new()
-	madeira.albedo_color = Color("8a6a45")
-	madeira.roughness = 0.9
-	for x in [-1.0, 0.9]:
-		var banco := MeshInstance3D.new()
-		var tabua := BoxMesh.new()
-		tabua.size = Vector3(0.22, 0.05, BOCA * 0.82)
-		banco.mesh = tabua
-		banco.material_override = madeira
-		banco.position = Vector3(x, PONTAL * 0.72 - CALADO, 0)
-		visual.add_child(banco)
-	var remo := MeshInstance3D.new()
-	var cabo := BoxMesh.new()
-	cabo.size = Vector3(2.2, 0.05, 0.12)
-	remo.mesh = cabo
-	remo.material_override = madeira
-	remo.position = Vector3(0.1, PONTAL * 0.35 - CALADO, 0.12)
-	remo.rotation = Vector3(0.0, 0.18, 0.08)
-	visual.add_child(remo)
-	return visual

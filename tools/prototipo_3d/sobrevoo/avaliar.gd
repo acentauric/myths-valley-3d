@@ -2,7 +2,7 @@ extends SceneTree
 ## AVALIA UM TRAJETO DO SOBREVOO CONTRA A GEOMETRIA REAL DO VALE, SEM MONTAR O VALE.
 ##
 ##   godot --headless --path . --script res://tools/prototipo_3d/sobrevoo/avaliar.gd -- \
-##       --geometria=C:/.../geometria_uniao.json --trajeto=C:/.../candidatos/x.json \
+##       --geometria=C:/.../geometria_tripo.json --trajeto=C:/.../candidatos/x.json \
 ##       [--saida=C:/.../x.avaliacao.json] [--limite_guinada=12] [--limite_lateral=1.0] \
 ##       [--referencia=C:/.../base.avaliacao.json] [--lerp_jogo=1.4]
 ##

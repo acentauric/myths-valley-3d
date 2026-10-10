@@ -26,9 +26,9 @@ extends "res://tests/suite/caso.gd"
 ##   6. A PARTIDA SALVA LEMBRA a visita, o que ele levou e a fibra tirada.
 ##   7. A PLACA DE NOME VAI COM ELE: no dia, olhando para ele, o nome aparece;
 ##      fora do dia, no mesmo lugar e olhando para o mesmo ponto, não.
-##   8. SEM MODELO, CAIXA CINZA; COM MODELO, O DELE: no estilo Tripo, enquanto o
-##      catálogo não tem o mestre, o corpo dele é a caixa provisória, e não o
-##      boneco do procedural — nem no retrato do diário, que fica sem foto; com o
+##   8. SEM MODELO, CAIXA CINZA; COM MODELO, O DELE: enquanto o
+##      catálogo não tem o mestre, o corpo dele é a caixa provisória, e não
+##      um boneco de código — nem no retrato do diário, que fica sem foto; com o
 ##      modelo no catálogo, é o modelo dele, com os clipes no animador autoral.
 ##   9. NA CHEGADA, O SAVEIRO ESTÁ ATRACADO: no primeiro dia do jogo o barco está
 ##      no píer — foi nele que o jogador veio —, sem o mestre e sem a aba de
@@ -116,20 +116,19 @@ func _run() -> void:
 		return
 
 	# --- 8. SEM MODELO, CAIXA CINZA; COM MODELO, O DELE -----------------------------
-	var estilo_tripo: bool = root.get_node("/root/Estilo").tripo()
 	var tem_modelo: bool = load("res://scripts/prototipo_3d/catalogo_assets.gd").tem_tripo("quirino")
-	if estilo_tripo and tem_modelo:
+	if tem_modelo:
 		var o_modelo = quirino.get("modelo")
-		_conferir(o_modelo != null and str(o_modelo.name) == "QuirinoTripo" and quirino.get("animador") != null and quirino.animador.has_method("is_using_authored_clips"), "no estilo Tripo, com o modelo no catálogo, o mestre não usa o modelo dele com os clipes (é %s)" % (str(o_modelo.name) if o_modelo != null else "nada"))
-	if estilo_tripo and not tem_modelo:
+		_conferir(o_modelo != null and str(o_modelo.name) == "QuirinoTripo" and quirino.get("animador") != null and quirino.animador.has_method("is_using_authored_clips"), "com o modelo no catálogo, o mestre não usa o modelo dele com os clipes (é %s)" % (str(o_modelo.name) if o_modelo != null else "nada"))
+	if not tem_modelo:
 		var corpo = quirino.get("modelo")
-		_conferir(corpo != null and str(corpo.name) == "CorpoProvisorio" and quirino.get("animador") == null, "no estilo Tripo, sem modelo no catálogo, o mestre não é a caixa cinza provisória (é %s)" % (str(corpo.name) if corpo != null else "nada"))
-		# Nem o retrato do diário sai do boneco do procedural: sem modelo, sem foto.
+		_conferir(corpo != null and str(corpo.name) == "CorpoProvisorio" and quirino.get("animador") == null, "sem modelo no catálogo, o mestre não é a caixa cinza provisória (é %s)" % (str(corpo.name) if corpo != null else "nada"))
+		# Nem o retrato do diário sai de um boneco de código: sem modelo, sem foto.
 		var estudio = vale.get("retratos")
 		if estudio != null:
 			var palco := Node3D.new()
 			var foto = estudio._montar_modelo("quirino", palco)
-			_conferir(foto == null, "no estilo Tripo, o retrato do mestre sem modelo sai do boneco do procedural")
+			_conferir(foto == null, "o retrato do mestre sem modelo sai de um boneco de código")
 			palco.free()
 
 	# --- 9. NA CHEGADA, O SAVEIRO ESTÁ ATRACADO -------------------------------------

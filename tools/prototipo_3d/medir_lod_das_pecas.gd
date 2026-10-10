@@ -83,7 +83,6 @@ func _medir(n: int) -> Dictionary:
 # --- o vale -----------------------------------------------------------------------
 
 func _vale() -> void:
-	root.get_node("Estilo").set("modo", "tripo")
 	var jogo := (load("res://scenes/prototipo_3d/vale.tscn") as PackedScene).instantiate() as Node3D
 	root.add_child(jogo)
 	current_scene = jogo

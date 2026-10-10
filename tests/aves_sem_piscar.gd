@@ -68,7 +68,6 @@ func _run() -> void:
 	Engine.max_fps = 60
 	Engine.time_scale = 2.0
 	await process_frame
-	root.get_node("Estilo").modo = "tripo"
 	change_scene_to_file("res://scenes/prototipo_3d/vale.tscn")
 	await process_frame
 	while current_scene == null or current_scene.get("carga_ok") != true:

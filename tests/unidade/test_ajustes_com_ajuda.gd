@@ -74,7 +74,9 @@ func test_ajustes_com_ajuda() -> void:
 		var interface := _rotulos_da_aba(PainelAjustes.ABA_INTERFACE, no_jogo)
 		for ajuste in ["Cursor do mouse", "Tamanho do texto", "Tamanho do HUD", "Monitor"]:
 			_conferir(ajuste in interface and not ajuste in cenario, "'%s' mora em Interface e não em Cenário (no jogo: %s)" % [ajuste, str(no_jogo)])
-		_conferir("Estilo visual" in cenario and "Sustos" in cenario and not "Estilo visual" in interface, "Cenário guarda os ajustes do vale (no jogo: %s)" % str(no_jogo))
+		_conferir("Nomes dos personagens" in cenario and "Sustos" in cenario and not "Nomes dos personagens" in interface, "Cenário guarda os ajustes do vale (no jogo: %s)" % str(no_jogo))
+		# #58: o vale é só Tripo, e a escolha do estilo visual saiu de AJUSTAR.
+		_conferir(not "Estilo visual" in cenario and not "Estilo visual" in interface, "a escolha do estilo visual ainda aparece em AJUSTAR (no jogo: %s)" % str(no_jogo))
 		_conferir(interface.size() == 4 + tela.COMPONENTES.size(), "Interface tem os quatro ajustes e os %d tamanhos (tem %d)" % [tela.COMPONENTES.size(), interface.size()])
 		_conferir(("Fonte do menu" in cenario) == (not no_jogo), "a seção Menu só aparece fora do jogo (no jogo: %s)" % str(no_jogo))
 	_conferir(PainelAjustes.ABAS[PainelAjustes.ABA_SONS] == "Sons" and IdiomaMenu.EN.has("Sons") and IdiomaMenu.ES.has("Sons") and IdiomaMenu.EN.has("Esforço") and IdiomaMenu.ES.has("Esforço") and IdiomaMenu.EN.has("Sons voltam ao padrão.") and IdiomaMenu.ES.has("Sons voltam ao padrão."), "Sons e Esforço têm nome e frase de restaurar nos três idiomas")

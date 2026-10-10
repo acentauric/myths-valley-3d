@@ -280,7 +280,6 @@ var _tree_collision_pool: Array[Dictionary] = []
 var _tree_collision_elapsed := 0.0
 var _meters_per_unit := 1.0
 var _vertical_exaggeration := 1.0
-var _estilo_tripo := false
 ## O gerador de prévia usa exatamente a mesma leitura geográfica e a mesma malha
 ## drapeada do jogo, mas para depois da terra. Assim o editor não mantém uma
 ## segunda interpretação do KML só para conseguir mostrar o chão.
@@ -290,7 +289,7 @@ var terrain_only := false
 ## O sorteio continua igual (a mata e a restinga dependem da mesma sequência);
 ## só o plantio daquele grupo troca o sorteado pelo do autor.
 var vegetacao_autoral: Dictionary = {}
-## Espécies da mata no estilo Tripo (chaves do CatalogoAssets) e no procedural (FloraReconcavo).
+## Espécies da mata (chaves do CatalogoAssets).
 ## Só modelos leves (~2,5 mil triângulos): o dendê (15 mil) fica para as árvores nomeadas.
 const ESPECIES_MATA_TRIPO := ["mata_alta", "mata_larga", "mata_alta", "embauba", "mata_larga"]
 ## Lado do bloco (unidades) em que a mata e a orla são divididas: cada bloco é uma
@@ -313,19 +312,14 @@ var _blocos_vegetacao_lod: Array[Dictionary] = []
 var _camera_de_mapa := false
 
 
-func set_estilo_tripo(value: bool) -> void:
-	_estilo_tripo = value
-
-
-## Malha e transformação-base de uma espécie para MultiMesh, no estilo ativo.
-## Devolve {"mesh", "base", "altura", "tronco"}; no procedural, a base é a identidade.
-func _malha_da_especie(species: String, rng: RandomNumberGenerator) -> Dictionary:
-	if _estilo_tripo:
-		var tripo: Dictionary = CatalogoAssets.malha(species, 1.0)
-		if not tripo.is_empty():
-			return tripo
-	var built: Dictionary = FloraReconcavo.especie(species, 1.0, rng)
-	return {"mesh": built.mesh, "base": Transform3D.IDENTITY, "altura": float(built.trunk_height), "tronco": float(built.trunk_radius)}
+## Malha e transformação-base de uma espécie para MultiMesh.
+## Devolve {"mesh", "base", "altura", "tronco"}; vazio, com `push_error`, se a
+## espécie não tem GLB no catálogo.
+func _malha_da_especie(species: String) -> Dictionary:
+	var tripo: Dictionary = CatalogoAssets.malha(species, 1.0)
+	if tripo.is_empty():
+		push_error("Espécie sem GLB no catálogo: %s" % species)
+	return tripo
 
 
 func set_meters_per_unit(value: float) -> void:
@@ -2270,15 +2264,15 @@ func _build_forest(configuration: Dictionary) -> void:
 		positions.append(point)
 	if positions.is_empty():
 		return
-	# Mata fechada e alta do Recôncavo: espécies procedurais com silhuetas distintas,
-	# uma MultiMesh por espécie. Modelos do Tripo entram trocando `FloraReconcavo.especie`.
+	# Mata fechada e alta do Recôncavo: espécies com silhuetas distintas, uma
+	# MultiMesh por espécie.
 	var by_species: Dictionary = {}
-	var lista: Array = ESPECIES_MATA_TRIPO.duplicate() if _estilo_tripo else FloraReconcavo.ESPECIES_MATA
+	var lista: Array = ESPECIES_MATA_TRIPO.duplicate()
 	# As espécies locais novas entram na mistura assim que o GLB do Tripo existe.
 	for local in ["aroeira", "jenipapeiro", "piacava"]:
-		if _estilo_tripo and CatalogoAssets.tem_tripo(local):
+		if CatalogoAssets.tem_tripo(local):
 			lista.append(local)
-	# NO TRIPO, A MATA EM MANCHAS (`especies_da_mata.gd`): a classe do lugar e a
+	# A MATA EM MANCHAS (`especies_da_mata.gd`): a classe do lugar e a
 	# mancha escolhem a espécie. O número da fila continua sendo tirado aqui, um
 	# por árvore como antes — é o que deixa idênticos, bit a bit, o tamanho e o
 	# giro de cada pé, o sub-bosque, o rio e a orla que vêm depois.
@@ -2288,7 +2282,7 @@ func _build_forest(configuration: Dictionary) -> void:
 	for i in range(positions.size()):
 		if i % passo_da_mata == 0:
 			mantidas.append(positions[i])
-	var classes: PackedStringArray = _classes_da_mata(mantidas) if _estilo_tripo else PackedStringArray()
+	var classes: PackedStringArray = _classes_da_mata(mantidas)
 	var proxima_mantida := 0
 	var descartadas := 0
 	for i in range(positions.size()):
@@ -2297,14 +2291,13 @@ func _build_forest(configuration: Dictionary) -> void:
 			descartadas += 1
 			continue
 		var species: String = lista[sorteio]
-		if _estilo_tripo:
-			var da_mancha := EspeciesDaMata.especie(positions[i], sorteio, lista.size(), classes[proxima_mantida])
-			# Sem o GLB, o procedural da espécie puxaria números da fila: fica a da fila.
-			if CatalogoAssets.tem_tripo(EspeciesDaMata.malha(da_mancha)):
-				species = da_mancha
-			elif species == "mata_larga":
-				# A gameleira é uma só (a de Iroko): na mata, a copa larga é o jatobá.
-				species = "jatoba"
+		var da_mancha := EspeciesDaMata.especie(positions[i], sorteio, lista.size(), classes[proxima_mantida])
+		# Sem o GLB da mancha, fica a espécie da fila.
+		if CatalogoAssets.tem_tripo(EspeciesDaMata.malha(da_mancha)):
+			species = da_mancha
+		elif species == "mata_larga":
+			# A gameleira é uma só (a de Iroko): na mata, a copa larga é o jatobá.
+			species = "jatoba"
 		proxima_mantida += 1
 		if not by_species.has(species):
 			by_species[species] = []
@@ -2313,7 +2306,9 @@ func _build_forest(configuration: Dictionary) -> void:
 		var group: Array = by_species[species]
 		# A versão leve do Tripo (mesma forma, 3 a 6 mil faces) quando existe; a
 		# espécie do tronco, que a ficha e o corte leem, continua a de sempre.
-		var built: Dictionary = _malha_da_especie(EspeciesDaMata.malha(species) if _estilo_tripo else species, rng)
+		var built: Dictionary = _malha_da_especie(EspeciesDaMata.malha(species))
+		if built.is_empty():
+			continue
 		var base: Transform3D = built.base
 		var transforms: Array[Transform3D] = []
 		# TODA ÁRVORE DA MATA SE CORTA, e por isso cada uma guarda a instância
@@ -2388,8 +2383,6 @@ func _distancia_da_rua(point: Vector2) -> float:
 func _perto_da_rua_para_plantar(point: Vector2, malha: Mesh, transformacao: Transform3D, raio: float) -> bool:
 	if _distancia_da_rua(point) < AFASTAMENTO_DA_RUA:
 		return true
-	if not _estilo_tripo:
-		return false
 	var local := CatalogoAssets.tronco_da_malha(malha, transformacao)
 	if not local.is_finite():
 		return false
@@ -2437,14 +2430,14 @@ func _classes_da_mata(positions: Array[Vector2]) -> PackedStringArray:
 
 ## Sub-bosque da Mata Atlântica (helicônias, bromélias, samambaias) espalhado entre as
 ## árvores da mata: um tufo a cada poucas árvores, deslocado para o vão entre elas.
-## Sem colisão (é de passar por dentro) e só no estilo Tripo.
+## Sem colisão (é de passar por dentro).
 ## O sub-bosque nasce de uma em cada três árvores do SORTEIO; com a mata mais rala
 ## (`passo_da_mata`, ver `_build_forest`), só os tufos das árvores que ficaram
 ## são plantados, e os números da fila são gastos como antes.
 func _build_sub_bosque(arvores_mata: Array[Vector2], rng: RandomNumberGenerator, passo_da_mata: int = 1) -> void:
-	if not _estilo_tripo or not CatalogoAssets.tem_tripo("sub_bosque"):
+	if not CatalogoAssets.tem_tripo("sub_bosque"):
 		return
-	var tufo: Dictionary = _malha_da_especie("sub_bosque", rng)
+	var tufo: Dictionary = _malha_da_especie("sub_bosque")
 	var transforms: Array[Transform3D] = []
 	for i in range(0, arvores_mata.size(), 3):
 		var ponto: Vector2 = arvores_mata[i] + Vector2.RIGHT.rotated(rng.randf() * TAU) * rng.randf_range(2.0, 4.5)
@@ -2465,14 +2458,12 @@ func _build_sub_bosque(arvores_mata: Array[Vector2], rng: RandomNumberGenerator,
 ## Margens do rio: manguezal (mangue-vermelho) perto da foz e da água salgada, como no
 ## estuário real de Saubara, e ingazeiros de beira-rio mais para dentro.
 func _build_margens_do_rio(rng: RandomNumberGenerator) -> void:
-	if not _estilo_tripo:
-		return
 	var tem_mangue := CatalogoAssets.tem_tripo("mangue")
 	var tem_inga := CatalogoAssets.tem_tripo("ingazeiro")
 	if not tem_mangue and not tem_inga:
 		return
-	var mangue: Dictionary = _malha_da_especie("mangue", rng) if tem_mangue else {}
-	var inga: Dictionary = _malha_da_especie("ingazeiro", rng) if tem_inga else {}
+	var mangue: Dictionary = _malha_da_especie("mangue") if tem_mangue else {}
+	var inga: Dictionary = _malha_da_especie("ingazeiro") if tem_inga else {}
 	var do_mangue: Array[Transform3D] = []
 	var do_inga: Array[Transform3D] = []
 	# Os índices dos troncos de cada um, para o corte achar a instância.
@@ -2648,7 +2639,7 @@ func _build_coast_palms(rng: RandomNumberGenerator) -> void:
 	var spacing := _units(34.0, 9.0)
 	var offset_min := _units(6.0, 2.0)
 	var offset_max := _units(14.0, 5.0)
-	var built: Dictionary = _malha_da_especie("coqueiro", rng)
+	var built: Dictionary = _malha_da_especie("coqueiro")
 	var modelo_base: Transform3D = built.base
 	var referencias_tronco: Dictionary = CoqueiroCortado.referencias_tronco(built.mesh)
 	# Castanholas (amendoeiras-da-praia) se misturam aos coqueiros da orla, como na
@@ -2657,14 +2648,14 @@ func _build_coast_palms(rng: RandomNumberGenerator) -> void:
 	# e Clusiaceae dominam as restingas da Bahia). Só entram as que têm GLB.
 	var restinga: Array[String] = []
 	for local in ["castanhola", "castanhola", "clusia", "piacava"]:
-		if _estilo_tripo and CatalogoAssets.tem_tripo(local):
+		if CatalogoAssets.tem_tripo(local):
 			restinga.append(local)
 	var malhas_restinga: Dictionary = {}
 	var transforms_restinga: Dictionary = {}
 	var registros_restinga: Dictionary = {}
 	for local in restinga:
 		if not malhas_restinga.has(local):
-			malhas_restinga[local] = _malha_da_especie(local, rng)
+			malhas_restinga[local] = _malha_da_especie(local)
 			transforms_restinga[local] = [] as Array[Transform3D]
 			registros_restinga[local] = [] as Array[int]
 	var transforms: Array[Transform3D] = []
@@ -2991,9 +2982,9 @@ func troncos_para_o_conjunto(ponto: Vector2) -> Array[Dictionary]:
 ## colisão, a malha de navegação e o corte leem: medido no tamanho de referência, o pé da jequitibá e
 ## do angico, de raiz tabular, caía noutro lugar e a árvore seguia fora do chão), põe-se o pé nela e
 ## pergunta-se o chão ali. Quem planta soma o resultado ao `ground` e à altura da transformação.
-## Zero fora do estilo Tripo, sem tronco medido, ou com o pé além do que a copa explica (medida errada).
+## Zero sem tronco medido, ou com o pé além do que a copa explica (medida errada).
 func desnivel_do_pe(malha: Mesh, transformacao: Transform3D, ponto: Vector2, ground: float, raio: float) -> float:
-	if not _estilo_tripo or malha == null:
+	if malha == null:
 		return 0.0
 	var local := CatalogoAssets.tronco_da_malha(malha, transformacao)
 	if not local.is_finite():
@@ -3018,7 +3009,7 @@ func base_do_tronco(trunk: Dictionary) -> Vector3:
 		return trunk["base_tronco"]
 	var ponto: Vector2 = trunk["point"]
 	var pe := Vector3(ponto.x, float(trunk["ground"]), ponto.y)
-	if not _estilo_tripo or not trunk.has("transformacao") or bool(trunk.get("cortado", false)):
+	if not trunk.has("transformacao") or bool(trunk.get("cortado", false)):
 		return pe
 	var visual := trunk.get("visual") as MultiMeshInstance3D
 	if visual == null or visual.multimesh == null:

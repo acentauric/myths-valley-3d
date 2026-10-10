@@ -8,8 +8,9 @@ func _initialize() -> void:
 func _run() -> void:
 	var canoas_script = load("res://scripts/prototipo_3d/canoas.gd")
 	var raiz := Node3D.new()
-	var visual: Node3D = canoas_script._casco_procedural()
-	raiz.add_child(visual)
+	# O casco do Tripo, o mesmo das canoas fundeadas no vale.
+	var visual: Node3D = CatalogoAssets.instanciar("canoa", raiz, Vector3.ZERO, 1.0, PI * 0.5)
+	_conferir(visual != null, "the canoe model exists in the catalog")
 	var casco: AnimatableBody3D = canoas_script._colisao_do_casco(visual, raiz)
 	raiz.add_child(casco)
 	root.add_child(raiz)

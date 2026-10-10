@@ -10,7 +10,7 @@ extends Node3D
 ## fauna_vale.gd) e, chegando junto, um peixe some com respingo — o cardume o repõe
 ## depois. O jogador nadando no fundo continua sendo a primeira presa. Está no grupo
 ## `predadores`, de quem os cardumes fogem. No estilo Tripo o corpo é o GLB
-## "tubarao" (cabeça-chata, nadando com o clipe do rig); no procedural, os prismas.
+## "tubarao" (cabeça-chata, nadando com o clipe do rig); sem o GLB, os prismas.
 
 ## Lâminas d'água (unidades): onde ele vive, onde ainda persegue e onde não entra.
 const LAMINA_FUNDA := 1.8
@@ -370,9 +370,9 @@ func _lamina_na_cheia(ponto: Vector3) -> float:
 
 
 ## Estilo Tripo: o GLB inteiro debaixo d'água, só a barbatana de fora, nadando com
-## o clipe do rig. Procedural (ou sem o GLB): os prismas e a sombra.
+## o clipe do rig. Sem o GLB: os prismas e a sombra.
 func _montar_visual() -> void:
-	if Estilo.tripo() and CatalogoAssets.tem_tripo("tubarao"):
+	if CatalogoAssets.tem_tripo("tubarao"):
 		var cena := CatalogoAssets.cena("tubarao")
 		if cena != null:
 			_modelo_tripo = cena.instantiate() as Node3D

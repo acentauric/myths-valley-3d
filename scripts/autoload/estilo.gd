@@ -1,16 +1,17 @@
 extends Node
-## Estilo visual do protótipo 3D: "tripo" (modelos gerados no Tripo Studio, linha
-## mestra) ou "procedural" (tudo construído por código, inclusive o personagem).
-## A escolha fica em AJUSTAR e vale para o cenário inteiro; trocar reconstrói o vale.
+## Preferências de interface do vale: as plaquinhas com o nome dos personagens e a
+## mãozinha do cursor sobre todo botão.
+##
+## O nome é histórico: este autoload escolhia o estilo visual do vale, Tripo ou
+## procedural. O procedural saiu do jogo (#58, 10/10/2026); o vale é sempre Tripo, e
+## a chave `[estilo] modo` que um save antigo tenha em preferencias_visuais.cfg
+## ficou órfã, sem ninguém que a leia.
 
 ## Plaquinhas com o nome dos personagens (AJUSTAR → Cenário).
 signal nomes_alterados(mostrar: bool)
 
 const ARQUIVO := "user://preferencias_visuais.cfg"
-const TRIPO := "tripo"
-const PROCEDURAL := "procedural"
 
-var modo: String = TRIPO
 var mostrar_nomes := true
 
 
@@ -18,8 +19,6 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	var preferencias := ConfigFile.new()
 	if preferencias.load(ARQUIVO) == OK:
-		var salvo := String(preferencias.get_value("estilo", "modo", TRIPO))
-		modo = salvo if salvo in [TRIPO, PROCEDURAL] else TRIPO
 		mostrar_nomes = bool(preferencias.get_value("interface", "nomes", true))
 	get_tree().node_added.connect(_cursor_de_clique)
 
@@ -30,25 +29,6 @@ func _ready() -> void:
 func _cursor_de_clique(no: Node) -> void:
 	if (no is BaseButton or no is Slider) and (no as Control).mouse_default_cursor_shape == Control.CURSOR_ARROW:
 		(no as Control).mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-
-
-func tripo() -> bool:
-	return modo == TRIPO
-
-
-func procedural() -> bool:
-	return modo == PROCEDURAL
-
-
-func definir(novo: String) -> void:
-	if novo not in [TRIPO, PROCEDURAL] or novo == modo:
-		return
-	modo = novo
-	var preferencias := ConfigFile.new()
-	preferencias.load(ARQUIVO)
-	preferencias.set_value("estilo", "modo", modo)
-	if preferencias.save(ARQUIVO) != OK:
-		push_warning("Não foi possível salvar o estilo visual.")
 
 
 func definir_nomes(mostrar: bool) -> void:

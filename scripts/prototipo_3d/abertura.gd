@@ -104,7 +104,6 @@ const COLLABORATORS := ["Ramon Santos", "Renato Leal", "Matheus Ché"]
 ## Fonte do menu (AJUSTAR → Cenário): padrão do Godot ou as duas fontes do 2D.
 const MENU_FONTS := PainelAjustes.FONTES_MENU
 ## Trocar o estilo visual reconstrói a cena do menu; ao voltar, reabre a página de ajustes.
-static var _reabrir_ajustes := false
 var camera := Camera3D.new()
 var camera_target := Vector3(0, 1.5, 0)
 var map_target := Vector3.ZERO
@@ -234,10 +233,6 @@ func _ready() -> void:
 	add_child(layer)
 	ajustes = PainelAjustes.new()
 	ajustes.fechar_pedido.connect(_home)
-	ajustes.estilo_mudou.connect(func() -> void:
-		# Trocar o estilo reconstrói a cena do menu; ao voltar, reabre em Cenário.
-		_reabrir_ajustes = true
-		get_tree().reload_current_scene())
 	ajustes.fonte_menu_mudou.connect(func(option: int) -> void:
 		menu_font_option = option
 		panel.theme = _menu_theme()
@@ -277,11 +272,8 @@ func _ready() -> void:
 	Atualizacao.mudou.connect(_atualizar_oferta)
 	_ao_mudar_hora(Dia.hora)
 	_home()
-	if _reabrir_ajustes:
-		_reabrir_ajustes = false
-		_options(2)
 	# A entrada anima véus, retábulo e placas quando o vale termina de montar (a tela
-	# de carregamento some logo depois). Na recarga da troca de estilo, sem animação.
+	# de carregamento some logo depois).
 	if lobby_em_video:
 		# Sem vale para esperar: o retábulo entra já, enquanto a tela de carregamento some.
 		if not options_open:
@@ -295,7 +287,7 @@ func _ready() -> void:
 		if not $Cenario.construido and not options_open:
 			_preparar_entrada()
 			$Cenario.pronto.connect(_entrada, CONNECT_ONE_SHOT)
-	print("OPENING_READY: audio compartilhado e abertura 3D · estilo=%s" % Estilo.modo)
+	print("OPENING_READY: audio compartilhado e abertura 3D")
 	if _mapa_solicitado:
 		_abrir_mapa_apos_carga.call_deferred()
 

@@ -557,33 +557,16 @@ func _rampa(nome: String, largura_da_rampa: float, alto: Vector2, baixo: Vector2
 
 # --- peças do catálogo ------------------------------------------------------
 
-## Uma peça do catálogo no estilo do vale: o GLB do Tripo, ou o construtor do
-## `FloraReconcavo` (`_procedural`). Devolve null quando nenhum dos dois existe.
+## Uma peça do catálogo: o GLB do Tripo. Devolve null (com `push_error`) quando
+## o GLB não existe.
 func _peca(chave: String, onde: Vector3, giro: float, tamanho: float) -> Node3D:
-	if Estilo.tripo():
-		var modelo := CatalogoAssets.instanciar(chave, self, onde, tamanho, giro)
-		if modelo != null:
-			# A chave do catálogo fica marcada: o nome o Godot troca entre irmãos.
-			modelo.set_meta("chave", chave)
-			return modelo
-	var peca := _procedural(chave)
-	if peca == null:
+	var modelo := CatalogoAssets.instanciar(chave, self, onde, tamanho, giro)
+	if modelo == null:
+		push_error("Peça sem GLB no catálogo: %s" % chave)
 		return null
-	peca.position = onde
-	peca.rotation.y = giro
-	peca.scale = Vector3.ONE * tamanho
-	add_child(peca)
-	return peca
-
-
-## O construtor procedural da peça, para o estilo procedural.
-func _procedural(chave: String) -> Node3D:
-	match chave:
-		"banco": return FloraReconcavo.banco_praca()
-		"candeeiro": return FloraReconcavo.candeeiro()
-		"cruzeiro": return FloraReconcavo.cruzeiro()
-		"pote": return FloraReconcavo.pote_agua()
-	return null
+	# A chave do catálogo fica marcada: o nome o Godot troca entre irmãos.
+	modelo.set_meta("chave", chave)
+	return modelo
 
 
 # --- a luz --------------------------------------------------------------------

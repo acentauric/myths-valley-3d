@@ -5,7 +5,7 @@ extends Node3D
 ## No 2D o talento Curral (raiz Pastoreio) levantava o galinheiro no terreno do jogador e
 ## soltava as galinhas (`mundo.gd` de lá); no vale o talento existia e não fazia nada
 ## (`talentos.gd`: "não destravava nada"). Agora faz: no dia em que o nó sai da teia este nó
-## põe o galinheiro do Tripo (ou uma caixa de tábuas, no procedural) num canto do quintal da
+## põe o galinheiro do Tripo (ou uma caixa de tábuas, enquanto o modelo não chega) num canto do quintal da
 ## casa de taipa, com um bando de três galinhas (`bando_de_chao.gd`, o das outras casas), e
 ## as galinhas BOTAM TODO DIA: a cada manhã (`Relogio.dia_comecou`) o ninho ganha um ovo por
 ## galinha, até o teto, e o E no galinheiro recolhe o que há. "Ele deu, acabou; volte amanhã."
@@ -281,7 +281,7 @@ func _vao_livre(ponto: Vector3) -> bool:
 
 func _levantar() -> void:
 	var modelo: Node3D = null
-	if Estilo.tripo() and CatalogoAssets.tem_tripo("galinheiro"):
+	if CatalogoAssets.tem_tripo("galinheiro"):
 		modelo = CatalogoAssets.instanciar("galinheiro", self, _lugar, 1.0, _giro)
 		if modelo != null:
 			CatalogoAssets.colisao("galinheiro", modelo, self, _lugar, 1.0, _giro)
@@ -292,7 +292,7 @@ func _levantar() -> void:
 	_soltar_as_galinhas()
 
 
-## O galinheiro do procedural: uma caixa de tábuas com corpo.
+## O galinheiro provisório, sem modelo no catálogo: uma caixa de tábuas com corpo.
 func _caixa_de_tabuas() -> Node3D:
 	var tinta := StandardMaterial3D.new()
 	tinta.albedo_color = Color(0.45, 0.33, 0.22)

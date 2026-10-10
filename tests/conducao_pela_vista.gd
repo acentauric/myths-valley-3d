@@ -93,7 +93,6 @@ func _a_decisao(regra: GDScript) -> void:
 # --- 2. A VISTA, NO VALE --------------------------------------------------------------------
 
 func _a_vista_no_vale() -> void:
-	root.get_node("Estilo").modo = "tripo"
 	change_scene_to_file("res://scenes/prototipo_3d/vale.tscn")
 	await process_frame
 	while current_scene == null or current_scene.get("carga_ok") != true:

@@ -22,8 +22,6 @@ const FasesDaLua = preload("res://scripts/prototipo_3d/fases_da_lua.gd")
 
 ## × do cabeçalho (o anfitrião fecha o modal).
 signal fechar_pedido
-## Estilo visual trocado: o anfitrião recarrega a cena para reconstruir o vale.
-signal estilo_mudou
 ## Preferências do menu que o menu aplica na hora (tema e câmera de fundo).
 signal fonte_menu_mudou(opcao: int)
 signal cenario_menu_mudou(sobrevoo: bool)
@@ -302,16 +300,11 @@ func _aba_sons(esquerda: VBoxContainer, direita: VBoxContainer) -> void:
 		_volume(String(Audio.ROTULOS_CAMADAS[camada]), float(Audio.volume_camadas[camada]), func(v: float) -> void: Audio.definir_volume_camada(camada, v), camada)
 
 
-## Cenário: o vale (estilo visual, nomes, minimapa, maré e sustos) e, no menu, o fundo e a fonte.
+## Cenário: o vale (nomes, minimapa, maré e sustos) e, no menu, o fundo e a fonte.
 ## O que é da interface mora em Interface (`_aba_interface`).
 func _aba_cenario(esquerda: VBoxContainer, direita: VBoxContainer) -> void:
 	_pai = esquerda
 	_secao("Vale")
-	_escolha("Estilo visual", ["Tripo (modelos gerados)", "Procedural (por código)"], 0 if Estilo.tripo() else 1, func(i: int) -> void:
-		var novo: String = Estilo.TRIPO if i == 0 else Estilo.PROCEDURAL
-		if novo != Estilo.modo:
-			Estilo.definir(novo)
-			estilo_mudou.emit(), 0)
 	_escolha("Nomes dos personagens", ["Mostrar", "Ocultar"], 0 if Estilo.mostrar_nomes else 1, func(i: int) -> void: Estilo.definir_nomes(i == 0), 0)
 	var visuais := ConfigFile.new()
 	visuais.load(PREFERENCIAS_VISUAIS)

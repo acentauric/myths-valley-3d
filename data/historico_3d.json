@@ -3,6 +3,33 @@
  "build_numero": 10,
  "entradas": [
   {
+   "data": "10/10/2026",
+   "estado": "EM DESENVOLVIMENTO",
+   "estado_en": "IN DEVELOPMENT",
+   "estado_es": "EN DESARROLLO",
+   "titulo": "O vale só em Tripo e moradores mais vivos",
+   "titulo_en": "The valley in Tripo only, and livelier villagers",
+   "titulo_es": "El valle solo en Tripo y vecinos más vivos",
+   "mudancas": [
+    "*Animações* novas: quem trabalha ceifa, cava, conta nos dedos e acena; o viajante pula, soca e boceja ao acordar.",
+    "*Orla* com coqueiral contínuo e manguezal nos dois rios.",
+    "*Estilo único*: o vale é sempre Tripo, e a escolha de estilo visual saiu dos ajustes.",
+    "*Correções*: o Pedro deixa de travar o jogo depois do tutorial, e o voo do menu não atravessa mais os coqueiros."
+   ],
+   "mudancas_en": [
+    "*Animations*: workers reap, dig, count on their fingers and wave; the traveler jumps, punches and yawns on waking.",
+    "*Shore* with a continuous coconut grove and mangroves along both rivers.",
+    "*One style*: the valley is always Tripo, and the visual style option left the settings.",
+    "*Fixes*: Pedro no longer stalls the game after the tutorial, and the menu flight no longer goes through the palms."
+   ],
+   "mudancas_es": [
+    "*Animaciones*: quien trabaja siega, cava, cuenta con los dedos y saluda; el viajero salta, golpea y bosteza al despertar.",
+    "*Costa* con cocotal continuo y manglar en los dos ríos.",
+    "*Un solo estilo*: el valle es siempre Tripo, y la opción de estilo visual salió de los ajustes.",
+    "*Arreglos*: Pedro ya no traba el juego tras el tutorial, y el vuelo del menú ya no atraviesa los cocoteros."
+   ]
+  },
+  {
    "data": "08/10/2026",
    "estado": "EM DESENVOLVIMENTO",
    "estado_en": "IN DEVELOPMENT",

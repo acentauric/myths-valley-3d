@@ -11,8 +11,7 @@ extends RefCounted
 ## mão, o machado (de ferro ou de aço, que é o mesmo modelo), o facão, a foice,
 ## a picareta, a enxada, a vara de pescar ou o balde — a ferramenta da barra que
 ## tiver modelo. O gibão e o patuá ainda não têm
-## modelo, e nada aparece por eles. No estilo procedural só o machado, que é o
-## que aquele estilo desenha: o procedural não ganha arte nova.
+## modelo, e nada aparece por eles.
 
 const CatalogoAssets = preload("res://scripts/prototipo_3d/catalogo_assets.gd")
 
@@ -109,7 +108,7 @@ const PECA_DO_ITEM := {"vara_de_pescar": "vara_pescar"}
 ## O que o corpo mostra na mão agora: "machado" (o de ferro ou o de aço), a
 ## peça da ferramenta ou arma escolhida na barra que tenha modelo — o facão, a
 ## foice, a de aço com o modelo da de ferro (`Catalogo.familia`) —, ou "". Na
-## mão de verdade só cabe uma, e o procedural só desenha o machado.
+## mão de verdade só cabe uma.
 static func item_na_mao() -> String:
 	if Equipamento.da_familia_em_uso("machado") != "":
 		return "machado"
@@ -118,7 +117,7 @@ static func item_na_mao() -> String:
 		return ""
 	var peca := Catalogo.familia(id)
 	peca = str(PECA_DO_ITEM.get(peca, peca))
-	if not Estilo.tripo() or not CatalogoAssets.tem_tripo(peca):
+	if not CatalogoAssets.tem_tripo(peca):
 		return ""
 	return peca
 
@@ -130,7 +129,7 @@ static func nome_da_ancora(peca: String) -> String:
 
 ## A PEÇA NA MÃO, a que `item_na_mao` deu. Devolve o pivô da pegada (a pose de
 ## cada estado gira em volta dele, `posar`), ou null quando a peça não tem pivô
-## (o machado procedural).
+## (nenhuma hoje: toda peça na mão tem pivô).
 static func na_mao(ancora: Node3D, visual: Node3D, peca: String) -> Node3D:
 	if peca == "machado":
 		return machado(ancora, visual)
@@ -268,19 +267,9 @@ static func item_na_cabeca() -> String:
 	return id if NA_CABECA.has(id) else ""
 
 
-## A ÂNCORA DA MÃO DIREITA: no boneco procedural, abaixo do cotovelo; no modelo
-## com esqueleto, presa ao osso da mão direita; sem nenhum dos dois, num ponto
-## fixo do corpo.
+## A ÂNCORA DA MÃO DIREITA: no modelo com esqueleto, presa ao osso da mão
+## direita; sem esqueleto (a caixa cinza provisória), num ponto fixo do corpo.
 static func ancora_da_mao(modelo: Node3D, altura: float, visual: Node3D, nome: String = "MachadoNaMao") -> Node3D:
-	if modelo is PersonagemProcedural:
-		var cotovelo := modelo.find_child("CotoveloD", true, false) as Node3D
-		if cotovelo == null:
-			return null
-		var ancora := Node3D.new()
-		ancora.name = nome
-		ancora.position = Vector3(0.0, -altura * 0.16, 0.0)
-		cotovelo.add_child(ancora)
-		return ancora
 	var no_osso := _no_osso(modelo, "righthand", nome)
 	if no_osso != null:
 		return no_osso
@@ -291,17 +280,8 @@ static func ancora_da_mao(modelo: Node3D, altura: float, visual: Node3D, nome: S
 	return ancora
 
 
-## A ÂNCORA DA CABEÇA: presa ao osso da cabeça (o modelo com esqueleto), ou ao
-## pivô "Cabeca" do boneco procedural.
+## A ÂNCORA DA CABEÇA: presa ao osso da cabeça (o modelo com esqueleto).
 static func ancora_da_cabeca(modelo: Node3D, nome: String = "ChapeuNaCabeca") -> Node3D:
-	if modelo is PersonagemProcedural:
-		var cabeca := modelo.find_child("Cabeca", true, false) as Node3D
-		if cabeca == null:
-			return null
-		var ancora := Node3D.new()
-		ancora.name = nome
-		cabeca.add_child(ancora)
-		return ancora
 	return _no_osso(modelo, "head", nome)
 
 
@@ -331,12 +311,9 @@ static func _tamanho_na_ancora(ancora: Node3D, peca: String, metros: float) -> f
 	return metros / maxf(medida * escala, 0.0001)
 
 
-## O MACHADO NA MÃO, no estilo de cada um. Devolve o pivô da pegada (o jogador
-## gira o machado em volta dele no balanço do braço), ou null no procedural.
+## O MACHADO NA MÃO. Devolve o pivô da pegada (o jogador gira o machado em volta
+## dele no balanço do braço).
 static func machado(ancora: Node3D, visual: Node3D) -> Node3D:
-	if Estilo.procedural():
-		machado_procedural(ancora)
-		return null
 	return _na_mao(ancora, visual, "machado")
 
 
@@ -393,37 +370,12 @@ static func girar_o_machado(ancora: Node3D, pivo: Node3D, visual: Node3D, angulo
 	posar(ancora, pivo, visual, Vector2(rad_to_deg(angulo), 0.0))
 
 
-static func machado_procedural(pai: Node3D) -> void:
-	var cabo := MeshInstance3D.new()
-	var malha_cabo := CylinderMesh.new()
-	malha_cabo.top_radius = 0.018
-	malha_cabo.bottom_radius = 0.024
-	malha_cabo.height = 0.52
-	cabo.mesh = malha_cabo
-	cabo.position.y = -0.19
-	var madeira := StandardMaterial3D.new()
-	madeira.albedo_color = Color("70492d")
-	cabo.material_override = madeira
-	pai.add_child(cabo)
-	var lamina := MeshInstance3D.new()
-	var malha_lamina := BoxMesh.new()
-	malha_lamina.size = Vector3(0.23, 0.15, 0.055)
-	lamina.mesh = malha_lamina
-	lamina.position = Vector3(0.07, -0.4, 0.0)
-	var ferro := StandardMaterial3D.new()
-	ferro.albedo_color = Color("777a78")
-	ferro.metallic = 0.55
-	lamina.material_override = ferro
-	pai.add_child(lamina)
-	pai.set_meta("peca", "machado")
-
-
-## AS LUVAS NAS DUAS MÃOS (só no estilo Tripo): presas aos ossos das mãos, a
-## direita como o modelo vem e a esquerda espelhada. Devolve as âncoras postas
-## (para quem as tira depois).
+## AS LUVAS NAS DUAS MÃOS: presas aos ossos das mãos, a direita como o modelo
+## vem e a esquerda espelhada. Devolve as âncoras postas (para quem as tira
+## depois).
 static func luvas(modelo: Node3D, id: String) -> Array[Node3D]:
 	var postas: Array[Node3D] = []
-	if not Estilo.tripo() or not NAS_MAOS.has(id):
+	if not NAS_MAOS.has(id):
 		return postas
 	var dedos := PackedInt32Array()
 	for lado in [["righthand", "LuvaDireita", false], ["lefthand", "LuvaEsquerda", true]]:
@@ -529,9 +481,9 @@ static func _quadro_da_mao(ancora: Node3D, esquerda: bool) -> Basis:
 	return Basis(x, eixo, x.cross(eixo))
 
 
-## O QUE VAI NA CABEÇA (só no estilo Tripo).
+## O QUE VAI NA CABEÇA.
 static func na_cabeca(ancora: Node3D, id: String) -> Node3D:
-	if not Estilo.tripo() or not NA_CABECA.has(id):
+	if not NA_CABECA.has(id):
 		return null
 	var ajuste: Dictionary = NA_CABECA[id]
 	var peca := str(ajuste["peca"])

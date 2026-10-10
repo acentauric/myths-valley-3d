@@ -135,7 +135,6 @@ func _copas_distantes(regiao: Node3D, camera: Camera3D) -> void:
 ## copa low-poly entra onde ele sai; o jatobá (sem modelo de longe) fica só com a copa.
 func _modelo_de_longe(regiao: Node3D) -> void:
 	const Copas := preload("res://scripts/prototipo_3d/copas_distantes.gd")
-	regiao.call("set_estilo_tripo", true)
 	var conferidas := 0
 	for especie in ["piacava", "dendezeiro", "coqueiro"]:
 		var da_arvore: Dictionary = CatalogoAssets.malha(especie + "_leve", 1.0) if especie != "coqueiro" else CatalogoAssets.malha(especie, 1.0)
@@ -161,13 +160,10 @@ func _modelo_de_longe(regiao: Node3D) -> void:
 		for camada in camadas:
 			(camada["visual"] as Node).free()
 	_verificar(conferidas == 3, "as três espécies de palmeira têm modelo de longe no catálogo (%d de 3)" % conferidas)
-	# Sem o Tripo (procedural) ou sem versão de longe: só a copa.
+	# Sem versão de longe: só a copa.
 	var jatoba: Dictionary = CatalogoAssets.malha("jatoba", 1.0)
 	if not jatoba.is_empty():
 		var so_copa: Array[Dictionary] = Copas.montar("Teste 0,0", "jatoba", jatoba.mesh, [Transform3D.IDENTITY], 280.0, 20.0)
 		_verificar(so_copa.size() == 1 and (so_copa[0]["visual"] as MultiMeshInstance3D).visibility_range_begin == 280.0, "jatobá não tem modelo de longe: só a copa, de 280 u")
 		(so_copa[0]["visual"] as Node).free()
-	var mesh_qualquer := BoxMesh.new()
-	var procedural: Array[Dictionary] = Copas.montar("Teste 0,0", "coqueiro", mesh_qualquer, [Transform3D.IDENTITY], 250.0, 20.0)
-	_verificar(procedural.size() == 1, "malha que não é a do catálogo (procedural): só a copa")
-	(procedural[0]["visual"] as Node).free()
+

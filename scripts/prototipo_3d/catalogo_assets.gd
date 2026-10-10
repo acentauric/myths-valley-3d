@@ -1,8 +1,7 @@
 class_name CatalogoAssets
 extends RefCounted
 ## Catálogo único das peças do vale: para cada chave, o GLB do Tripo (linha mestra)
-## e a medida usada para normalizar o modelo na cena. O construtor procedural de cada
-## peça vive em FloraReconcavo / world_builder e é escolhido quando Estilo.procedural().
+## e a medida usada para normalizar o modelo na cena.
 ##
 ## "altura" normaliza pela altura visual; "largura" pela maior dimensão horizontal.
 ## "tronco" é o raio da colisão cilíndrica (árvores), no eixo do tronco medido no modelo;
@@ -840,13 +839,13 @@ static func base_do_lance(de: Vector3, ate: Vector3) -> Basis:
 ## junto (#93). Antes o lance era reto, assentado por uma amostra do terreno no
 ## centro, e na encosta uma ponta flutuava e a outra se enterrava. Com o
 ## catálogo é a cerca do Tripo esticada ao comprimento, com a caixa `altura` ×
-## `grossura` chamada `nome_da_colisao`; sem ele, a cerca procedural, que traz
-## a colisão dela. `largura_do_lance` é a medida de `largura_da_cerca`.
+## `grossura` chamada `nome_da_colisao`; sem o GLB da cerca, `push_error` e o
+## lance fica vazio. `largura_do_lance` é a medida de `largura_da_cerca`.
 ##
 ## O nó entra no grupo "lances_de_cerca" com a meta "lance" = `nome`: é por ela
 ## que se acham os lances, porque irmãos de mesmo nome o Godot renomeia
 ## ("@Node3D@2038").
-static func lance_de_cerca(parent: Node, de: Vector3, ate: Vector3, tripo: bool, tamanho: float, largura_do_lance: float, altura: float, grossura: float, nome: String, nome_da_colisao: String) -> Node3D:
+static func lance_de_cerca(parent: Node, de: Vector3, ate: Vector3, tamanho: float, largura_do_lance: float, altura: float, grossura: float, nome: String, nome_da_colisao: String) -> Node3D:
 	var lance := Node3D.new()
 	lance.name = nome
 	lance.set_meta("lance", nome)
@@ -854,26 +853,20 @@ static func lance_de_cerca(parent: Node, de: Vector3, ate: Vector3, tripo: bool,
 	parent.add_child(lance)
 	lance.global_transform = Transform3D(base_do_lance(de, ate), de.lerp(ate, 0.5))
 	var comprimento := de.distance_to(ate)
-	if tripo:
-		var cerca := instanciar("cerca", lance, Vector3(0.0, -0.06, 0.0), tamanho)
-		if cerca != null:
-			cerca.scale.x *= comprimento / largura_do_lance
-			var corpo := StaticBody3D.new()
-			corpo.name = nome_da_colisao
-			var forma := CollisionShape3D.new()
-			var caixa := BoxShape3D.new()
-			caixa.size = Vector3(comprimento, altura, grossura)
-			forma.shape = caixa
-			corpo.add_child(forma)
-			lance.add_child(corpo)
-			corpo.position = Vector3(0.0, altura * 0.5, 0.0)
-			return lance
-	# A cerca procedural começa na ponta e vai pelo +X dela; o espaçamento é o
-	# que faz os mourões fecharem o comprimento.
-	var mouroes := maxf(ceilf(comprimento / 1.65), 1.0)
-	var cerca_proc := FloraReconcavo.cerca(comprimento, comprimento / mouroes - 0.0001)
-	lance.add_child(cerca_proc)
-	cerca_proc.position = Vector3(-comprimento * 0.5, -0.04, 0.0)
+	var cerca := instanciar("cerca", lance, Vector3(0.0, -0.06, 0.0), tamanho)
+	if cerca == null:
+		push_error("Lance de cerca sem o GLB \"cerca\" no catálogo.")
+		return lance
+	cerca.scale.x *= comprimento / largura_do_lance
+	var corpo := StaticBody3D.new()
+	corpo.name = nome_da_colisao
+	var forma := CollisionShape3D.new()
+	var caixa := BoxShape3D.new()
+	caixa.size = Vector3(comprimento, altura, grossura)
+	forma.shape = caixa
+	corpo.add_child(forma)
+	lance.add_child(corpo)
+	corpo.position = Vector3(0.0, altura * 0.5, 0.0)
 	return lance
 
 

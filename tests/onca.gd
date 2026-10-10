@@ -19,8 +19,8 @@ extends "res://tests/suite/caso.gd"
 ##      ao ninho cega.
 ##   6. NÃO ENTRA NA ÁGUA.
 ##   7. A PRETA SÓ ANDA DO ENTARDECER À MADRUGADA, e de noite os olhos dela brilham.
-##   8. O CORPO: no Tripo, o GLB da pelagem (sem caixa cinza); no procedural, a
-##      caixa. O aviso e a pancada são `material_overlay`, a queda é `transparency`.
+##   8. O CORPO: o GLB da pelagem (sem caixa cinza); só bicho sem modelo no
+##      catálogo vira a caixa. O aviso e a pancada são `material_overlay`, a queda é `transparency`.
 ##   9. O PASSO DAS ONÇAS é o clipe do GLB: o da pintada (torto, a girafa) é
 ##      recentrado em volta do repouso, o da preta (saudável) fica como veio, e a
 ##      perna dura da preta ganha balanço. Nada de perna de código no lugar do clipe.
@@ -64,7 +64,6 @@ func _run() -> void:
 	vida = root.get_node("/root/Vida")
 	relogio = root.get_node("/root/Relogio")
 	dia = root.get_node("/root/Dia")
-	root.get_node("/root/Estilo").modo = "tripo"
 	_conferir(change_scene_to_file("res://scenes/prototipo_3d/vale.tscn") == OK, "o vale não carregou")
 	await _frames(6)
 	await _mundo_pronto()
@@ -247,7 +246,7 @@ func _run() -> void:
 	# --- 8. O CORPO, E O QUE VAI POR CIMA ---------------------------------------
 	_conferir(pintada.chave_do_modelo() == "onca_pintada" and preta.chave_do_modelo() == "onca_preta", "a pelagem não escolhe o GLB")
 	for onca in [pintada, preta]:
-		_conferir(onca.find_child("Caixa", true, false) == null, "a onça %s vestiu a caixa cinza no estilo Tripo" % onca.pelagem)
+		_conferir(onca.find_child("Caixa", true, false) == null, "a onça %s vestiu a caixa cinza" % onca.pelagem)
 		_conferir(not onca._malhas.is_empty(), "a onça %s não tem malha" % onca.pelagem)
 	teste.set_physics_process(true)
 	teste._acender(true)
@@ -296,17 +295,14 @@ func _run() -> void:
 	_conferir(not preta._animador.clipe_recentrado(), "o clipe saudável da onça preta foi recentrado")
 	_conferir(preta._animador.pernas_paradas() >= 1, "a perna dura da onça preta não ganhou balanço (%d pernas paradas)" % preta._animador.pernas_paradas())
 
-	# --- 8b. O PROCEDURAL: A CAIXA ----------------------------------------------
-	root.get_node("/root/Estilo").modo = "procedural"
-	var caixa_onca = luta.nascer("onca", world.ground_position(onde + Vector3(3.0, 0.0, 3.0), 0.05), "preta")
-	await _frames(3)
-	_conferir(caixa_onca.find_child("Caixa", true, false) != null, "no estilo procedural a onça não é a caixa")
-	_conferir(not caixa_onca._malhas.is_empty(), "a caixa da onça não tem malha para o aviso")
-	caixa_onca._acender(true)
-	_conferir(caixa_onca.tinta_por_cima() != null, "no procedural o aviso não pôs tinta")
-	root.get_node("/root/Estilo").modo = "tripo"
-	luta.oncas.erase(caixa_onca)
-	caixa_onca.queue_free()
+	# --- 8b. A CAIXA CINZA PROVISÓRIA --------------------------------------------
+	# Bicho sem modelo no catálogo vira a caixa (o aviso e a pancada precisam de malha).
+	var sem_modelo := Node3D.new()
+	world.add_child(sem_modelo)
+	var caixa_onca: Node3D = Animador.vestir("bicho_sem_modelo_nenhum", sem_modelo, Vector3(1.0, 1.0, 2.0), Color(0.5, 0.5, 0.5))
+	_conferir(caixa_onca.find_child("Caixa", true, false) != null or caixa_onca.name == "Caixa", "bicho sem modelo no catálogo não é a caixa")
+	_conferir(not Animador.malhas(caixa_onca).is_empty(), "a caixa do bicho não tem malha para o aviso")
+	sem_modelo.queue_free()
 
 	# --- 10. DUAS MORDIDAS MATAM QUEM NÃO CORRE, E QUEM CORRE ESCAPA --------------------
 	await _duas_mordidas(vale, luta, player)

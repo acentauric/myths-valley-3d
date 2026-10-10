@@ -3,7 +3,7 @@ extends CharacterBody3D
 ## Morador do arraial no 3D: tem posto por período do dia (nome de âncora do cenário),
 ## caminha entre os postos, olha para quem chega perto e cumprimenta uma vez por
 ## visita — texto no balão e voz por proximidade (AudioStreamPlayer3D). O corpo é o
-## humanoide procedural ou o modelo do Tripo, conforme o estilo escolhido em AJUSTAR.
+## modelo do Tripo (ou, enquanto não chega, a caixa cinza provisória).
 
 const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
 const Identidade = preload("res://scripts/prototipo_3d/identidade.gd")
@@ -258,11 +258,11 @@ func liberar() -> void:
 ## `_em_cena` do Pedro do 2D (`assumir_cena`/`liberar_cena`).
 var _em_cena := false
 var _encarando := Vector3.INF
-## O gesto pelo nome, nos dois animadores: [autoral (GESTURES), procedural (GESTOS)].
+## O gesto pelo nome, como índice do animador autoral (GESTURES).
 const GESTOS_DA_CENA := {
-	"acenar": [0, 0], "tchau": [1, 0], "concordar": [2, 1], "apontar": [3, 2],
-	"olhar_em_volta": [3, 7], "chamar": [0, 5], "medo": [4, 3], "bracos_cruzados": [5, 4],
-	"reverencia": [2, 6],
+	"acenar": 0, "tchau": 1, "concordar": 2, "apontar": 3,
+	"olhar_em_volta": 3, "chamar": 0, "medo": 4, "bracos_cruzados": 5,
+	"reverencia": 2,
 }
 
 
@@ -288,9 +288,7 @@ func encarar(ponto: Vector3) -> void:
 func gesto(nome: String) -> String:
 	if animador == null or not animador.has_method("play_gesture") or not GESTOS_DA_CENA.has(nome):
 		return ""
-	var par: Array = GESTOS_DA_CENA[nome]
-	var autoral: bool = animador.has_method("is_using_authored_clips")
-	return str(animador.play_gesture(int(par[0] if autoral else par[1])))
+	return str(animador.play_gesture(int(GESTOS_DA_CENA[nome])))
 
 
 ## O pulso de quem está em cena: vai ao destino avulso pela malha, ou fica parado encarando.
@@ -543,33 +541,26 @@ func _montar_modelo() -> void:
 	var corpo := String(dados.get("modelo", id))
 	modelo = null
 	animador = null
-	if Estilo.tripo():
-		var tamanho := 1.0
-		var spec_modelo: Dictionary = AjustesConteudo.peca(corpo)
-		if spec_modelo.has("altura"):
-			tamanho = altura / float(spec_modelo["altura"])
-		modelo = CatalogoAssets.instanciar(corpo, visual, Vector3.ZERO, tamanho, float(dados.get("yaw_modelo", 0.0)))
-		if modelo != null and not modelo.find_children("*", "AnimationPlayer", true, false).is_empty():
-			# GLB com rig e clipes do Tripo (idle/walk/run + gestos): usa o animador autoral.
-			var autoral: Node = load("res://scripts/prototipo_3d/authored_animator.gd").new()
-			add_child(autoral)
-			autoral.configure(modelo, corpo == "beata")
-			# Os clipes do Mixamo redirecionados para este corpo (#190), quando há.
-			autoral.carregar_mixamo(corpo)
-			animador = autoral
-		if modelo == null:
-			# NO ESTILO TRIPO, QUEM AINDA NÃO TEM MODELO É CAIXA CINZA, e não o boneco
-			# do procedural: peça procedural não entra no estilo Tripo. É o trato do
-			# caititu e da oficina — a mecânica não espera o modelo, e o modelo entra
-			# depois pelo catálogo sem tocar nela. Hoje é só o mestre Quirino. Sem
-			# animador: toda chamada a ele pergunta antes se existe, e o balanço do
-			# passo (`_atualizar_animacao`) anda sozinho.
-			modelo = _corpo_provisorio()
+	var tamanho := 1.0
+	var spec_modelo: Dictionary = AjustesConteudo.peca(corpo)
+	if spec_modelo.has("altura"):
+		tamanho = altura / float(spec_modelo["altura"])
+	modelo = CatalogoAssets.instanciar(corpo, visual, Vector3.ZERO, tamanho, float(dados.get("yaw_modelo", 0.0)))
+	if modelo != null and not modelo.find_children("*", "AnimationPlayer", true, false).is_empty():
+		# GLB com rig e clipes do Tripo (idle/walk/run + gestos): usa o animador autoral.
+		var autoral: Node = load("res://scripts/prototipo_3d/authored_animator.gd").new()
+		add_child(autoral)
+		autoral.configure(modelo, corpo == "beata")
+		# Os clipes do Mixamo redirecionados para este corpo (#190), quando há.
+		autoral.carregar_mixamo(corpo)
+		animador = autoral
 	if modelo == null:
-		var procedural := PersonagemProcedural.novo(corpo, altura)
-		visual.add_child(procedural)
-		modelo = procedural
-		animador = procedural
+		# QUEM AINDA NÃO TEM MODELO É CAIXA CINZA. É o trato do caititu e da
+		# oficina — a mecânica não espera o modelo, e o modelo entra depois pelo
+		# catálogo sem tocar nela. Hoje todo morador tem modelo. Sem animador: toda
+		# chamada a ele pergunta antes se existe, e o balanço do passo
+		# (`_atualizar_animacao`) anda sozinho.
+		modelo = _corpo_provisorio()
 
 
 ## O CORPO PROVISÓRIO: caixa cinza na altura do morador, com a cabeça um pouco
@@ -1550,7 +1541,7 @@ func narrar(nome_audio: String, texto: String, pedido: Dictionary = {}) -> void:
 		"classe": int(pedido.get("classe", FilaDeFalas.Classe.MISSAO)),
 		"origem": str(pedido.get("origem", "")),
 		"no_lugar": bool(pedido.get("no_lugar", false)),
-		# Autoral: 2 = concordar; procedural: 2 = apontar.
+		# 2 = concordar.
 		"segura": true, "gesto": 2, "narrada": true,
 		# O E CONTROLA A FALA DA MISSÃO e a resposta de quem recebe (#220); o aviso solto, o da cena
 		# e o que a narração do mundo dá passam sozinhos (`"por_e": false` no pedido).
@@ -2176,9 +2167,9 @@ func _largar_o_que_leva() -> void:
 
 ## O QUE ELE LEVA: a peça na mão (pela alça ou pelo cabo) ou na cabeça, presa ao osso
 ## do esqueleto — o trouxa na cabeça da lavadeira, o candeeiro do guarda. Só no
-## estilo Tripo (as peças são GLB). Devolve o nó que apaga a peça, ou null.
+## modelo com esqueleto (as peças são GLB). Devolve o nó que apaga a peça, ou null.
 func _levar(peca: String, onde: String) -> Node:
-	if peca == "" or not Estilo.tripo() or modelo == null or not CatalogoAssets.tem_tripo(peca):
+	if peca == "" or modelo == null or not CatalogoAssets.tem_tripo(peca):
 		return null
 	var ancora: Node3D = null
 	if onde == "cabeca":

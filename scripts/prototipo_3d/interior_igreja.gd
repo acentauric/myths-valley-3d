@@ -30,9 +30,8 @@ extends "res://scripts/prototipo_3d/comodo.gd"
 ##
 ## O QUE É PEÇA E O QUE É ARQUITETURA
 ##
-## Os MÓVEIS saem do `CatalogoAssets`, no estilo escolhido: o banco, o
-## candeeiro, o cruzeiro (em tamanho de altar) e o pote são GLBs do Tripo que já
-## existiam; no procedural, os construtores do `FloraReconcavo`. Nenhuma peça foi
+## Os MÓVEIS saem do `CatalogoAssets`: o banco, o candeeiro, o cruzeiro (em
+## tamanho de altar) e o pote são GLBs do Tripo que já existiam. Nenhuma peça foi
 ## gerada — gerar gasta crédito, e o lote dos móveis de interior (#26) pede o
 ## custo aprovado antes. A ARQUITETURA — parede, chão, forro, degrau, altar de
 ## alvenaria, retábulo — é desta classe, como o terreno e as ruas.
@@ -52,8 +51,8 @@ const ALTURA_DO_PRESBITERIO := 0.3
 
 
 ## A RAMPA INTEIRA DA PORTA, como a da casa (`comodo._montar_porta`). A rampa
-## estreita da soleira só se subia de frente, e no procedural o cruzeiro da
-## composição fica no pé dela, no eixo da porta: o Pedro que seguia o jogador
+## estreita da soleira só se subia de frente, e o cruzeiro da composição fica
+## no pé dela, no eixo da porta: o Pedro que seguia o jogador
 ## para dentro batia nele, e o desvio cego o levava em volta ou fachada afora,
 ## conforme o quadro — de um dos lados, nunca entrava. Com a rampa da largura da
 ## porta e mais um tanto, chega-se à soleira de qualquer lado.
@@ -261,18 +260,17 @@ func _montar_moveis() -> void:
 
 
 ## A escala do banco para ele ter o comprimento pedido: o GLB do Tripo é
-## normalizado pela altura, e o procedural tem a medida dele. Nunca maior que
-## o natural, que banco de igreja esticado vira banco de praça.
+## normalizado pela altura. Nunca maior que o natural, que banco de igreja
+## esticado vira banco de praça.
 func _escala_do_banco(comprimento_desejado: float) -> float:
 	var natural := 1.8
-	if Estilo.tripo():
-		var medida := Node3D.new()
-		add_child(medida)
-		var modelo := CatalogoAssets.instanciar("banco", medida, Vector3.ZERO, 1.0, 0.0)
-		if modelo != null and modelo.has_meta("limites"):
-			var caixa: AABB = modelo.get_meta("limites")
-			natural = maxf(caixa.size.x, caixa.size.z)
-		medida.queue_free()
+	var medida := Node3D.new()
+	add_child(medida)
+	var modelo := CatalogoAssets.instanciar("banco", medida, Vector3.ZERO, 1.0, 0.0)
+	if modelo != null and modelo.has_meta("limites"):
+		var caixa: AABB = modelo.get_meta("limites")
+		natural = maxf(caixa.size.x, caixa.size.z)
+	medida.queue_free()
 	return clampf(comprimento_desejado / maxf(natural, 0.1), 0.5, 1.0)
 
 

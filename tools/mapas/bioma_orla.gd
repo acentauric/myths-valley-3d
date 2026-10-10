@@ -38,7 +38,6 @@ func _initialize() -> void:
 
 
 func _run() -> void:
-	root.get_node("Estilo").modo = "tripo"
 	var mundo := (load("res://scripts/prototipo_3d/world_builder.gd") as Script).new() as Node3D
 	root.add_child(mundo)
 	if not mundo.construido:

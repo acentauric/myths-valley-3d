@@ -16,7 +16,7 @@ extends RefCounted
 ##
 ## USO (script sem class_name; carregue pelo caminho):
 ##   const Geometria = preload("res://tools/prototipo_3d/sobrevoo/geometria.gd")
-##   var geo = Geometria.carregar("C:/.../geometria_uniao.json")   # null se falhar
+##   var geo = Geometria.carregar("C:/.../geometria_tripo.json")   # null se falhar
 ##   geo.chao(x, z)                 # y do chao em unidades (bilinear entre centros)
 ##   geo.folga(olho)                # metros ate a geometria (exata na grade), teto = raio
 ##   geo.folga_rapida(x, z, 16.0)   # metros, campo pre-calculado (aprox., ate +1,24 m)

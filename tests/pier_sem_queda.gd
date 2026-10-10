@@ -43,7 +43,6 @@ func _run() -> void:
 		var npc: GDScript = load("res://scripts/prototipo_3d/npc.gd")
 		npc.source_code = npc.source_code.replace("if not test_move(de, passo) and chao_firme_em(global_position + passo):", "if not test_move(de, passo):")
 		_conferir(npc.reload() == OK, "o mutante da passagem compila")
-	root.get_node("Estilo").modo = "tripo"
 	change_scene_to_file("res://scenes/prototipo_3d/vale.tscn")
 	await process_frame
 	while current_scene == null or current_scene.get("carga_ok") != true:

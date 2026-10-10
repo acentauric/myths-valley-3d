@@ -432,9 +432,7 @@ try {
 			if ($null -eq $tempos) { $tempos = @{} }
 			$cestos = @(); $somas = @()
 			for ($k = 0; $k -lt $Paralelo; $k++) { $cestos += , (New-Object Collections.Generic.List[string]); $somas += 0.0 }
-			# O procedural todo num Godot só: cada Godot que o recebe monta o vale de novo.
-			foreach ($c in @($plano.casos | Where-Object { [int]$_.grupo -eq 2 })) { $cestos[0].Add($c.nome); $somas[0] += $(if ($tempos.ContainsKey($c.nome)) { $tempos[$c.nome] } else { 20.0 }) }
-			$resto = @($plano.casos | Where-Object { [int]$_.grupo -ne 2 } | Sort-Object { if ($tempos.ContainsKey($_.nome)) { -$tempos[$_.nome] } else { -20.0 } })
+			$resto = @($plano.casos | Sort-Object { if ($tempos.ContainsKey($_.nome)) { -$tempos[$_.nome] } else { -20.0 } })
 			foreach ($c in $resto) {
 				$menor = 0
 				for ($k = 1; $k -lt $Paralelo; $k++) { if ($somas[$k] -lt $somas[$menor]) { $menor = $k } }

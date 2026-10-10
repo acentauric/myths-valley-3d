@@ -16,7 +16,7 @@ extends "res://scripts/prototipo_3d/comodo.gd"
 ## O QUE É PEÇA E O QUE É ARQUITETURA
 ##
 ## Como na igreja: a ARQUITETURA — parede, chão, telha-vã — é desta classe; os
-## MÓVEIS saem do `CatalogoAssets`, no estilo escolhido. Os móveis da casa
+## MÓVEIS saem do `CatalogoAssets`. Os móveis da casa
 ## (#26: cama, mesa, banco, baú, barril, cantareira, fogão de barro, jirau,
 ## oratório, rede) chegam do Tripo; até lá, a cama e o baú — os dois que se usam
 ## — são caixas provisórias, como a #50 manda ("caixa cinza, como a oficina"),
@@ -140,21 +140,17 @@ func giro_de_acordar() -> float:
 
 func _parede() -> Material:
 	var cor := Color(str(dados_do_perfil.get("cal", "ece2cc"))) if not dados_do_perfil.is_empty() else Color(CAIS.get(perfil, CAIS["herdada"]))
-	if Estilo.tripo():
-		# A arquitetura usa a mesma cal envelhecida já presente nas fachadas.
-		# Projeção mundial conserva a escala entre paredes de medidas diferentes.
-		var material := StandardMaterial3D.new()
-		material.albedo_texture = load("res://assets/prototipo_3d/materiais/cal_taipa_envelhecida_v1.png")
-		material.albedo_color = cor
-		material.roughness = 0.94
-		material.uv1_triplanar = true
-		material.uv1_world_triplanar = true
-		material.uv1_scale = Vector3.ONE * 0.45
-		material.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
-		return material
-	if not dados_do_perfil.is_empty():
-		return _cal(Color(str(dados_do_perfil.get("cal", "ece2cc"))))
-	return _cal(CAIS.get(perfil, CAIS["herdada"]))
+	# A arquitetura usa a mesma cal envelhecida já presente nas fachadas.
+	# Projeção mundial conserva a escala entre paredes de medidas diferentes.
+	var material := StandardMaterial3D.new()
+	material.albedo_texture = load("res://assets/prototipo_3d/materiais/cal_taipa_envelhecida_v1.png")
+	material.albedo_color = cor
+	material.roughness = 0.94
+	material.uv1_triplanar = true
+	material.uv1_world_triplanar = true
+	material.uv1_scale = Vector3.ONE * 0.45
+	material.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	return material
 
 
 func _cor_da_barra() -> Color:
@@ -702,7 +698,7 @@ func _lugares_do_pedido(em: Array, medida: Vector3, extra: float, y: float) -> A
 ## ou null.
 func _movel(chave: String, onde: Vector3, giro: float, medida: Vector3, de_uso: bool) -> Node3D:
 	var peca: Node3D = null
-	if Estilo.tripo() and CatalogoAssets.tem_tripo(chave):
+	if CatalogoAssets.tem_tripo(chave):
 		peca = CatalogoAssets.instanciar(chave, self, onde, 1.0, giro)
 		if peca != null:
 			peca.set_meta("chave", chave)

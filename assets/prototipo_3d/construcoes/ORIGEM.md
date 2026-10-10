@@ -11,8 +11,7 @@ Originais (~60 MB) em `.assets-raw/tripo/construcoes/`, fora do Git.
 
 A capela substitui a igreja de caixas no POI **Igreja**, com a porta voltada para
 o cruzeiro; a largura visual é fixada em `CAPELA_WIDTH`. O poço fica na Praça, no
-lugar do poço procedural (`FloraReconcavo.poco()` continua disponível para outras
-regiões). Conferir os direitos de uso do plano Tripo antes de publicar.
+lugar do poço procedural (que saiu com o resto do estilo procedural em 10/10/2026, #58). Conferir os direitos de uso do plano Tripo antes de publicar.
 
 <!-- lote-2026-09-26:inicio -->
 

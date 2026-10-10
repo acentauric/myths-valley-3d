@@ -1,10 +1,10 @@
 """PLANEJA O SOBREVOO DO MENU: um laço fechado e suave que contorna árvores e casas
 PELOS LADOS, sempre a ~16 m do chão, e grava em data/sobrevoo_menu.json.
 
-    python tools/prototipo_3d/sobrevoo/planejar.py --geometria=<pasta>/geometria_uniao.json
+    python tools/prototipo_3d/sobrevoo/planejar.py --geometria=<pasta>/geometria_tripo.json
 
-Precisa de numpy e scipy. A geometria vem do extrator (extrair_geometria.gd, um estilo
-por vez e depois --estilo=uniao): o voo tem de livrar o Tripo E o procedural.
+Precisa de numpy e scipy. A geometria vem do extrator (extrair_geometria.gd); desde a
+retirada do procedural (#58) ela é uma só, a do vale Tripo.
 
 Por que offline: o menu monta o vale inteiro antes de aparecer, e medir obstáculo de
 verdade (triângulo, não AABB) custa minutos. Planejado aqui, o menu só interpola 720
@@ -241,7 +241,7 @@ def alisar_na_faixa(y, baixo, alto, peso_referencia=1e-9):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__.split('\n')[0])
-    parser.add_argument('--geometria', required=True, help='geometria_uniao.json do extrator')
+    parser.add_argument('--geometria', required=True, help='geometria_tripo.json do extrator')
     parser.add_argument('--inicial', default=DADO, help='trajeto com "controles_u" para começar (padrão: o gravado)')
     parser.add_argument('--saida', default=DADO)
     parser.add_argument('--rodadas', type=int, default=3, help='0 = só regrava o trajeto a partir dos controles')

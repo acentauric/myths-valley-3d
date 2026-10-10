@@ -5,7 +5,7 @@ extends Node
 ## já no modelo 3D ao invés do 2D?" A tela do arraial usava o primeiro quadro
 ## da folha de sprites do jogo 2D — um boneco de 48 px que não se parece com
 ## quem anda no vale. O retrato agora é do próprio morador do vale: o mesmo
-## modelo, no mesmo estilo (Tripo ou procedural), de rosto e ombros.
+## modelo, de rosto e ombros.
 ##
 ##
 ## COMO A FOTO É TIRADA
@@ -16,8 +16,7 @@ extends Node
 ## "idle" posto no primeiro meio segundo, porque o rig em descanso é a pose em
 ## T; e três luzes de estúdio — a principal da frente e de cima, a de
 ## preenchimento do outro lado e uma de recorte atrás. A câmera mira a cabeça
-## (o osso "head" do rig, o nó "Cabeca" do procedural, ou o alto da caixa do
-## modelo) de três quartos, com lente longa para o rosto não se deformar.
+## (o osso "head" do rig, ou o alto da caixa do modelo) de três quartos, com lente longa para o rosto não se deformar.
 ##
 ## Um quadro desenhado, a imagem copiada para uma `ImageTexture`, e o estúdio é
 ## desmontado. Os retratos ficam guardados por id enquanto o vale existir;
@@ -150,17 +149,11 @@ func _fotografar(id: String) -> Texture2D:
 	return ImageTexture.create_from_image(imagem)
 
 
-## O mesmo modelo que o `npc.gd` monta, no estilo escolhido. No estilo Tripo,
-## quem ainda não tem modelo não tem retrato: o morador é a caixa cinza
-## provisória (`npc.gd._corpo_provisorio`), peça procedural não entra no estilo,
-## e o diário mostra o nome sozinho.
+## O mesmo modelo que o `npc.gd` monta. Quem ainda não tem modelo não tem
+## retrato: o morador é a caixa cinza provisória (`npc.gd._corpo_provisorio`), e
+## o diário mostra o nome sozinho.
 func _montar_modelo(id: String, cena: Node3D) -> Node3D:
-	if Estilo.tripo():
-		return CatalogoAssets.instanciar(id, cena, Vector3.ZERO, 1.0)
-	var altura := float(CatalogoAssets.PECAS.get(id, {}).get("altura", 1.7))
-	var procedural := PersonagemProcedural.novo(id, altura)
-	cena.add_child(procedural)
-	return procedural
+	return CatalogoAssets.instanciar(id, cena, Vector3.ZERO, 1.0)
 
 
 ## O clipe "idle" no primeiro meio segundo: em descanso, o rig do Tripo é a
@@ -179,8 +172,8 @@ func _por_em_pe(modelo: Node3D) -> void:
 				return
 
 
-## Onde está a cabeça: o osso "head" do rig, o nó "Cabeca" do procedural, ou
-## um palmo abaixo do alto do modelo.
+## Onde está a cabeça: o osso "head" do rig, ou um palmo abaixo do alto do
+## modelo.
 func _cabeca(modelo: Node3D) -> Vector3:
 	for no in modelo.find_children("*", "Skeleton3D", true, false):
 		var esqueleto := no as Skeleton3D
@@ -189,11 +182,6 @@ func _cabeca(modelo: Node3D) -> Vector3:
 			if nome.ends_with("head") and not nome.ends_with("tophead"):
 				var osso := esqueleto.global_transform * esqueleto.get_bone_global_pose(i)
 				return osso.origin + Vector3(0.0, 0.08 * _altura(modelo) / 1.7, 0.0)
-	var cabeca := modelo.find_child("Cabeca", true, false) as Node3D
-	if cabeca != null:
-		# Mais alto que o centro da cabeça: o chapéu do procedural é alto, e
-		# mirando o meio dela ele saía cortado no alto da foto.
-		return cabeca.global_position + Vector3(0.0, 0.16 * _altura(modelo) / 1.7, 0.0)
 	var caixa := _caixa(modelo)
 	return Vector3(caixa.get_center().x, caixa.end.y - 0.12 * caixa.size.y, caixa.get_center().z)
 

@@ -10,7 +10,6 @@ func conferir(ok: bool, texto: String) -> void:
 		print("FALHA: " + texto)
 
 func _run() -> void:
-	root.get_node("Estilo").modo = "tripo"
 	change_scene_to_file("res://scenes/prototipo_3d/vale.tscn")
 	for i in 8000:
 		await process_frame

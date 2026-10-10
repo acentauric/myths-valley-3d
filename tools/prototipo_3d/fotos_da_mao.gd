@@ -62,7 +62,6 @@ func _run() -> void:
 	if janela > 0.0:
 		tamanho_da_vista = VISTA_DA_PALMA
 		vistas = VISTAS + [VISTA_DE_CIMA]
-	root.get_node("/root/Estilo").modo = "tripo"
 	T = load("res://tests/itens_na_mao.gd")
 	V = load("res://scripts/prototipo_3d/vestimenta_3d.gd")
 	var jogador: Node3D = await T.montar_jogador(self)

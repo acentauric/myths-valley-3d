@@ -14,7 +14,6 @@ func _run() -> void:
 		push_error("A composição já existe. Edite a cena; a extração não sobrescreve autoria.")
 		quit(1)
 		return
-	root.get_node("Estilo").modo = "tripo"
 	var construtor := load("res://scripts/prototipo_3d/world_builder.gd") as Script
 	var mundo := construtor.new() as Node3D
 	mundo.ignorar_composicao = true

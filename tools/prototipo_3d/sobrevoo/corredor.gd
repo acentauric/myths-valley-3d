@@ -2,7 +2,7 @@ extends SceneTree
 ## CORREDOR LIVRE EM VOLTA DA ROTA DE HOJE: ONDE ELA BATE E PARA QUE LADO HA AR.
 ##
 ##   godot --headless --path . --script res://tools/prototipo_3d/sobrevoo/corredor.gd -- \
-##       --geometria=C:/.../geometria_uniao.json --saida=C:/.../corredor.json \
+##       --geometria=C:/.../geometria_tripo.json --saida=C:/.../corredor.json \
 ##       [--altura_m=16] [--folga_m=5] [--alcance_m=80] [--passo_m=0.5] [--amostras=720] \
 ##       [--alturas_extra=14,18]
 ##
@@ -24,7 +24,7 @@ const Geometria = preload("res://tools/prototipo_3d/sobrevoo/geometria.gd")
 var _args := {}
 var geo
 var _s := 4.0
-## Objetos perto da rota (dos cabecalhos por estilo), para dizer QUEM fecha cada trecho.
+## Objetos perto da rota (do cabecalho da geometria), para dizer QUEM fecha cada trecho.
 var _objetos: Array = []
 
 
@@ -66,15 +66,14 @@ func _run() -> void:
 
 func _carregar_objetos(caminho_geo: String) -> void:
 	var pasta := caminho_geo.get_base_dir()
-	var estilos: Array = geo.cabecalho.get("estilos", [geo.cabecalho.get("estilo", "")])
-	for estilo in estilos:
-		var dados: Variant = JSON.parse_string(FileAccess.get_file_as_string(pasta.path_join("geometria_%s.json" % estilo)))
-		if not dados is Dictionary:
-			continue
-		for o in (dados as Dictionary).get("objetos_perto_da_rota", []):
-			var item: Dictionary = o
-			item["estilo"] = estilo
-			_objetos.append(item)
+	var estilo: String = String(geo.cabecalho.get("estilo", ""))
+	var dados: Variant = JSON.parse_string(FileAccess.get_file_as_string(pasta.path_join("geometria_%s.json" % estilo)))
+	if not dados is Dictionary:
+		return
+	for o in (dados as Dictionary).get("objetos_perto_da_rota", []):
+		var item: Dictionary = o
+		item["estilo"] = estilo
+		_objetos.append(item)
 
 
 ## Os objetos mais altos a ate `raio_m` do trecho da rota entre as amostras.

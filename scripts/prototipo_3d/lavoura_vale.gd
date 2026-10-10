@@ -17,10 +17,10 @@ extends Node3D
 ## leito." O dia que vira (`Relogio.dia_comecou`, que a cama, a queda e o
 ## desmaio das duas disparam) faz crescer o que foi regado.
 ##
-## O DESENHO DA PLANTA sai do catálogo, no estilo escolhido, com as peças que
+## O DESENHO DA PLANTA sai do catálogo, com as peças que
 ## ele já tem: o capim é o broto, o canteiro de mandioca é a mandioca crescida,
 ## a cana é a cana, e as três fruteiras são as árvores da vila, pequenas. Não há
-## peça nova nem desenho procedural novo; o chão arado é chão, como o terreno.
+## peça nova nem desenho de código novo; o chão arado é chão, como o terreno.
 
 const Plantacao = preload("res://scripts/prototipo_3d/plantacao.gd")
 const CatalogoAssets = preload("res://scripts/prototipo_3d/catalogo_assets.gd")
@@ -210,32 +210,17 @@ func _desenhar(celula: Vector2i) -> void:
 		float(hash("%d,%d" % [celula.x, celula.y]) % 628) / 100.0)
 
 
-## A planta no estágio dela: a peça do catálogo, ou, no procedural, o broto de
-## cone que o roçado já desenhava (`world_builder._build_farm`).
+## A planta no estágio dela: a peça do catálogo (null se a peça não existe).
 func _planta(cultura: String, qual: int, onde: Vector3, giro: float) -> Node3D:
 	var estagios: Array = ESTAGIOS.get(cultura, [])
 	if estagios.is_empty():
 		return null
 	var peca: Array = estagios[clampi(qual, 0, estagios.size() - 1)]
-	if Estilo.tripo():
-		var modelo := CatalogoAssets.instanciar(str(peca[0]), self, onde, float(peca[1]), giro)
-		if modelo != null:
-			modelo.name = "Planta_%s" % cultura
-			return modelo
-	var broto := MeshInstance3D.new()
-	broto.name = "Planta_%s" % cultura
-	var cone := CylinderMesh.new()
-	cone.top_radius = 0.02
-	cone.bottom_radius = 0.12 + 0.06 * float(qual)
-	cone.height = 0.3 + 0.35 * float(qual)
-	cone.radial_segments = 5
-	broto.mesh = cone
-	var verde := StandardMaterial3D.new()
-	verde.albedo_color = Color("8fa85e")
-	broto.material_override = verde
-	add_child(broto)
-	broto.global_position = onde + Vector3.UP * cone.height * 0.5
-	return broto
+	var modelo := CatalogoAssets.instanciar(str(peca[0]), self, onde, float(peca[1]), giro)
+	if modelo == null:
+		return null
+	modelo.name = "Planta_%s" % cultura
+	return modelo
 
 
 ## A TERRA DA LAVOURA É A DO CHÃO DO VALE (docs/mundo/SOLO_E_FRANJAS.md): as

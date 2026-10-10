@@ -178,10 +178,9 @@ static func ponto_da_provisoria(world, qual: String) -> Vector3:
 ## criatura (#14): a mecânica não espera o modelo.
 ##
 ## Era uma caixa cinza sem corpo, "marca, não parede". Quem jogou leu outra
-## coisa: "a bancada não tem asset e não consegui interagir". Agora, no estilo
-## Tripo, é a peça `bancada_oficina` do catálogo (a mesa rústica, sólida); no
-## procedural, que é só comparação e não ganha arte nova, a caixa cinza ganhou
-## corpo. Na beira do roçado, uma bancada de metro e meio não fecha caminho.
+## coisa: "a bancada não tem asset e não consegui interagir". Agora é a peça
+## `bancada_oficina` do catálogo (a mesa rústica, sólida); a caixa cinza, com
+## corpo, fica para a bancada que ainda não tem peça. Na beira do roçado, uma bancada de metro e meio não fecha caminho.
 ## Quem abre a oficina é o E (`tecla_das_bancadas.gd`) ou o J.
 static func montar_as_provisorias(world, pai: Node) -> void:
 	for qual in OBRAS:
@@ -192,7 +191,7 @@ static func montar_as_provisorias(world, pai: Node) -> void:
 			continue
 		var peca := "bancada_" + str(qual)
 		var bancada: Node3D = null
-		if bool(world.call("estilo_tripo")) and CatalogoAssets.PECAS.has(peca):
+		if CatalogoAssets.PECAS.has(peca):
 			bancada = CatalogoAssets.instanciar(peca, pai, ponto)
 			if bancada != null:
 				CatalogoAssets.colisao(peca, bancada, pai, ponto)

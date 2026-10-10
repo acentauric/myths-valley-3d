@@ -106,7 +106,7 @@ O catálogo em [`catalogo_assets.gd`](scripts/prototipo_3d/catalogo_assets.gd)
 é a referência de caminhos e dimensões. A produção em lote está documentada
 em [Assets Tripo](docs/arte/ASSETS_TRIPO.md), com os registros `ORIGEM.md`
 por pasta. Terreno, caminhos e vegetação distante usam geração procedural;
-um estilo visual procedural alternativo permite comparação no menu.
+os modelos do vale são todos do Tripo (o estilo procedural saiu em 10/10/2026, #58).
 
 A identidade visual usa imagens geradas com OpenAI, fontes Cinzel e
 Cormorant Garamond e ornamentos em ouro e cobalto. Música, efeitos e vozes

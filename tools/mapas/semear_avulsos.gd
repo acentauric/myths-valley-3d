@@ -22,7 +22,6 @@ func _initialize() -> void:
 
 
 func _run() -> void:
-	root.get_node("Estilo").modo = "tripo"
 	var construtor := load("res://scripts/prototipo_3d/world_builder.gd") as Script
 	var mundo := construtor.new() as Node3D
 	mundo.ignorar_avulsos = true

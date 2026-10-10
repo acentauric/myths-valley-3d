@@ -63,7 +63,6 @@ func _conferir(ok: bool, rotulo: String) -> void:
 
 
 func _run() -> void:
-	root.get_node("/root/Estilo").modo = _estilo_do_portao()
 	dialogo = root.get_node("/root/Dialogo")
 	dia = root.get_node("/root/Dia")
 	relogio = root.get_node("/root/Relogio")

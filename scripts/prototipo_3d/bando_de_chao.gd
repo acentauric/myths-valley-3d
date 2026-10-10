@@ -506,20 +506,14 @@ func abrir_leque() -> void:
 	pavao["alvo"] = pavao["no"].global_position
 	pavao["animador"].tremer(LEQUE_TREME)
 	var chave_leque := str(pavao["especie"].get("leque", ""))
-	var procedural: bool = Estilo.procedural()
-	if chave_leque != "" and (procedural or CatalogoAssets.tem_tripo(chave_leque)):
+	if chave_leque != "" and CatalogoAssets.tem_tripo(chave_leque):
 		if not pavao.has("modelo_leque"):
 			var c: Array = pavao["especie"].get("caixa", [0.3, 1.1, 1.5])
-			# Na caixa do procedural, o leque é a cauda em pé atrás do corpo.
 			var leque := Animador.vestir(chave_leque, pavao["pose"],
 				Vector3(float(c[2]) * 1.1, float(c[1]) * 1.3, float(c[0])), Color(str(pavao["especie"].get("cor", "2a5a8a"))), ALCANCE)
-			if procedural:
-				leque.position.z = -float(c[2]) * 0.35
-				pavao["modelo"].visible = true
 			pavao["modelo_leque"] = leque
 		pavao["modelo_leque"].visible = true
-		if not procedural:
-			pavao["modelo"].visible = false
+		pavao["modelo"].visible = false
 
 
 func fechar_leque() -> void:

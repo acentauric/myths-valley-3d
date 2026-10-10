@@ -83,11 +83,6 @@ const TEXTOS := {
 		"Background sound of the main menu besides the music: silence, sea only, birds only, or sea and birds together.\n\nWhen you switch, the option plays for a few seconds as a preview.",
 		"Sonido de fondo del menú principal, además de la música: silencio, solo el mar, solo las aves, o mar y aves juntos.\n\nAl cambiar, la opción suena unos segundos como muestra.",
 	],
-	"Estilo visual": [
-		"Como o vale inteiro é construído, sempre num estilo só.\n\nTripo: casas, árvores, objetos e personagens em modelos 3D gerados no Tripo Studio.\nProcedural: tudo montado por código com formas simples, até o personagem.\n\nTrocar o estilo reconstrói o cenário do menu na hora.",
-		"How the whole valley is built, always in a single style.\n\nTripo: houses, trees, objects and characters as 3D models generated in Tripo Studio.\nProcedural: everything assembled in code from simple shapes, down to the character.\n\nSwitching style rebuilds the menu scenery immediately.",
-		"Cómo se construye todo el valle, siempre en un único estilo.\n\nTripo: casas, árboles, objetos y personajes como modelos 3D generados en Tripo Studio.\nProcedural: todo montado por código con formas simples, hasta el personaje.\n\nCambiar el estilo reconstruye el escenario del menú al momento.",
-	],
 	"Passagem do tempo": [
 		"Velocidade do relógio do vale.\n\nParada: o tempo não anda.\nLenta: 90 segundos reais por hora do jogo.\nNormal: 30 segundos por hora.\nRápida: 10 segundos por hora.\n\nVale no menu, onde o dia começa às 6h30, e dentro do vale. No jogo, o menu do Esc também troca a velocidade.\n\nParada pede confirmação: com o tempo parado, a partida perde as conquistas dali em diante, e a mudança fica no registro do relógio, no save.",
 		"Speed of the valley clock.\n\nStopped: time does not move.\nSlow: 90 real seconds per game hour.\nNormal: 30 seconds per hour.\nFast: 10 seconds per hour.\n\nIt applies in the menu, where the day starts at 6:30, and inside the valley. In game, the Esc menu also changes the speed.\n\nStopped asks for confirmation: with time stopped, the game loses achievements from then on, and the change is kept in the clock log, in the save.",

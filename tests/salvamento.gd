@@ -90,7 +90,7 @@ const SEM_PARTIDA := {
 	"Amanhecer": "o cartão do dia que começa (#21): fica segundos na tela, no escuro da queda, e o que ele mostra — dia, estação, fôlego — é do `Relogio` e do `Energia`, que são salvos",
 	"Folheto": "o cordel aberto no papel (#21): tela aberta e o id que ela mostra; o que se achou mora no `Colecao`, que é salvo",
 	"Dialogo": "a caixa de fala longa (#21): o que ela tem é tela aberta e quem está falando agora. Ninguém salva no meio de uma fala — o vale está parado atrás dela —, e carregar não reabre conversa",
-	"Estilo": "o estilo visual escolhido no AJUSTAR, com arquivo de configuração próprio",
+	"Estilo": "as plaquinhas de nome e a mãozinha do cursor (o estilo visual saiu, #58); preferência da máquina, em preferencias_visuais.cfg",
 	"Mare": "o modo da maré escolhido no AJUSTAR",
 	"Tela": "tela cheia ou janela (F11) e o cursor do jogo; é preferência da máquina, gravada em preferencias_visuais.cfg, e carregar um save não pode trocar o modo da janela",
 	"Versao": "a versão do jogo, lida do historico_3d.json",

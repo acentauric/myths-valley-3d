@@ -15,8 +15,8 @@ extends RefCounted
 ## onde ele passava `self` a quem espera uma `SceneTree`.
 ##
 ## O QUE MUDA PARA O CASO:
-##   - `change_scene_to_file(vale)` não remonta o vale se ele já está montado no
-##     mesmo estilo: devolve OK, e o caso segue com o vale emprestado. A segunda
+##   - `change_scene_to_file(vale)` não remonta o vale se ele já está montado:
+##     devolve OK, e o caso segue com o vale emprestado. A segunda
 ##     chamada no mesmo caso remonta de verdade (é o portão que testa recarga).
 ##   - `quit(codigo)` não fecha o Godot: avisa o anfitrião que o caso acabou.
 ##   - O caso que precisa de um Godot novo (saves e autoloads zerados, o vale

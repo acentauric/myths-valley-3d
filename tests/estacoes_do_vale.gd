@@ -10,7 +10,6 @@ func conferir(ok: bool, texto: String) -> void:
 		print("FALHA: " + texto)
 func _run() -> void:
 	await process_frame
-	root.get_node("Estilo").modo = "tripo"
 	change_scene_to_file("res://scenes/prototipo_3d/vale.tscn")
 	await process_frame
 	var mundo := get_first_node_in_group("mundo")
@@ -28,15 +27,6 @@ func _run() -> void:
 		camera.global_position = mundo.ground_position(praca, 0.0) + Vector3(12, 6, 14)
 		camera.look_at(mundo.ground_position(praca, 0.0) + Vector3.UP * 2.0)
 		camera.make_current()
-	var S = load("res://scripts/prototipo_3d/estacoes_vale.gd")
-	var F = load("res://scripts/prototipo_3d/flora_reconcavo.gd")
-	var legado: Dictionary = F.especie("mangueira")
-	var folha: BaseMaterial3D
-	for surface in legado.mesh.get_surface_count():
-		var material: BaseMaterial3D = legado.mesh.surface_get_material(surface)
-		if material.has_meta("cor_sem_estacao"):
-			folha = material
-	conferir(folha != null, "folhagem procedural existente registrada")
 	var catalogo = load("res://scripts/prototipo_3d/catalogo_assets.gd")
 	var tripo: BaseMaterial3D = catalogo.malha("mata_alta").mesh.surface_get_material(0)
 	var textura := tripo.albedo_texture
@@ -46,7 +36,7 @@ func _run() -> void:
 		if candidato.get_script() == load("res://scripts/prototipo_3d/ambiente_vale.gd"):
 			ambiente = candidato
 	conferir(ambiente != null, "ambiente real montado")
-	if ambiente == null or folha == null:
+	if ambiente == null:
 		quit(1)
 		return
 	ambiente.set_process(false)
@@ -66,7 +56,6 @@ func _run() -> void:
 		cores.append(tripo.albedo_color)
 		luzes.append(mundo._sun.light_color)
 		aves.append(ambiente._aves.volume_db)
-		conferir(folha.albedo_color.is_equal_approx(folha.get_meta("cor_sem_estacao") * S.MATA[estacao]), "legado acompanha estação")
 		conferir(tripo.albedo_texture == textura, "textura e identidade preservadas")
 		# Repetir o sinal não multiplica a tinta de novo.
 		relogio.estacao_mudou.emit(estacao)

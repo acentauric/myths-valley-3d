@@ -62,7 +62,7 @@ const DIA_DA_CHEGADA := 1
 ## casco) para a popa; a esta fração do comprimento, do meio rumo à proa.
 const DESCIDA_NA_PROA := 0.16
 ## A PRANCHA: uma rampa invisível do convés, por cima da borda, até o tabuado —
-## o estilo Tripo não leva peça procedural, e sem ela a borda era parede de um
+## o estilo Tripo não leva peça de código, e sem ela a borda era parede de um
 ## lado e degrau de meio corpo do outro, com o vão d'água no meio.
 const LARGURA_DA_PRANCHA := 1.3
 const ESPESSURA_DA_PRANCHA := 0.12
@@ -112,7 +112,7 @@ var _do_pedro := Vector3.INF
 ## o convés sem a física — que só enxerga o casco depois do primeiro passo dela.
 var _faces_do_casco := PackedVector3Array()
 ## A altura (no barco) do corte da colisão do casco: o que tem vértice acima dela é mastro, retranca e vela.
-## INF sem corte (o bote e o casco procedural não têm vela).
+## INF sem corte (o bote e o casco de tábuas não têm vela).
 var _teto_do_casco := INF
 ## O CASCO NA MALHA DOS MORADORES (`navegacao_vale.gd`): a pegada dele no referencial
 ## do barco (planta, em metros do mundo) e a faixa de altura do casco, medidas uma vez
@@ -302,8 +302,8 @@ func pegada_do_casco() -> Dictionary:
 
 
 ## O SAVEIRO ATRACADO do lado do píer, alinhado com ele: o saveiro do catálogo;
-## sem ele, o bote de toldo (o barco de carga que o vale já tinha); no
-## procedural, o casco de tábuas das canoas. Com a colisão do próprio casco, como
+## sem ele, o bote de toldo (o barco de carga que o vale já tinha); sem
+## nenhum dos dois, o casco de tábuas das canoas. Com a colisão do próprio casco, como
 ## as canoas.
 func _montar_o_barco() -> void:
 	if _mundo == null or not ("ancoras" in _mundo) or not _mundo.ancoras.has("PierPiso"):
@@ -320,15 +320,17 @@ func _montar_o_barco() -> void:
 	barco.rotation.y = giro - PI * 0.5
 	var casco: Node3D = null
 	var e_o_saveiro := false
-	if Estilo.tripo() and CatalogoAssets.tem_tripo("saveiro"):
+	if CatalogoAssets.tem_tripo("saveiro"):
 		# O comprimento do saveiro é o X do modelo, com a proa no +X: ela aponta
 		# mar adentro, e a vela fica do lado da terra.
 		casco = CatalogoAssets.instanciar("saveiro", barco, Vector3(0.0, -CALADO_DO_SAVEIRO, 0.0), 1.0, 0.0)
 		e_o_saveiro = casco != null
-	elif Estilo.tripo() and CatalogoAssets.tem_tripo("bote"):
+	elif CatalogoAssets.tem_tripo("bote"):
 		casco = CatalogoAssets.instanciar("bote", barco, Vector3(0.0, -CALADO, 0.0), 1.0, PI * 0.5)
 	if casco == null:
-		casco = Canoas._casco_procedural()
+		# O vale é só Tripo (#58): sem o GLB do saveiro nem o do bote, o barco fica sem casco.
+		push_error("Saveiro: faltam no catálogo o GLB do saveiro e o do bote")
+		casco = Node3D.new()
 		barco.add_child(casco)
 	# O CORPO DO CASCO ACOMPANHA O BARCO NA HORA. O das canoas sincroniza com a
 	# física (`sync_to_physics`), que é o certo para quem balança a cada quadro;
@@ -398,7 +400,7 @@ func ombro_da_chegada() -> Vector3:
 
 
 ## A vela, o mastro ou a retranca cortam a linha de `desde` até `ate`? São as faces do casco com vértice acima
-## da borda (`_teto_do_casco`); sem elas (o bote, o casco procedural), nada corta. É o que o portão da chegada
+## da borda (`_teto_do_casco`); sem elas (o bote, o casco de tábuas), nada corta. É o que o portão da chegada
 ## pergunta da câmera ao Pedro (#119: a vela e o mastro não podem tapar quem espera no píer).
 func vela_entre(desde: Vector3, ate: Vector3) -> bool:
 	if barco == null or not is_finite(_teto_do_casco) or desde.distance_to(ate) < 0.01:

@@ -3,7 +3,7 @@ extends Node
 ##
 ## Os quadrúpedes do Tripo vêm com um clipe só, `preset:quadruped:walk`, andando
 ## no lugar (a raiz não sai do ponto). As aves vêm paradas, sem esqueleto. O
-## resto é procedural, e mexe só no nó POSE — o que fica entre o corpo do bicho
+## resto é feito em código, e mexe só no nó POSE — o que fica entre o corpo do bicho
 ## e o modelo —, para não brigar com quem é dono do corpo (a tontura e a queda
 ## o deitam de lado):
 ##
@@ -20,7 +20,7 @@ extends Node
 ##   - Ave não tem clipe: anda gingando e saltitando, BICA (inclina em volta do
 ##     pé), e no SUSTO pula estufada.
 ##
-## Sem clipe (a caixa cinza do procedural, ou um GLB que ainda não chegou), o
+## Sem clipe (a caixa cinza provisória, ou um GLB que ainda não chegou), o
 ## quadrúpede anda com o balanço do passo — a mesma leitura, sem perna.
 ##
 ## A RESPIRAÇÃO NÃO ESCALA O CORPO (#109: "o bicho fica esticando e voltando"). Escalar a
@@ -274,14 +274,13 @@ static func esquecer_as_casas() -> void:
 	_caixas_das_casas.clear()
 
 
-## O CORPO DE UM BICHO, nos dois estilos e sem misturar: no Tripo, o GLB do
-## catálogo; sem ele (o procedural, ou um GLB que ainda não chegou), a caixa na
-## medida `caixa` (largura, altura, comprimento) com a cabeça à frente, +Z.
+## O CORPO DE UM BICHO: o GLB do catálogo; sem ele (um GLB que ainda não
+## chegou), a caixa na medida `caixa` (largura, altura, comprimento) com a cabeça à frente, +Z.
 ## Toda malha some a `alcance` u da câmera (`visibility_range_end`): bicho de
 ## quintal não se vê do outro lado da vila.
 static func vestir(chave: String, onde: Node3D, caixa: Vector3, cor: Color, alcance: float = 0.0, tamanho: float = 1.0) -> Node3D:
 	var vestido: Node3D = null
-	if Estilo.tripo() and CatalogoAssets.tem_tripo(chave):
+	if CatalogoAssets.tem_tripo(chave):
 		vestido = CatalogoAssets.instanciar(chave, onde, Vector3.ZERO, tamanho)
 	if vestido == null:
 		vestido = caixa_de_bicho(caixa * tamanho, cor)

@@ -89,7 +89,6 @@ func _run() -> void:
 	falsificar_clipe = "--falsificar-clipe" in OS.get_cmdline_user_args()
 	falsificar_respiro = "--falsificar-respiro" in OS.get_cmdline_user_args()
 	falsificar_pescoco = "--falsificar-pescoco" in OS.get_cmdline_user_args()
-	root.get_node("/root/Estilo").modo = "tripo"
 	_conferir(change_scene_to_file("res://scenes/prototipo_3d/vale.tscn") == OK, "o vale não carregou")
 	await _frames(6)
 	await _mundo_pronto()

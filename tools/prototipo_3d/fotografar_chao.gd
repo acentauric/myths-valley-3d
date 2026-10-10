@@ -2,7 +2,7 @@ extends SceneTree
 ## FOTOS DO CHÃO: as mesmas vistas fixas antes e depois de mexer no terreno, nas
 ## ruas e nas franjas (docs/mundo/SOLO_E_FRANJAS.md). Precisa de janela: com
 ## --headless o renderizador é o dummy, nenhum shader compila e a foto sai preta.
-##   Godot --path . --script res://tools/prototipo_3d/fotografar_chao.gd -- --saida=<pasta> [--prefixo=antes] [--hora=9] [--estacao=0..3] [--fps=240] [--sonda=x,y;x,y] [--estilo=tripo] [--so=praca,foz] [--esconder=Foz_do_rio,Rio]  (esconde as malhas da cena com esses nomes, "_" vale espaço, "nome*" é prefixo e "~trecho" é substring, para achar de quem é uma emenda)
+##   Godot --path . --script res://tools/prototipo_3d/fotografar_chao.gd -- --saida=<pasta> [--prefixo=antes] [--hora=9] [--estacao=0..3] [--fps=240] [--sonda=x,y;x,y] [--so=praca,foz] [--esconder=Foz_do_rio,Rio]  (esconde as malhas da cena com esses nomes, "_" vale espaço, "nome*" é prefixo e "~trecho" é substring, para achar de quem é uma emenda)
 ##   --sonda diz, em coordenadas de uma foto de 1920x1080, o ponto do mundo (x,z) de cada pixel
 ##   (raio até a altura do alvo): serve para achar na imagem o que um corte reto tem de errado.
 ## Erro de shader não derruba o jogo: procure "SHADER ERROR" na saída depois.
@@ -24,7 +24,6 @@ func _run() -> void:
 	var so: PackedStringArray = String(args.get("so", ",".join(VISTAS))).split(",", false)
 	DirAccess.make_dir_recursive_absolute(saida)
 	DisplayServer.window_set_size(Vector2i(1280, 720))
-	root.get_node("Estilo").set("modo", String(args.get("estilo", "tripo")))
 	var game := (load("res://scenes/prototipo_3d/vale.tscn") as PackedScene).instantiate() as Node3D
 	root.add_child(game)
 	current_scene = game

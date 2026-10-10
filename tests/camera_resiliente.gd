@@ -84,7 +84,6 @@ func _conferir(ok: bool, rotulo: String) -> void:
 
 
 func _run() -> void:
-	root.get_node("/root/Estilo").modo = _estilo_do_portao()
 	_conferir(change_scene_to_file("res://scenes/prototipo_3d/vale.tscn") == OK, "a cena do vale carrega")
 	await _frames(4)
 	await _mundo_pronto()

@@ -759,7 +759,7 @@ func _montar_a_estatua(com_escudo: bool) -> void:
 	senhor.position = Vector3(0.0, 0.32, 0.0)
 	senhor.rotation.x = PI * 0.5
 	var coruja: Node3D = null
-	if Estilo.tripo() and CatalogoAssets.tem_tripo("urubu"):
+	if CatalogoAssets.tem_tripo("urubu"):
 		coruja = CatalogoAssets.instanciar("urubu", _estatua_no, _estatua + Vector3.UP * 0.55, 2.4, 0.6)
 	if coruja == null:
 		coruja = MeshInstance3D.new()

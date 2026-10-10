@@ -100,8 +100,7 @@ func _run() -> void:
 	# --- 2. A PONTE COMEÇA CERCADA, E CAÍDA (#94) ---------------------------------------------
 	var dados: Dictionary = ponte_do_rio.ponte()
 	var modelos: Dictionary = (mundo.pontes.get("Ponte", {}) as Dictionary).get("modelos", {})
-	if mundo.estilo_tripo():
-		_conferir(not modelos.is_empty(), "no estilo Tripo a ponte não tem os dois modelos, a caída e a de pé")
+	_conferir(not modelos.is_empty(), "a ponte não tem os dois modelos, a caída e a de pé")
 	_conferir(ponte_do_rio.interditada(), "a ponte não começou cercada")
 	var cercas: Array = ponte_do_rio.cercas()
 	_conferir(cercas.size() == 2, "a ponte tem %d cerca(s), e são duas, uma em cada cabeceira" % cercas.size())

@@ -6,7 +6,7 @@ extends "res://tests/suite/caso.gd"
 ##
 ## "Corrija itens desproporcionais ou mal encaixados na mão (por exemplo a
 ## ferramenta de arar) sem quebrar nada." Só o corpo do jogador
-## (`personagem.tscn`), sem o vale, no estilo Tripo. Cada ferramenta da barra é
+## (`personagem.tscn`), sem o vale.Cada ferramenta da barra é
 ## posta na mão pelo caminho do jogo (`Vestimenta3D`, `player_controller`) e
 ## medida parada, andando, no golpe — a 30% do `chop` e a 45%, que é o
 ## impacto — e em uso, onde houver. Dez perguntas:
@@ -32,7 +32,6 @@ extends "res://tests/suite/caso.gd"
 ##      cópia montada pela conta aprovada (`_na_mao` de antes, giro de -30°
 ##      parado e 0° no golpe), até 1 cm. Os números dela (`APROVADOS`) são os do
 ##      corpo de hoje: trocar o corpo do jogador pede linhas novas nos dois lugares.
-##  10. NO PROCEDURAL SÓ O MACHADO: o estilo procedural não ganha arte nova.
 ##
 ## A folha de fotos dos mesmos estados é `tools/prototipo_3d/fotos_da_mao.gd`,
 ## que usa as funções de medida daqui.
@@ -98,7 +97,6 @@ func _conferir(ok: bool, rotulo: String) -> void:
 
 
 func _run() -> void:
-	root.get_node("/root/Estilo").modo = "tripo"
 	var jogador := await montar_jogador(self)
 	V = load("res://scripts/prototipo_3d/vestimenta_3d.gd")
 	CA = load("res://scripts/prototipo_3d/catalogo_assets.gd")
@@ -107,10 +105,8 @@ func _run() -> void:
 		if not so.is_empty() and not so.has(str(item[0])):
 			continue
 		await _conferir_item(jogador, item)
-	if so.is_empty() or so.has("procedural"):
-		_conferir_procedural()
 	if falhas == 0:
-		print("ITENS_NA_MAO_OK: as sete ferramentas da barra estão na mão (a vara inclusive), na palma, do tamanho delas e fora do corpo; o balde vai em pé e tomba regando; a picareta e a enxada batem no chão; a vara vai erguida; nadando somem; o machado e o facão não mudaram um centímetro; e o procedural só mostra o machado")
+		print("ITENS_NA_MAO_OK: as sete ferramentas da barra estão na mão (a vara inclusive), na palma, do tamanho delas e fora do corpo; o balde vai em pé e tomba regando; a picareta e a enxada batem no chão; a vara vai erguida; nadando somem; o machado e o facão não mudaram um centímetro")
 	quit(1 if falhas > 0 else 0)
 
 
@@ -339,22 +335,6 @@ func _desvio_da_referencia(jogador: Node3D, no: Node3D, referencia: Dictionary, 
 		var canto := caixa.get_endpoint(i) / escala
 		pior = maxf(pior, (no.global_transform * canto).distance_to(copia.global_transform * canto))
 	return pior
-
-
-func _conferir_procedural() -> void:
-	var estilo := root.get_node("/root/Estilo")
-	var inventario := root.get_node("/root/Inventario")
-	estilo.modo = "procedural"
-	var mostrados := {}
-	for item in ITENS:
-		inventario.espacos[0] = {"id": str(item[0]), "qtd": 1}
-		inventario.selecionar(0)
-		var peca: String = V.item_na_mao()
-		if peca != "":
-			mostrados[str(item[0])] = peca
-		inventario.selecionar(-1)
-	estilo.modo = "tripo"
-	_conferir(mostrados.keys() == ["machado"] and mostrados["machado"] == "machado", "no procedural a mão mostra %s (só o machado tem desenho lá)" % str(mostrados))
 
 
 # --- as medidas ------------------------------------------------------------------

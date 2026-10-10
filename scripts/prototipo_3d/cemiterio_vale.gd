@@ -16,9 +16,8 @@ extends Node3D
 ##   save. De pé, a malha dos moradores se assa de novo (`navegacao_vale.gd`):
 ##   o Damião sai pela entrada, e não empurrando a cerca.
 ##
-## No estilo Tripo o cercado é a cerca do catálogo, um lance por trecho, cada
-## um com a sua caixa de colisão; no procedural, a cerca de FloraReconcavo, que
-## traz a dela. Nada de arte nova em nenhum dos dois.
+## O cercado é a cerca do catálogo, um lance por trecho, cada um com a sua caixa
+## de colisão. Nada de arte nova.
 
 const CONSTRUCAO := "cemiterio"
 const OBRA := "cemiterio_cercado"
@@ -120,8 +119,7 @@ func entrada() -> Dictionary:
 # --- as lajes ------------------------------------------------------------------
 
 ## A ponta da laje no ar, uma para cada lado. O giro é no eixo CURTO da laje, no
-## espaço dela: no Tripo ela é comprida em X (o curto é o Z), no procedural em Z (o
-## curto é o X). Quem a pôs deixou o eixo na marca `eixo_curto` do nó: a pegada
+## espaço dela: ela é comprida em X (o curto é o Z). Quem a pôs deixou o eixo na marca `eixo_curto` do nó: a pegada
 ## está nos eixos do mundo, e a laje gira com a fileira.
 func _entortar(tortas: bool) -> void:
 	_tortas_agora = tortas
@@ -146,8 +144,7 @@ func _entortar(tortas: bool) -> void:
 func _levantar() -> void:
 	_desmontar()
 	_cercado_de_pe = true
-	var tripo: bool = _mundo.estilo_tripo()
-	var largura_do_lance: float = CatalogoAssets.largura_da_cerca(self, TAMANHO_DA_CERCA, LANCE) if tripo else LANCE
+	var largura_do_lance: float = CatalogoAssets.largura_da_cerca(self, TAMANHO_DA_CERCA, LANCE)
 	for trecho in _trechos():
 		var a: Vector3 = trecho[0]
 		var b: Vector3 = trecho[1]
@@ -159,7 +156,7 @@ func _levantar() -> void:
 			var de: Vector3 = _mundo.ground_position(a.lerp(b, float(k) / float(quantos)))
 			var ate: Vector3 = _mundo.ground_position(a.lerp(b, float(k + 1) / float(quantos)))
 			_lances.append({"a": de, "b": ate,
-				"no": CatalogoAssets.lance_de_cerca(self, de, ate, tripo, TAMANHO_DA_CERCA, largura_do_lance, ALTURA, GROSSURA, "Lance", "LanceColisao")})
+				"no": CatalogoAssets.lance_de_cerca(self, de, ate, TAMANHO_DA_CERCA, largura_do_lance, ALTURA, GROSSURA, "Lance", "LanceColisao")})
 	# O caminho dos moradores muda: a malha se assa de novo, com o cercado.
 	var navegacao := get_tree().get_first_node_in_group("navegacao") if is_inside_tree() else null
 	if navegacao != null:

@@ -57,7 +57,6 @@ func _conferir(ok: bool, rotulo: String) -> void:
 func _run() -> void:
 	falsificar = "--falsificar-bichos" in OS.get_cmdline_user_args()
 	var tripo := _estilo_do_portao() == "tripo"
-	root.get_node("/root/Estilo").modo = _estilo_do_portao()
 	dia = root.get_node("/root/Dia")
 	_conferir(change_scene_to_file("res://scenes/prototipo_3d/vale.tscn") == OK, "o vale não carregou")
 	await _frames(6)

@@ -145,13 +145,13 @@ const VOLTA_DO_RELOGIO := 3600.0
 
 
 ## O cardume antigo do píer: `ancora` no nível da água; `fundo` é a lâmina d'água ali.
-func montar(ancora: Vector3, nivel: float, fundo: float, tripo: bool) -> void:
+func montar(ancora: Vector3, nivel: float, fundo: float) -> void:
 	montar_especie("tainha", Vector3(ancora.x, nivel, ancora.z), {"modo": "roda", "quantidade": QUANTIDADE,
-		"raio": RAIO, "prof": Vector2(0.08, clampf(fundo * 0.7, 0.1, MEIA_AGUA)), "tripo": tripo})
+		"raio": RAIO, "prof": Vector2(0.08, clampf(fundo * 0.7, 0.1, MEIA_AGUA))})
 
 
 ## Cardume de `nome` (especies_do_mar.gd) em `ancora`, no nível da água. Opções:
-## modo, quantidade, raio, prof (Vector2 abaixo da superfície), tripo, mundo, semente,
+## modo, quantidade, raio, prof (Vector2 abaixo da superfície), mundo, semente,
 ## lamina_some, doce, rio_dir, rio_largura, pedra, raio_pedra, rota, presa, alcance, pressa.
 func montar_especie(nome: String, ancora: Vector3, opcoes: Dictionary = {}) -> void:
 	especie = nome
@@ -189,7 +189,7 @@ func montar_especie(nome: String, ancora: Vector3, opcoes: Dictionary = {}) -> v
 	add_to_group("cardumes")
 	if bool(opcoes.get("presa", false)):
 		add_to_group("presas_do_tubarao")
-	_montar_visual(bool(opcoes.get("tripo", Estilo.tripo())))
+	_montar_visual()
 	for i in _n:
 		_pos.append(Vector3.ZERO)
 		_vel.append(Vector3.ZERO)
@@ -773,8 +773,8 @@ func _altura_do_salto(i: int, delta: float) -> float:
 
 # --- o corpo -------------------------------------------------------------------
 
-func _montar_visual(tripo: bool) -> void:
-	var corpo := _corpo(tripo)
+func _montar_visual() -> void:
+	var corpo := _corpo()
 	_canonica = corpo["canonica"]
 	_altura_meia = float(corpo["altura"]) * 0.5 * float(corpo["escala"])
 	var multimesh := MultiMesh.new()
@@ -797,32 +797,31 @@ func _montar_visual(tripo: bool) -> void:
 
 
 ## Malha, material e o peixe canônico da espécie, guardados para os outros cardumes.
-func _corpo(tripo: bool) -> Dictionary:
+func _corpo() -> Dictionary:
 	var forma := String(_esp["forma"])
 	var shader: Shader = RAIA_VOO if forma == "raia" else (SILHUETA if agua_doce else NADO)
-	var chave_cache := "%s|%s|%s" % [especie, tripo, shader.resource_path]
+	var chave_cache := "%s|%s" % [especie, shader.resource_path]
 	if _corpos.has(chave_cache):
 		return _corpos[chave_cache]
 	var tamanho := float(_esp["tamanho"])
 	var corpo := {}
-	if tripo:
-		var chaves: Array = _esp["chaves"]
-		for chave: String in chaves:
-			if not CatalogoAssets.tem_tripo(chave):
-				continue
-			var malha := CatalogoAssets.malha(chave, 1.0)
-			if malha.is_empty():
-				continue
-			var largura := float(CatalogoAssets.PECAS[chave].get("largura", tamanho))
-			var altura := float(malha["altura"])
-			# A base do catálogo põe o pé em y = 0; o peixe canônico fica centrado.
-			var canonica: Transform3D = Transform3D(Basis.IDENTITY, Vector3(0.0, -altura * 0.5, 0.0)) * (malha["base"] as Transform3D)
-			var tinta: Color = Color.WHITE if chave == chaves[0] else _esp["tinta"]
-			corpo = {"mesh": malha["mesh"], "canonica": canonica, "altura": altura, "comprimento": largura,
-				"escala": tamanho / maxf(largura, 0.01), "material": _material(shader, malha["mesh"], canonica, largura, tinta)}
-			break
+	var chaves: Array = _esp["chaves"]
+	for chave: String in chaves:
+		if not CatalogoAssets.tem_tripo(chave):
+			continue
+		var malha := CatalogoAssets.malha(chave, 1.0)
+		if malha.is_empty():
+			continue
+		var largura := float(CatalogoAssets.PECAS[chave].get("largura", tamanho))
+		var altura := float(malha["altura"])
+		# A base do catálogo põe o pé em y = 0; o peixe canônico fica centrado.
+		var canonica: Transform3D = Transform3D(Basis.IDENTITY, Vector3(0.0, -altura * 0.5, 0.0)) * (malha["base"] as Transform3D)
+		var tinta: Color = Color.WHITE if chave == chaves[0] else _esp["tinta"]
+		corpo = {"mesh": malha["mesh"], "canonica": canonica, "altura": altura, "comprimento": largura,
+			"escala": tamanho / maxf(largura, 0.01), "material": _material(shader, malha["mesh"], canonica, largura, tinta)}
+		break
 	if corpo.is_empty():
-		corpo = _corpo_procedural(shader, forma)
+		corpo = _corpo_provisorio(shader, forma)
 	_corpos[chave_cache] = corpo
 	return corpo
 
@@ -866,9 +865,9 @@ func _parametros_do_nado(material: ShaderMaterial, canonica: Transform3D, compri
 		material.render_priority = 1
 
 
-## Sem GLB (ou no estilo procedural): fuso achatado com a cauda em leque, ou o
+## Sem GLB (a espécie ainda sem modelo no catálogo): fuso achatado com a cauda em leque, ou o
 ## losango da raia, já no peixe canônico (cabeça no -Z) e com 1 u de comprimento.
-func _corpo_procedural(shader: Shader, forma: String) -> Dictionary:
+func _corpo_provisorio(shader: Shader, forma: String) -> Dictionary:
 	var ferramenta := SurfaceTool.new()
 	ferramenta.begin(Mesh.PRIMITIVE_TRIANGLES)
 	var proporcao := float(_esp["corpo"])

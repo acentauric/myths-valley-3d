@@ -110,7 +110,6 @@ func _run() -> void:
 	_conferir_o_arquivo(arquivo)
 
 	# --- 6. NO VALE -------------------------------------------------------------------------------
-	root.get_node("/root/Estilo").modo = "tripo"
 	_conferir(change_scene_to_file("res://scenes/prototipo_3d/vale.tscn") == OK, "a cena do vale carrega")
 	relogio = RelogioDeJogo.new()
 	root.add_child(relogio)

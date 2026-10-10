@@ -31,7 +31,6 @@ func _run() -> void:
 	conferir(portoes == 0, "a entrada recebe um portão imóvel")
 	conferir(entradas == 1, "a roça tem %d entrada(s), e não uma" % entradas)
 	conferir(cercas == lances.size() - 1, "a entrada remove mais que seu lance: %d cercas de %d lances" % [cercas, lances.size()])
-	root.get_node("Estilo").modo = "tripo"
 	change_scene_to_file("res://scenes/prototipo_3d/vale.tscn")
 	for i in 8000:
 		await process_frame

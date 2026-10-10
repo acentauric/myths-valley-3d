@@ -16,7 +16,6 @@ func _confere(ok: bool, mensagem: String) -> void:
 		push_error("PASSEIO_DAS_ESPECIES_FALHOU: " + mensagem)
 
 func _run() -> void:
-	root.get_node("Estilo").modo = "tripo"
 	var Animador = load("res://scripts/prototipo_3d/animador_bicho.gd")
 	var especies: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://data/bichos_de_casa.json"))["especies"]
 	especies["onca_pintada"] = {"passo": 4.06 * 0.4}

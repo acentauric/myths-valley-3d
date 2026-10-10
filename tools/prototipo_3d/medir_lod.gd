@@ -17,7 +17,6 @@ func _run() -> void:
 		quit(2))
 	DisplayServer.window_set_size(Vector2i(1024, 576))
 	DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
-	root.get_node("Estilo").set("modo", "tripo")
 	var game := (load("res://scenes/prototipo_3d/vale.tscn") as PackedScene).instantiate() as Node3D
 	root.add_child(game)
 	current_scene = game

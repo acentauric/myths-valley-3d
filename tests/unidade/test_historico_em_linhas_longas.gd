@@ -7,7 +7,7 @@ extends "res://tests/unidade/base.gd"
 ## 584 px úteis, mais da metade vazia à direita), as páginas chegavam a 26 para 17 dias, e três dias (03/10, 26/09 e
 ## 25/09) apareciam em duas entradas. Seis perguntas, só sobre o arquivo e a conta de páginas:
 ##
-##   1. O MAIS RECENTE é 08/10/2026, com título e estado nos três idiomas.
+##   1. O MAIS RECENTE é 10/10/2026, com título e estado nos três idiomas.
 ##   2. UM GRUPO POR DIA: nenhuma data repete.
 ##   3. OS TRÊS IDIOMAS TÊM AS MESMAS LINHAS: a mesma quantidade em pt, en e es, nenhuma vazia.
 ##   4. O DOURADO SÓ NO TERMO CENTRAL: no máximo um destaque por linha.
@@ -30,7 +30,7 @@ func test_historico_em_linhas_longas() -> void:
 
 	# --- 1. O MAIS RECENTE ---------------------------------------------------------------------------
 	var primeira: Dictionary = entradas[0]
-	_conferir(str(primeira.get("data", "")) == "08/10/2026", "a entrada mais recente devia ser a de 08/10/2026 (é '%s')" % str(primeira.get("data", "")))
+	_conferir(str(primeira.get("data", "")) == "10/10/2026", "a entrada mais recente devia ser a de 10/10/2026 (é '%s')" % str(primeira.get("data", "")))
 	for chave in ["titulo", "titulo_en", "titulo_es", "estado", "estado_en", "estado_es"]:
 		_conferir(str(primeira.get(chave, "")) != "", "a entrada de 08/10 está sem %s" % chave)
 
