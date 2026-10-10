@@ -793,7 +793,9 @@ func _chegou_ao_destino() -> bool:
 ## penduradas nele, cujo passo em curso tem `conduz`. Ou null.
 func _outra_que_conduz() -> Node:
 	for filho in get_children():
-		if filho == _cadeia or not filho.has_method("passo_atual"):
+		# O animador também tem `passo_atual` (o passo da ação, #Mixamo rodada 2):
+		# fila é quem tem também `acabou` e `iniciado`.
+		if filho == _cadeia or not filho.has_method("passo_atual") or not filho.has_method("acabou") or not "iniciado" in filho:
 			continue
 		if filho.iniciado and not filho.acabou() and bool(filho.passo_atual().get("conduz", false)):
 			return filho
