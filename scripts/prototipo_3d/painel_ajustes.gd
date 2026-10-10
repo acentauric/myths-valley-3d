@@ -780,7 +780,7 @@ static func cabecalho(pai: Container, titulo: String, acao: Callable, subtitulo:
 	glifo.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	botao.add_child(glifo)
 	botao.mouse_entered.connect(func(): Audio.efeito("ui_hover"))
-	botao.tooltip_text = TranslationServer.translate("Fechar")
+	botao.tooltip_text = TranslationServer.translate("Minimizar" if icone == "minimizar" else "Fechar")
 	botao.pressed.connect(func() -> void:
 		Audio.efeito("ui_voltar")
 		acao.call())

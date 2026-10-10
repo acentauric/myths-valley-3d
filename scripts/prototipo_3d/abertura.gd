@@ -1230,7 +1230,7 @@ func _open_map() -> void:
 	panel.offset_top = 32
 	panel.offset_bottom = 32
 	_modal_header("Mapa do Vale", func() -> void: _mostrar_info_mapa(false),
-		"%s · %s" % [$Cenario.get_region_title(), tr("1 unidade = %s m") % _formatar_escala($Cenario.get_meters_per_unit())])
+		"%s · %s" % [$Cenario.get_region_title(), tr("1 unidade = %s m") % _formatar_escala($Cenario.get_meters_per_unit())], "minimizar")
 	_label("N ↑ · roda: zoom · arrastar: mover", 14)
 	var points_title := _label("Pontos de interesse", 16)
 	points_title.add_theme_color_override("font_color", Color("e2c47f"))
@@ -1253,11 +1253,11 @@ func _open_map() -> void:
 			Audio.efeito("ui_confirmar")
 			_focus_map_marker(destination, true))
 		points.add_child(button)
-	# O mapa abre com o painel de informações à vista. O × do painel o esconde e deixa
-	# um "?" no canto esquerdo, onde ele estava, que o traz de volta.
+	# O mapa abre com o painel de informações à vista. O "minimizar" do painel o recolhe
+	# num "maximizar" no canto esquerdo, onde ele estava, que o traz de volta.
 	map_icon.definir(true)
 	var layer := panel.get_parent()
-	var help_icon: Control = HudIcon.new().configurar("ajuda")
+	var help_icon: Control = HudIcon.new().configurar("maximizar")
 	var help_parts := BotaoCanto.criar(layer, 0, help_icon)
 	map_help_button = help_parts[0]
 	var help_hint: Label = help_parts[1]
@@ -1384,12 +1384,27 @@ func _stop_map_tween() -> void:
 
 func _position_map_markers() -> void:
 	var viewport_size := get_viewport().get_visible_rect().size
+	# Dois pontos muito juntos (a Casa da estrada e o Restaurante) punham um rótulo em cima
+	# do outro: o que vem depois desce até ficar livre de todos os já postos.
+	var postos: Array[Rect2] = []
 	for entry: Dictionary in map_markers:
 		var marker: Button = entry["control"]
 		var projected := camera.unproject_position(entry["position"])
 		var marker_size := marker.get_combined_minimum_size()
-		marker.position = (projected + Vector2(5, -13)).clamp(Vector2.ZERO, (viewport_size - marker_size).max(Vector2.ZERO))
+		var limite := (viewport_size - marker_size).max(Vector2.ZERO)
+		var onde := (projected + Vector2(5, -13)).clamp(Vector2.ZERO, limite)
 		marker.visible = projected.x > 0 and projected.y > 0 and projected.x < viewport_size.x and projected.y < viewport_size.y
+		if marker.visible:
+			var mexeu := true
+			while mexeu:
+				mexeu = false
+				for outro in postos:
+					if Rect2(onde, marker_size).grow(1.0).intersects(outro):
+						onde.y = outro.end.y + 2.0
+						mexeu = true
+			onde = onde.clamp(Vector2.ZERO, limite)
+			postos.append(Rect2(onde, marker_size))
+		marker.position = onde
 
 func _open_history() -> void:
 	if history_entries.is_empty():

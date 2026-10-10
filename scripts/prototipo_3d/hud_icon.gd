@@ -1,6 +1,6 @@
 extends Control
 ## Ícones vetoriais dos botões de canto do HUD, no mesmo traço do som e do relógio:
-## "casa" (HOME), "ajustes" (engrenagem), "restaurar" (seta circular), "mapa", "ajuda" (?), "tela_cheia" (cantos para fora em janela, para dentro em tela cheia), "fechar" (×), "salvar" (disquete), "tocar" (play), "pausar", "concluir" (✓), "externo" (link que sai do jogo), "camera" (anel dourado quando travada), "velocidade" (setas conforme
+## "casa" (HOME), "ajustes" (engrenagem), "restaurar" (seta circular), "mapa", "ajuda" (?), "tela_cheia" (cantos para fora em janela, para dentro em tela cheia), "fechar" (×), "minimizar" (—) e "maximizar" (□) do painel do mapa, "salvar" (disquete), "tocar" (play), "pausar", "concluir" (✓), "externo" (link que sai do jogo), "camera" (anel dourado quando travada), "velocidade" (setas conforme
 ## a Passagem do tempo, 0–3), "fala" (ondas de som em ouro que acendem uma a uma: o selo do viajante falando,
 ## `selo_do_viajante.gd`, com o `nivel` de 0 a 3 dizendo quantas ondas estão acesas) e "som", "cenario", "interface", "teclado" e "esforco" (as abas de Ajustes, com o "ajustes" na Geral), "estilo" (cubo para Tripo, chaves para Procedural), "editar" (lápis, um só:
 ## o do nome da vaga e o do painel MODELOS) e "apagar" (lixeira, vermelha pedindo a confirmação) dos
@@ -147,6 +147,14 @@ func _draw() -> void:
 		"fechar":
 			draw_line(Vector2(6, 6), Vector2(18, 18), tinta, 2.0, true)
 			draw_line(Vector2(18, 6), Vector2(6, 18), tinta, 2.0, true)
+		"minimizar":
+			# O traço de janela que se recolhe: o painel do mapa vira o botão do canto.
+			draw_line(Vector2(6, 17), Vector2(18, 17), tinta, 2.2, true)
+		"maximizar":
+			# A janela inteira, com a barra de cima mais grossa: traz o painel do mapa de volta.
+			var cor_janela := ouro if ativo else tinta
+			draw_rect(Rect2(6, 6, 12, 12), cor_janela, false, 1.8, true)
+			draw_line(Vector2(6, 7.4), Vector2(18, 7.4), cor_janela, 2.6, true)
 		"editar":
 			# Lápis deitado: corpo, ponta e a cinta da borracha. Dourado com a edição
 			# aberta. É um ícone só para o nome da vaga e para o painel MODELOS: os

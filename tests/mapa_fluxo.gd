@@ -46,6 +46,7 @@ func _run() -> void:
 	await _frames(3)
 	_assert(opening.map_open, "tela MAPA")
 	_assert(opening.map_markers.size() >= 11, "pontos de interesse no mapa")
+	_assert(_rotulos_sobrepostos(opening) == "", "rótulos do mapa um em cima do outro: " + _rotulos_sobrepostos(opening))
 	_assert(opening.camera.projection == Camera3D.PROJECTION_ORTHOGONAL, "câmera superior")
 	_assert(opening_trees.visibility_range_end == 0.0, "vegetação visível no MAPA do menu")
 	await _capture("mapa")
@@ -63,6 +64,13 @@ func _run() -> void:
 	_assert(opening.map_target.distance_to(initial_target) > 1.0, "deslocamento do mapa")
 	opening._focus_map_marker(opening.map_markers[0].position)
 	_assert(opening.camera.size <= 420.0, "foco em ponto de interesse")
+	# A Casa da estrada e o Restaurante ficam a poucos metros: de perto também não se cobrem.
+	for marcador: Dictionary in opening.map_markers:
+		if String((marcador["control"] as Button).text).contains("Restaurante"):
+			opening._focus_map_marker(marcador["position"])
+	await _frames(40)
+	opening._position_map_markers()
+	_assert(_rotulos_sobrepostos(opening) == "", "rótulos do mapa um em cima do outro de perto: " + _rotulos_sobrepostos(opening))
 	opening._home()
 	await _frames(3)
 	_assert(not opening.map_open, "retorno do MAPA")
@@ -288,6 +296,22 @@ func _first_lod_block(region: Node3D) -> MultiMeshInstance3D:
 		if is_instance_valid(visual) and visual.multimesh != null and visual.multimesh.instance_count > 0:
 			return visual
 	return null
+
+
+## Os rótulos visíveis do mapa que se cobrem, ou "" se nenhum.
+func _rotulos_sobrepostos(opening: Node) -> String:
+	var visiveis: Array[Button] = []
+	for marcador: Dictionary in opening.map_markers:
+		var botao := marcador["control"] as Button
+		if botao.visible:
+			visiveis.append(botao)
+	for i in visiveis.size():
+		for j in range(i + 1, visiveis.size()):
+			var a := Rect2(visiveis[i].position, visiveis[i].get_combined_minimum_size())
+			var b := Rect2(visiveis[j].position, visiveis[j].get_combined_minimum_size())
+			if a.intersects(b):
+				return "%s e %s" % [visiveis[i].text, visiveis[j].text]
+	return ""
 
 
 func _assert(condition: bool, label: String) -> void:
