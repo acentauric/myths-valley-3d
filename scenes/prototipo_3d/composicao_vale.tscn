@@ -819,3 +819,2254 @@ id = "Candeeiro"
 tipo = "candeeiro"
 chave = "candeeiro"
 no_chao = false
+
+[node name="Avulsos" type="Node3D" parent="." unique_id=756492877]
+editor_description = "Objetos fora das casas. Mova e gire (Y) à vontade; Ctrl+D acrescenta, apagar tira do jogo. Os subgrupos só organizam (Coqueiros da orla e Manguezal: o jogo planta os daqui no lugar dos sorteados)."
+
+[node name="Coqueiros da orla" type="Node3D" parent="Avulsos" unique_id=1466178922]
+
+[node name="Norte" type="Node3D" parent="Avulsos/Coqueiros da orla" unique_id=1040886878]
+
+[node name="Sul" type="Node3D" parent="Avulsos/Coqueiros da orla" unique_id=1203598473]
+
+[node name="Manguezal" type="Node3D" parent="Avulsos" unique_id=1973677431]
+
+[node name="Mangue 1" type="Node3D" parent="Avulsos/Manguezal" unique_id=1944108832]
+transform = Transform3D(-0.131522, 0, 0.991313, 0, 1, 0, -0.991313, 0, -0.131522, 143.033, -0.064, -269.043)
+script = ExtResource("4_8bxw0")
+id = "Mangue 1"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.858
+
+[node name="Mangue 2" type="Node3D" parent="Avulsos/Manguezal" unique_id=1806799969]
+transform = Transform3D(-0.998834, 0, -0.0482739, 0, 1, 0, 0.0482739, 0, -0.998834, 136.538, 1.055, -268.972)
+script = ExtResource("4_8bxw0")
+id = "Mangue 2"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.867
+
+[node name="Mangue 3" type="Node3D" parent="Avulsos/Manguezal" unique_id=676575585]
+transform = Transform3D(0.983065, 0, -0.183258, 0, 1, 0, 0.183258, 0, 0.983065, 132.441, 3.229, -275.71)
+script = ExtResource("4_8bxw0")
+id = "Mangue 3"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.061
+
+[node name="Mangue 4" type="Node3D" parent="Avulsos/Manguezal" unique_id=1694429564]
+transform = Transform3D(-0.237803, 0, -0.971313, 0, 1, 0, 0.971313, 0, -0.237803, 68.461, -0.004, -34.839)
+script = ExtResource("4_8bxw0")
+id = "Mangue 4"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.096
+
+[node name="Mangue 5" type="Node3D" parent="Avulsos/Manguezal" unique_id=1412076471]
+transform = Transform3D(-0.962725, 0, -0.270481, 0, 1, 0, 0.270481, 0, -0.962725, 63.357, 0.117, -41.622)
+script = ExtResource("4_8bxw0")
+id = "Mangue 5"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.92
+
+[node name="Mangue 6" type="Node3D" parent="Avulsos/Manguezal" unique_id=1094557707]
+transform = Transform3D(-0.952061, 0, -0.305909, 0, 1, 0, 0.305909, 0, -0.952061, 56.909, 1.179, -36.961)
+script = ExtResource("4_8bxw0")
+id = "Mangue 6"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.819
+
+[node name="Mangue 7" type="Node3D" parent="Avulsos/Manguezal" unique_id=1063500259]
+transform = Transform3D(0.00229632, 0, 0.999997, 0, 1, 0, -0.999997, 0, 0.00229632, 53.593, 1.845, -34.559)
+script = ExtResource("4_8bxw0")
+id = "Mangue 7"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.097
+
+[node name="Mangue 8" type="Node3D" parent="Avulsos/Manguezal" unique_id=457822017]
+transform = Transform3D(-0.15221, 0, -0.988348, 0, 1, 0, 0.988348, 0, -0.15221, 145.282, 0.161, -236.253)
+script = ExtResource("4_8bxw0")
+id = "Mangue 8"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.917
+
+[node name="Mangue 9" type="Node3D" parent="Avulsos/Manguezal" unique_id=894905978]
+transform = Transform3D(0.0866874, 0, -0.996236, 0, 1, 0, 0.996236, 0, 0.0866874, 148.32, -0.069, -242.982)
+script = ExtResource("4_8bxw0")
+id = "Mangue 9"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.939
+
+[node name="Mangue 10" type="Node3D" parent="Avulsos/Manguezal" unique_id=1265180700]
+transform = Transform3D(0.990849, 0, 0.134972, 0, 1, 0, -0.134972, 0, 0.990849, 144.154, 0.261, -246.478)
+script = ExtResource("4_8bxw0")
+id = "Mangue 10"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.798
+
+[node name="Mangue 11" type="Node3D" parent="Avulsos/Manguezal" unique_id=1462361020]
+transform = Transform3D(-0.647645, 0, 0.761943, 0, 1, 0, -0.761943, 0, -0.647645, 145.622, 0.071, -247.805)
+script = ExtResource("4_8bxw0")
+id = "Mangue 11"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.814
+
+[node name="Mangue 12" type="Node3D" parent="Avulsos/Manguezal" unique_id=133053806]
+transform = Transform3D(0.990258, 0, -0.139246, 0, 1, 0, 0.139246, 0, 0.990258, 143.369, 0.211, -252.186)
+script = ExtResource("4_8bxw0")
+id = "Mangue 12"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.087
+
+[node name="Mangue 13" type="Node3D" parent="Avulsos/Manguezal" unique_id=25389336]
+transform = Transform3D(-0.930285, 0, 0.366838, 0, 1, 0, -0.366838, 0, -0.930285, 143.088, 0.142, -255.434)
+script = ExtResource("4_8bxw0")
+id = "Mangue 13"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.029
+
+[node name="Mangue 14" type="Node3D" parent="Avulsos/Manguezal" unique_id=1685086402]
+transform = Transform3D(-0.996721, 0, 0.0809188, 0, 1, 0, -0.0809188, 0, -0.996721, 142.488, 0.049, -263.057)
+script = ExtResource("4_8bxw0")
+id = "Mangue 14"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.075
+
+[node name="Mangue 15" type="Node3D" parent="Avulsos/Manguezal" unique_id=126990112]
+transform = Transform3D(-0.813235, 0, 0.581936, 0, 1, 0, -0.581936, 0, -0.813235, 142.487, 0.005, -266.39)
+script = ExtResource("4_8bxw0")
+id = "Mangue 15"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.912
+
+[node name="Mangue 16" type="Node3D" parent="Avulsos/Manguezal" unique_id=144170899]
+transform = Transform3D(-0.818152, 0, 0.575003, 0, 1, 0, -0.575003, 0, -0.818152, 140.971, 0.123, -283.553)
+script = ExtResource("4_8bxw0")
+id = "Mangue 16"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.801
+
+[node name="Mangue 17" type="Node3D" parent="Avulsos/Manguezal" unique_id=1351703760]
+transform = Transform3D(0.226708, 0, -0.973963, 0, 1, 0, 0.973963, 0, 0.226708, 140.867, 0.184, -288.265)
+script = ExtResource("4_8bxw0")
+id = "Mangue 17"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.141
+
+[node name="Mangue 18" type="Node3D" parent="Avulsos/Manguezal" unique_id=1864182469]
+transform = Transform3D(0.993327, 0, 0.115328, 0, 1, 0, -0.115328, 0, 0.993327, 141.941, 0.098, -292.888)
+script = ExtResource("4_8bxw0")
+id = "Mangue 18"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.821
+
+[node name="Mangue 19" type="Node3D" parent="Avulsos/Manguezal" unique_id=581892124]
+transform = Transform3D(-0.542074, 0, -0.840331, 0, 1, 0, 0.840331, 0, -0.542074, 142.76, 0.019, -294.298)
+script = ExtResource("4_8bxw0")
+id = "Mangue 19"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.971
+
+[node name="Mangue 20" type="Node3D" parent="Avulsos/Manguezal" unique_id=711514775]
+transform = Transform3D(-0.99192, 0, 0.126865, 0, 1, 0, -0.126865, 0, -0.99192, 143.416, 0.081, -302.498)
+script = ExtResource("4_8bxw0")
+id = "Mangue 20"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.823
+
+[node name="Mangue 21" type="Node3D" parent="Avulsos/Manguezal" unique_id=224858446]
+transform = Transform3D(0.628802, 0, 0.777566, 0, 1, 0, -0.777566, 0, 0.628802, 142.396, 0.316, -305.462)
+script = ExtResource("4_8bxw0")
+id = "Mangue 21"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.942
+
+[node name="Mangue 22" type="Node3D" parent="Avulsos/Manguezal" unique_id=391289086]
+transform = Transform3D(0.837893, 0, 0.545835, 0, 1, 0, -0.545835, 0, 0.837893, 146.173, -0.042, -311.45)
+script = ExtResource("4_8bxw0")
+id = "Mangue 22"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.113
+
+[node name="Mangue 23" type="Node3D" parent="Avulsos/Manguezal" unique_id=794709558]
+transform = Transform3D(0.734487, 0, 0.678622, 0, 1, 0, -0.678622, 0, 0.734487, 72.736, 0.094, -9.066)
+script = ExtResource("4_8bxw0")
+id = "Mangue 23"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.975
+
+[node name="Mangue 24" type="Node3D" parent="Avulsos/Manguezal" unique_id=671226647]
+transform = Transform3D(0.0858904, 0, -0.996305, 0, 1, 0, 0.996305, 0, 0.0858904, 72.052, 0.217, -19.2)
+script = ExtResource("4_8bxw0")
+id = "Mangue 24"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.141
+
+[node name="Mangue 25" type="Node3D" parent="Avulsos/Manguezal" unique_id=1697421291]
+transform = Transform3D(-0.999163, 0, 0.0408959, 0, 1, 0, -0.0408959, 0, -0.999163, 71.816, 0.194, -24.346)
+script = ExtResource("4_8bxw0")
+id = "Mangue 25"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.14
+
+[node name="Mangue 26" type="Node3D" parent="Avulsos/Manguezal" unique_id=639044467]
+transform = Transform3D(0.0448959, 0, 0.998992, 0, 1, 0, -0.998992, 0, 0.0448959, 72.089, 0.145, -25.962)
+script = ExtResource("4_8bxw0")
+id = "Mangue 26"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.895
+
+[node name="Mangue 27" type="Node3D" parent="Avulsos/Manguezal" unique_id=158541133]
+transform = Transform3D(0.819304, 0, -0.573359, 0, 1, 0, 0.573359, 0, 0.819304, 71.433, -0.002, -34.712)
+script = ExtResource("4_8bxw0")
+id = "Mangue 27"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.179
+
+[node name="Mangue 28" type="Node3D" parent="Avulsos/Manguezal" unique_id=206608359]
+transform = Transform3D(-0.447698, 0, 0.894185, 0, 1, 0, -0.894185, 0, -0.447698, 81.919, -0.066, -48.543)
+script = ExtResource("4_8bxw0")
+id = "Mangue 28"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.766
+
+[node name="Mangue 29" type="Node3D" parent="Avulsos/Manguezal" unique_id=1479496298]
+transform = Transform3D(-0.933334, 0, 0.35901, 0, 1, 0, -0.35901, 0, -0.933334, 83.429, 0.066, -53.168)
+script = ExtResource("4_8bxw0")
+id = "Mangue 29"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.048
+
+[node name="Mangue 30" type="Node3D" parent="Avulsos/Manguezal" unique_id=687004565]
+transform = Transform3D(-0.57369, 0, -0.819073, 0, 1, 0, 0.819073, 0, -0.57369, 87.316, 0.021, -58.363)
+script = ExtResource("4_8bxw0")
+id = "Mangue 30"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.999
+
+[node name="Mangue 31" type="Node3D" parent="Avulsos/Manguezal" unique_id=1876578950]
+transform = Transform3D(-0.747376, 0, -0.664401, 0, 1, 0, 0.664401, 0, -0.747376, 88.761, -0.026, -59.726)
+script = ExtResource("4_8bxw0")
+id = "Mangue 31"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.159
+
+[node name="Mangue 32" type="Node3D" parent="Avulsos/Manguezal" unique_id=1306833905]
+transform = Transform3D(0.920208, 0, 0.39143, 0, 1, 0, -0.39143, 0, 0.920208, 91.967, -0.073, -64.354)
+script = ExtResource("4_8bxw0")
+id = "Mangue 32"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.899
+
+[node name="Mangue 33" type="Node3D" parent="Avulsos/Manguezal" unique_id=1705396571]
+transform = Transform3D(0.541816, 0, -0.840497, 0, 1, 0, 0.840497, 0, 0.541816, 92.957, 0.072, -70.74)
+script = ExtResource("4_8bxw0")
+id = "Mangue 33"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.174
+
+[node name="Mangue 34" type="Node3D" parent="Avulsos/Manguezal" unique_id=969033457]
+transform = Transform3D(-0.377124, 0, 0.926163, 0, 1, 0, -0.926163, 0, -0.377124, 92.527, 0.276, -73.768)
+script = ExtResource("4_8bxw0")
+id = "Mangue 34"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.125
+
+[node name="Coqueiro da orla 1" type="Node3D" parent="Avulsos/Coqueiros da orla/Sul" unique_id=1948611143]
+transform = Transform3D(-0.613515, 0, -0.789683, 0, 1, 0, 0.789683, 0, -0.613515, -90.261, -0.032, 164.988)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 1"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 0.936
+
+[node name="Coqueiro da orla 2" type="Node3D" parent="Avulsos/Coqueiros da orla/Sul" unique_id=1123033806]
+transform = Transform3D(-0.766391, 0, -0.642375, 0, 1, 0, 0.642375, 0, -0.766391, -75.944, 0.196, 150.438)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 2"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 0.95
+
+[node name="Coqueiro da orla 3" type="Node3D" parent="Avulsos/Coqueiros da orla/Sul" unique_id=752648120]
+transform = Transform3D(-0.690083, 0, -0.72373, 0, 1, 0, 0.72373, 0, -0.690083, -56.809, 0.103, 127.489)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 3"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 1.03
+
+[node name="Coqueiro da orla 4" type="Node3D" parent="Avulsos/Coqueiros da orla/Sul" unique_id=149202937]
+transform = Transform3D(-0.609638, 0, -0.79268, 0, 1, 0, 0.79268, 0, -0.609638, -49.854, 0.165, 120.82)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 4"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 1.129
+
+[node name="Coqueiro da orla 5" type="Node3D" parent="Avulsos/Coqueiros da orla/Sul" unique_id=51790338]
+transform = Transform3D(-0.625134, 0, -0.780517, 0, 1, 0, 0.780517, 0, -0.625134, -42.937, 0.169, 115.387)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 5"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 1.052
+
+[node name="Coqueiro da orla 6" type="Node3D" parent="Avulsos/Coqueiros da orla/Sul" unique_id=265844353]
+transform = Transform3D(-0.651761, 0, -0.758425, 0, 1, 0, 0.758425, 0, -0.651761, -36.316, -0.022, 111.915)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 6"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 1.011
+
+[node name="Coqueiro da orla 7" type="Node3D" parent="Avulsos/Coqueiros da orla/Sul" unique_id=1743397093]
+transform = Transform3D(-0.683103, 0, -0.730322, 0, 1, 0, 0.730322, 0, -0.683103, -22.784, 0.02, 99.098)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 7"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 0.903
+
+[node name="Coqueiro da orla 8" type="Node3D" parent="Avulsos/Coqueiros da orla/Sul" unique_id=622424266]
+transform = Transform3D(-0.656149, 0, -0.754632, 0, 1, 0, 0.754632, 0, -0.656149, -4.722, 0.17, 80.574)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 8"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 0.812
+
+[node name="Coqueiro da orla 9" type="Node3D" parent="Avulsos/Coqueiros da orla/Sul" unique_id=1397771413]
+transform = Transform3D(-0.676945, 0, -0.736034, 0, 1, 0, 0.736034, 0, -0.676945, 9.198, 0.222, 67.84)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 9"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 0.999
+
+[node name="Coqueiro da orla 10" type="Node3D" parent="Avulsos/Coqueiros da orla/Sul" unique_id=1451825605]
+transform = Transform3D(-0.697429, 0, -0.716654, 0, 1, 0, 0.716654, 0, -0.697429, 22.698, 0.241, 54.599)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 10"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 1.087
+
+[node name="Coqueiro da orla 11" type="Node3D" parent="Avulsos/Coqueiros da orla/Sul" unique_id=1374075482]
+transform = Transform3D(-0.701716, 0, -0.712456, 0, 1, 0, 0.712456, 0, -0.701716, 27.936, 0.13, 50.668)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 11"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 0.755
+
+[node name="Coqueiro da orla 12" type="Node3D" parent="Avulsos/Coqueiros da orla/Sul" unique_id=265874272]
+transform = Transform3D(-0.666052, 0, -0.745905, 0, 1, 0, 0.745905, 0, -0.666052, 65.137, -0.035, 14.081)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 12"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 1.002
+
+[node name="Coqueiro da orla 13" type="Node3D" parent="Avulsos/Coqueiros da orla/Sul" unique_id=1601270828]
+transform = Transform3D(-0.880636, 0, -0.473793, 0, 1, 0, 0.473793, 0, -0.880636, 69.535, 0.047, 5.348)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 13"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 0.811
+
+[node name="Coqueiro da orla 14" type="Node3D" parent="Avulsos/Coqueiros da orla/Norte" unique_id=1327915332]
+transform = Transform3D(-0.956396, 0, -0.292072, 0, 1, 0, 0.292072, 0, -0.956396, 138.475, 0.032, -154.14)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 14"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 0.766
+
+[node name="Coqueiro da orla 15" type="Node3D" parent="Avulsos/Coqueiros da orla/Norte" unique_id=108110827]
+transform = Transform3D(-0.983231, 0, -0.182366, 0, 1, 0, 0.182366, 0, -0.983231, 143.063, 0.009, -172.763)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 15"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 0.864
+
+[node name="Coqueiro da orla 16" type="Node3D" parent="Avulsos/Coqueiros da orla/Norte" unique_id=317345628]
+transform = Transform3D(-0.996882, 0, -0.0789105, 0, 1, 0, 0.0789105, 0, -0.996882, 144.89, 0.089, -198.284)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 16"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 0.884
+
+[node name="Coqueiro da orla 17" type="Node3D" parent="Avulsos/Coqueiros da orla/Norte" unique_id=991010192]
+transform = Transform3D(-0.998073, 0, -0.0620528, 0, 1, 0, 0.0620528, 0, -0.998073, 147.847, -0.039, -225.289)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 17"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 0.802
+
+[node name="Coqueiro da orla 18" type="Node3D" parent="Avulsos/Coqueiros da orla/Norte" unique_id=1204941767]
+transform = Transform3D(-0.997538, 0, 0.070135, 0, 1, 0, -0.070135, 0, -0.997538, 147.687, -0.021, -236.011)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 18"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 0.969
+
+[node name="Coqueiro da orla 19" type="Node3D" parent="Avulsos/Coqueiros da orla/Norte" unique_id=1839989277]
+transform = Transform3D(-0.995953, 0, 0.0898712, 0, 1, 0, -0.0898712, 0, -0.995953, 142.235, 0, -269.318)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 19"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 1.011
+
+[node name="Coqueiro da orla 20" type="Node3D" parent="Avulsos/Coqueiros da orla/Norte" unique_id=266816141]
+transform = Transform3D(-0.999301, 0, -0.0373839, 0, 1, 0, 0.0373839, 0, -0.999301, 140.971, 0.257, -281.874)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 20"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 1.048
+
+[node name="Coqueiro da orla 21" type="Node3D" parent="Avulsos/Coqueiros da orla/Norte" unique_id=1609369863]
+transform = Transform3D(-0.989493, 0, -0.144584, 0, 1, 0, 0.144584, 0, -0.989493, 145.391, 0.321, -321.822)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 21"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 1.004
+
+[node name="Coqueiro da orla 22" type="Node3D" parent="Avulsos/Coqueiros da orla/Norte" unique_id=188374091]
+transform = Transform3D(-0.989493, 0, -0.144584, 0, 1, 0, 0.144584, 0, -0.989493, 147.415, 0.253, -332.545)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 22"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 0.87
+
+[node name="Coqueiro da orla 23" type="Node3D" parent="Avulsos/Coqueiros da orla/Sul" unique_id=536963605]
+transform = Transform3D(-0.32168, 0, -0.946848, 0, 1, 0, 0.946848, 0, -0.32168, -95.85, 0.725, 162.673)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 23"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 1.09
+
+[node name="Coqueiro da orla 24" type="Node3D" parent="Avulsos/Coqueiros da orla/Sul" unique_id=418261993]
+transform = Transform3D(-0.517908, 0, -0.855436, 0, 1, 0, 0.855436, 0, -0.517908, -80.376, 0.365, 150.934)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 24"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 1.11
+
+[node name="Coqueiro da orla 25" type="Node3D" parent="Avulsos/Coqueiros da orla/Sul" unique_id=239148147]
+transform = Transform3D(-0.722149, 0, -0.691738, 0, 1, 0, 0.691738, 0, -0.722149, -84.829, 1.653, 145.969)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 25"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 0.87
+
+[node name="Coqueiro da orla 26" type="Node3D" parent="Avulsos/Coqueiros da orla/Sul" unique_id=566504037]
+transform = Transform3D(-0.881441, 0, -0.472295, 0, 1, 0, 0.472295, 0, -0.881441, -61.572, 0.853, 126.311)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 26"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 0.97
+
+[node name="Coqueiro da orla 27" type="Node3D" parent="Avulsos/Coqueiros da orla/Sul" unique_id=1536276782]
+transform = Transform3D(-0.363017, 0, -0.931783, 0, 1, 0, 0.931783, 0, -0.363017, -45.612, 1.459, 109.789)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 27"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 1.01
+
+[node name="Coqueiro da orla 28" type="Node3D" parent="Avulsos/Coqueiros da orla/Sul" unique_id=1575230590]
+transform = Transform3D(-0.296001, 0, -0.955188, 0, 1, 0, 0.955188, 0, -0.296001, -33.558, 0.44, 105.273)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 28"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 1.16
+
+[node name="Coqueiro da orla 29" type="Node3D" parent="Avulsos/Coqueiros da orla/Sul" unique_id=1739456951]
+transform = Transform3D(-0.306205, 0, -0.951966, 0, 1, 0, 0.951966, 0, -0.306205, -34.616, 1.268, 101.232)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 29"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 0.89
+
+[node name="Coqueiro da orla 30" type="Node3D" parent="Avulsos/Coqueiros da orla/Sul" unique_id=1062038677]
+transform = Transform3D(-0.641463, 0, -0.767154, 0, 1, 0, 0.767154, 0, -0.641463, -17.37, 0.195, 92.082)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 30"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 0.78
+
+[node name="Coqueiro da orla 31" type="Node3D" parent="Avulsos/Coqueiros da orla/Sul" unique_id=1975890317]
+transform = Transform3D(-0.684344, 0, -0.729159, 0, 1, 0, 0.729159, 0, -0.684344, -10.025, 0.154, 85.567)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 31"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 0.79
+
+[node name="Coqueiro da orla 32" type="Node3D" parent="Avulsos/Coqueiros da orla/Sul" unique_id=1161068231]
+transform = Transform3D(-0.915401, 0, -0.402543, 0, 1, 0, 0.402543, 0, -0.915401, -13.985, 1.209, 81.727)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 32"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 1.14
+
+[node name="Coqueiro da orla 33" type="Node3D" parent="Avulsos/Coqueiros da orla/Sul" unique_id=1620269887]
+transform = Transform3D(-0.470188, 0, -0.882566, 0, 1, 0, 0.882566, 0, -0.470188, -1.11, 0.18, 77.29)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 33"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 1.07
+
+[node name="Coqueiro da orla 34" type="Node3D" parent="Avulsos/Coqueiros da orla/Sul" unique_id=495246521]
+transform = Transform3D(-0.890255, 0, -0.455463, 0, 1, 0, 0.455463, 0, -0.890255, 1.265, 0.392, 73.413)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 34"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 1.08
+
+[node name="Coqueiro da orla 35" type="Node3D" parent="Avulsos/Coqueiros da orla/Sul" unique_id=210615036]
+transform = Transform3D(-0.493843, 0, -0.869551, 0, 1, 0, 0.869551, 0, -0.493843, 16.458, 0.383, 59.338)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 35"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 1.12
+
+[node name="Coqueiro da orla 36" type="Node3D" parent="Avulsos/Coqueiros da orla/Sul" unique_id=1835352594]
+transform = Transform3D(-0.602958, 0, -0.797773, 0, 1, 0, 0.797773, 0, -0.602958, 32.343, 0.296, 44.35)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 36"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 1.04
+
+[node name="Coqueiro da orla 37" type="Node3D" parent="Avulsos/Coqueiros da orla/Sul" unique_id=1635021774]
+transform = Transform3D(-0.612567, 0, -0.790419, 0, 1, 0, 0.790419, 0, -0.612567, 36.759, 0.231, 40.568)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 37"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 0.93
+
+[node name="Coqueiro da orla 38" type="Node3D" parent="Avulsos/Coqueiros da orla/Sul" unique_id=179907566]
+transform = Transform3D(-0.566789, 0, -0.823863, 0, 1, 0, 0.823863, 0, -0.566789, 39.602, 0.283, 37.084)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 38"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 1.08
+
+[node name="Coqueiro da orla 39" type="Node3D" parent="Avulsos/Coqueiros da orla/Sul" unique_id=70152843]
+transform = Transform3D(-0.80756, 0, -0.589785, 0, 1, 0, 0.589785, 0, -0.80756, 37.122, 1.181, 31.648)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 39"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 0.9
+
+[node name="Coqueiro da orla 40" type="Node3D" parent="Avulsos/Coqueiros da orla/Sul" unique_id=270622046]
+transform = Transform3D(-0.826298, 0, -0.563233, 0, 1, 0, 0.563233, 0, -0.826298, 44.999, 0.147, 33.021)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 40"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 0.94
+
+[node name="Coqueiro da orla 41" type="Node3D" parent="Avulsos/Coqueiros da orla/Sul" unique_id=517619015]
+transform = Transform3D(-0.786242, 0, -0.617919, 0, 1, 0, 0.617919, 0, -0.786242, 50.805, 0.104, 27.342)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 41"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 1.15
+
+[node name="Coqueiro da orla 42" type="Node3D" parent="Avulsos/Coqueiros da orla/Sul" unique_id=273402452]
+transform = Transform3D(-0.705057, 0, -0.709151, 0, 1, 0, 0.709151, 0, -0.705057, 44.721, 1.05, 24.951)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 42"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 1.02
+
+[node name="Coqueiro da orla 43" type="Node3D" parent="Avulsos/Coqueiros da orla/Sul" unique_id=285147715]
+transform = Transform3D(-0.949489, 0, -0.3138, 0, 1, 0, 0.3138, 0, -0.949489, 54.018, 0.138, 23.327)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 43"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 0.99
+
+[node name="Coqueiro da orla 44" type="Node3D" parent="Avulsos/Coqueiros da orla/Sul" unique_id=741064995]
+transform = Transform3D(-0.694916, 0, -0.719091, 0, 1, 0, 0.719091, 0, -0.694916, 49.024, 1.117, 19.656)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 44"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 0.89
+
+[node name="Coqueiro da orla 45" type="Node3D" parent="Avulsos/Coqueiros da orla/Sul" unique_id=1311518613]
+transform = Transform3D(-0.668138, 0, -0.744037, 0, 1, 0, 0.744037, 0, -0.668138, 50.91, 1.272, 16.094)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 45"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 1.0
+
+[node name="Coqueiro da orla 46" type="Node3D" parent="Avulsos/Coqueiros da orla/Sul" unique_id=1158334971]
+transform = Transform3D(-0.88838, 0, -0.45911, 0, 1, 0, 0.45911, 0, -0.88838, 56.731, 0.672, 14.3)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 46"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 0.92
+
+[node name="Coqueiro da orla 47" type="Node3D" parent="Avulsos/Coqueiros da orla/Norte" unique_id=108937783]
+transform = Transform3D(-0.542074, 0, -0.840331, 0, 1, 0, 0.840331, 0, -0.542074, 64.036, 0.949, -54.482)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 47"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 0.84
+
+[node name="Coqueiro da orla 48" type="Node3D" parent="Avulsos/Coqueiros da orla/Norte" unique_id=1643561145]
+transform = Transform3D(0.230894, 0, -0.972979, 0, 1, 0, 0.972979, 0, 0.230894, 81.679, 0.452, -56.557)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 48"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 0.78
+
+[node name="Coqueiro da orla 49" type="Node3D" parent="Avulsos/Coqueiros da orla/Norte" unique_id=1731147356]
+transform = Transform3D(-0.964198, 0, -0.265182, 0, 1, 0, 0.265182, 0, -0.964198, 100.821, 0.097, -86.792)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 49"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 0.99
+
+[node name="Coqueiro da orla 50" type="Node3D" parent="Avulsos/Coqueiros da orla/Norte" unique_id=97183831]
+transform = Transform3D(-0.895834, 0, -0.444389, 0, 1, 0, 0.444389, 0, -0.895834, 95.832, 1.298, -91.387)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 50"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 1.17
+
+[node name="Coqueiro da orla 51" type="Node3D" parent="Avulsos/Coqueiros da orla/Norte" unique_id=1671855918]
+transform = Transform3D(-0.998243, 0, -0.0592579, 0, 1, 0, 0.0592579, 0, -0.998243, 102.647, 0.251, -93.768)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 51"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 0.97
+
+[node name="Coqueiro da orla 52" type="Node3D" parent="Avulsos/Coqueiros da orla/Norte" unique_id=929549548]
+transform = Transform3D(-0.926425, 0, -0.376479, 0, 1, 0, 0.376479, 0, -0.926425, 106.558, 0.067, -98.38)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 52"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 1.17
+
+[node name="Coqueiro da orla 53" type="Node3D" parent="Avulsos/Coqueiros da orla/Norte" unique_id=830176522]
+transform = Transform3D(-0.667096, 0, -0.744972, 0, 1, 0, 0.744972, 0, -0.667096, 107.357, 0.556, -105.457)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 53"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 1.04
+
+[node name="Coqueiro da orla 54" type="Node3D" parent="Avulsos/Coqueiros da orla/Norte" unique_id=113499466]
+transform = Transform3D(-0.752799, 0, -0.658251, 0, 1, 0, 0.658251, 0, -0.752799, 113.828, -0.02, -108.029)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 54"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 0.93
+
+[node name="Coqueiro da orla 55" type="Node3D" parent="Avulsos/Coqueiros da orla/Norte" unique_id=1656271417]
+transform = Transform3D(-0.957413, 0, -0.288723, 0, 1, 0, 0.288723, 0, -0.957413, 114.333, 0.413, -113.902)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 55"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 1.07
+
+[node name="Coqueiro da orla 56" type="Node3D" parent="Avulsos/Coqueiros da orla/Norte" unique_id=1726180898]
+transform = Transform3D(-0.815217, 0, -0.579156, 0, 1, 0, 0.579156, 0, -0.815217, 118.187, 0.131, -116.086)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 56"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 0.81
+
+[node name="Coqueiro da orla 57" type="Node3D" parent="Avulsos/Coqueiros da orla/Norte" unique_id=1994257769]
+transform = Transform3D(-0.699218, 0, -0.714908, 0, 1, 0, 0.714908, 0, -0.699218, 119.585, 0.416, -120.788)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 57"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 1.04
+
+[node name="Coqueiro da orla 58" type="Node3D" parent="Avulsos/Coqueiros da orla/Norte" unique_id=1204495518]
+transform = Transform3D(-0.749233, 0, -0.662306, 0, 1, 0, 0.662306, 0, -0.749233, 124.459, 0.32, -126.71)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 58"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 0.87
+
+[node name="Coqueiro da orla 59" type="Node3D" parent="Avulsos/Coqueiros da orla/Norte" unique_id=812307542]
+transform = Transform3D(-0.646131, 0, -0.763227, 0, 1, 0, 0.763227, 0, -0.646131, 128.023, 0.066, -129.288)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 59"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 1.13
+
+[node name="Coqueiro da orla 60" type="Node3D" parent="Avulsos/Coqueiros da orla/Norte" unique_id=1632509450]
+transform = Transform3D(-0.970982, 0, -0.239152, 0, 1, 0, 0.239152, 0, -0.970982, 131.103, 0.018, -134.268)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 60"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 0.9
+
+[node name="Coqueiro da orla 61" type="Node3D" parent="Avulsos/Coqueiros da orla/Norte" unique_id=714022145]
+transform = Transform3D(-0.999754, 0, -0.0221908, 0, 1, 0, 0.0221908, 0, -0.999754, 131.03, 0.652, -143.449)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 61"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 1.17
+
+[node name="Coqueiro da orla 62" type="Node3D" parent="Avulsos/Coqueiros da orla/Norte" unique_id=1749784713]
+transform = Transform3D(-0.74197, 0, -0.670433, 0, 1, 0, 0.670433, 0, -0.74197, 132.854, 0.074, -139.706)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 62"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 0.62
+
+[node name="Coqueiro da orla 63" type="Node3D" parent="Avulsos/Coqueiros da orla/Norte" unique_id=1323501390]
+transform = Transform3D(-0.928927, 0, -0.370263, 0, 1, 0, 0.370263, 0, -0.928927, 130.514, 2.018, -157.611)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 63"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 1.18
+
+[node name="Coqueiro da orla 64" type="Node3D" parent="Avulsos/Coqueiros da orla/Norte" unique_id=1835055488]
+transform = Transform3D(-0.930327, 0, -0.366731, 0, 1, 0, 0.366731, 0, -0.930327, 135.261, 0.864, -158.772)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 64"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 0.87
+
+[node name="Coqueiro da orla 65" type="Node3D" parent="Avulsos/Coqueiros da orla/Norte" unique_id=1627935633]
+transform = Transform3D(-0.998324, 0, 0.057875, 0, 1, 0, -0.057875, 0, -0.998324, 138.826, 0.32, -162.672)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 65"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 0.96
+
+[node name="Coqueiro da orla 66" type="Node3D" parent="Avulsos/Coqueiros da orla/Norte" unique_id=770821535]
+transform = Transform3D(-0.990738, 0, 0.135787, 0, 1, 0, -0.135787, 0, -0.990738, 140.319, 0.279, -168.553)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 66"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 0.78
+
+[node name="Coqueiro da orla 67" type="Node3D" parent="Avulsos/Coqueiros da orla/Norte" unique_id=52486858]
+transform = Transform3D(-0.981259, 0, 0.192694, 0, 1, 0, -0.192694, 0, -0.981259, 141.603, 0.419, -183.025)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 67"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 0.8
+
+[node name="Coqueiro da orla 68" type="Node3D" parent="Avulsos/Coqueiros da orla/Norte" unique_id=1445629812]
+transform = Transform3D(-0.95692, 0, -0.29035, 0, 1, 0, 0.29035, 0, -0.95692, 144.516, 0.066, -188.385)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 68"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 0.81
+
+[node name="Coqueiro da orla 69" type="Node3D" parent="Avulsos/Coqueiros da orla/Norte" unique_id=161891117]
+transform = Transform3D(-0.980696, 0, 0.195539, 0, 1, 0, -0.195539, 0, -0.980696, 143.849, 0.187, -193.515)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 69"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 0.99
+
+[node name="Coqueiro da orla 70" type="Node3D" parent="Avulsos/Coqueiros da orla/Norte" unique_id=340489849]
+transform = Transform3D(-0.932547, 0, -0.361049, 0, 1, 0, 0.361049, 0, -0.932547, 144.69, 0.133, -207.104)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 70"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 0.86
+
+[node name="Coqueiro da orla 71" type="Node3D" parent="Avulsos/Coqueiros da orla/Norte" unique_id=1011963294]
+transform = Transform3D(-0.888471, 0, -0.458932, 0, 1, 0, 0.458932, 0, -0.888471, 144.034, 0.227, -212.199)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 71"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 1.08
+
+[node name="Coqueiro da orla 72" type="Node3D" parent="Avulsos/Coqueiros da orla/Norte" unique_id=1289410413]
+transform = Transform3D(-0.853832, 0, -0.520548, 0, 1, 0, 0.520548, 0, -0.853832, 140.856, 0.644, -209.392)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 72"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 0.98
+
+[node name="Coqueiro da orla 73" type="Node3D" parent="Avulsos/Coqueiros da orla/Norte" unique_id=1631190066]
+transform = Transform3D(-0.990954, 0, 0.134201, 0, 1, 0, -0.134201, 0, -0.990954, 142.982, 0.357, -216.796)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 73"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 1.09
+
+[node name="Coqueiro da orla 74" type="Node3D" parent="Avulsos/Coqueiros da orla/Norte" unique_id=57975757]
+transform = Transform3D(-0.990021, 0, -0.140922, 0, 1, 0, 0.140922, 0, -0.990021, 141.725, 0.515, -222.245)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 74"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 1.16
+
+[node name="Coqueiro da orla 75" type="Node3D" parent="Avulsos/Coqueiros da orla/Norte" unique_id=497696897]
+transform = Transform3D(-0.991907, 0, -0.126964, 0, 1, 0, 0.126964, 0, -0.991907, 142.066, 0.602, -242.186)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 75"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 0.82
+
+[node name="Coqueiro da orla 76" type="Node3D" parent="Avulsos/Coqueiros da orla/Norte" unique_id=787262160]
+transform = Transform3D(-0.981927, 0, -0.189259, 0, 1, 0, 0.189259, 0, -0.981927, 141.619, 0.413, -253.597)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 76"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 0.9
+
+[node name="Coqueiro da orla 77" type="Node3D" parent="Avulsos/Coqueiros da orla/Norte" unique_id=887709371]
+transform = Transform3D(-0.998312, 0, 0.0580747, 0, 1, 0, -0.0580747, 0, -0.998312, 138.057, 2.132, -321.246)
+script = ExtResource("4_8bxw0")
+id = "Coqueiro da orla 77"
+tipo = "arvore"
+chave = "coqueiro"
+tamanho = 1.03
+
+[node name="Mangue 35" type="Node3D" parent="Avulsos/Manguezal" unique_id=539434258]
+transform = Transform3D(-0.22155, 0, -0.975149, 0, 1, 0, 0.975149, 0, -0.22155, 138.997, 0.471, -270.782)
+script = ExtResource("4_8bxw0")
+id = "Mangue 35"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.05
+
+[node name="Mangue 36" type="Node3D" parent="Avulsos/Manguezal" unique_id=511071464]
+transform = Transform3D(0.129135, 0, -0.991627, 0, 1, 0, 0.991627, 0, 0.129135, 138.329, 1.762, -276.37)
+script = ExtResource("4_8bxw0")
+id = "Mangue 36"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.83
+
+[node name="Mangue 37" type="Node3D" parent="Avulsos/Manguezal" unique_id=643139083]
+transform = Transform3D(-0.479328, 0, 0.877636, 0, 1, 0, -0.877636, 0, -0.479328, 131.744, 2.347, -266.799)
+script = ExtResource("4_8bxw0")
+id = "Mangue 37"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.88
+
+[node name="Mangue 38" type="Node3D" parent="Avulsos/Manguezal" unique_id=1274714690]
+transform = Transform3D(-0.560015, 0, -0.828483, 0, 1, 0, 0.828483, 0, -0.560015, 128.643, 4.161, -271.078)
+script = ExtResource("4_8bxw0")
+id = "Mangue 38"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.88
+
+[node name="Mangue 39" type="Node3D" parent="Avulsos/Manguezal" unique_id=1512910312]
+transform = Transform3D(-0.0805018, 0, 0.996754, 0, 1, 0, -0.996754, 0, -0.0805018, 128.685, 3.07, -264.46)
+script = ExtResource("4_8bxw0")
+id = "Mangue 39"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.97
+
+[node name="Mangue 40" type="Node3D" parent="Avulsos/Manguezal" unique_id=1786251200]
+transform = Transform3D(-0.0963393, 0, 0.995349, 0, 1, 0, -0.995349, 0, -0.0963393, 125.104, 4.612, -269.681)
+script = ExtResource("4_8bxw0")
+id = "Mangue 40"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.8
+
+[node name="Mangue 41" type="Node3D" parent="Avulsos/Manguezal" unique_id=878292254]
+transform = Transform3D(-0.999985, 0, -0.00539263, 0, 1, 0, 0.00539263, 0, -0.999985, 126.522, 3.619, -262.088)
+script = ExtResource("4_8bxw0")
+id = "Mangue 41"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.06
+
+[node name="Mangue 42" type="Node3D" parent="Avulsos/Manguezal" unique_id=1700408766]
+transform = Transform3D(0.931748, 0, -0.363107, 0, 1, 0, 0.363107, 0, 0.931748, 107.864, 4.228, -258.195)
+script = ExtResource("4_8bxw0")
+id = "Mangue 42"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.99
+
+[node name="Mangue 43" type="Node3D" parent="Avulsos/Manguezal" unique_id=1297576094]
+transform = Transform3D(-0.689721, 0, -0.724075, 0, 1, 0, 0.724075, 0, -0.689721, 105.036, 3.479, -263.463)
+script = ExtResource("4_8bxw0")
+id = "Mangue 43"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.84
+
+[node name="Mangue 44" type="Node3D" parent="Avulsos/Manguezal" unique_id=1101847438]
+transform = Transform3D(-0.973782, 0, -0.227484, 0, 1, 0, 0.227484, 0, -0.973782, 109.596, 4.682, -266.712)
+script = ExtResource("4_8bxw0")
+id = "Mangue 44"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.92
+
+[node name="Mangue 45" type="Node3D" parent="Avulsos/Manguezal" unique_id=1865393076]
+transform = Transform3D(-0.973413, 0, 0.229056, 0, 1, 0, -0.229056, 0, -0.973413, 101.795, 3.485, -266.432)
+script = ExtResource("4_8bxw0")
+id = "Mangue 45"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.2
+
+[node name="Mangue 46" type="Node3D" parent="Avulsos/Manguezal" unique_id=791360959]
+transform = Transform3D(-0.408937, 0, 0.912563, 0, 1, 0, -0.912563, 0, -0.408937, 107.407, 4.677, -270.437)
+script = ExtResource("4_8bxw0")
+id = "Mangue 46"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.03
+
+[node name="Mangue 47" type="Node3D" parent="Avulsos/Manguezal" unique_id=1148936640]
+transform = Transform3D(0.249061, 0, 0.968488, 0, 1, 0, -0.968488, 0, 0.249061, 99.5, 3.5, -270.99)
+script = ExtResource("4_8bxw0")
+id = "Mangue 47"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.04
+
+[node name="Mangue 48" type="Node3D" parent="Avulsos/Manguezal" unique_id=891026992]
+transform = Transform3D(0.957212, 0, 0.289386, 0, 1, 0, -0.289386, 0, 0.957212, 105.032, 4.681, -274.084)
+script = ExtResource("4_8bxw0")
+id = "Mangue 48"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.89
+
+[node name="Mangue 49" type="Node3D" parent="Avulsos/Manguezal" unique_id=869032948]
+transform = Transform3D(-0.216755, 0, 0.976226, 0, 1, 0, -0.976226, 0, -0.216755, 97.31, 3.529, -276.396)
+script = ExtResource("4_8bxw0")
+id = "Mangue 49"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.17
+
+[node name="Mangue 50" type="Node3D" parent="Avulsos/Manguezal" unique_id=1817284773]
+transform = Transform3D(-0.106984, 0, 0.994261, 0, 1, 0, -0.994261, 0, -0.106984, 103.237, 4.696, -278.776)
+script = ExtResource("4_8bxw0")
+id = "Mangue 50"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.81
+
+[node name="Mangue 51" type="Node3D" parent="Avulsos/Manguezal" unique_id=373683251]
+transform = Transform3D(0.811314, 0, -0.584611, 0, 1, 0, 0.584611, 0, 0.811314, 94.941, 3.571, -280.851)
+script = ExtResource("4_8bxw0")
+id = "Mangue 51"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.9
+
+[node name="Mangue 52" type="Node3D" parent="Avulsos/Manguezal" unique_id=467591703]
+transform = Transform3D(-0.812885, 0, 0.582424, 0, 1, 0, -0.582424, 0, -0.812885, 100.747, 4.728, -283.12)
+script = ExtResource("4_8bxw0")
+id = "Mangue 52"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.89
+
+[node name="Mangue 53" type="Node3D" parent="Avulsos/Manguezal" unique_id=414331421]
+transform = Transform3D(0.987067, 0, -0.160305, 0, 1, 0, 0.160305, 0, 0.987067, 92.637, 3.626, -285.845)
+script = ExtResource("4_8bxw0")
+id = "Mangue 53"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.1
+
+[node name="Mangue 54" type="Node3D" parent="Avulsos/Manguezal" unique_id=26184923]
+transform = Transform3D(-0.925633, 0, -0.378424, 0, 1, 0, 0.378424, 0, -0.925633, 98.932, 4.77, -288.062)
+script = ExtResource("4_8bxw0")
+id = "Mangue 54"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.04
+
+[node name="Mangue 55" type="Node3D" parent="Avulsos/Manguezal" unique_id=506149832]
+transform = Transform3D(-0.978444, 0, 0.206511, 0, 1, 0, -0.206511, 0, -0.978444, 91.744, 3.664, -289.637)
+script = ExtResource("4_8bxw0")
+id = "Mangue 55"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.83
+
+[node name="Mangue 56" type="Node3D" parent="Avulsos/Manguezal" unique_id=360554022]
+transform = Transform3D(-0.772132, 0, 0.635462, 0, 1, 0, -0.635462, 0, -0.772132, 98.085, 4.809, -292.454)
+script = ExtResource("4_8bxw0")
+id = "Mangue 56"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.06
+
+[node name="Mangue 57" type="Node3D" parent="Avulsos/Manguezal" unique_id=1889100347]
+transform = Transform3D(-0.456172, 0, 0.889892, 0, 1, 0, -0.889892, 0, -0.456172, 89.254, 3.733, -294.046)
+script = ExtResource("4_8bxw0")
+id = "Mangue 57"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.03
+
+[node name="Mangue 58" type="Node3D" parent="Avulsos/Manguezal" unique_id=867095386]
+transform = Transform3D(0.247788, 0, -0.968814, 0, 1, 0, 0.968814, 0, 0.247788, 94.264, 4.901, -298.234)
+script = ExtResource("4_8bxw0")
+id = "Mangue 58"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.04
+
+[node name="Mangue 59" type="Node3D" parent="Avulsos/Manguezal" unique_id=1788596026]
+transform = Transform3D(0.221835, 0, -0.975084, 0, 1, 0, 0.975084, 0, 0.221835, 89.386, 5.007, -302.373)
+script = ExtResource("4_8bxw0")
+id = "Mangue 59"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.93
+
+[node name="Mangue 60" type="Node3D" parent="Avulsos/Manguezal" unique_id=1522352361]
+transform = Transform3D(0.0662478, 0, -0.997803, 0, 1, 0, 0.997803, 0, 0.0662478, 81.941, 3.891, -298.617)
+script = ExtResource("4_8bxw0")
+id = "Mangue 60"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.81
+
+[node name="Mangue 61" type="Node3D" parent="Avulsos/Manguezal" unique_id=1318632551]
+transform = Transform3D(0.99984, 0, -0.017899, 0, 1, 0, 0.017899, 0, 0.99984, 84.703, 5.106, -305.021)
+script = ExtResource("4_8bxw0")
+id = "Mangue 61"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.94
+
+[node name="Mangue 62" type="Node3D" parent="Avulsos/Manguezal" unique_id=942767107]
+transform = Transform3D(-0.994544, 0, 0.104317, 0, 1, 0, -0.104317, 0, -0.994544, 78.869, 3.955, -299.515)
+script = ExtResource("4_8bxw0")
+id = "Mangue 62"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.09
+
+[node name="Mangue 63" type="Node3D" parent="Avulsos/Manguezal" unique_id=1283995556]
+transform = Transform3D(0.830161, 0, -0.557524, 0, 1, 0, 0.557524, 0, 0.830161, 80.904, 5.182, -306.311)
+script = ExtResource("4_8bxw0")
+id = "Mangue 63"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.94
+
+[node name="Mangue 64" type="Node3D" parent="Avulsos/Manguezal" unique_id=1443633064]
+transform = Transform3D(-0.832159, 0, 0.554538, 0, 1, 0, -0.554538, 0, -0.832159, 75.199, 4.037, -300.878)
+script = ExtResource("4_8bxw0")
+id = "Mangue 64"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.14
+
+[node name="Mangue 65" type="Node3D" parent="Avulsos/Manguezal" unique_id=1852563883]
+transform = Transform3D(0.270788, 0, 0.962639, 0, 1, 0, -0.962639, 0, 0.270788, 76.421, 5.272, -307.198)
+script = ExtResource("4_8bxw0")
+id = "Mangue 65"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.0
+
+[node name="Mangue 66" type="Node3D" parent="Avulsos/Manguezal" unique_id=322673096]
+transform = Transform3D(0.206402, 0, -0.978467, 0, 1, 0, 0.978467, 0, 0.206402, 70.946, 4.125, -300.945)
+script = ExtResource("4_8bxw0")
+id = "Mangue 66"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.15
+
+[node name="Mangue 67" type="Node3D" parent="Avulsos/Manguezal" unique_id=1807328514]
+transform = Transform3D(0.161106, 0, 0.986937, 0, 1, 0, -0.986937, 0, 0.161106, 70.983, 5.388, -308.243)
+script = ExtResource("4_8bxw0")
+id = "Mangue 67"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.99
+
+[node name="Mangue 68" type="Node3D" parent="Avulsos/Manguezal" unique_id=88204677]
+transform = Transform3D(0.197882, 0, -0.980226, 0, 1, 0, 0.980226, 0, 0.197882, 67.095, 4.214, -301.646)
+script = ExtResource("4_8bxw0")
+id = "Mangue 68"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.87
+
+[node name="Mangue 69" type="Node3D" parent="Avulsos/Manguezal" unique_id=1944781720]
+transform = Transform3D(0.488436, 0, -0.8726, 0, 1, 0, 0.8726, 0, 0.488436, 66.775, 5.469, -307.572)
+script = ExtResource("4_8bxw0")
+id = "Mangue 69"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.99
+
+[node name="Mangue 70" type="Node3D" parent="Avulsos/Manguezal" unique_id=1696945343]
+transform = Transform3D(0.167025, 0, 0.985953, 0, 1, 0, -0.985953, 0, 0.167025, 62.204, 4.315, -300.117)
+script = ExtResource("4_8bxw0")
+id = "Mangue 70"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.82
+
+[node name="Mangue 71" type="Node3D" parent="Avulsos/Manguezal" unique_id=1793341278]
+transform = Transform3D(-0.816835, 0, -0.576871, 0, 1, 0, 0.576871, 0, -0.816835, 61.254, 5.586, -306.894)
+script = ExtResource("4_8bxw0")
+id = "Mangue 71"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.91
+
+[node name="Mangue 72" type="Node3D" parent="Avulsos/Manguezal" unique_id=395320465]
+transform = Transform3D(0.830002, 0, 0.557761, 0, 1, 0, -0.557761, 0, 0.830002, 56.956, 4.442, -300.143)
+script = ExtResource("4_8bxw0")
+id = "Mangue 72"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.94
+
+[node name="Mangue 73" type="Node3D" parent="Avulsos/Manguezal" unique_id=319480247]
+transform = Transform3D(-0.897736, 0, -0.440533, 0, 1, 0, 0.440533, 0, -0.897736, 55.425, 5.72, -306.461)
+script = ExtResource("4_8bxw0")
+id = "Mangue 73"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.84
+
+[node name="Mangue 74" type="Node3D" parent="Avulsos/Manguezal" unique_id=130255889]
+transform = Transform3D(-0.315899, 0, -0.948793, 0, 1, 0, 0.948793, 0, -0.315899, 52.845, 4.538, -298.416)
+script = ExtResource("4_8bxw0")
+id = "Mangue 74"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.95
+
+[node name="Mangue 75" type="Node3D" parent="Avulsos/Manguezal" unique_id=1828918445]
+transform = Transform3D(-0.999914, 0, 0.013107, 0, 1, 0, -0.013107, 0, -0.999914, 50.854, 5.821, -304.676)
+script = ExtResource("4_8bxw0")
+id = "Mangue 75"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.2
+
+[node name="Mangue 76" type="Node3D" parent="Avulsos/Manguezal" unique_id=893072807]
+transform = Transform3D(0.0104108, 0, 0.999946, 0, 1, 0, -0.999946, 0, 0.0104108, 48.664, 4.641, -296.744)
+script = ExtResource("4_8bxw0")
+id = "Mangue 76"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.92
+
+[node name="Mangue 77" type="Node3D" parent="Avulsos/Manguezal" unique_id=1546803428]
+transform = Transform3D(-0.771378, 0, -0.636377, 0, 1, 0, 0.636377, 0, -0.771378, 46.028, 5.941, -303.84)
+script = ExtResource("4_8bxw0")
+id = "Mangue 77"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.95
+
+[node name="Mangue 78" type="Node3D" parent="Avulsos/Manguezal" unique_id=717162470]
+transform = Transform3D(-0.956771, 0, 0.290843, 0, 1, 0, -0.290843, 0, -0.956771, 43.703, 4.773, -295.507)
+script = ExtResource("4_8bxw0")
+id = "Mangue 78"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.04
+
+[node name="Mangue 79" type="Node3D" parent="Avulsos/Manguezal" unique_id=1910648457]
+transform = Transform3D(-0.918626, 0, 0.395128, 0, 1, 0, -0.395128, 0, -0.918626, 41.257, 6.056, -301.048)
+script = ExtResource("4_8bxw0")
+id = "Mangue 79"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.82
+
+[node name="Mangue 80" type="Node3D" parent="Avulsos/Manguezal" unique_id=1886241814]
+transform = Transform3D(0.14152, 0, -0.989935, 0, 1, 0, 0.989935, 0, 0.14152, 40.061, 4.87, -292.785)
+script = ExtResource("4_8bxw0")
+id = "Mangue 80"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.86
+
+[node name="Mangue 81" type="Node3D" parent="Avulsos/Manguezal" unique_id=1726680421]
+transform = Transform3D(0.648792, 0, -0.760966, 0, 1, 0, 0.760966, 0, 0.648792, 36.98, 6.169, -299.172)
+script = ExtResource("4_8bxw0")
+id = "Mangue 81"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.86
+
+[node name="Mangue 82" type="Node3D" parent="Avulsos/Manguezal" unique_id=1517238789]
+transform = Transform3D(0.494979, 0, 0.868905, 0, 1, 0, -0.868905, 0, 0.494979, 35.978, 4.987, -292.453)
+script = ExtResource("4_8bxw0")
+id = "Mangue 82"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.81
+
+[node name="Mangue 83" type="Node3D" parent="Avulsos/Manguezal" unique_id=1467180622]
+transform = Transform3D(-0.472468, 0, 0.881348, 0, 1, 0, -0.881348, 0, -0.472468, 33.353, 6.268, -297.893)
+script = ExtResource("4_8bxw0")
+id = "Mangue 83"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.84
+
+[node name="Mangue 84" type="Node3D" parent="Avulsos/Manguezal" unique_id=373495865]
+transform = Transform3D(0.721244, 0, -0.692681, 0, 1, 0, 0.692681, 0, 0.721244, 33.105, 5.071, -289.911)
+script = ExtResource("4_8bxw0")
+id = "Mangue 84"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.87
+
+[node name="Mangue 85" type="Node3D" parent="Avulsos/Manguezal" unique_id=66757508]
+transform = Transform3D(0.96486, 0, 0.262764, 0, 1, 0, -0.262764, 0, 0.96486, 30.04, 6.361, -296.262)
+script = ExtResource("4_8bxw0")
+id = "Mangue 85"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.83
+
+[node name="Mangue 86" type="Node3D" parent="Avulsos/Manguezal" unique_id=622511958]
+transform = Transform3D(-0.795058, 0, -0.606533, 0, 1, 0, 0.606533, 0, -0.795058, 29.98, 5.166, -288.125)
+script = ExtResource("4_8bxw0")
+id = "Mangue 86"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.98
+
+[node name="Mangue 87" type="Node3D" parent="Avulsos/Manguezal" unique_id=1423235582]
+transform = Transform3D(-0.601121, 0, -0.799158, 0, 1, 0, 0.799158, 0, -0.601121, 26.769, 6.455, -294.777)
+script = ExtResource("4_8bxw0")
+id = "Mangue 87"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.14
+
+[node name="Mangue 88" type="Node3D" parent="Avulsos/Manguezal" unique_id=1140717781]
+transform = Transform3D(0.498191, 0, 0.867067, 0, 1, 0, -0.867067, 0, 0.498191, 25.912, 5.292, -286.004)
+script = ExtResource("4_8bxw0")
+id = "Mangue 88"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.13
+
+[node name="Mangue 89" type="Node3D" parent="Avulsos/Manguezal" unique_id=573045120]
+transform = Transform3D(0.807143, 0, -0.590356, 0, 1, 0, 0.590356, 0, 0.807143, 23.12, 6.563, -292.08)
+script = ExtResource("4_8bxw0")
+id = "Mangue 89"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.89
+
+[node name="Mangue 90" type="Node3D" parent="Avulsos/Manguezal" unique_id=1166549586]
+transform = Transform3D(-0.905301, 0, 0.42477, 0, 1, 0, -0.42477, 0, -0.905301, 21.101, 5.44, -285.211)
+script = ExtResource("4_8bxw0")
+id = "Mangue 90"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.14
+
+[node name="Mangue 91" type="Node3D" parent="Avulsos/Manguezal" unique_id=1518439788]
+transform = Transform3D(-0.824653, 0, 0.565639, 0, 1, 0, -0.565639, 0, -0.824653, 19.092, 6.685, -290.314)
+script = ExtResource("4_8bxw0")
+id = "Mangue 91"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.93
+
+[node name="Mangue 92" type="Node3D" parent="Avulsos/Manguezal" unique_id=649493909]
+transform = Transform3D(0.856833, 0, -0.515593, 0, 1, 0, 0.515593, 0, 0.856833, 16.965, 5.522, -284.201)
+script = ExtResource("4_8bxw0")
+id = "Mangue 92"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.12
+
+[node name="Mangue 93" type="Node3D" parent="Avulsos/Manguezal" unique_id=873209869]
+transform = Transform3D(0.986601, 0, 0.163153, 0, 1, 0, -0.163153, 0, 0.986601, 15.152, 6.804, -289.631)
+script = ExtResource("4_8bxw0")
+id = "Mangue 93"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.12
+
+[node name="Mangue 94" type="Node3D" parent="Avulsos/Manguezal" unique_id=1781873903]
+transform = Transform3D(-0.752865, 0, -0.658175, 0, 1, 0, 0.658175, 0, -0.752865, 11.996, 5.727, -282.399)
+script = ExtResource("4_8bxw0")
+id = "Mangue 94"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.2
+
+[node name="Mangue 95" type="Node3D" parent="Avulsos/Manguezal" unique_id=1953616143]
+transform = Transform3D(0.514231, 0, 0.857652, 0, 1, 0, -0.857652, 0, 0.514231, 10.507, 6.949, -287.573)
+script = ExtResource("4_8bxw0")
+id = "Mangue 95"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.83
+
+[node name="Mangue 96" type="Node3D" parent="Avulsos/Manguezal" unique_id=83795477]
+transform = Transform3D(0.361146, 0, -0.932509, 0, 1, 0, 0.932509, 0, 0.361146, 7.227, 5.876, -281.382)
+script = ExtResource("4_8bxw0")
+id = "Mangue 96"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.95
+
+[node name="Mangue 97" type="Node3D" parent="Avulsos/Manguezal" unique_id=1997673662]
+transform = Transform3D(0.733129, 0, 0.68009, 0, 1, 0, -0.68009, 0, 0.733129, 6.032, 7.084, -286.961)
+script = ExtResource("4_8bxw0")
+id = "Mangue 97"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.81
+
+[node name="Mangue 98" type="Node3D" parent="Avulsos/Manguezal" unique_id=600323463]
+transform = Transform3D(-0.827864, 0, 0.560929, 0, 1, 0, -0.560929, 0, -0.827864, 2.873, 6.012, -280.37)
+script = ExtResource("4_8bxw0")
+id = "Mangue 98"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.17
+
+[node name="Mangue 99" type="Node3D" parent="Avulsos/Manguezal" unique_id=849483848]
+transform = Transform3D(-0.249331, 0, 0.968418, 0, 1, 0, -0.968418, 0, -0.249331, 2.495, 7.194, -285.853)
+script = ExtResource("4_8bxw0")
+id = "Mangue 99"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.9
+
+[node name="Mangue 100" type="Node3D" parent="Avulsos/Manguezal" unique_id=641354375]
+transform = Transform3D(-0.999611, 0, 0.0279037, 0, 1, 0, -0.0279037, 0, -0.999611, -3.24, 6.194, -280.246)
+script = ExtResource("4_8bxw0")
+id = "Mangue 100"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.86
+
+[node name="Mangue 101" type="Node3D" parent="Avulsos/Manguezal" unique_id=382598720]
+transform = Transform3D(-0.429184, 0, 0.903217, 0, 1, 0, -0.903217, 0, -0.429184, -1.721, 7.317, -286.181)
+script = ExtResource("4_8bxw0")
+id = "Mangue 101"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.05
+
+[node name="Mangue 102" type="Node3D" parent="Avulsos/Manguezal" unique_id=1482175817]
+transform = Transform3D(-0.504229, 0, 0.86357, 0, 1, 0, -0.86357, 0, -0.504229, -8.045, 6.327, -281.944)
+script = ExtResource("4_8bxw0")
+id = "Mangue 102"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.88
+
+[node name="Mangue 103" type="Node3D" parent="Avulsos/Manguezal" unique_id=1524511434]
+transform = Transform3D(-0.82904, 0, 0.559189, 0, 1, 0, -0.559189, 0, -0.82904, -5.541, 7.42, -288.589)
+script = ExtResource("4_8bxw0")
+id = "Mangue 103"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.09
+
+[node name="Mangue 104" type="Node3D" parent="Avulsos/Manguezal" unique_id=1463295925]
+transform = Transform3D(0.870637, 0, -0.491926, 0, 1, 0, 0.491926, 0, 0.870637, -12.575, 6.438, -285.177)
+script = ExtResource("4_8bxw0")
+id = "Mangue 104"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.07
+
+[node name="Mangue 105" type="Node3D" parent="Avulsos/Manguezal" unique_id=530365212]
+transform = Transform3D(0.822047, 0, -0.56942, 0, 1, 0, 0.56942, 0, 0.822047, -9.8, 7.542, -289.648)
+script = ExtResource("4_8bxw0")
+id = "Mangue 105"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.86
+
+[node name="Mangue 106" type="Node3D" parent="Avulsos/Manguezal" unique_id=194417000]
+transform = Transform3D(0.942626, 0, 0.33385, 0, 1, 0, -0.33385, 0, 0.942626, -16.95, 6.567, -286.642)
+script = ExtResource("4_8bxw0")
+id = "Mangue 106"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.82
+
+[node name="Mangue 107" type="Node3D" parent="Avulsos/Manguezal" unique_id=1539753976]
+transform = Transform3D(-0.691085, 0, 0.722774, 0, 1, 0, -0.722774, 0, -0.691085, -13.005, 7.629, -291.938)
+script = ExtResource("4_8bxw0")
+id = "Mangue 107"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.16
+
+[node name="Mangue 108" type="Node3D" parent="Avulsos/Manguezal" unique_id=620507110]
+transform = Transform3D(-0.617129, 0, 0.786862, 0, 1, 0, -0.786862, 0, -0.617129, -19.99, 6.648, -289.083)
+script = ExtResource("4_8bxw0")
+id = "Mangue 108"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.94
+
+[node name="Mangue 109" type="Node3D" parent="Avulsos/Manguezal" unique_id=407250563]
+transform = Transform3D(-0.893959, 0, -0.448148, 0, 1, 0, 0.448148, 0, -0.893959, -16.067, 7.712, -294.519)
+script = ExtResource("4_8bxw0")
+id = "Mangue 109"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.82
+
+[node name="Mangue 110" type="Node3D" parent="Avulsos/Manguezal" unique_id=311719551]
+transform = Transform3D(-0.938614, 0, 0.34497, 0, 1, 0, -0.34497, 0, -0.938614, -22.815, 6.722, -292.361)
+script = ExtResource("4_8bxw0")
+id = "Mangue 110"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.17
+
+[node name="Mangue 111" type="Node3D" parent="Avulsos/Manguezal" unique_id=129034708]
+transform = Transform3D(0.748178, 0, 0.663499, 0, 1, 0, -0.663499, 0, 0.748178, -19.724, 7.816, -296.332)
+script = ExtResource("4_8bxw0")
+id = "Mangue 111"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.85
+
+[node name="Mangue 112" type="Node3D" parent="Avulsos/Manguezal" unique_id=1295570962]
+transform = Transform3D(0.789379, 0, -0.613907, 0, 1, 0, 0.613907, 0, 0.789379, -28.139, 6.873, -296.393)
+script = ExtResource("4_8bxw0")
+id = "Mangue 112"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.07
+
+[node name="Mangue 113" type="Node3D" parent="Avulsos/Manguezal" unique_id=630060701]
+transform = Transform3D(-0.187178, 0, 0.982326, 0, 1, 0, -0.982326, 0, -0.187178, -22.355, 7.886, -300.829)
+script = ExtResource("4_8bxw0")
+id = "Mangue 113"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.89
+
+[node name="Mangue 114" type="Node3D" parent="Avulsos/Manguezal" unique_id=667904773]
+transform = Transform3D(0.949015, 0, -0.315231, 0, 1, 0, 0.315231, 0, 0.949015, -29.625, 6.847, -300.516)
+script = ExtResource("4_8bxw0")
+id = "Mangue 114"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.18
+
+[node name="Mangue 115" type="Node3D" parent="Avulsos/Manguezal" unique_id=884120759]
+transform = Transform3D(-0.999529, 0, -0.0306878, 0, 1, 0, 0.0306878, 0, -0.999529, -24.934, 7.96, -303.466)
+script = ExtResource("4_8bxw0")
+id = "Mangue 115"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.09
+
+[node name="Mangue 116" type="Node3D" parent="Avulsos/Manguezal" unique_id=263353037]
+transform = Transform3D(-0.997044, 0, 0.0768316, 0, 1, 0, -0.0768316, 0, -0.997044, -32.768, 7.003, -303.701)
+script = ExtResource("4_8bxw0")
+id = "Mangue 116"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.84
+
+[node name="Mangue 117" type="Node3D" parent="Avulsos/Manguezal" unique_id=737069724]
+transform = Transform3D(-0.16682, 0, -0.985987, 0, 1, 0, 0.985987, 0, -0.16682, -26.595, 8.006, -307.08)
+script = ExtResource("4_8bxw0")
+id = "Mangue 117"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.11
+
+[node name="Mangue 118" type="Node3D" parent="Avulsos/Manguezal" unique_id=765028283]
+transform = Transform3D(0.716796, 0, -0.697283, 0, 1, 0, 0.697283, 0, 0.716796, -34.716, 7.058, -308.619)
+script = ExtResource("4_8bxw0")
+id = "Mangue 118"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.05
+
+[node name="Mangue 119" type="Node3D" parent="Avulsos/Manguezal" unique_id=1306309242]
+transform = Transform3D(0.759804, 0, 0.650153, 0, 1, 0, -0.650153, 0, 0.759804, -29.819, 8.101, -312.922)
+script = ExtResource("4_8bxw0")
+id = "Mangue 119"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.16
+
+[node name="Mangue 120" type="Node3D" parent="Avulsos/Manguezal" unique_id=1153340742]
+transform = Transform3D(0.548953, 0, 0.835853, 0, 1, 0, -0.835853, 0, 0.548953, -37.519, 7.146, -310.8)
+script = ExtResource("4_8bxw0")
+id = "Mangue 120"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.96
+
+[node name="Mangue 121" type="Node3D" parent="Avulsos/Manguezal" unique_id=1164059310]
+transform = Transform3D(0.998819, 0, -0.0485809, 0, 1, 0, 0.0485809, 0, 0.998819, -36.526, 8.311, -315.829)
+script = ExtResource("4_8bxw0")
+id = "Mangue 121"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.93
+
+[node name="Mangue 122" type="Node3D" parent="Avulsos/Manguezal" unique_id=27902699]
+transform = Transform3D(-0.951011, 0, 0.309158, 0, 1, 0, -0.309158, 0, -0.951011, -40.339, 7.238, -309.774)
+script = ExtResource("4_8bxw0")
+id = "Mangue 122"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.9
+
+[node name="Mangue 123" type="Node3D" parent="Avulsos/Manguezal" unique_id=1895538461]
+transform = Transform3D(0.653736, 0, 0.756723, 0, 1, 0, -0.756723, 0, 0.653736, -42.006, 8.489, -316.421)
+script = ExtResource("4_8bxw0")
+id = "Mangue 123"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.16
+
+[node name="Mangue 124" type="Node3D" parent="Avulsos/Manguezal" unique_id=1883614291]
+transform = Transform3D(-0.971122, 0, 0.238584, 0, 1, 0, -0.238584, 0, -0.971122, -45.742, 7.419, -308.194)
+script = ExtResource("4_8bxw0")
+id = "Mangue 124"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.06
+
+[node name="Mangue 125" type="Node3D" parent="Avulsos/Manguezal" unique_id=1509613927]
+transform = Transform3D(0.803824, 0, -0.594867, 0, 1, 0, 0.594867, 0, 0.803824, -47.574, 8.676, -313.577)
+script = ExtResource("4_8bxw0")
+id = "Mangue 125"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.86
+
+[node name="Mangue 126" type="Node3D" parent="Avulsos/Manguezal" unique_id=1809126157]
+transform = Transform3D(-0.472833, 0, -0.881152, 0, 1, 0, 0.881152, 0, -0.472833, -51.342, 7.612, -307.036)
+script = ExtResource("4_8bxw0")
+id = "Mangue 126"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.89
+
+[node name="Mangue 127" type="Node3D" parent="Avulsos/Manguezal" unique_id=1100987135]
+transform = Transform3D(0.914227, 0, -0.405202, 0, 1, 0, 0.405202, 0, 0.914227, -51.525, 8.813, -312.394)
+script = ExtResource("4_8bxw0")
+id = "Mangue 127"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.85
+
+[node name="Mangue 128" type="Node3D" parent="Avulsos/Manguezal" unique_id=1090307148]
+transform = Transform3D(0.0635681, 0, 0.997978, 0, 1, 0, -0.997978, 0, 0.0635681, -56.835, 7.808, -306.753)
+script = ExtResource("4_8bxw0")
+id = "Mangue 128"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.06
+
+[node name="Mangue 129" type="Node3D" parent="Avulsos/Manguezal" unique_id=1576582496]
+transform = Transform3D(-0.82517, 0, -0.564884, 0, 1, 0, 0.564884, 0, -0.82517, -54.819, 8.928, -313.144)
+script = ExtResource("4_8bxw0")
+id = "Mangue 129"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.02
+
+[node name="Mangue 130" type="Node3D" parent="Avulsos/Manguezal" unique_id=1123563949]
+transform = Transform3D(-0.87571, 0, -0.482838, 0, 1, 0, 0.482838, 0, -0.87571, -61.256, 7.967, -309.014)
+script = ExtResource("4_8bxw0")
+id = "Mangue 130"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.93
+
+[node name="Mangue 131" type="Node3D" parent="Avulsos/Manguezal" unique_id=185944773]
+transform = Transform3D(0.998559, 0, -0.0536742, 0, 1, 0, 0.0536742, 0, 0.998559, -57.075, 9.007, -315.445)
+script = ExtResource("4_8bxw0")
+id = "Mangue 131"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.83
+
+[node name="Mangue 132" type="Node3D" parent="Avulsos/Manguezal" unique_id=559310337]
+transform = Transform3D(0.242955, 0, 0.970038, 0, 1, 0, -0.970038, 0, 0.242955, -65.354, 8.119, -311.926)
+script = ExtResource("4_8bxw0")
+id = "Mangue 132"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.12
+
+[node name="Mangue 133" type="Node3D" parent="Avulsos/Manguezal" unique_id=48191875]
+transform = Transform3D(-0.059953, 0, 0.998201, 0, 1, 0, -0.998201, 0, -0.059953, -60.282, 9.122, -317.528)
+script = ExtResource("4_8bxw0")
+id = "Mangue 133"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.99
+
+[node name="Mangue 134" type="Node3D" parent="Avulsos/Manguezal" unique_id=782880877]
+transform = Transform3D(-0.140636, 0, -0.990061, 0, 1, 0, 0.990061, 0, -0.140636, -68.641, 8.187, -317.768)
+script = ExtResource("4_8bxw0")
+id = "Mangue 134"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.82
+
+[node name="Mangue 135" type="Node3D" parent="Avulsos/Manguezal" unique_id=26793850]
+transform = Transform3D(0.0811218, 0, 0.996704, 0, 1, 0, -0.996704, 0, 0.0811218, -64.591, 9.28, -320.922)
+script = ExtResource("4_8bxw0")
+id = "Mangue 135"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.13
+
+[node name="Mangue 136" type="Node3D" parent="Avulsos/Manguezal" unique_id=342304243]
+transform = Transform3D(0.192586, 0, -0.98128, 0, 1, 0, 0.98128, 0, 0.192586, -71.728, 8.352, -324.317)
+script = ExtResource("4_8bxw0")
+id = "Mangue 136"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.09
+
+[node name="Mangue 137" type="Node3D" parent="Avulsos/Manguezal" unique_id=18484171]
+transform = Transform3D(-0.99811, 0, -0.0614539, 0, 1, 0, 0.0614539, 0, -0.99811, -65.755, 9.321, -324.263)
+script = ExtResource("4_8bxw0")
+id = "Mangue 137"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.07
+
+[node name="Mangue 138" type="Node3D" parent="Avulsos/Manguezal" unique_id=1045099503]
+transform = Transform3D(-0.265, 0, -0.964248, 0, 1, 0, 0.964248, 0, -0.265, 64.539, 0.38, -33.039)
+script = ExtResource("4_8bxw0")
+id = "Mangue 138"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.8
+
+[node name="Mangue 139" type="Node3D" parent="Avulsos/Manguezal" unique_id=1284921134]
+transform = Transform3D(-0.785677, 0, 0.618638, 0, 1, 0, -0.618638, 0, -0.785677, 60.576, 0.513, -38.368)
+script = ExtResource("4_8bxw0")
+id = "Mangue 139"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.81
+
+[node name="Mangue 140" type="Node3D" parent="Avulsos/Manguezal" unique_id=1441646563]
+transform = Transform3D(0.995989, 0, -0.0894802, 0, 1, 0, 0.0894802, 0, 0.995989, 60.52, 1.2, -29.555)
+script = ExtResource("4_8bxw0")
+id = "Mangue 140"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.99
+
+[node name="Mangue 141" type="Node3D" parent="Avulsos/Manguezal" unique_id=1993621051]
+transform = Transform3D(0.933551, 0, -0.358443, 0, 1, 0, 0.358443, 0, 0.933551, 56.703, 1.937, -25.928)
+script = ExtResource("4_8bxw0")
+id = "Mangue 141"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.87
+
+[node name="Mangue 142" type="Node3D" parent="Avulsos/Manguezal" unique_id=655638380]
+transform = Transform3D(-0.655847, 0, -0.754894, 0, 1, 0, 0.754894, 0, -0.655847, 51.955, 2.221, -23.349)
+script = ExtResource("4_8bxw0")
+id = "Mangue 142"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.09
+
+[node name="Mangue 143" type="Node3D" parent="Avulsos/Manguezal" unique_id=1665692603]
+transform = Transform3D(-0.248362, 0, 0.968667, 0, 1, 0, -0.968667, 0, -0.248362, 48.268, 2.38, -30.267)
+script = ExtResource("4_8bxw0")
+id = "Mangue 143"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.17
+
+[node name="Mangue 144" type="Node3D" parent="Avulsos/Manguezal" unique_id=713124480]
+transform = Transform3D(-0.933159, 0, -0.359463, 0, 1, 0, 0.359463, 0, -0.933159, 45.944, 2.461, -22.522)
+script = ExtResource("4_8bxw0")
+id = "Mangue 144"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.17
+
+[node name="Mangue 145" type="Node3D" parent="Avulsos/Manguezal" unique_id=1129871109]
+transform = Transform3D(-0.990091, 0, -0.140427, 0, 1, 0, 0.140427, 0, -0.990091, 44.804, 2.526, -28.868)
+script = ExtResource("4_8bxw0")
+id = "Mangue 145"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.87
+
+[node name="Mangue 146" type="Node3D" parent="Avulsos/Manguezal" unique_id=1259607712]
+transform = Transform3D(-0.999975, 0, 0.00710729, 0, 1, 0, -0.00710729, 0, -0.999975, 39.751, 2.702, -22.22)
+script = ExtResource("4_8bxw0")
+id = "Mangue 146"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.83
+
+[node name="Mangue 147" type="Node3D" parent="Avulsos/Manguezal" unique_id=1797356690]
+transform = Transform3D(0.839736, 0, -0.542995, 0, 1, 0, 0.542995, 0, 0.839736, 40.489, 2.709, -29.361)
+script = ExtResource("4_8bxw0")
+id = "Mangue 147"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.9
+
+[node name="Mangue 148" type="Node3D" parent="Avulsos/Manguezal" unique_id=295331003]
+transform = Transform3D(0.95215, 0, -0.30563, 0, 1, 0, 0.30563, 0, 0.95215, 36.113, 2.837, -21.864)
+script = ExtResource("4_8bxw0")
+id = "Mangue 148"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.85
+
+[node name="Mangue 149" type="Node3D" parent="Avulsos/Manguezal" unique_id=572790597]
+transform = Transform3D(-0.514298, 0, 0.857612, 0, 1, 0, -0.857612, 0, -0.514298, 36.334, 2.881, -30.09)
+script = ExtResource("4_8bxw0")
+id = "Mangue 149"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.96
+
+[node name="Mangue 150" type="Node3D" parent="Avulsos/Manguezal" unique_id=1267828027]
+transform = Transform3D(-0.612239, 0, 0.790673, 0, 1, 0, -0.790673, 0, -0.612239, 31.706, 2.992, -21.368)
+script = ExtResource("4_8bxw0")
+id = "Mangue 150"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.01
+
+[node name="Mangue 151" type="Node3D" parent="Avulsos/Manguezal" unique_id=734639387]
+transform = Transform3D(-0.649167, 0, 0.760646, 0, 1, 0, -0.760646, 0, -0.649167, 32.153, 3.042, -30.18)
+script = ExtResource("4_8bxw0")
+id = "Mangue 151"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.04
+
+[node name="Mangue 152" type="Node3D" parent="Avulsos/Manguezal" unique_id=1012473596]
+transform = Transform3D(-0.516269, 0, 0.856426, 0, 1, 0, -0.856426, 0, -0.516269, 26.75, 3.173, -22.763)
+script = ExtResource("4_8bxw0")
+id = "Mangue 152"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.99
+
+[node name="Mangue 153" type="Node3D" parent="Avulsos/Manguezal" unique_id=1308032370]
+transform = Transform3D(-0.994844, 0, -0.101418, 0, 1, 0, 0.101418, 0, -0.994844, 28.356, 3.178, -30.164)
+script = ExtResource("4_8bxw0")
+id = "Mangue 153"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.01
+
+[node name="Mangue 154" type="Node3D" parent="Avulsos/Manguezal" unique_id=204054268]
+transform = Transform3D(-0.876378, 0, 0.481624, 0, 1, 0, -0.481624, 0, -0.876378, 22.049, 3.335, -24.017)
+script = ExtResource("4_8bxw0")
+id = "Mangue 154"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.01
+
+[node name="Mangue 155" type="Node3D" parent="Avulsos/Manguezal" unique_id=13923500]
+transform = Transform3D(-0.696353, 0, -0.717699, 0, 1, 0, 0.717699, 0, -0.696353, 22.101, 3.389, -30.825)
+script = ExtResource("4_8bxw0")
+id = "Mangue 155"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.91
+
+[node name="Mangue 156" type="Node3D" parent="Avulsos/Manguezal" unique_id=937183563]
+transform = Transform3D(-0.975037, 0, 0.222041, 0, 1, 0, -0.222041, 0, -0.975037, 17.651, 3.511, -30.27)
+script = ExtResource("4_8bxw0")
+id = "Mangue 156"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.09
+
+[node name="Mangue 157" type="Node3D" parent="Avulsos/Manguezal" unique_id=1817766883]
+transform = Transform3D(0.554196, 0, -0.832386, 0, 1, 0, 0.832386, 0, 0.554196, 1.608, 3.841, -29.72)
+script = ExtResource("4_8bxw0")
+id = "Mangue 157"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.89
+
+[node name="Mangue 158" type="Node3D" parent="Avulsos/Manguezal" unique_id=1975557178]
+transform = Transform3D(0.841631, 0, -0.540053, 0, 1, 0, 0.540053, 0, 0.841631, -0.113, 3.863, -22.435)
+script = ExtResource("4_8bxw0")
+id = "Mangue 158"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.16
+
+[node name="Mangue 159" type="Node3D" parent="Avulsos/Manguezal" unique_id=502021366]
+transform = Transform3D(0.686959, 0, -0.726696, 0, 1, 0, 0.726696, 0, 0.686959, -3.034, 3.893, -28.763)
+script = ExtResource("4_8bxw0")
+id = "Mangue 159"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.17
+
+[node name="Mangue 160" type="Node3D" parent="Avulsos/Manguezal" unique_id=1451682774]
+transform = Transform3D(0.350867, 0, -0.936425, 0, 1, 0, 0.936425, 0, 0.350867, -6.721, 3.912, -26.26)
+script = ExtResource("4_8bxw0")
+id = "Mangue 160"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.94
+
+[node name="Mangue 161" type="Node3D" parent="Avulsos/Manguezal" unique_id=1516688997]
+transform = Transform3D(-0.939781, 0, 0.341777, 0, 1, 0, -0.341777, 0, -0.939781, -18.681, 3.985, -26.425)
+script = ExtResource("4_8bxw0")
+id = "Mangue 161"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.14
+
+[node name="Mangue 162" type="Node3D" parent="Avulsos/Manguezal" unique_id=1676452104]
+transform = Transform3D(0.999864, 0, 0.0164846, 0, 1, 0, -0.0164846, 0, 0.999864, -19.714, 4.085, -31.597)
+script = ExtResource("4_8bxw0")
+id = "Mangue 162"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.95
+
+[node name="Mangue 163" type="Node3D" parent="Avulsos/Manguezal" unique_id=1637867550]
+transform = Transform3D(-0.0340971, 0, -0.999419, 0, 1, 0, 0.999419, 0, -0.0340971, -12.694, 4.035, -32.282)
+script = ExtResource("4_8bxw0")
+id = "Mangue 163"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.0
+
+[node name="Mangue 164" type="Node3D" parent="Avulsos/Manguezal" unique_id=643352019]
+transform = Transform3D(0.94955, 0, -0.313617, 0, 1, 0, 0.313617, 0, 0.94955, -19.279, 4.19, -35.981)
+script = ExtResource("4_8bxw0")
+id = "Mangue 164"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.83
+
+[node name="Mangue 165" type="Node3D" parent="Avulsos/Manguezal" unique_id=413862182]
+transform = Transform3D(0.363676, 0, 0.931526, 0, 1, 0, -0.931526, 0, 0.363676, -12.643, 4.126, -36.292)
+script = ExtResource("4_8bxw0")
+id = "Mangue 165"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.88
+
+[node name="Mangue 166" type="Node3D" parent="Avulsos/Manguezal" unique_id=861348046]
+transform = Transform3D(0.972258, 0, -0.233913, 0, 1, 0, 0.233913, 0, 0.972258, -18.994, 4.294, -39.459)
+script = ExtResource("4_8bxw0")
+id = "Mangue 166"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.9
+
+[node name="Mangue 167" type="Node3D" parent="Avulsos/Manguezal" unique_id=973650612]
+transform = Transform3D(0.276462, 0, 0.961025, 0, 1, 0, -0.961025, 0, 0.276462, -12.348, 4.232, -39.937)
+script = ExtResource("4_8bxw0")
+id = "Mangue 167"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.86
+
+[node name="Mangue 168" type="Node3D" parent="Avulsos/Manguezal" unique_id=1543259358]
+transform = Transform3D(0.885752, 0, 0.464159, 0, 1, 0, -0.464159, 0, 0.885752, -20.803, 4.471, -43.691)
+script = ExtResource("4_8bxw0")
+id = "Mangue 168"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.81
+
+[node name="Mangue 169" type="Node3D" parent="Avulsos/Manguezal" unique_id=1019110315]
+transform = Transform3D(0.459735, 0, -0.888056, 0, 1, 0, 0.888056, 0, 0.459735, -13.02, 4.412, -44.526)
+script = ExtResource("4_8bxw0")
+id = "Mangue 169"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.86
+
+[node name="Mangue 170" type="Node3D" parent="Avulsos/Manguezal" unique_id=1447869639]
+transform = Transform3D(0.121808, 0, 0.992554, 0, 1, 0, -0.992554, 0, 0.121808, -12.776, 4.577, -48.241)
+script = ExtResource("4_8bxw0")
+id = "Mangue 170"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.08
+
+[node name="Mangue 171" type="Node3D" parent="Avulsos/Manguezal" unique_id=780918204]
+transform = Transform3D(0.835593, 0, 0.549349, 0, 1, 0, -0.549349, 0, 0.835593, -21.137, 4.837, -51.484)
+script = ExtResource("4_8bxw0")
+id = "Mangue 171"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.95
+
+[node name="Mangue 172" type="Node3D" parent="Avulsos/Manguezal" unique_id=1493373560]
+transform = Transform3D(-0.546508, 0, 0.837454, 0, 1, 0, -0.837454, 0, -0.546508, -13.689, 4.794, -52.165)
+script = ExtResource("4_8bxw0")
+id = "Mangue 172"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.13
+
+[node name="Mangue 173" type="Node3D" parent="Avulsos/Manguezal" unique_id=750582973]
+transform = Transform3D(-0.125571, 0, -0.992085, 0, 1, 0, 0.992085, 0, -0.125571, -20.042, 5.18, -57.532)
+script = ExtResource("4_8bxw0")
+id = "Mangue 173"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.03
+
+[node name="Mangue 174" type="Node3D" parent="Avulsos/Manguezal" unique_id=242985536]
+transform = Transform3D(-0.982546, 0, 0.186018, 0, 1, 0, -0.186018, 0, -0.982546, -14.256, 5.009, -55.663)
+script = ExtResource("4_8bxw0")
+id = "Mangue 174"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.1
+
+[node name="Mangue 175" type="Node3D" parent="Avulsos/Manguezal" unique_id=912481748]
+transform = Transform3D(-0.462302, 0, 0.886723, 0, 1, 0, -0.886723, 0, -0.462302, -18.134, 5.422, -61.287)
+script = ExtResource("4_8bxw0")
+id = "Mangue 175"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.94
+
+[node name="Mangue 176" type="Node3D" parent="Avulsos/Manguezal" unique_id=1767051413]
+transform = Transform3D(0.888789, 0, -0.458316, 0, 1, 0, 0.458316, 0, 0.888789, -12.563, 5.171, -58.342)
+script = ExtResource("4_8bxw0")
+id = "Mangue 176"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.83
+
+[node name="Mangue 177" type="Node3D" parent="Avulsos/Manguezal" unique_id=45748881]
+transform = Transform3D(-0.334527, 0, -0.942386, 0, 1, 0, 0.942386, 0, -0.334527, -10.892, 5.577, -63.825)
+script = ExtResource("4_8bxw0")
+id = "Mangue 177"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.0
+
+[node name="Mangue 178" type="Node3D" parent="Avulsos/Manguezal" unique_id=1425390156]
+transform = Transform3D(-0.497924, 0, -0.86722, 0, 1, 0, 0.86722, 0, -0.497924, -19.123, 5.751, -65.563)
+script = ExtResource("4_8bxw0")
+id = "Mangue 178"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.92
+
+[node name="Mangue 179" type="Node3D" parent="Avulsos/Manguezal" unique_id=540633305]
+transform = Transform3D(0.84072, 0, 0.541471, 0, 1, 0, -0.541471, 0, 0.84072, -13.141, 6.056, -69.108)
+script = ExtResource("4_8bxw0")
+id = "Mangue 179"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.08
+
+[node name="Mangue 180" type="Node3D" parent="Avulsos/Manguezal" unique_id=1566341897]
+transform = Transform3D(0.692473, 0, 0.721444, 0, 1, 0, -0.721444, 0, 0.692473, -21.4, 5.939, -67.912)
+script = ExtResource("4_8bxw0")
+id = "Mangue 180"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.95
+
+[node name="Mangue 181" type="Node3D" parent="Avulsos/Manguezal" unique_id=599715859]
+transform = Transform3D(-0.99258, 0, -0.121591, 0, 1, 0, 0.121591, 0, -0.99258, -23.695, 6.223, -71.459)
+script = ExtResource("4_8bxw0")
+id = "Mangue 181"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.12
+
+[node name="Mangue 182" type="Node3D" parent="Avulsos/Manguezal" unique_id=1318932971]
+transform = Transform3D(-0.460718, 0, -0.887547, 0, 1, 0, 0.887547, 0, -0.460718, -19.577, 6.752, -76.727)
+script = ExtResource("4_8bxw0")
+id = "Mangue 182"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.05
+
+[node name="Mangue 183" type="Node3D" parent="Avulsos/Manguezal" unique_id=1937334743]
+transform = Transform3D(-0.938372, 0, 0.345627, 0, 1, 0, -0.345627, 0, -0.938372, -27.06, 6.378, -73.678)
+script = ExtResource("4_8bxw0")
+id = "Mangue 183"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.16
+
+[node name="Mangue 184" type="Node3D" parent="Avulsos/Manguezal" unique_id=1452385686]
+transform = Transform3D(-0.996672, 0, 0.0815168, 0, 1, 0, -0.0815168, 0, -0.996672, -22.914, 6.916, -78.996)
+script = ExtResource("4_8bxw0")
+id = "Mangue 184"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.18
+
+[node name="Mangue 185" type="Node3D" parent="Avulsos/Manguezal" unique_id=1097684911]
+transform = Transform3D(-0.95807, 0, 0.286534, 0, 1, 0, -0.286534, 0, -0.95807, -32.441, 6.672, -78.226)
+script = ExtResource("4_8bxw0")
+id = "Mangue 185"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.11
+
+[node name="Mangue 186" type="Node3D" parent="Avulsos/Manguezal" unique_id=788395251]
+transform = Transform3D(-0.700351, 0, 0.713799, 0, 1, 0, -0.713799, 0, -0.700351, -25.461, 7.267, -83.278)
+script = ExtResource("4_8bxw0")
+id = "Mangue 186"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.14
+
+[node name="Mangue 187" type="Node3D" parent="Avulsos/Manguezal" unique_id=864638820]
+transform = Transform3D(-0.722554, 0, 0.691315, 0, 1, 0, -0.691315, 0, -0.722554, -34.25, 6.986, -82.664)
+script = ExtResource("4_8bxw0")
+id = "Mangue 187"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.19
+
+[node name="Mangue 188" type="Node3D" parent="Avulsos/Manguezal" unique_id=49225383]
+transform = Transform3D(-0.944835, 0, 0.327548, 0, 1, 0, -0.327548, 0, -0.944835, -28.356, 7.521, -86.956)
+script = ExtResource("4_8bxw0")
+id = "Mangue 188"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.87
+
+[node name="Mangue 189" type="Node3D" parent="Avulsos/Manguezal" unique_id=417452906]
+transform = Transform3D(-0.997927, 0, 0.0643628, 0, 1, 0, -0.0643628, 0, -0.997927, -38.07, 7.176, -86.403)
+script = ExtResource("4_8bxw0")
+id = "Mangue 189"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.95
+
+[node name="Mangue 190" type="Node3D" parent="Avulsos/Manguezal" unique_id=1605781472]
+transform = Transform3D(-0.784819, 0, -0.619725, 0, 1, 0, 0.619725, 0, -0.784819, -31.731, 7.715, -90.583)
+script = ExtResource("4_8bxw0")
+id = "Mangue 190"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.92
+
+[node name="Mangue 191" type="Node3D" parent="Avulsos/Manguezal" unique_id=1925787706]
+transform = Transform3D(-0.933948, 0, -0.357409, 0, 1, 0, 0.357409, 0, -0.933948, -40.844, 7.26, -88.632)
+script = ExtResource("4_8bxw0")
+id = "Mangue 191"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.81
+
+[node name="Mangue 192" type="Node3D" parent="Avulsos/Manguezal" unique_id=1074436089]
+transform = Transform3D(-0.557444, 0, -0.830215, 0, 1, 0, 0.830215, 0, -0.557444, -37.751, 7.822, -95.078)
+script = ExtResource("4_8bxw0")
+id = "Mangue 192"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.12
+
+[node name="Mangue 193" type="Node3D" parent="Avulsos/Manguezal" unique_id=1253098376]
+transform = Transform3D(-0.206409, 0, -0.978466, 0, 1, 0, 0.978466, 0, -0.206409, -44.46, 7.271, -90.264)
+script = ExtResource("4_8bxw0")
+id = "Mangue 193"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.06
+
+[node name="Mangue 194" type="Node3D" parent="Avulsos/Manguezal" unique_id=1954275805]
+transform = Transform3D(-0.926613, 0, -0.376016, 0, 1, 0, 0.376016, 0, -0.926613, -41.914, 7.813, -97.397)
+script = ExtResource("4_8bxw0")
+id = "Mangue 194"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.84
+
+[node name="Mangue 195" type="Node3D" parent="Avulsos/Manguezal" unique_id=1161757590]
+transform = Transform3D(-0.67428, 0, 0.738476, 0, 1, 0, -0.738476, 0, -0.67428, -47.962, 7.299, -92.171)
+script = ExtResource("4_8bxw0")
+id = "Mangue 195"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.96
+
+[node name="Mangue 196" type="Node3D" parent="Avulsos/Manguezal" unique_id=115127304]
+transform = Transform3D(0.899844, 0, 0.436213, 0, 1, 0, -0.436213, 0, 0.899844, -45.479, 7.738, -98.349)
+script = ExtResource("4_8bxw0")
+id = "Mangue 196"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.9
+
+[node name="Mangue 197" type="Node3D" parent="Avulsos/Manguezal" unique_id=1365962964]
+transform = Transform3D(-0.450289, 0, 0.892883, 0, 1, 0, -0.892883, 0, -0.450289, -53.406, 7.363, -95.633)
+script = ExtResource("4_8bxw0")
+id = "Mangue 197"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.11
+
+[node name="Mangue 198" type="Node3D" parent="Avulsos/Manguezal" unique_id=320642416]
+transform = Transform3D(-0.49296, 0, 0.870052, 0, 1, 0, -0.870052, 0, -0.49296, -55.27, 7.561, -100.49)
+script = ExtResource("4_8bxw0")
+id = "Mangue 198"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.88
+
+[node name="Mangue 199" type="Node3D" parent="Avulsos/Manguezal" unique_id=1806503263]
+transform = Transform3D(-0.973596, 0, 0.228277, 0, 1, 0, -0.228277, 0, -0.973596, -47.544, 7.93, -103.112)
+script = ExtResource("4_8bxw0")
+id = "Mangue 199"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.97
+
+[node name="Mangue 200" type="Node3D" parent="Avulsos/Manguezal" unique_id=1135557249]
+transform = Transform3D(0.386466, 0, -0.922304, 0, 1, 0, 0.922304, 0, 0.386466, -48.826, 8.056, -106.537)
+script = ExtResource("4_8bxw0")
+id = "Mangue 200"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.86
+
+[node name="Mangue 201" type="Node3D" parent="Avulsos/Manguezal" unique_id=1758727682]
+transform = Transform3D(0.933731, 0, -0.357977, 0, 1, 0, 0.357977, 0, 0.933731, -54.927, 8.085, -112.242)
+script = ExtResource("4_8bxw0")
+id = "Mangue 201"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 0.94
+
+[node name="Mangue 202" type="Node3D" parent="Avulsos/Manguezal" unique_id=1207155331]
+transform = Transform3D(-0.26471, 0, -0.964328, 0, 1, 0, 0.964328, 0, -0.26471, -49.122, 8.264, -111.279)
+script = ExtResource("4_8bxw0")
+id = "Mangue 202"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.02
+
+[node name="Mangue 203" type="Node3D" parent="Avulsos/Manguezal" unique_id=1062166342]
+transform = Transform3D(-0.514813, 0, 0.857303, 0, 1, 0, -0.857303, 0, -0.514813, -48.648, 8.48, -115.991)
+script = ExtResource("4_8bxw0")
+id = "Mangue 203"
+tipo = "arvore"
+chave = "mangue"
+tamanho = 1.13
