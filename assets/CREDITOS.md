@@ -80,6 +80,7 @@ gerar fica declarado em `voz_pendente` no `data/npcs_3d.json` (e cobrado por
 | Arquivos | O que são | Registro |
 | --- | --- | --- |
 | `assets/prototipo_3d/personagens/mixamo/{pedro,pescador,beata}.res` | seis clipes da biblioteca do [Mixamo](https://www.mixamo.com) (Adobe) — Capoeira, Pointing Forward, Fishing Idle, Fishing Cast, Praying e Kneeling Idle —, baixados pela conta do autor sem pele a 30 fps e redirecionados para o esqueleto Tripo de cada morador por `tools/prototipo_3d/mixamo/redirecionar.gd` | `assets/prototipo_3d/personagens/mixamo/LEIAME.md` e `data/mixamo_uso.json` |
+| `assets/prototipo_3d/personagens/mixamo/{zefa,tonho,candinha,damiao,quirino,padre,sacristao,mercador,guarda,marisqueira,lavadeira,rendeira,quituteira,menino,menina,mestre_saveiro,benedito,viajante}.res` | a segunda rodada (10/10/2026, #190): 35 clipes a mais da mesma biblioteca do Mixamo — Harvesting, Counting, Waving, Digging, Pulling A Rope, Opening Door, Strut Walk, Salute, Picking Up, Wiping Sweat, Jumping In Place, Happy Walk, Sitting Idle, Sitting Yell, Sitting Talking, Little Girl Sitting On A Bench, Jab Punch, Big Yawn, Standing Up From Back e Breathing Idle —, escolhidos numa prévia e redirecionados do mesmo modo | idem |
 
 A licença do Mixamo permite usar as animações em projetos, inclusive comerciais,
 quando incorporadas ao jogo, e proíbe redistribuí-las como arquivos soltos. Por

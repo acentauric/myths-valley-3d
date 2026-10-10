@@ -1,5 +1,5 @@
 {
-  "observacao": "ANIMAÇÕES DO MIXAMO NOS PERSONAGENS (#190). \"catalogo\" é o levantamento da biblioteca do Mixamo (mixamo.com, filtro type=Motion,MotionPack, 52 páginas de 48), e \"baixados\" os FBX que a conta do autor baixou para escolher (sem pele, 30 quadros por segundo). Os FBX NÃO entram no repositório, que é público: a licença do Mixamo deixa usar o movimento dentro do jogo, mas não redistribuir o arquivo solto. Entra só o resultado, já no esqueleto de cada morador (assets/prototipo_3d/personagens/mixamo/<modelo>.res, por tools/prototipo_3d/mixamo/redirecionar.gd). \"personagens\" é o inventário de cada um: os clipes do Tripo (do GLB) e os do Mixamo, com o rótulo e o gatilho no jogo; \"meta_por_personagem\" é a meta de clipes Mixamo de cada um, de onde sai o percentual de uso do site (exportar_site.gd). \"acao\" liga o clipe à ação da rotina (npcs_3d.json, agenda) e \"a_cada\" o intercala, de tantos em tantos segundos, com o clipe principal da mesma ação.",
+  "observacao": "ANIMAÇÕES DO MIXAMO NOS PERSONAGENS (#190). \"catalogo\" é o levantamento da biblioteca do Mixamo (mixamo.com, filtro type=Motion,MotionPack, 52 páginas de 48), e \"baixados\" os FBX que a conta do autor baixou para escolher (sem pele, 30 quadros por segundo). Os FBX NÃO entram no repositório, que é público: a licença do Mixamo deixa usar o movimento dentro do jogo, mas não redistribuir o arquivo solto. Entra só o resultado, já no esqueleto de cada morador (assets/prototipo_3d/personagens/mixamo/<modelo>.res, por tools/prototipo_3d/mixamo/redirecionar.gd). \"personagens\" é o inventário de cada um: os clipes do Tripo (do GLB) e os do Mixamo, com o rótulo e o gatilho no jogo; \"meta_por_personagem\" é a meta de clipes Mixamo de cada um, de onde sai o percentual de uso do site (exportar_site.gd). \"acao\" liga o clipe à ação da rotina (npcs_3d.json, agenda) e \"a_cada\" o intercala, de tantos em tantos segundos, com o clipe principal da mesma ação. \"acao\" pode ser uma lista, e para quem só tem postos por período é \"posto:manha\", \"posto:tarde\"...; \"gatilho_id\" nomeia o gatilho com código (saudacao, porta, passo, pulo, soco, acordar_cama, acordar_chao, cansado, treino, conducao); \"pendente\" é o motivo de o gatilho ainda não existir no jogo (o clipe fica na biblioteca e na ficha, e nenhum código o toca); \"termina_na_origem\" faz o gesto acabar de pé onde o corpo está. A lista inteira está no cabeçalho de scripts/prototipo_3d/mixamo_uso.gd.",
   "meta_por_personagem": 2,
   "catalogo": {
     "fonte": "mixamo.com",
@@ -425,7 +425,25 @@
         "walk",
         "wave_goodbye_02"
       ],
-      "clipes_mixamo": []
+      "clipes_mixamo": [
+        {
+          "id": "sitting_idle",
+          "fbx": "sitting_idle.fbx",
+          "nome_mixamo": "Sitting Idle",
+          "descricao_mixamo": "Sitting With Breathing Idle",
+          "laco": true,
+          "rotulo": "Sentado, respirando",
+          "rotulo_en": "Sitting, breathing",
+          "rotulo_es": "Sentado, respirando hondo",
+          "rotulo_zh": "坐着歇息",
+          "gatilho": "Descansa sentado num banco, respirando devagar. Ainda sem gatilho no jogo: os postos dele (a Casa de Carro Quebrado e o Bar) não têm banco nem cadeira no vale.",
+          "gatilho_en": "He rests seated on a bench, breathing slowly. Not triggered in the game yet: his posts (the broken-car house and the bar) have no bench or chair in the valley.",
+          "gatilho_es": "Descansa sentado en un banco, respirando despacio. Aún sin disparador en el juego: sus puestos (la casa del coche roto y el bar) no tienen banco ni silla en el valle.",
+          "gatilho_zh": "坐在长凳上慢慢呼吸，歇息。 游戏中尚未触发：他的岗位（破车屋和酒馆）在山谷里没有长凳或椅子。",
+          "pendente": "os postos dele (a Casa de Carro Quebrado e o Bar) não têm banco nem cadeira no vale.",
+          "gatilho_id": "assento"
+        }
+      ]
     },
     {
       "id": "zefa",
@@ -440,7 +458,24 @@
         "walk",
         "wave_goodbye_02"
       ],
-      "clipes_mixamo": []
+      "clipes_mixamo": [
+        {
+          "id": "harvesting",
+          "fbx": "harvesting.fbx",
+          "nome_mixamo": "Harvesting",
+          "descricao_mixamo": "Harvesting With A Sythe",
+          "laco": true,
+          "rotulo": "Ceifar com a foice",
+          "rotulo_en": "Scything",
+          "rotulo_es": "Segar con la hoz",
+          "rotulo_zh": "挥镰割草",
+          "gatilho": "De manhã, no terreiro da casa dela, ceifa o capim com a foice.",
+          "gatilho_en": "In the morning, in the yard of her house, she scythes the grass.",
+          "gatilho_es": "Por la mañana, en el terreno de su casa, siega la hierba con la hoz.",
+          "gatilho_zh": "早上在她家院子里，用镰刀割草。",
+          "acao": "posto:manha"
+        }
+      ]
     },
     {
       "id": "cosme",
@@ -470,7 +505,31 @@
         "walk",
         "wave_goodbye_02"
       ],
-      "clipes_mixamo": []
+      "clipes_mixamo": [
+        {
+          "id": "counting",
+          "fbx": "counting.fbx",
+          "nome_mixamo": "Counting",
+          "descricao_mixamo": "Counting To Five On One Hand",
+          "laco": false,
+          "rotulo": "Contar nos dedos",
+          "rotulo_en": "Counting on fingers",
+          "rotulo_es": "Contar con los dedos",
+          "rotulo_zh": "用手指数数",
+          "gatilho": "No trapiche, de manhã e à tarde, de tempos em tempos conta nos dedos o fiado da freguesia.",
+          "gatilho_en": "At the wharf, mornings and afternoons, now and then he counts on his fingers what the customers owe.",
+          "gatilho_es": "En el muelle, por la mañana y por la tarde, de vez en cuando cuenta con los dedos lo que debe la clientela.",
+          "gatilho_zh": "在码头上，早晚不时用手指数着顾客赊的账。",
+          "acao": [
+            "posto:manha",
+            "posto:tarde"
+          ],
+          "a_cada": [
+            18.0,
+            34.0
+          ]
+        }
+      ]
     },
     {
       "id": "filo",
@@ -500,7 +559,41 @@
         "walk",
         "wave_goodbye_02"
       ],
-      "clipes_mixamo": []
+      "clipes_mixamo": [
+        {
+          "id": "sitting_idle",
+          "fbx": "sitting_idle.fbx",
+          "nome_mixamo": "Sitting Idle",
+          "descricao_mixamo": "Sitting With Breathing Idle",
+          "laco": true,
+          "rotulo": "Sentado, respirando",
+          "rotulo_en": "Sitting, breathing",
+          "rotulo_es": "Sentado, respirando hondo",
+          "rotulo_zh": "坐着歇息",
+          "gatilho": "Descansa sentada num banco da praça, respirando devagar. Ainda sem gatilho no jogo: os postos dela na praça ficam longe dos dois bancos.",
+          "gatilho_en": "She rests seated on a plaza bench, breathing slowly. Not triggered in the game yet: her posts in the plaza are far from the two benches.",
+          "gatilho_es": "Descansa sentada en un banco de la plaza, respirando despacio. Aún sin disparador en el juego: sus puestos en la plaza quedan lejos de los dos bancos.",
+          "gatilho_zh": "坐在广场的长凳上慢慢呼吸，歇息。 游戏中尚未触发：她在广场的岗位离两条长凳都很远。",
+          "pendente": "os postos dela na praça ficam longe dos dois bancos.",
+          "gatilho_id": "assento"
+        },
+        {
+          "id": "waving",
+          "fbx": "waving.fbx",
+          "nome_mixamo": "Waving",
+          "descricao_mixamo": "Waving",
+          "laco": true,
+          "rotulo": "Acenar",
+          "rotulo_en": "Wave",
+          "rotulo_es": "Saludar con la mano",
+          "rotulo_zh": "挥手",
+          "gatilho": "Ao cumprimentar o viajante que chega perto, acena.",
+          "gatilho_en": "When she greets the traveler who comes close, she waves.",
+          "gatilho_es": "Al saludar al viajero que se acerca, le hace señas con la mano.",
+          "gatilho_zh": "向走近的旅人打招呼时，她挥手致意。",
+          "gatilho_id": "saudacao"
+        }
+      ]
     },
     {
       "id": "damiao",
@@ -515,7 +608,45 @@
         "walk",
         "wave_goodbye_02"
       ],
-      "clipes_mixamo": []
+      "clipes_mixamo": [
+        {
+          "id": "digging",
+          "fbx": "digging.fbx",
+          "nome_mixamo": "Digging",
+          "descricao_mixamo": "Digging Hole With Shovel",
+          "laco": true,
+          "rotulo": "Cavar com a pá",
+          "rotulo_en": "Digging with a shovel",
+          "rotulo_es": "Cavar con la pala",
+          "rotulo_zh": "用铁锹挖土",
+          "gatilho": "No cemitério, de manhã, à tarde e ao entardecer, cava com a pá: o ofício de coveiro.",
+          "gatilho_en": "At the cemetery, in the morning, afternoon and dusk, he digs with the shovel: the gravedigger's trade.",
+          "gatilho_es": "En el cementerio, por la mañana, por la tarde y al atardecer, cava con la pala: el oficio de sepulturero.",
+          "gatilho_zh": "在墓地里，早晨、下午和傍晚用铁锹挖土：这是掘墓人的活计。",
+          "acao": [
+            "posto:manha",
+            "posto:tarde",
+            "posto:entardecer"
+          ]
+        },
+        {
+          "id": "sitting_talking",
+          "fbx": "sitting_talking.fbx",
+          "nome_mixamo": "Sitting Talking",
+          "descricao_mixamo": "Sitting And Talking To Another Person",
+          "laco": true,
+          "rotulo": "Conversa de banco",
+          "rotulo_en": "Bench chat",
+          "rotulo_es": "Charla de banco",
+          "rotulo_zh": "坐着聊天",
+          "gatilho": "Conversa sentado num banco, com os braços soltos. Ainda sem gatilho no jogo: o dia dele é no cemitério e na igreja, e lá não há banco.",
+          "gatilho_en": "He chats seated on a bench, arms loose. Not triggered in the game yet: his day is at the cemetery and the church, where there is no bench.",
+          "gatilho_es": "Conversa sentado en un banco, con los brazos sueltos. Aún sin disparador en el juego: su día transcurre en el cementerio y la iglesia, donde no hay banco.",
+          "gatilho_zh": "坐在长凳上聊天，双臂放松。 游戏中尚未触发：他一天都在墓地和教堂，那里没有长凳。",
+          "pendente": "o dia dele é no cemitério e na igreja, e lá não há banco.",
+          "gatilho_id": "assento"
+        }
+      ]
     },
     {
       "id": "quirino",
@@ -530,7 +661,32 @@
         "walk",
         "wave_goodbye_02"
       ],
-      "clipes_mixamo": []
+      "clipes_mixamo": [
+        {
+          "id": "pulling_rope",
+          "fbx": "pulling_rope.fbx",
+          "nome_mixamo": "Pulling A Rope",
+          "descricao_mixamo": "Mime Pulling A Rope",
+          "laco": true,
+          "rotulo": "Puxar a corda",
+          "rotulo_en": "Pulling the rope",
+          "rotulo_es": "Tirar de la cuerda",
+          "rotulo_zh": "拉绳",
+          "gatilho": "No píer, de manhã, à tarde e ao entardecer, de tempos em tempos puxa a corda do saveiro.",
+          "gatilho_en": "On the pier, in the morning, afternoon and dusk, he now and then pulls the saveiro's rope.",
+          "gatilho_es": "En el muelle, por la mañana, por la tarde y al atardecer, de vez en cuando tira de la cuerda del saveiro.",
+          "gatilho_zh": "在栈桥上，早晨、下午和傍晚，他不时拉一拉帆船的缆绳。",
+          "acao": [
+            "posto:manha",
+            "posto:tarde",
+            "posto:entardecer"
+          ],
+          "a_cada": [
+            35.0,
+            70.0
+          ]
+        }
+      ]
     },
     {
       "id": "padre",
@@ -551,7 +707,24 @@
         "walk",
         "wave_goodbye_02"
       ],
-      "clipes_mixamo": []
+      "clipes_mixamo": [
+        {
+          "id": "waving",
+          "fbx": "waving.fbx",
+          "nome_mixamo": "Waving",
+          "descricao_mixamo": "Waving",
+          "laco": true,
+          "rotulo": "Acenar",
+          "rotulo_en": "Wave",
+          "rotulo_es": "Saludar con la mano",
+          "rotulo_zh": "挥手",
+          "gatilho": "Ao cumprimentar o viajante que chega perto, ergue a mão e acena.",
+          "gatilho_en": "When he greets the traveler who comes close, he raises his hand and waves.",
+          "gatilho_es": "Al saludar al viajero que se acerca, levanta la mano y hace señas.",
+          "gatilho_zh": "向走近的旅人打招呼时，他抬手挥一挥。",
+          "gatilho_id": "saudacao"
+        }
+      ]
     },
     {
       "id": "sacristao",
@@ -572,7 +745,40 @@
         "walk",
         "wave_goodbye_02"
       ],
-      "clipes_mixamo": []
+      "clipes_mixamo": [
+        {
+          "id": "opening_door",
+          "fbx": "opening_door.fbx",
+          "nome_mixamo": "Opening Door Inwards",
+          "descricao_mixamo": "Male Walking And Opening A Door Inwards",
+          "laco": false,
+          "rotulo": "Abrir a porta",
+          "rotulo_en": "Opening the door",
+          "rotulo_es": "Abrir la puerta",
+          "rotulo_zh": "开门",
+          "gatilho": "À noite, ao chegar em casa para se recolher, abre a porta antes de entrar.",
+          "gatilho_en": "At night, arriving home to turn in, he opens the door before going in.",
+          "gatilho_es": "Por la noche, al llegar a casa para recogerse, abre la puerta antes de entrar.",
+          "gatilho_zh": "晚上回家歇息时，他先开门再进去。",
+          "gatilho_id": "porta"
+        },
+        {
+          "id": "harvesting",
+          "fbx": "harvesting.fbx",
+          "nome_mixamo": "Harvesting",
+          "descricao_mixamo": "Harvesting With A Sythe",
+          "laco": true,
+          "rotulo": "Ceifar com a foice",
+          "rotulo_en": "Scything",
+          "rotulo_es": "Segar con la hoz",
+          "rotulo_zh": "挥镰割草",
+          "gatilho": "À tarde, no cemitério, capina o mato com a foice (a ação capinar da rotina).",
+          "gatilho_en": "In the afternoon, at the cemetery, he clears the weeds with the scythe (the weeding action of his routine).",
+          "gatilho_es": "Por la tarde, en el cementerio, desbroza la maleza con la hoz (la acción desmalezar de su rutina).",
+          "gatilho_zh": "下午在墓地用镰刀除草（日程里的“除草”动作）。",
+          "acao": "capinar"
+        }
+      ]
     },
     {
       "id": "beata",
@@ -651,7 +857,45 @@
         "walk",
         "wave_goodbye_02"
       ],
-      "clipes_mixamo": []
+      "clipes_mixamo": [
+        {
+          "id": "counting",
+          "fbx": "counting.fbx",
+          "nome_mixamo": "Counting",
+          "descricao_mixamo": "Counting To Five On One Hand",
+          "laco": false,
+          "rotulo": "Contar nos dedos",
+          "rotulo_en": "Counting on fingers",
+          "rotulo_es": "Contar con los dedos",
+          "rotulo_zh": "用手指数数",
+          "gatilho": "Atrás do balcão do bar, de tempos em tempos conta o troco nos dedos.",
+          "gatilho_en": "Behind the bar counter, now and then he counts the change on his fingers.",
+          "gatilho_es": "Detrás del mostrador del bar, de vez en cuando cuenta el cambio con los dedos.",
+          "gatilho_zh": "在酒馆柜台后，他不时用手指数着找零。",
+          "acao": "balcao",
+          "a_cada": [
+            22.0,
+            40.0
+          ]
+        },
+        {
+          "id": "sitting_yell",
+          "fbx": "sitting_yell.fbx",
+          "nome_mixamo": "Sitting Yell",
+          "descricao_mixamo": "Yelling While Sitting Forward",
+          "laco": true,
+          "rotulo": "Chamar freguês sentado",
+          "rotulo_en": "Calling customers, seated",
+          "rotulo_es": "Llamar clientes sentado",
+          "rotulo_zh": "坐着招揽顾客",
+          "gatilho": "Sentado, chama a freguesia a gritos. Ainda sem gatilho no jogo: o descanso dele no bar não tem cadeira nem banco no vale.",
+          "gatilho_en": "Seated, he calls out to the customers. Not triggered in the game yet: his rest at the bar has no chair or bench in the valley.",
+          "gatilho_es": "Sentado, llama a gritos a la clientela. Aún sin disparador en el juego: su descanso en el bar no tiene silla ni banco en el valle.",
+          "gatilho_zh": "坐着大声招呼顾客。 游戏中尚未触发：他在酒馆歇息的地方没有椅子或长凳。",
+          "pendente": "o descanso dele no bar não tem cadeira nem banco no vale.",
+          "gatilho_id": "assento"
+        }
+      ]
     },
     {
       "id": "guarda",
@@ -671,7 +915,41 @@
         "walk",
         "wave_goodbye_02"
       ],
-      "clipes_mixamo": []
+      "clipes_mixamo": [
+        {
+          "id": "strut_walking",
+          "fbx": "strut_walking.fbx",
+          "nome_mixamo": "Strut Walking",
+          "descricao_mixamo": "Male Strut Walk",
+          "laco": true,
+          "rotulo": "Passo de vaidoso",
+          "rotulo_en": "Strut walk",
+          "rotulo_es": "Paso presumido",
+          "rotulo_zh": "大摇大摆地走",
+          "gatilho": "Na ronda, andando de um posto a outro, caminha de peito aberto.",
+          "gatilho_en": "On his rounds, walking from one post to the next, he struts.",
+          "gatilho_es": "En la ronda, caminando de un puesto a otro, camina pavoneándose.",
+          "gatilho_zh": "巡逻时从一个岗位走到另一个岗位，他挺胸阔步。",
+          "gatilho_id": "passo",
+          "acao": "vigiar"
+        },
+        {
+          "id": "salute",
+          "fbx": "salute.fbx",
+          "nome_mixamo": "Salute",
+          "descricao_mixamo": "Formal Military Salute",
+          "laco": false,
+          "rotulo": "Continência",
+          "rotulo_en": "Salute",
+          "rotulo_es": "Saludo militar",
+          "rotulo_zh": "敬礼",
+          "gatilho": "Ao cumprimentar o viajante que chega perto, bate continência.",
+          "gatilho_en": "When he greets the traveler who comes close, he salutes.",
+          "gatilho_es": "Al saludar al viajero que se acerca, hace el saludo militar.",
+          "gatilho_zh": "向走近的旅人打招呼时，他举手敬礼。",
+          "gatilho_id": "saudacao"
+        }
+      ]
     },
     {
       "id": "pescador",
@@ -750,7 +1028,64 @@
         "walk",
         "wave_goodbye_02"
       ],
-      "clipes_mixamo": []
+      "clipes_mixamo": [
+        {
+          "id": "digging",
+          "fbx": "digging.fbx",
+          "nome_mixamo": "Digging",
+          "descricao_mixamo": "Digging Hole With Shovel",
+          "laco": true,
+          "rotulo": "Cavar com a pá",
+          "rotulo_en": "Digging with a shovel",
+          "rotulo_es": "Cavar con la pala",
+          "rotulo_zh": "用铁锹挖土",
+          "gatilho": "De manhã, na areia do rio, cava para tirar o marisco: a ação mariscar da rotina.",
+          "gatilho_en": "In the morning, on the river sand, she digs for shellfish: the shellfishing action of her routine.",
+          "gatilho_es": "Por la mañana, en la arena del río, cava para sacar el marisco: la acción mariscar de su rutina.",
+          "gatilho_zh": "早上在河边的沙滩上挖贝类：日程里的“采贝”动作。",
+          "acao": "mariscar"
+        },
+        {
+          "id": "picking_up",
+          "fbx": "picking_up.fbx",
+          "nome_mixamo": "Picking Up",
+          "descricao_mixamo": "Picking Up An Object",
+          "laco": false,
+          "rotulo": "Pegar do chão",
+          "rotulo_en": "Picking up from the ground",
+          "rotulo_es": "Recoger del suelo",
+          "rotulo_zh": "从地上捡起",
+          "gatilho": "Mariscando, de tempos em tempos se abaixa e apanha o marisco da areia.",
+          "gatilho_en": "While shellfishing, now and then she bends down and picks the shellfish from the sand.",
+          "gatilho_es": "Mientras marisca, de vez en cuando se agacha y recoge el marisco de la arena.",
+          "gatilho_zh": "采贝时，她不时弯腰从沙里捡起贝类。",
+          "acao": "mariscar",
+          "a_cada": [
+            14.0,
+            26.0
+          ]
+        },
+        {
+          "id": "wiping_sweat",
+          "fbx": "wiping_sweat.fbx",
+          "nome_mixamo": "Wiping Sweat",
+          "descricao_mixamo": "Wiping Sweat Idle",
+          "laco": true,
+          "rotulo": "Enxugar o suor",
+          "rotulo_en": "Wiping sweat",
+          "rotulo_es": "Secarse el sudor",
+          "rotulo_zh": "擦汗",
+          "gatilho": "Mariscando, de tempos em tempos para e enxuga o suor da testa.",
+          "gatilho_en": "While shellfishing, now and then she pauses and wipes the sweat from her brow.",
+          "gatilho_es": "Mientras marisca, de vez en cuando se detiene y se seca el sudor de la frente.",
+          "gatilho_zh": "采贝时，她不时停下来擦去额头的汗。",
+          "acao": "mariscar",
+          "a_cada": [
+            30.0,
+            52.0
+          ]
+        }
+      ]
     },
     {
       "id": "lavadeira",
@@ -771,7 +1106,28 @@
         "walk",
         "wave_goodbye_02"
       ],
-      "clipes_mixamo": []
+      "clipes_mixamo": [
+        {
+          "id": "wiping_sweat",
+          "fbx": "wiping_sweat.fbx",
+          "nome_mixamo": "Wiping Sweat",
+          "descricao_mixamo": "Wiping Sweat Idle",
+          "laco": true,
+          "rotulo": "Enxugar o suor",
+          "rotulo_en": "Wiping sweat",
+          "rotulo_es": "Secarse el sudor",
+          "rotulo_zh": "擦汗",
+          "gatilho": "Lavando roupa na ponte, de tempos em tempos para e enxuga o suor da testa.",
+          "gatilho_en": "Washing clothes at the bridge, now and then she pauses and wipes the sweat from her brow.",
+          "gatilho_es": "Lavando ropa en el puente, de vez en cuando se detiene y se seca el sudor de la frente.",
+          "gatilho_zh": "在桥边洗衣服时，她不时停下来擦去额头的汗。",
+          "acao": "lavar",
+          "a_cada": [
+            26.0,
+            46.0
+          ]
+        }
+      ]
     },
     {
       "id": "rendeira",
@@ -791,7 +1147,25 @@
         "walk",
         "wave_goodbye_02"
       ],
-      "clipes_mixamo": []
+      "clipes_mixamo": [
+        {
+          "id": "sitting_idle",
+          "fbx": "sitting_idle.fbx",
+          "nome_mixamo": "Sitting Idle",
+          "descricao_mixamo": "Sitting With Breathing Idle",
+          "laco": true,
+          "rotulo": "Sentado, respirando",
+          "rotulo_en": "Sitting, breathing",
+          "rotulo_es": "Sentado, respirando hondo",
+          "rotulo_zh": "坐着歇息",
+          "gatilho": "Faz a renda sentada à porta de casa, respirando devagar entre um ponto e outro. Ainda sem gatilho no jogo: a porta da casa dela não tem banco nem cadeira no vale (hoje ela se senta no ar, com o clipe sentar do Tripo).",
+          "gatilho_en": "She makes lace seated at her doorstep, breathing slowly between stitches. Not triggered in the game yet: the door of her house has no bench or chair in the valley (today she sits on thin air, with the Tripo sit clip).",
+          "gatilho_es": "Hace el encaje sentada en la puerta de su casa, respirando despacio entre un punto y otro. Aún sin disparador en el juego: la puerta de su casa no tiene banco ni silla en el valle (hoy se sienta en el aire, con el clip sentar de Tripo).",
+          "gatilho_zh": "坐在家门口织花边，在两针之间缓缓呼吸。 游戏中尚未触发：她家门口在山谷里没有长凳或椅子（现在她用 Tripo 的坐姿动画坐在空中）。",
+          "pendente": "a porta da casa dela não tem banco nem cadeira no vale (hoje ela se senta no ar, com o clipe sentar do Tripo).",
+          "gatilho_id": "assento"
+        }
+      ]
     },
     {
       "id": "quituteira",
@@ -811,7 +1185,41 @@
         "walk",
         "wave_goodbye_02"
       ],
-      "clipes_mixamo": []
+      "clipes_mixamo": [
+        {
+          "id": "sitting_yell",
+          "fbx": "sitting_yell.fbx",
+          "nome_mixamo": "Sitting Yell",
+          "descricao_mixamo": "Yelling While Sitting Forward",
+          "laco": true,
+          "rotulo": "Chamar freguês sentado",
+          "rotulo_en": "Calling customers, seated",
+          "rotulo_es": "Llamar clientes sentado",
+          "rotulo_zh": "坐着招揽顾客",
+          "gatilho": "Sentada junto ao tabuleiro, chama a freguesia a gritos. Ainda sem gatilho no jogo: ela vende em pé, com o tabuleiro na cabeça, e na praça não há banco ao lado do ponto dela.",
+          "gatilho_en": "Seated by her tray, she calls out to the customers. Not triggered in the game yet: she sells standing, with the tray on her head, and there is no bench next to her spot in the plaza.",
+          "gatilho_es": "Sentada junto a la bandeja, llama a gritos a la clientela. Aún sin disparador en el juego: vende de pie, con la bandeja en la cabeza, y en la plaza no hay banco junto a su puesto.",
+          "gatilho_zh": "坐在托盘旁大声招呼顾客。 游戏中尚未触发：她站着卖东西，托盘顶在头上，广场上她的摊位旁没有长凳。",
+          "pendente": "ela vende em pé, com o tabuleiro na cabeça, e na praça não há banco ao lado do ponto dela.",
+          "gatilho_id": "assento"
+        },
+        {
+          "id": "waving",
+          "fbx": "waving.fbx",
+          "nome_mixamo": "Waving",
+          "descricao_mixamo": "Waving",
+          "laco": true,
+          "rotulo": "Acenar",
+          "rotulo_en": "Wave",
+          "rotulo_es": "Saludar con la mano",
+          "rotulo_zh": "挥手",
+          "gatilho": "Ao cumprimentar o viajante que chega perto, acena chamando a freguesia.",
+          "gatilho_en": "When she greets the traveler who comes close, she waves to call over customers.",
+          "gatilho_es": "Al saludar al viajero que se acerca, hace señas llamando a la clientela.",
+          "gatilho_zh": "向走近的旅人打招呼时，她挥手招呼顾客。",
+          "gatilho_id": "saudacao"
+        }
+      ]
     },
     {
       "id": "carpinteiro",
@@ -853,7 +1261,45 @@
         "walk",
         "wave_goodbye_02"
       ],
-      "clipes_mixamo": []
+      "clipes_mixamo": [
+        {
+          "id": "jump",
+          "fbx": "jump.fbx",
+          "nome_mixamo": "Jump",
+          "descricao_mixamo": "Jumping In Place",
+          "laco": false,
+          "rotulo": "Pulo",
+          "rotulo_en": "Jump",
+          "rotulo_es": "Salto",
+          "rotulo_zh": "跳跃",
+          "gatilho": "Brincando, de tempos em tempos dá um pulo no lugar.",
+          "gatilho_en": "While playing, now and then he jumps on the spot.",
+          "gatilho_es": "Mientras juega, de vez en cuando da un salto en el sitio.",
+          "gatilho_zh": "玩耍时，他不时原地跳一下。",
+          "acao": "brincar",
+          "a_cada": [
+            9.0,
+            20.0
+          ]
+        },
+        {
+          "id": "happy_walk",
+          "fbx": "happy_walk.fbx",
+          "nome_mixamo": "Happy Walk",
+          "descricao_mixamo": "Happy Walking Forward",
+          "laco": true,
+          "rotulo": "Andar alegre",
+          "rotulo_en": "Happy walk",
+          "rotulo_es": "Caminar alegre",
+          "rotulo_zh": "欢快地走",
+          "gatilho": "Indo brincar (praça, poço, casa), anda alegre.",
+          "gatilho_en": "Heading off to play (plaza, well, home), he walks cheerfully.",
+          "gatilho_es": "Yendo a jugar (plaza, pozo, casa), anda alegre.",
+          "gatilho_zh": "去玩耍（广场、水井、家里）的路上，他欢快地走着。",
+          "gatilho_id": "passo",
+          "acao": "brincar"
+        }
+      ]
     },
     {
       "id": "menina",
@@ -874,7 +1320,62 @@
         "walk",
         "wave_goodbye_02"
       ],
-      "clipes_mixamo": []
+      "clipes_mixamo": [
+        {
+          "id": "jump",
+          "fbx": "jump.fbx",
+          "nome_mixamo": "Jump",
+          "descricao_mixamo": "Jumping In Place",
+          "laco": false,
+          "rotulo": "Pulo",
+          "rotulo_en": "Jump",
+          "rotulo_es": "Salto",
+          "rotulo_zh": "跳跃",
+          "gatilho": "Brincando, de tempos em tempos dá um pulo no lugar.",
+          "gatilho_en": "While playing, now and then she jumps on the spot.",
+          "gatilho_es": "Mientras juega, de vez en cuando da un salto en el sitio.",
+          "gatilho_zh": "玩耍时，她不时原地跳一下。",
+          "acao": "brincar",
+          "a_cada": [
+            9.0,
+            20.0
+          ]
+        },
+        {
+          "id": "happy_walk",
+          "fbx": "happy_walk.fbx",
+          "nome_mixamo": "Happy Walk",
+          "descricao_mixamo": "Happy Walking Forward",
+          "laco": true,
+          "rotulo": "Andar alegre",
+          "rotulo_en": "Happy walk",
+          "rotulo_es": "Caminar alegre",
+          "rotulo_zh": "欢快地走",
+          "gatilho": "Indo brincar (praça, poço, casa), anda alegre.",
+          "gatilho_en": "Heading off to play (plaza, well, home), she walks cheerfully.",
+          "gatilho_es": "Yendo a jugar (plaza, pozo, casa), anda alegre.",
+          "gatilho_zh": "去玩耍（广场、水井、家里）的路上，她欢快地走着。",
+          "gatilho_id": "passo",
+          "acao": "brincar"
+        },
+        {
+          "id": "girl_bench_swing",
+          "fbx": "girl_bench_swing.fbx",
+          "nome_mixamo": "Sitting",
+          "descricao_mixamo": "Little Girl Sitting On A Bench Swinging Her Legs",
+          "laco": true,
+          "rotulo": "Balançar as pernas no banco",
+          "rotulo_en": "Swinging legs on the bench",
+          "rotulo_es": "Balancear las piernas en el banco",
+          "rotulo_zh": "坐在长凳上晃腿",
+          "gatilho": "Sentada num banco da praça, balança as pernas. Ainda sem gatilho no jogo: as paradas dela na praça ficam longe dos dois bancos.",
+          "gatilho_en": "Seated on a plaza bench, she swings her legs. Not triggered in the game yet: her stops in the plaza are far from the two benches.",
+          "gatilho_es": "Sentada en un banco de la plaza, balancea las piernas. Aún sin disparador en el juego: sus paradas en la plaza quedan lejos de los dos bancos.",
+          "gatilho_zh": "坐在广场的长凳上晃着腿。 游戏中尚未触发：她在广场的停留点离两条长凳都很远。",
+          "pendente": "as paradas dela na praça ficam longe dos dois bancos.",
+          "gatilho_id": "assento"
+        }
+      ]
     },
     {
       "id": "mestre_saveiro",
@@ -895,7 +1396,45 @@
         "walk",
         "wave_goodbye_02"
       ],
-      "clipes_mixamo": []
+      "clipes_mixamo": [
+        {
+          "id": "strut_walking",
+          "fbx": "strut_walking.fbx",
+          "nome_mixamo": "Strut Walking",
+          "descricao_mixamo": "Male Strut Walk",
+          "laco": true,
+          "rotulo": "Passo de vaidoso",
+          "rotulo_en": "Strut walk",
+          "rotulo_es": "Paso presumido",
+          "rotulo_zh": "大摇大摆地走",
+          "gatilho": "No dia da festa, indo para a roda do marco da fé dele, caminha de peito aberto.",
+          "gatilho_en": "On the feast day, heading to the circle at his faith's landmark, he struts.",
+          "gatilho_es": "En el día de la fiesta, yendo a la rueda del hito de su fe, camina pavoneándose.",
+          "gatilho_zh": "节日那天，他前往自己信仰的圣地围圈时，挺胸阔步。",
+          "gatilho_id": "passo",
+          "acao": "festa"
+        },
+        {
+          "id": "pulling_rope",
+          "fbx": "pulling_rope.fbx",
+          "nome_mixamo": "Pulling A Rope",
+          "descricao_mixamo": "Mime Pulling A Rope",
+          "laco": true,
+          "rotulo": "Puxar a corda",
+          "rotulo_en": "Pulling the rope",
+          "rotulo_es": "Tirar de la cuerda",
+          "rotulo_zh": "拉绳",
+          "gatilho": "Esperando no rio, de tempos em tempos puxa a corda do saveiro.",
+          "gatilho_en": "Waiting at the river, now and then he pulls the saveiro's rope.",
+          "gatilho_es": "Esperando en el río, de vez en cuando tira de la cuerda del saveiro.",
+          "gatilho_zh": "在河边等候时，他不时拉一拉帆船的缆绳。",
+          "acao": "esperar",
+          "a_cada": [
+            35.0,
+            70.0
+          ]
+        }
+      ]
     },
     {
       "id": "viajante",
@@ -916,7 +1455,106 @@
         "walk",
         "wave_goodbye_02"
       ],
-      "clipes_mixamo": []
+      "clipes_mixamo": [
+        {
+          "id": "punching",
+          "fbx": "punching.fbx",
+          "nome_mixamo": "Punching",
+          "descricao_mixamo": "Jab Punch",
+          "laco": false,
+          "rotulo": "Soco (jab)",
+          "rotulo_en": "Jab punch",
+          "rotulo_es": "Puñetazo (jab)",
+          "rotulo_zh": "直拳",
+          "gatilho": "Na luta, de mão vazia, o golpe sai como um soco (o golpe de arma segue no Golpear).",
+          "gatilho_en": "In a fight, bare-handed, the blow comes out as a punch (the weapon blow stays on Chop).",
+          "gatilho_es": "En la pelea, con la mano vacía, el golpe sale como un puñetazo (el golpe con arma sigue en Golpear).",
+          "gatilho_zh": "战斗中空手时，出招是一记直拳（带武器的一击仍用“劈砍”）。",
+          "gatilho_id": "soco"
+        },
+        {
+          "id": "opening_door",
+          "fbx": "opening_door.fbx",
+          "nome_mixamo": "Opening Door Inwards",
+          "descricao_mixamo": "Male Walking And Opening A Door Inwards",
+          "laco": false,
+          "rotulo": "Abrir a porta",
+          "rotulo_en": "Opening the door",
+          "rotulo_es": "Abrir la puerta",
+          "rotulo_zh": "开门",
+          "gatilho": "Ao entrar numa casa, abre a porta. Ainda sem gatilho no jogo: as portas do vale não abrem: o viajante atravessa a soleira andando (Interiores.entrou), e um gesto seria cortado pelo passo.",
+          "gatilho_en": "On entering a house, he opens the door. Not triggered in the game yet: the valley's doors do not open: the traveler walks across the threshold (Interiores.entrou), and a gesture would be cut off by his step.",
+          "gatilho_es": "Al entrar en una casa, abre la puerta. Aún sin disparador en el juego: las puertas del valle no se abren: el viajero cruza el umbral andando (Interiores.entrou), y un gesto quedaría cortado por el paso.",
+          "gatilho_zh": "进屋时，他推开房门。 游戏中尚未触发：山谷里的门不会开：旅人是走着跨过门槛的（Interiores.entrou），手势会被脚步打断。",
+          "pendente": "as portas do vale não abrem: o viajante atravessa a soleira andando (Interiores.entrou), e um gesto seria cortado pelo passo.",
+          "gatilho_id": "porta_do_jogador"
+        },
+        {
+          "id": "jump",
+          "fbx": "jump.fbx",
+          "nome_mixamo": "Jump",
+          "descricao_mixamo": "Jumping In Place",
+          "laco": false,
+          "rotulo": "Pulo",
+          "rotulo_en": "Jump",
+          "rotulo_es": "Salto",
+          "rotulo_zh": "跳跃",
+          "gatilho": "Ao pular (a tecla de pulo), sobe e cai com este clipe.",
+          "gatilho_en": "When jumping (the jump key), he rises and lands with this clip.",
+          "gatilho_es": "Al saltar (la tecla de salto), sube y cae con este clip.",
+          "gatilho_zh": "跳跃时（跳跃键），他用这个动画起跳和落地。",
+          "gatilho_id": "pulo"
+        },
+        {
+          "id": "stretching_yawn",
+          "fbx": "stretching_yawn.fbx",
+          "nome_mixamo": "Yawn",
+          "descricao_mixamo": "Big Yawn While Standing",
+          "laco": false,
+          "rotulo": "Espreguiçar e bocejar",
+          "rotulo_en": "Stretch and yawn",
+          "rotulo_es": "Estirarse y bostezar",
+          "rotulo_zh": "伸懒腰打哈欠",
+          "gatilho": "Ao acordar na cama de casa, boceja e se espreguiça.",
+          "gatilho_en": "On waking in his bed at home, he yawns and stretches.",
+          "gatilho_es": "Al despertar en la cama de casa, bosteza y se estira.",
+          "gatilho_zh": "在家中床上醒来时，他打着哈欠伸懒腰。",
+          "gatilho_id": "acordar_cama"
+        },
+        {
+          "id": "getting_up",
+          "fbx": "getting_up.fbx",
+          "nome_mixamo": "Stand Up",
+          "descricao_mixamo": "Standing Up From Back",
+          "laco": false,
+          "rotulo": "Levantar do chão",
+          "rotulo_en": "Getting up",
+          "rotulo_es": "Levantarse del suelo",
+          "rotulo_zh": "从地上起身",
+          "gatilho": "Ao acordar de um desmaio ou de uma queda, levanta-se do chão, de costas.",
+          "gatilho_en": "On waking from a faint or a fall, he gets up off the floor, from his back.",
+          "gatilho_es": "Al despertar de un desmayo o de una caída, se levanta del suelo, desde la espalda.",
+          "gatilho_zh": "从昏倒或摔倒中醒来时，他仰卧着从地上爬起。",
+          "gatilho_id": "acordar_chao",
+          "termina_na_origem": true
+        },
+        {
+          "id": "tired_breathing_idle",
+          "fbx": "tired_breathing_idle.fbx",
+          "nome_mixamo": "Breathing Idle",
+          "descricao_mixamo": "Breathing Idle",
+          "laco": true,
+          "rotulo": "Cansado, ofegante",
+          "rotulo_en": "Tired, panting",
+          "rotulo_es": "Cansado, jadeando",
+          "rotulo_zh": "气喘吁吁",
+          "gatilho": "Parado com o vigor zerado, respira ofegante até recuperar o fôlego.",
+          "gatilho_en": "Standing still with his vigor at zero, he pants until he catches his breath.",
+          "gatilho_es": "Parado con el vigor a cero, respira jadeando hasta recobrar el aliento.",
+          "gatilho_zh": "体力耗尽后站着不动，他喘着粗气，直到缓过劲来。",
+          "gatilho_id": "cansado"
+        }
+      ]
     }
   ]
 }

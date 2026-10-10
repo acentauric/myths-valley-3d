@@ -37,7 +37,8 @@ extends SceneTree
 ##      ponta a ponta do laço é tirado em rampa, e o laço fecha onde começou. E
 ##      os pés ficam sob a origem do corpo: no laço, o meio dos pés na média do
 ##      ciclo (a ginga balança para os dois lados); no gesto de uma vez, no
-##      primeiro quadro, de onde o parado vem.
+##      primeiro quadro, de onde o parado vem — ou, com `termina_na_origem` no JSON (o
+##      levantar do chão), no último, para o corpo terminar de pé onde o jogo o pôs.
 ##   5. Os pontos de parada do laço (`paradas`, no metadado do clipe): os quadros
 ##      em que a pose volta à do começo, onde o golpe acabou e o corpo pode voltar
 ##      ao parado (`authored_animator.parar_no_fim_do_golpe`).
@@ -108,7 +109,7 @@ func _run() -> void:
 			continue
 		var biblioteca := AnimationLibrary.new()
 		for clipe: Dictionary in clipes:
-			var animacao := _redirecionar(modelo, _fbx.path_join(str(clipe.get("fbx", ""))), bool(clipe.get("laco", false)))
+			var animacao := _redirecionar(modelo, _fbx.path_join(str(clipe.get("fbx", ""))), bool(clipe.get("laco", false)), bool(clipe.get("termina_na_origem", false)))
 			if animacao == null:
 				falhas += 1
 				continue
@@ -253,7 +254,7 @@ static func _meio_dos_pes(indices: Dictionary, globais: Array[Transform3D]) -> V
 
 
 ## O clipe `caminho_fbx` no esqueleto do `modelo` do catálogo, ou null.
-func _redirecionar(modelo: String, caminho_fbx: String, em_laco: bool) -> Animation:
+func _redirecionar(modelo: String, caminho_fbx: String, em_laco: bool, termina_na_origem: bool = false) -> Animation:
 	if not FileAccess.file_exists(caminho_fbx):
 		push_error("REDIRECIONAR: falta o FBX %s" % caminho_fbx)
 		return null
@@ -271,13 +272,13 @@ func _redirecionar(modelo: String, caminho_fbx: String, em_laco: bool) -> Animat
 		return null
 	var alvo_cena := cena_alvo.instantiate()
 	root.add_child(alvo_cena)
-	var resultado := _transferir(origem_cena, alvo_cena, caminho_fbx.get_file(), modelo, em_laco)
+	var resultado := _transferir(origem_cena, alvo_cena, caminho_fbx.get_file(), modelo, em_laco, termina_na_origem)
 	origem_cena.queue_free()
 	alvo_cena.queue_free()
 	return resultado
 
 
-func _transferir(origem_cena: Node, alvo_cena: Node, nome: String, modelo: String, em_laco: bool) -> Animation:
+func _transferir(origem_cena: Node, alvo_cena: Node, nome: String, modelo: String, em_laco: bool, termina_na_origem: bool = false) -> Animation:
 	var fonte := _esqueleto(origem_cena)
 	var alvo := _esqueleto(alvo_cena)
 	var tocador_fonte := _tocador(origem_cena)
@@ -387,8 +388,9 @@ func _transferir(origem_cena: Node, alvo_cena: Node, nome: String, modelo: Strin
 			quadris[k] -= parte
 			apoios[k] -= parte
 	# ... e os pés ficam sob a origem do corpo: no laço, o meio dos pés na média do
-	# ciclo; no gesto de uma vez, no primeiro quadro (de onde o parado vem).
-	var apoio := apoios[0]
+	# ciclo; no gesto de uma vez, no primeiro quadro (de onde o parado vem) ou, com
+	# `termina_na_origem`, no último (o levantar do chão termina de pé onde o corpo está).
+	var apoio := apoios[quadros - 1] if termina_na_origem and not em_laco else apoios[0]
 	if em_laco:
 		apoio = Vector3.ZERO
 		for ponto in apoios:
