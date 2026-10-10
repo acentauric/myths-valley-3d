@@ -2,6 +2,14 @@
 
 ## Em desenvolvimento — 10/10/2026
 
+- **O aceite da missão e o aviso de primeira vez ganham tamanho próprio.** Em AJUSTAR → Cenário →
+  Interface surgem "Aceite da missão" e "Aviso de primeira vez" (34 componentes), de 65% a 150%, com
+  restauração individual e geral como os outros. A caixa de aceite do E no morador e o cartão do primeiro
+  cordel, da primeira árvore e da água funda crescem ou encolhem inteiros (texto, imagem, moldura e botões)
+  em torno do centro e nunca passam da janela. Portão novo `interfaces_de_cartoes` (independência entre os
+  dois, três resoluções, três idiomas, restauração; `--sem-escala` reprova a asserção do aceite). A #140
+  segue aberta: faltam o banner de conquista, a legenda da narração e a revisão das combinações com o
+  texto global ampliado (#140).
 - **A narração manda na interface: nada fica por cima da caixa longa.** Com o Pedro (ou qualquer
   fala da caixa do Dialogo) aberto, o `foco_da_narracao` apagava só os painéis que o HUD nomeava;
   agora apaga QUALQUER painel do grupo `obstaculos_do_hud` que a cubra, o do testador incluído, e os

@@ -159,6 +159,7 @@ func _montar() -> void:
 	estilo.shadow_size = 12
 	_cartao.add_theme_stylebox_override("panel", estilo)
 	meio.add_child(_cartao)
+	Tela.vincular_componente(_cartao, "aviso", Vector2(0.5, 0.5))
 	var linha := HBoxContainer.new()
 	linha.add_theme_constant_override("separation", 24)
 	linha.mouse_filter = Control.MOUSE_FILTER_IGNORE

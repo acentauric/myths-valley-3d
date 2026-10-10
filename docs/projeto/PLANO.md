@@ -175,7 +175,8 @@ e avisos fora da missão ampliada. Independência, resolução/idioma, prioridad
 e tarefa passaram; mutante sem escala acusa uma falha. Capturas da cena real
 a 150% foram conferidas nos três idiomas. A issue segue aberta até revisar
 as telas secundárias e as combinações com texto global; ver
-[INTERFACES_INDIVIDUAIS.md](../testes/INTERFACES_INDIVIDUAIS.md).
+[INTERFACES_INDIVIDUAIS.md](../testes/INTERFACES_INDIVIDUAIS.md). Em 10/10 o aceite
+da missão e o aviso de primeira vez ganharam escala própria (34 componentes).
 
 A #126 ganha os três modos de câmera persistidos, giro suave por movimento,
 desvios com histerese e geometria de árvores próximas. Raízes sem ângulo livre

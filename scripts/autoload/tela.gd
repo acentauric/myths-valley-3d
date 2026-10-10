@@ -25,7 +25,7 @@ extends Node
 signal modo_mudou(cheia: bool)
 signal componentes_mudaram
 
-const COMPONENTES := ["missao", "relogio", "vida", "folego", "vigor", "minimapa", "mao", "fala", "nomes", "interacao", "avisos", "mochila", "caderneta", "almanaque", "talentos", "social", "pausa", "dialogo", "atalhos", "mapa", "controles", "apoios", "ajuda", "menu", "historico", "ajustes", "vagas", "sobre", "travessia", "modelos", "pergunta", "folheto"]
+const COMPONENTES := ["missao", "relogio", "vida", "folego", "vigor", "minimapa", "mao", "fala", "nomes", "interacao", "avisos", "mochila", "caderneta", "almanaque", "talentos", "social", "pausa", "dialogo", "atalhos", "mapa", "controles", "apoios", "ajuda", "menu", "historico", "ajustes", "vagas", "sobre", "travessia", "modelos", "pergunta", "folheto", "aceite", "aviso"]
 const ESCALAS_COMPONENTE := [0.65, 0.8, 1.0, 1.15, 1.3, 1.5]
 ## Degrau de ESCALAS_COMPONENTE usado quando o jogador não escolheu nada (100%).
 const PADRAO_COMPONENTE := 2
