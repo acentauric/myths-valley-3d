@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bateria ao vivo</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Cormorant+Garamond:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{--tinta:#0c1611;--ouro:#e8c46a;--ouro-claro:#f3dc98;--ouro-escuro:#9b692b;--linha:rgba(232,196,106,.3);--tenue:rgba(232,196,106,.1);--papel:#efe5cf;--verde:#8fc47a;--vermelho:#e07a5f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--tinta);color:var(--papel);font:17px/1.45 "Cormorant Garamond",Georgia,serif;padding:24px 16px}
+main{max-width:980px;margin:0 auto}
+h1{font-family:Cinzel,serif;color:var(--ouro);font-size:26px;margin:0 0 4px;letter-spacing:.04em}
+.sub{opacity:.75;margin:0 0 20px;display:flex;align-items:center;gap:8px}
+.vivo{width:9px;height:9px;border-radius:50%;background:var(--verde);box-shadow:0 0 0 0 rgba(143,196,122,.6);animation:pulso 1.6s infinite}
+.vivo.off{background:var(--vermelho);animation:none}
+@keyframes pulso{70%{box-shadow:0 0 0 8px rgba(143,196,122,0)}100%{box-shadow:0 0 0 0 rgba(143,196,122,0)}}
+h2{font-family:Cinzel,serif;color:var(--ouro);font-size:14px;letter-spacing:.1em;margin:28px 0 10px;text-transform:uppercase}
+.barra{height:14px;border:1px solid var(--linha);border-radius:8px;overflow:hidden;background:var(--tenue)}
+.barra i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--ouro-escuro),var(--ouro));transition:width .6s ease}
+.numeros{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:14px}
+.numeros div{border:1px solid var(--linha);border-radius:10px;padding:10px 16px}
+.numeros b{display:block;font-family:Cinzel,serif;font-size:26px;color:var(--ouro-claro)}
+.numeros .v b{color:var(--verde)}.numeros .r b{color:var(--vermelho)}
+.estado{margin-top:16px;padding:12px 16px;border-radius:10px;border:1px solid var(--linha)}
+.estado.ok{border-color:var(--verde);color:var(--verde)}.estado.ruim{border-color:var(--vermelho);color:var(--vermelho)}
+ul.chips{list-style:none;padding:0;margin:0;display:flex;flex-wrap:wrap;gap:8px}
+ul.chips li{border:1px solid var(--linha);border-radius:20px;padding:4px 12px;background:var(--tenue)}
+ul.chips span{opacity:.7;margin-left:8px;font-variant-numeric:tabular-nums}
+ul.falhas{padding-left:18px;margin:0}ul.falhas li{margin-bottom:8px;color:var(--vermelho)}ul.falhas small{color:var(--papel);opacity:.8}
+table{width:100%;border-collapse:collapse;font-size:16px}
+td{padding:5px 8px;border-bottom:1px solid var(--tenue);vertical-align:top}
+td:nth-child(2){white-space:nowrap;color:var(--ouro-claro)}td:nth-child(3){white-space:nowrap;opacity:.7}td:nth-child(4){opacity:.75}
+tr.ok td:first-child{color:var(--verde)}tr.ruim td{color:var(--vermelho)}
+tr.novo{animation:entra 1.2s ease}@keyframes entra{from{background:rgba(232,196,106,.22)}to{background:transparent}}
+.vazio{opacity:.5}
+@media(max-width:600px){td:nth-child(4){display:none}}
+</style>
+</head>
+<body>
+<main>
+  <h1 id="titulo">Bateria</h1>
+  <p class="sub"><i class="vivo" id="vivo"></i><span id="sub">conectando…</span></p>
+  <div class="barra"><i id="barra"></i></div>
+  <div class="numeros">
+    <div><b id="n-feitos">0/0</b><span id="n-pct">testes feitos</span></div>
+    <div class="v"><b id="n-ok">0</b>passaram</div>
+    <div class="r"><b id="n-ruins">0</b>falharam</div>
+    <div><b id="n-rodando">0</b><span id="n-fila">rodando</span></div>
+  </div>
+  <div class="estado" id="estado">Esperando o log da bateria…</div>
+  <section id="sec-falhas" hidden><h2>Falhas</h2><ul class="falhas" id="falhas"></ul></section>
+  <h2>Rodando agora</h2><ul class="chips" id="rodando"><li class="vazio">—</li></ul>
+  <h2>Últimos terminados</h2><table><tbody id="ultimos"><tr><td colspan="4" class="vazio">nenhum ainda</td></tr></tbody></table>
+</main>
+<script>
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
+let vistos = 0, primeiroFeito = null, ultimoEstado = null;
+
+function render(e) {
+  ultimoEstado = e;
+  $('titulo').textContent = e.titulo;
+  document.title = e.titulo;
+  const feitos = e.feitos.length, total = e.total || 0;
+  const ok = e.feitos.filter((f) => f.status === 'ok').length;
+  const ruins = e.feitos.filter((f) => f.status !== 'ok');
+  const pct = total ? Math.floor(feitos * 100 / total) : 0;
+  $('barra').style.width = pct + '%';
+  $('n-feitos').textContent = `${feitos}/${total}`;
+  $('n-pct').textContent = `testes feitos (${pct}%)`;
+  $('n-ok').textContent = ok;
+  $('n-ruins').textContent = ruins.length;
+  $('n-rodando').textContent = e.fim ? 0 : e.rodando.length;
+  $('n-fila').textContent = e.fila != null && !e.fim ? `rodando · ${e.fila} na fila` : 'rodando';
+
+  if (feitos && primeiroFeito === null) primeiroFeito = Date.now();
+  const est = $('estado');
+  est.className = 'estado';
+  if (e.fim) {
+    est.textContent = e.fim;
+    est.classList.add(ruins.length || e.fim.startsWith('PUSH:') ? 'ruim' : 'ok');
+  } else if (!e.tem_log) {
+    est.textContent = 'Esperando o log da bateria…';
+  } else {
+    let eta = '';
+    if (feitos && total > feitos) {
+      const decorrido = (Date.now() / 1000) - e.inicio_painel;
+      const resto = decorrido / feitos * (total - feitos);
+      eta = ` · ~${Math.max(1, Math.round(resto / 60))} min restantes`;
+    }
+    est.textContent = (feitos ? 'Rodando' : 'Preparando os testes') + eta;
+  }
+
+  $('sec-falhas').hidden = !ruins.length;
+  $('falhas').innerHTML = ruins.map((f) => `<li><b>${esc(f.nome)}</b> <em>${esc(f.status)}</em> · ${f.seg}s<br><small>${esc(f.msg)}</small></li>`).join('');
+
+  $('rodando').innerHTML = e.fim ? '<li class="vazio">acabou</li>'
+    : (e.rodando.map((r) => `<li><b>${esc(r.nome)}</b><span>${esc(r.seg)}</span></li>`).join('') || '<li class="vazio">—</li>');
+
+  const novos = feitos - vistos;
+  $('ultimos').innerHTML = e.feitos.slice(-60).reverse().map((f, i) =>
+    `<tr class="${f.status === 'ok' ? 'ok' : 'ruim'}${i < novos ? ' novo' : ''}"><td>${f.status === 'ok' ? '✓' : '✗'}</td><td>${esc(f.nome)}</td><td>${f.seg}s</td><td>${esc(f.msg)}</td></tr>`
+  ).join('') || '<tr><td colspan="4" class="vazio">nenhum ainda</td></tr>';
+  vistos = feitos;
+}
+
+function conectar() {
+  const fonte = new EventSource('/eventos');
+  fonte.onopen = () => { $('vivo').classList.remove('off'); $('sub').textContent = 'ao vivo'; };
+  fonte.onmessage = (m) => render(JSON.parse(m.data));
+  fonte.onerror = () => { $('vivo').classList.add('off'); $('sub').textContent = 'sem conexão com o painel, tentando de novo…'; };
+}
+setInterval(() => { if (ultimoEstado && !ultimoEstado.fim) $('sub').textContent = 'ao vivo · ' + new Date().toLocaleTimeString('pt-BR'); }, 1000);
+conectar();
+</script>
+</body>
+</html>
