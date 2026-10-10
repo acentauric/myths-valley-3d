@@ -21,10 +21,11 @@ extends SceneTree
 ##   6. O PÁTIO: chegar ao pé da escadaria fecha a ida, com a fala do Pedro.
 ##   6b. O CHAMADO AOS CORAJOSOS (#114): no pátio, o passo fecha sozinho; a voz do
 ##      mundo conta o silêncio, a anfitriã fala da escadaria, a voz conta os homens
-##      de pé, e o Pedro diz que vai.
+##      de pé, e o Pedro diz que vai. O passo paga 10 de XP.
 ##   6c. A PORTA ESTREITA (#114): falar com o Pedro fecha a fila; a voz conta a
 ##      subida, a moça e a anfitriã falam, a voz conta a porta e os cinco que
-##      voltam, e o Pedro fica. O capítulo 6 acaba com a fila acabada.
+##      voltam, e o Pedro fica. O capítulo 6 acaba com a fila acabada, e o passo
+##      também paga 10 de XP (a recompensa dos dois passos novos é critério da #114).
 ##   7. A VOLTA PARA CASA: na manhã seguinte o arraial sai do pátio.
 ##   8. O SAVE: a partida que volta tem o dia marcado, o portão aberto e a fila
 ##      acabada.
@@ -180,6 +181,15 @@ func _run() -> void:
 	await _fechar_a_fala()
 
 	# --- 6b. O CHAMADO AOS CORAJOSOS (#114) ---------------------------------------------
+	# O XP que os dois passos novos pagam (`recompensa.xp`, #107) chega pela teia de talentos.
+	var xp_pago: Array[float] = []
+	var talentos = root.get_node_or_null("/root/Talentos")
+	_conferir(talentos != null, "o autoload Talentos não existe")
+	if talentos != null:
+		talentos.ganhou_xp.connect(func(quanto: float) -> void: xp_pago.append(quanto))
+	for passo: Dictionary in jornada.passos:
+		if str(passo.get("id", "")) in ["fazenda_chamado", "fazenda_porta_estreita"]:
+			_conferir(int((passo.get("recompensa", {}) as Dictionary).get("xp", 0)) == 10, "o passo '%s' não paga 10 de XP" % str(passo.get("id", "")))
 	await _ate(func() -> bool: return jornada.espera <= 0.0, 12.0)
 	_conferir(await _ate(func() -> bool: return jornada.missao >= 3 or narracao.tocando(), 8.0), "com o jogador no pátio, o passo do chamado não fechou")
 	_conferir(await _ate(func() -> bool: return narracao.tocando(), 6.0), "a voz do mundo não contou o silêncio")
@@ -250,6 +260,7 @@ func _run() -> void:
 	_conferir(jornada.aconteceu("porta_estreita") and not fazenda._em_cena, "a cena da porta estreita não terminou")
 	_conferir(vozes >= 3 and falas >= 3, "a porta estreita teve %d narração(ões) e %d fala(s): faltam a subida, a moça, o cerco, a anfitriã, a porta ou o Pedro" % [vozes, falas])
 	_conferir(jornada.acabou(), "a fila da fazenda não acabou no fim do capítulo 6")
+	_conferir(xp_pago.count(10.0) >= 2, "os dois passos novos do capítulo 6 deviam pagar 10 de XP cada, e a teia recebeu %s" % str(xp_pago))
 
 	# --- 7. A VOLTA PARA CASA -------------------------------------------------------------------
 	relogio.dia_comecou.emit(4, 0, 1)

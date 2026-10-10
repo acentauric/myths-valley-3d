@@ -2,6 +2,13 @@
 
 ## Em desenvolvimento — 10/10/2026
 
+- **Os dois passos do fim do capítulo 6 pagam 10 de XP cada (#114).** "O chamado aos corajosos" e "A porta
+  estreita" (`missoes_fazenda.json`) tinham texto nos três idiomas e cena, mas nenhuma recompensa, e o
+  critério da issue pede "texto nos três idiomas e recompensa". Cada um passa a pagar `recompensa.xp` 10,
+  pela mesma regra dos outros passos (#107), e o diário mostra a linha RECOMPENSA. O portão `fazenda` cobra
+  os dois no dado e os dois pagamentos de 10 na teia de talentos ao fim das cenas. Falta rodar os portões
+  `missoes`, `cadeia_das_missoes` e `idiomas` no lote.
+
 - **As fichas de árvore e os epitáfios do cemitério falam inglês e espanhol.** O almanaque, a ficha do E
   perto da árvore e a lápide leem o nome, as páginas, o grupo e a história no idioma do jogo (`_en`/`_es`
   nos JSON); o título do painel ("ÁRVORE", "LÁPIDE"), o "E: fechar", o "E: próxima" e as dicas saíram do
