@@ -4,64 +4,105 @@
     {
       "nome": "Maria das Dores Conceição",
       "datas": "1801 – 1869",
-      "historia": "Parteira por quarenta anos. Pôs no mundo metade do arraial e nunca cobrou de quem não tinha."
+      "historia": "Parteira por quarenta anos. Pôs no mundo metade do arraial e nunca cobrou de quem não tinha.",
+      "historia_en": "Midwife for forty years. She brought half the village into the world and never charged anyone who had nothing.",
+      "historia_es": "Partera por cuarenta años. Trajo al mundo a la mitad del pueblo y nunca le cobró a quien no tenía."
     },
     {
       "nome": "Joaquim Pescador",
       "datas": "1822 – 1858",
-      "historia": "Saiu de canoa num nordeste forte e o mar não devolveu. Aqui está a rede dele."
+      "historia": "Saiu de canoa num nordeste forte e o mar não devolveu. Aqui está a rede dele.",
+      "historia_en": "He set out in a canoe in a strong northeaster and the sea never gave him back. His net is here.",
+      "historia_es": "Salió en canoa con un nordeste fuerte y el mar no lo devolvió. Aquí está su red."
     },
     {
       "nome": "Ana Rosa do Espírito Santo",
       "datas": "1830 – 1884",
-      "historia": "Rezadeira. Curava quebranto com arruda; ainda hoje deixam folha verde na pedra."
+      "historia": "Rezadeira. Curava quebranto com arruda; ainda hoje deixam folha verde na pedra.",
+      "historia_en": "A healer. She cured the evil eye with rue; to this day people leave a green leaf on the stone.",
+      "historia_es": "Rezadora. Curaba el mal de ojo con ruda; todavía hoy dejan una hoja verde sobre la piedra."
     },
     {
       "nome": "Benedito Firmino",
       "datas": "1815 – 1872",
-      "historia": "Mestre de saveiro. Levava farinha a Salvador e trazia de volta as notícias do mundo."
+      "historia": "Mestre de saveiro. Levava farinha a Salvador e trazia de volta as notícias do mundo.",
+      "historia_en": "A saveiro master. He carried flour to Salvador and brought back news of the world.",
+      "historia_es": "Maestro de saveiro. Llevaba harina a Salvador y traía de vuelta las noticias del mundo."
     },
     {
       "nome": "Luzia, menina",
+      "nome_en": "Luzia, a little girl",
+      "nome_es": "Luzia, niña",
       "datas": "1861 – 1866",
-      "historia": "Levada pela febre do ano da seca. O jasmim que a mãe plantou ainda floresce em setembro."
+      "historia": "Levada pela febre do ano da seca. O jasmim que a mãe plantou ainda floresce em setembro.",
+      "historia_en": "Taken by the fever of the drought year. The jasmine her mother planted still blooms in September.",
+      "historia_es": "Se la llevó la fiebre del año de la sequía. El jazmín que plantó su madre aún florece en septiembre."
     },
     {
       "nome": "Padre Inácio Moura",
+      "nome_en": "Father Inácio Moura",
+      "nome_es": "Padre Inácio Moura",
       "datas": "1790 – 1856",
-      "historia": "Primeiro padre da capela. Pediu para ser enterrado de frente para o mar, não para o altar."
+      "historia": "Primeiro padre da capela. Pediu para ser enterrado de frente para o mar, não para o altar.",
+      "historia_en": "First priest of the chapel. He asked to be buried facing the sea, not the altar.",
+      "historia_es": "Primer padre de la capilla. Pidió ser enterrado de cara al mar, no al altar."
     },
     {
       "nome": "Felícia da Purificação",
       "datas": "1812 – 1880",
-      "historia": "Comprou a liberdade vendendo cocada na feira. Com o que sobrou, comprou a da irmã."
+      "historia": "Comprou a liberdade vendendo cocada na feira. Com o que sobrou, comprou a da irmã.",
+      "historia_en": "She bought her freedom selling cocada at the market. With what was left over, she bought her sister's.",
+      "historia_es": "Compró su libertad vendiendo cocada en la feria. Con lo que sobró, compró la de su hermana."
     },
     {
       "nome": "Manoel Carpina",
       "datas": "1826 – 1879",
-      "historia": "Fez as portas da capela e quase todas estas cruzes. A dele, o filho fez torta, de homenagem."
+      "historia": "Fez as portas da capela e quase todas estas cruzes. A dele, o filho fez torta, de homenagem.",
+      "historia_en": "He made the chapel doors and almost all these crosses. His own, his son made crooked, as a tribute.",
+      "historia_es": "Hizo las puertas de la capilla y casi todas estas cruces. La de él, el hijo la hizo torcida, de homenaje."
     },
     {
       "nome": "Custódia e Custódio",
       "datas": "1840 – 1882",
-      "historia": "Gêmeos que partiram no mesmo dia. No arraial, ninguém lembra de um sem falar do outro."
+      "historia": "Gêmeos que partiram no mesmo dia. No arraial, ninguém lembra de um sem falar do outro.",
+      "historia_en": "Twins who left on the same day. In the village, nobody remembers one without mentioning the other.",
+      "historia_es": "Gemelos que partieron el mismo día. En el pueblo, nadie se acuerda de uno sin hablar del otro."
     },
     {
       "nome": "Sebastião Violeiro",
       "datas": "1833 – 1877",
-      "historia": "Tocava viola no samba de roda até clarear. Com vento da mata, há quem ouça o ponteado."
+      "historia": "Tocava viola no samba de roda até clarear. Com vento da mata, há quem ouça o ponteado.",
+      "historia_en": "He played the viola at the samba de roda until dawn. When the wind comes from the forest, some say they hear the plucking.",
+      "historia_es": "Tocaba la viola en el samba de roda hasta que aclaraba. Con viento del monte, hay quien oye el punteo."
     },
     {
       "nome": "Dona Zefa do Roçado",
       "datas": "1818 – 1885",
-      "historia": "Plantou o primeiro mandiocal do vale. A casa de farinha ainda usa o forno dela."
+      "historia": "Plantou o primeiro mandiocal do vale. A casa de farinha ainda usa o forno dela.",
+      "historia_en": "She planted the valley's first cassava field. The flour house still uses her oven.",
+      "historia_es": "Plantó el primer mandiocal del valle. La casa de harina todavía usa su horno."
     },
     {
       "nome": "Desconhecido",
+      "nome_en": "Unknown",
+      "nome_es": "Desconocido",
       "datas": "? – 1874",
-      "historia": "Chegou numa jangada sem vela, já sem vida. Ganhou flores e cruz como filho da terra."
+      "historia": "Chegou numa jangada sem vela, já sem vida. Ganhou flores e cruz como filho da terra.",
+      "historia_en": "He arrived on a sail-less jangada, already lifeless. He was given flowers and a cross as a son of the land.",
+      "historia_es": "Llegó en una balsa sin vela, ya sin vida. Recibió flores y cruz como hijo de la tierra."
     }
   ],
+  "rotulos": {
+    "titulo": "LÁPIDE",
+    "titulo_en": "GRAVESTONE",
+    "titulo_es": "LÁPIDA",
+    "fechar": "E: fechar",
+    "fechar_en": "E: close",
+    "fechar_es": "E: cerrar",
+    "dica": "Ler lápide",
+    "dica_en": "Read gravestone",
+    "dica_es": "Leer lápida"
+  },
   "broncas": [
     {
       "texto": "Ô, moço! Desce daí, que aí embaixo tem gente descansando.",

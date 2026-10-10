@@ -999,6 +999,7 @@ func _aplicar_golpe(id: String) -> void:
 	# O SOM É DO IMPACTO (#89): cada golpe que acerta, e o que derruba também — uma
 	# tabela só (`SONS_DO_GOLPE`, `SONS_DO_ULTIMO`), e a queda entra depois do golpe.
 	_tocar_o_golpe(ficha, faltam <= 0)
+	_reagir_ao_golpe(alvo, faltam <= 0)
 	if faltam > 0:
 		# A PEDRA GRANDE RENDE AOS POUCOS (07/10): a cada `rende_a_cada` golpes, o que a
 		# ficha diz — dias de picareta até ela acabar, com a mochila enchendo no caminho.
@@ -1088,6 +1089,23 @@ func _tocar_o_golpe(ficha: Dictionary, ultimo: bool) -> void:
 		_tocar_a_queda(fim)
 	else:
 		get_tree().create_timer(QUEDA_DEPOIS_DO_GOLPE_S).timeout.connect(_tocar_a_queda.bind(fim))
+
+
+## AS REAÇÕES VISUAIS DO IMPACTO (#16): as lascas saltam onde a ferramenta bate (a um braço do
+## viajante, rumo ao alvo, na altura do peito, e não no centro do alvo, que numa pedra grande é
+## dentro dela) e a tela dá um tranco, maior no último golpe. Ver `ReacoesVisuais`.
+func _reagir_ao_golpe(alvo: Dictionary, ultimo: bool) -> void:
+	if _jogador == null or not is_instance_valid(_jogador):
+		return
+	var no = alvo.get("no")
+	var rumo := Vector3.FORWARD
+	if no is Node3D and is_instance_valid(no):
+		var falta: Vector3 = (no as Node3D).global_position - _jogador.global_position
+		falta.y = 0.0
+		if falta.length() > 0.01:
+			rumo = falta.normalized()
+	var ponto: Vector3 = _jogador.global_position + rumo * DISTANCIA_DE_GOLPE + Vector3(0.0, 0.9, 0.0)
+	ReacoesVisuais.golpe(self, ponto, alvo["ficha"], _jogador.get("camera") as Camera3D, ultimo)
 
 
 func _tocar_a_queda(nome: String) -> void:

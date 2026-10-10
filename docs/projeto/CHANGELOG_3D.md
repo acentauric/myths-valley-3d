@@ -2,6 +2,30 @@
 
 ## Em desenvolvimento — 10/10/2026
 
+- **O golpe ganha lascas do material e um tranco na tela (#16).** Cada golpe que acerta solta uma rajada de
+  cubinhos a um braço do viajante, rumo ao alvo: cinza na pedra, marrom na madeira, verde no capim, claro na
+  ostra, terra na mão; o último golpe solta o dobro. A câmera dá um tranco curto (maior no último) e volta ao
+  zero, sem mexer na posição nem na colisão. Com o "movimento reduzido" ligado, não há sacudida e as lascas
+  são menos. A tabela de sons por ação (machado, picareta, foice, ostra, galho, porta, passo por terreno e o
+  "não pode" da mochila) já estava completa e fica cobrada por `sons_do_jogo`; as reações visuais moram em
+  `ReacoesVisuais` (o nome `Efeitos` do 3D é dos efeitos temporários), cobradas pelo portão `reacoes_visuais`.
+  Falta jogar para ajustar o tamanho das lascas e a força do tranco.
+
+- **Os dois passos do fim do capítulo 6 pagam 10 de XP cada (#114).** "O chamado aos corajosos" e "A porta
+  estreita" (`missoes_fazenda.json`) tinham texto nos três idiomas e cena, mas nenhuma recompensa, e o
+  critério da issue pede "texto nos três idiomas e recompensa". Cada um passa a pagar `recompensa.xp` 10,
+  pela mesma regra dos outros passos (#107), e o diário mostra a linha RECOMPENSA. O portão `fazenda` cobra
+  os dois no dado e os dois pagamentos de 10 na teia de talentos ao fim das cenas. Falta rodar os portões
+  `missoes`, `cadeia_das_missoes` e `idiomas` no lote.
+
+- **As fichas de árvore e os epitáfios do cemitério falam inglês e espanhol.** O almanaque, a ficha do E
+  perto da árvore e a lápide leem o nome, as páginas, o grupo e a história no idioma do jogo (`_en`/`_es`
+  nos JSON); o título do painel ("ÁRVORE", "LÁPIDE"), o "E: fechar", o "E: próxima" e as dicas saíram do
+  código para o mesmo dado. As 18 árvores que só tinham português ganharam as duas línguas, e o portão
+  `idiomas` passa a cobrar `arvores_3d.json` e `lapides_3d.json` (cópia do português reprova). O `pedro.json`
+  e o `aldeoes.json` seguem em `FALTAM_TRADUCAO` com a razão atualizada: nenhum código do 3D lê as falas
+  deles (#6). Falta o Ramon revisar o registro das duas línguas.
+
 - **Na cena do vale só ficam o balão de fala e as tarjas, a câmera desliza e o E pula.** Com uma cena
   tocando (a apresentação do Tonho, a vista da praça, a casa do tio), o painel de missão, o relógio e as
   barras, os atalhos, o minimapa, a barra de mão, a seta da missão, as plaquinhas, o "?"/"!" sobre as

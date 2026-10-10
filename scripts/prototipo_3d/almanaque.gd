@@ -423,7 +423,7 @@ func _texto_do_caminho() -> String:
 	if _secao != "":
 		partes.append(_nome_da_secao(_secao))
 	if _secao == PLANTAS and _grupo != "":
-		partes.append(str((_grupos.get(_grupo, {}) as Dictionary).get("nome", _grupo)))
+		partes.append(str(IdiomaMenu.campo(_grupos.get(_grupo, {}), "nome", _grupo)))
 	if _escolhido != "":
 		partes.append(_nome_do_escolhido())
 	return "  ›  ".join(partes) + "  ·  " + _conta_da_secao(_secao if _secao != "" else PLANTAS)
@@ -431,7 +431,7 @@ func _texto_do_caminho() -> String:
 
 func _nome_do_escolhido() -> String:
 	if _secao == PLANTAS:
-		return str((_fichas.get(_escolhido, {}) as Dictionary).get("nome", _escolhido))
+		return str(IdiomaMenu.campo(_fichas.get(_escolhido, {}), "nome", _escolhido))
 	return str((_fonte(_secao)["nome"] as Callable).call(_escolhido))
 
 
@@ -466,7 +466,7 @@ func _montar_plantas() -> void:
 		var grupo := str(chave)
 		var ficha: Dictionary = _grupos.get(grupo, {})
 		var quantas := conhecidas_do_grupo(grupo).size()
-		var linha := _linha_da_cadeia(str(ficha.get("nome", grupo)),
+		var linha := _linha_da_cadeia(str(IdiomaMenu.campo(ficha, "nome", grupo)),
 			"%d de %d" % [quantas, total_do_grupo(grupo)], 1, grupo == _grupo)
 		linha.pressed.connect(_escolher_grupo.bind(grupo))
 		_cadeia.add_child(linha)
@@ -475,7 +475,7 @@ func _montar_plantas() -> void:
 			continue
 		for bruto in conhecidas_do_grupo(grupo):
 			var especie := str(bruto)
-			var nome := str((_fichas.get(especie, {}) as Dictionary).get("nome", especie))
+			var nome := str(IdiomaMenu.campo(_fichas.get(especie, {}), "nome", especie))
 			var filha := _linha_da_cadeia(nome, "", 2, especie == _escolhido)
 			filha.pressed.connect(_escolher_item.bind(especie))
 			_cadeia.add_child(filha)
@@ -541,9 +541,9 @@ func _montar_pagina() -> void:
 		return
 	if _secao == PLANTAS and _grupo != "":
 		var ficha: Dictionary = _grupos.get(_grupo, {})
-		_titulo_da_pagina(str(ficha.get("nome", _grupo)))
+		_titulo_da_pagina(str(IdiomaMenu.campo(ficha, "nome", _grupo)))
 		_pagina.add_child(_filete())
-		_pagina.add_child(_corpo(str(ficha.get("resumo", ""))))
+		_pagina.add_child(_corpo(str(IdiomaMenu.campo(ficha, "resumo", ""))))
 		_pagina.add_child(_corpo("%s espécies deste grupo você já viu de perto."
 			% ("%d de %d" % [conhecidas_do_grupo(_grupo).size(), total_do_grupo(_grupo)])))
 		return
@@ -559,7 +559,7 @@ func _montar_pagina() -> void:
 
 func _pagina_da_planta() -> void:
 	var ficha: Dictionary = _fichas.get(_escolhido, {})
-	_titulo_da_pagina(str(ficha.get("nome", _escolhido)))
+	_titulo_da_pagina(str(IdiomaMenu.campo(ficha, "nome", _escolhido)))
 	var cientifico := str(ficha.get("cientifico", ""))
 	if cientifico != "":
 		var latim := Label.new()
@@ -567,7 +567,7 @@ func _pagina_da_planta() -> void:
 		Identidade.papel_enfase(latim, 18, APAGADO)
 		_pagina.add_child(latim)
 	_pagina.add_child(_filete())
-	for pagina in ficha.get("paginas", []):
+	for pagina in IdiomaMenu.campo(ficha, "paginas", []):
 		_pagina.add_child(_corpo(str(pagina)))
 
 

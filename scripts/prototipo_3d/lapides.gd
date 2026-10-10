@@ -45,6 +45,8 @@ var _world: Node3D
 var _jogador: Node3D
 var _hud
 var _historias: Array = []
+## Os rótulos do painel (título, "E: fechar" e a dica), nos três idiomas, do mesmo JSON.
+var _rotulos: Dictionary = {}
 var _perto := -1
 var _aberta := -1
 var _dica: PanelContainer
@@ -58,7 +60,8 @@ func configurar(world: Node3D, jogador: Node3D, hud, hud_layer: Control) -> void
 	if dados is Dictionary:
 		_historias = dados.get("lapides", [])
 		_broncas = dados.get("broncas", [])
-	_dica = DicaTecla.criar(hud_layer, Atalhos.letra("interagir"), "Ler lápide")
+		_rotulos = dados.get("rotulos", {})
+	_dica = DicaTecla.criar(hud_layer, Atalhos.letra("interagir"), str(IdiomaMenu.campo(_rotulos, "dica", "Ler lápide")))
 	add_to_group(FocoDoE.GRUPO)
 
 
@@ -125,7 +128,8 @@ func ler(indice: int) -> void:
 		return
 	var lapide: Dictionary = _historias[indice]
 	Audio.efeito("ui_confirmar")
-	_hud.show_house_info("%s · %s\n%s" % [lapide.get("nome", ""), lapide.get("datas", ""), lapide.get("historia", "") + "\n\nE: fechar"], "LÁPIDE")
+	var historia := str(IdiomaMenu.campo(lapide, "historia", "")) + "\n\n" + str(IdiomaMenu.campo(_rotulos, "fechar", "E: fechar"))
+	_hud.show_house_info("%s · %s\n%s" % [IdiomaMenu.campo(lapide, "nome", ""), lapide.get("datas", ""), historia], str(IdiomaMenu.campo(_rotulos, "titulo", "LÁPIDE")))
 	_hud.set("painel_dono", self)
 	_aberta = indice
 

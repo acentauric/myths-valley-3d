@@ -2,11 +2,11 @@
   "observacao": "Fichas das árvores do vale (tecla E perto delas). Chave = espécie do catálogo/mata. Cada ficha tem páginas curtas: E abre, E passa a página, E na última fecha. Contexto: Recôncavo Baiano, 1887.",
   "observacao_grupos": "OS GRUPOS SÃO A CADEIA DE ÍNDICES DO ALMANAQUE: a tela abre numa lista de grupos e desce daí para a espécie, em vez de despejar dezoito nomes numa coluna só. A ordem aqui é a ordem em que eles aparecem. Cada árvore diz a que grupo pertence pelo campo 'grupo'; árvore sem grupo cai em 'outras', que existe para que acrescentar espécie nova nunca a faça desaparecer da tela.",
   "grupos": {
-    "frutiferas": { "nome": "Frutíferas do quintal", "resumo": "O que se come e o que dá sombra em volta de casa." },
-    "mata": { "nome": "Mata de dentro", "resumo": "O que fica onde o machado ainda não chegou." },
-    "beira": { "nome": "Beira d'água", "resumo": "A franja da baía, o mangue e a areia." },
-    "oficio": { "nome": "De lavoura e ofício", "resumo": "O que vira azeite, vassoura e corda de navio." },
-    "outras": { "nome": "Outras", "resumo": "As que ainda não foram arrumadas em grupo." }
+    "frutiferas": { "nome": "Frutíferas do quintal", "nome_en": "Backyard fruit trees", "nome_es": "Frutales del patio", "resumo": "O que se come e o que dá sombra em volta de casa.", "resumo_en": "What you eat and what gives shade around the house.", "resumo_es": "Lo que se come y lo que da sombra alrededor de la casa." },
+    "mata": { "nome": "Mata de dentro", "nome_en": "Deep forest", "nome_es": "Monte adentro", "resumo": "O que fica onde o machado ainda não chegou.", "resumo_en": "What stands where the axe hasn't reached yet.", "resumo_es": "Lo que queda donde el hacha todavía no llegó." },
+    "beira": { "nome": "Beira d'água", "nome_en": "Water's edge", "nome_es": "Orilla del agua", "resumo": "A franja da baía, o mangue e a areia.", "resumo_en": "The fringe of the bay, the mangrove and the sand.", "resumo_es": "La franja de la bahía, el manglar y la arena." },
+    "oficio": { "nome": "De lavoura e ofício", "nome_en": "Farm and trade", "nome_es": "De labranza y oficio", "resumo": "O que vira azeite, vassoura e corda de navio.", "resumo_en": "What becomes oil, brooms and ship rope.", "resumo_es": "Lo que se vuelve aceite, escoba y soga de barco." },
+    "outras": { "nome": "Outras", "nome_en": "Others", "nome_es": "Otras", "resumo": "As que ainda não foram arrumadas em grupo.", "resumo_en": "The ones not yet sorted into a group.", "resumo_es": "Las que todavía no se acomodaron en un grupo." }
   },
   "observacao_corte": "TODA ÁRVORE DO VALE SE CORTA, de machado na mão, e volta: o pé cortado vira toco, o toco dá muda, a muda vira árvore nova, e só um ano do calendário depois do corte (112 dias, que é quantos o Relogio tem) ela é adulta e se corta de novo. QUEM DIZ O QUE CADA UMA PEDE É A MADEIRA: 'nivel' é o do machado em Progressao, que só o talento sobe (Braços de machado, no ofício; Ferro de Ogum, na teia do candomblé — a recusa lê os nomes das teias, por Talentos.que_abrem); 'aco' pede o machado de aço na mão, porque o de ferro não aguenta o fio; 'dureza' é a do Energia (o fôlego de cada golpe é bater x dureza) e, acima de 1,5, o golpe ensina como trabalho duro (XP de bater_duro). A gameleira não se corta, e a bananeira também não, cada uma com a sua razão escrita em 'nao_se_corta'. Espécie sem entrada em 'especies' é madeira branca.",
   "madeiras": {
@@ -90,35 +90,77 @@
       "tirar_fibra_es": "Sacar piasava",
       "fibra_crescendo": "%s · a fibra cresce de novo",
       "fibra_crescendo_en": "%s · the fiber is growing back",
-      "fibra_crescendo_es": "%s · la fibra vuelve a crecer"
+      "fibra_crescendo_es": "%s · la fibra vuelve a crecer",
+      "titulo_ficha": "ÁRVORE",
+      "titulo_ficha_en": "TREE",
+      "titulo_ficha_es": "ÁRBOL",
+      "proxima": "E: próxima (%d/%d)",
+      "proxima_en": "E: next (%d/%d)",
+      "proxima_es": "E: siguiente (%d/%d)",
+      "fechar": "E: fechar",
+      "fechar_en": "E: close",
+      "fechar_es": "E: cerrar",
+      "dica_ficha": "Sobre a árvore",
+      "dica_ficha_en": "About the tree",
+      "dica_ficha_es": "Sobre el árbol"
     }
   },
   "arvores": {
     "mangueira": {
       "grupo": "frutiferas",
       "nome": "Mangueira",
+      "nome_en": "Mango tree",
+      "nome_es": "Mango",
       "cientifico": "Mangifera indica",
       "paginas": [
         "Veio da Índia com os portugueses e se deu tão bem no Recôncavo que parece nativa. Copa fechada, escura, sombra fresca o ano inteiro.",
         "Entre outubro e janeiro o chão fica coberto de manga-rosa e espada. Debaixo dela se descasca mandioca, se conversa e se espera o calor passar."
+      ],
+      "paginas_en": [
+        "It came from India with the Portuguese and took so well to the Recôncavo that it looks native. Closed, dark crown, cool shade all year round.",
+        "Between October and January the ground is covered in manga-rosa and espada mangoes. Under it you peel cassava, chat and wait for the heat to pass."
+      ],
+      "paginas_es": [
+        "Llegó de la India con los portugueses y se dio tan bien en el Recôncavo que parece nativa. Copa cerrada, oscura, sombra fresca todo el año.",
+        "Entre octubre y enero el suelo se cubre de mangos rosa y espada. Debajo de ella se pela mandioca, se conversa y se espera que pase el calor."
       ]
     },
     "jaqueira": {
       "grupo": "frutiferas",
       "nome": "Jaqueira",
+      "nome_en": "Jackfruit tree",
+      "nome_es": "Árbol de yaca",
       "cientifico": "Artocarpus heterophyllus",
       "paginas": [
         "Outra que veio da Ásia e tomou conta. A jaca nasce grudada no tronco e pode passar de dez quilos.",
         "Mole ou dura, a jaca mata a fome de muita casa pobre; o caroço cozido vira farinha. Ninguém dorme debaixo de jaqueira carregada."
+      ],
+      "paginas_en": [
+        "Another one that came from Asia and took over. The jackfruit grows stuck to the trunk and can weigh more than ten kilos.",
+        "Soft or hard, the jackfruit feeds many a poor household; the boiled seed becomes flour. Nobody sleeps under a loaded jackfruit tree."
+      ],
+      "paginas_es": [
+        "Otra que vino de Asia y se adueñó. La yaca nace pegada al tronco y puede pasar de diez kilos.",
+        "Blanda o dura, la yaca mata el hambre de muchas casas pobres; la semilla cocida se vuelve harina. Nadie duerme bajo una yaca cargada."
       ]
     },
     "cajueiro": {
       "grupo": "frutiferas",
       "nome": "Cajueiro",
+      "nome_en": "Cashew tree",
+      "nome_es": "Marañón",
       "cientifico": "Anacardium occidentale",
       "paginas": [
         "Árvore da terra, torta e espalhada, que gosta de areia e sol. O caju é o pedúnculo; a castanha é o fruto de verdade.",
         "Do caju se faz doce e mocororó; a castanha assada na brasa estala e solta um óleo que queima a mão de quem é afobado."
+      ],
+      "paginas_en": [
+        "A native tree, twisted and sprawling, that likes sand and sun. The cashew apple is the stalk; the nut is the real fruit.",
+        "The apple makes sweets and mocororó; the nut roasted on the embers pops and spits an oil that burns the hand of anyone in a hurry."
+      ],
+      "paginas_es": [
+        "Árbol de la tierra, torcido y extendido, que gusta de la arena y el sol. El marañón es el pedúnculo; la castaña es el fruto de verdad.",
+        "Del marañón se hace dulce y mocororó; la castaña asada en la brasa estalla y suelta un aceite que quema la mano del apurado."
       ]
     },
     "coqueiro": {
@@ -130,114 +172,242 @@
       "paginas": [
         "Toda a costa da baía é franjada de coqueiro, inclinado para o mar como quem procura a água.",
         "Água de coco para a sede, leite de coco para a moqueca, palha para cobrir casa e fazer esteira, casca para acender fogo. Nada se perde."
+      ],
+      "paginas_en": [
+        "The whole coast of the bay is fringed with coconut palms, leaning toward the sea as if looking for the water.",
+        "Coconut water for thirst, coconut milk for the moqueca, fronds to thatch houses and weave mats, husk to light fires. Nothing is wasted."
+      ],
+      "paginas_es": [
+        "Toda la costa de la bahía está franjeada de cocoteros, inclinados hacia el mar como quien busca el agua.",
+        "Agua de coco para la sed, leche de coco para la moqueca, hojas para techar casas y tejer esteras, cáscara para encender fuego. Nada se pierde."
       ]
     },
     "pau_brasil": {
       "grupo": "mata",
       "nome": "Pau-brasil",
+      "nome_en": "Brazilwood",
+      "nome_es": "Palo brasil",
       "cientifico": "Paubrasilia echinata",
       "paginas": [
         "Madeira vermelha de dentro, casca com espinhos. Deu nome ao país e quase sumiu da mata de tanto ser cortada.",
         "Em 1887 já é raro achar um de pé. A tinta que tirava dele foi trocada pela de anilina, mas a madeira ainda vira arco de rabeca."
+      ],
+      "paginas_en": [
+        "Wood that is red inside, bark covered in thorns. It gave the country its name and almost vanished from the forest from being cut so much.",
+        "In 1887 it is already rare to find one standing. The dye taken from it was replaced by aniline, but the wood still becomes violin bows."
+      ],
+      "paginas_es": [
+        "Madera roja por dentro, corteza con espinas. Le dio nombre al país y casi desapareció del monte de tanto cortarla.",
+        "En 1887 ya es raro encontrar uno en pie. La tinta que se sacaba de él fue reemplazada por la de anilina, pero la madera todavía se vuelve arco de violín."
       ]
     },
     "dendezeiro": {
       "grupo": "oficio",
       "nome": "Dendezeiro",
+      "nome_en": "Oil palm",
+      "nome_es": "Palma de aceite",
       "cientifico": "Elaeis guineensis",
       "paginas": [
         "Palmeira que veio da costa da África junto com o povo escravizado. Os cachos de coquinho vermelho nascem no meio da copa.",
         "Do dendê se tira o azeite do acarajé, do vatapá e da moqueca. Para muita gente é também comida de santo."
+      ],
+      "paginas_en": [
+        "A palm that came from the coast of Africa along with the enslaved people. The bunches of little red nuts grow in the middle of the crown.",
+        "Dendê oil comes from it: the oil of acarajé, vatapá and moqueca. For many people it is also food for the saints."
+      ],
+      "paginas_es": [
+        "Palmera que vino de la costa de África junto con el pueblo esclavizado. Los racimos de cocos rojos nacen en medio de la copa.",
+        "Del dendê se saca el aceite del acarajé, del vatapá y de la moqueca. Para mucha gente es también comida de santo."
       ]
     },
     "bananeira": {
       "grupo": "frutiferas",
       "nome": "Bananeira",
+      "nome_en": "Banana plant",
+      "nome_es": "Banano",
       "cientifico": "Musa × paradisiaca",
       "paginas": [
         "Não é árvore: é uma erva gigante. O tronco é feito de folhas enroladas; depois de dar o cacho, o pé morre e brota outro do lado.",
         "Banana-da-terra frita, cozida no feijão, assada na brasa. A folha embrulha peixe e abará, e serve de prato na roça."
+      ],
+      "paginas_en": [
+        "It isn't a tree: it's a giant herb. The trunk is made of rolled-up leaves; after it bears its bunch, the plant dies and another sprouts beside it.",
+        "Plantain fried, boiled in the beans, roasted on the embers. The leaf wraps fish and abará, and serves as a plate in the field."
+      ],
+      "paginas_es": [
+        "No es un árbol: es una hierba gigante. El tronco está hecho de hojas enrolladas; después de dar el racimo, la planta muere y brota otra al lado.",
+        "Plátano frito, cocido en los frijoles, asado en la brasa. La hoja envuelve pescado y abará, y sirve de plato en la chacra."
       ]
     },
     "ipe_amarelo": {
       "grupo": "mata",
       "nome": "Ipê-amarelo",
+      "nome_en": "Yellow ipê",
+      "nome_es": "Ipê amarillo",
       "cientifico": "Handroanthus albus",
       "paginas": [
         "Passa meses discreto e, no fim da seca, perde as folhas e fica todo coberto de flor amarela.",
         "Madeira dura que não apodrece: vira esteio de casa, mourão de cerca e cabo de ferramenta. Dizem que florada forte avisa chuva perto."
+      ],
+      "paginas_en": [
+        "It spends months unnoticed and, at the end of the dry season, drops its leaves and is covered all over in yellow flowers.",
+        "Hard wood that never rots: it becomes house posts, fence stakes and tool handles. They say a strong bloom warns that rain is near."
+      ],
+      "paginas_es": [
+        "Pasa meses discreto y, al final de la sequía, pierde las hojas y se cubre entero de flores amarillas.",
+        "Madera dura que no se pudre: se vuelve horcón de casa, poste de cerca y cabo de herramienta. Dicen que una floración fuerte avisa que la lluvia está cerca."
       ]
     },
     "ipe_roxo": {
       "grupo": "mata",
       "nome": "Ipê-roxo",
+      "nome_en": "Purple ipê",
+      "nome_es": "Ipê morado",
       "cientifico": "Handroanthus impetiginosus",
       "paginas": [
         "Primo do amarelo, floresce antes dele, em rosa-arroxeado. Pés velhos de ipê-roxo marcam adro de capela e beira de estrada.",
         "A casca vira chá de raizeiro para ferida e inflamação. A madeira, pesada, afunda na água."
+      ],
+      "paginas_en": [
+        "Cousin of the yellow one, it blooms before it, in purplish pink. Old purple ipês mark chapel yards and roadsides.",
+        "The bark becomes a root doctor's tea for wounds and inflammation. The heavy wood sinks in water."
+      ],
+      "paginas_es": [
+        "Primo del amarillo, florece antes que él, en rosa violáceo. Los ipês morados viejos marcan el atrio de la capilla y la orilla del camino.",
+        "La corteza se vuelve té de curandero para heridas e inflamación. La madera, pesada, se hunde en el agua."
       ]
     },
     "embauba": {
       "grupo": "mata",
       "nome": "Embaúba",
+      "nome_en": "Cecropia",
+      "nome_es": "Yarumo",
       "cientifico": "Cecropia pachystachya",
       "paginas": [
         "Tronco oco, folhas grandes em forma de mão, prateadas por baixo. É das primeiras a crescer onde a mata foi derrubada.",
         "Bicho-preguiça gosta dela, e o tronco oco é casa de formiga que morde quem encosta. Sinal de mata se refazendo."
+      ],
+      "paginas_en": [
+        "Hollow trunk, big hand-shaped leaves, silvery underneath. It is one of the first to grow where the forest was cut down.",
+        "Sloths like it, and the hollow trunk is home to ants that bite anyone who leans on it. A sign that the forest is mending."
+      ],
+      "paginas_es": [
+        "Tronco hueco, hojas grandes en forma de mano, plateadas por debajo. Es de las primeras en crecer donde se taló el monte.",
+        "Al perezoso le gusta, y el tronco hueco es casa de hormigas que pican a quien se apoya. Señal de monte que se rehace."
       ]
     },
     "mata_alta": {
       "grupo": "mata",
       "nome": "Sapucaia",
+      "nome_en": "Paradise nut tree",
+      "nome_es": "Sapucaya",
       "cientifico": "Lecythis pisonis",
       "paginas": [
         "Gigante da Mata Atlântica. Na primavera a copa inteira fica rosa de folha nova; o fruto é uma cumbuca de madeira com tampa.",
         "A castanha é boa, mas quem a colhe primeiro é o macaco: enfia a mão na cumbuca, fecha o punho e não consegue tirar. Daí o ditado \"macaco velho não mete a mão em cumbuca\"."
+      ],
+      "paginas_en": [
+        "A giant of the Atlantic Forest. In spring the whole crown turns pink with new leaves; the fruit is a wooden pot with a lid.",
+        "The nut is good, but the monkey gets there first: it sticks its hand in the pot, closes its fist and can't pull it out. Hence the saying \"an old monkey doesn't put its hand in a pot\"."
+      ],
+      "paginas_es": [
+        "Gigante de la Mata Atlántica. En primavera la copa entera se pone rosa de hoja nueva; el fruto es una cazuela de madera con tapa.",
+        "La castaña es buena, pero quien la recoge primero es el mono: mete la mano en la cazuela, cierra el puño y no consigue sacarla. De ahí el dicho \"mono viejo no mete la mano en la cazuela\"."
       ]
     },
     "mata_larga": {
       "grupo": "mata",
       "nome": "Gameleira",
+      "nome_en": "Gameleira fig",
+      "nome_es": "Gameleira",
       "cientifico": "Ficus gomelleira",
       "paginas": [
         "Figueira de copa larga e raízes que descem dos galhos e abraçam o que encontram. Uma só faz sombra de praça.",
         "Para o povo de santo, a gameleira é morada de Iroko, e não se corta. Os mais velhos passam longe dela à noite — e não explicam o porquê."
+      ],
+      "paginas_en": [
+        "A fig with a wide crown and roots that drop from the branches and embrace whatever they find. One alone casts the shade of a town square.",
+        "For the Candomblé community, the gameleira is Iroko's home, and it is not cut. The elders keep away from it at night — and don't say why."
+      ],
+      "paginas_es": [
+        "Higuera de copa ancha y raíces que bajan de las ramas y abrazan lo que encuentran. Una sola da sombra de plaza.",
+        "Para el pueblo de santo, la gameleira es la morada de Iroko, y no se corta. Los más viejos pasan lejos de ella de noche — y no explican por qué."
       ]
     },
     "mangue": {
       "grupo": "beira",
       "nome": "Mangue-vermelho",
+      "nome_en": "Red mangrove",
+      "nome_es": "Mangle rojo",
       "cientifico": "Rhizophora mangle",
       "paginas": [
         "Fica com o pé na lama salgada, apoiado em raízes que descem do tronco como pernas de aranha. Onde o rio encontra a baía, é ele quem manda.",
         "No mangue se tira caranguejo, siri, ostra e sururu; a casca vermelha curte couro e tinge rede de pesca. Maré cheia, ninguém anda lá dentro."
+      ],
+      "paginas_en": [
+        "It stands with its feet in the salty mud, propped on roots that drop from the trunk like spider legs. Where the river meets the bay, it rules.",
+        "The mangrove gives crab, swimming crab, oyster and sururu mussel; the red bark tans leather and dyes fishing nets. At high tide, nobody walks in there."
+      ],
+      "paginas_es": [
+        "Se planta con el pie en el barro salado, apoyado en raíces que bajan del tronco como patas de araña. Donde el río encuentra la bahía, es él quien manda.",
+        "En el manglar se sacan cangrejo, jaiba, ostra y sururu; la corteza roja curte cuero y tiñe red de pesca. Con la marea llena, nadie anda ahí dentro."
       ]
     },
     "piacava": {
       "grupo": "oficio",
       "nome": "Piaçava",
+      "nome_en": "Piassava palm",
+      "nome_es": "Piasava",
       "cientifico": "Attalea funifera",
       "paginas": [
         "Palmeira da restinga baiana, com o tronco vestido de fibra comprida e escura.",
         "Da fibra se faz vassoura, corda de navio e cobertura de rancho; o coco duro vira botão e combustível. Em 1887 a piaçava sai da Bahia em fardos para o mundo."
+      ],
+      "paginas_en": [
+        "A palm of the Bahian restinga, its trunk dressed in long dark fiber.",
+        "The fiber becomes brooms, ship rope and roofing for huts; the hard nut becomes buttons and fuel. In 1887 piassava leaves Bahia in bales for the world."
+      ],
+      "paginas_es": [
+        "Palmera de la restinga bahiana, con el tronco vestido de fibra larga y oscura.",
+        "De la fibra se hacen escobas, soga de barco y cubierta de rancho; el coco duro se vuelve botón y combustible. En 1887 la piasava sale de Bahía en fardos para el mundo."
       ]
     },
     "ingazeiro": {
       "grupo": "mata",
       "nome": "Ingazeiro",
+      "nome_en": "Inga tree",
+      "nome_es": "Inga",
       "cientifico": "Inga sp.",
       "paginas": [
         "Árvore de beira de rio: a copa larga faz sombra na água e segura a margem com as raízes.",
         "A vagem guarda uma polpa branca, doce e algodoada em volta das sementes — merenda de menino e de macaco. Onde tem ingá, tem peixe embaixo."
+      ],
+      "paginas_en": [
+        "A riverbank tree: the wide crown shades the water and the roots hold the bank.",
+        "The pod holds a white, sweet, cottony pulp around the seeds — a snack for boys and monkeys. Where there is inga, there are fish below."
+      ],
+      "paginas_es": [
+        "Árbol de orilla de río: la copa ancha da sombra al agua y las raíces sujetan la barranca.",
+        "La vaina guarda una pulpa blanca, dulce y algodonosa alrededor de las semillas — merienda de niño y de mono. Donde hay inga, hay pez abajo."
       ]
     },
     "clusia": {
       "grupo": "beira",
       "nome": "Abaneiro",
+      "nome_en": "Clusia",
+      "nome_es": "Clusia",
       "cientifico": "Clusia sp.",
       "paginas": [
         "Arbusto de restinga de folhas grossas como couro, que aguentam sol, sal e vento da praia.",
         "Solta um látex amarelo de cheiro forte que o povo usa para colar e calafetar. As flores cor-de-rosa abrem de manhã cedo e fecham com o sol quente."
+      ],
+      "paginas_en": [
+        "A restinga shrub with leaves thick as leather, that stand up to the sun, salt and wind of the beach.",
+        "It gives off a strong-smelling yellow latex that people use to glue and caulk. The pink flowers open early in the morning and close in the hot sun."
+      ],
+      "paginas_es": [
+        "Arbusto de restinga de hojas gruesas como cuero, que aguantan sol, sal y viento de playa.",
+        "Suelta un látex amarillo de olor fuerte que la gente usa para pegar y calafatear. Las flores rosadas abren de mañana temprano y cierran con el sol fuerte."
       ]
     },
     "goiabeira": {
@@ -300,19 +470,39 @@
     "pitangueira": {
       "grupo": "frutiferas",
       "nome": "Pitangueira",
+      "nome_en": "Surinam cherry tree",
+      "nome_es": "Pitanguero",
       "cientifico": "Eugenia uniflora",
       "paginas": [
         "Não falta em quintal da Bahia: arbusto de folha miúda e perfumada, que avermelha quando nasce.",
         "A pitanga madura vai do laranja ao quase preto; faz refresco, doce e licor. A folha no chão da casa espanta mosquito e perfuma o terreiro."
+      ],
+      "paginas_en": [
+        "No Bahian backyard is without one: a shrub with small, fragrant leaves, reddish when new.",
+        "The ripe pitanga goes from orange to nearly black; it makes juice, sweets and liqueur. Leaves on the floor of the house keep mosquitoes away and perfume the yard."
+      ],
+      "paginas_es": [
+        "No falta en patio de Bahía: arbusto de hoja menuda y perfumada, que se enrojece cuando nace.",
+        "La pitanga madura va del naranja al casi negro; hace refresco, dulce y licor. La hoja en el piso de la casa espanta el mosquito y perfuma el terreno."
       ]
     },
     "jenipapeiro": {
       "grupo": "frutiferas",
       "nome": "Jenipapeiro",
+      "nome_en": "Genipap tree",
+      "nome_es": "Jenipapo",
       "cientifico": "Genipa americana",
       "paginas": [
         "Árvore alta de tronco liso e reto, que perde as folhas por um tempo e floresce em branco e amarelo.",
         "O fruto verde tinge a pele de azul-escuro por dias — pintura dos povos indígenas. Maduro, vira o licor de jenipapo das festas de São João do Recôncavo."
+      ],
+      "paginas_en": [
+        "A tall tree with a smooth, straight trunk, that sheds its leaves for a while and blooms in white and yellow.",
+        "The green fruit stains the skin dark blue for days — Indigenous body paint. Ripe, it becomes the genipap liqueur of the São João festivals in the Recôncavo."
+      ],
+      "paginas_es": [
+        "Árbol alto de tronco liso y recto, que pierde las hojas por un tiempo y florece en blanco y amarillo.",
+        "El fruto verde tiñe la piel de azul oscuro por días — pintura de los pueblos indígenas. Maduro, se vuelve el licor de jenipapo de las fiestas de San Juan del Recôncavo."
       ]
     },
     "jatoba": {

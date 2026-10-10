@@ -57,6 +57,7 @@
       "texto": "Senta aí comigo. Ninguém come antes de alguém falar — e alguém vai falar.",
       "texto_en": "Sit here with me. Nobody eats before someone speaks, and someone is going to speak.",
       "texto_es": "Siéntate aquí conmigo. Nadie come antes de que alguien hable, y alguien va a hablar.",
+      "recompensa": { "xp": 10 },
       "meta": {}
     },
     {
@@ -74,6 +75,7 @@
       "texto": "Somos seis, comigo — sete, com você. Elas vão na frente, pela escadaria. Me chama quando estiver pronto, que a gente sobe junto.",
       "texto_en": "Six of us, counting me — seven, with you. They go ahead, up the staircase. Call me when you're ready, and we go up together.",
       "texto_es": "Somos seis, conmigo — siete, contigo. Ellas van adelante, por la escalinata. Avísame cuando estés listo, y subimos juntos.",
+      "recompensa": { "xp": 10 },
       "meta": {
         "tipo": "falar",
         "a_quem": "pedro",

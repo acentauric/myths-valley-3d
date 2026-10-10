@@ -309,7 +309,8 @@ acordar o jogador.
 | 3 | `fazenda_chamado` | O chamado aos corajosos | Sente-se com o Pedro e espere quem vai falar | no pátio, fecha sozinho; a cena: o silêncio, as duas mulheres na escadaria, a fala da anfitriã mais velha, os homens de pé e o Pedro que vai | **pronta só no 3D** (#114, 06/10/2026; fatia 6.2 do plano do 2D, momento `discurso`) |
 | 4 | `fazenda_porta_estreita` | A porta estreita | Fale com o Pedro e suba a escadaria com ele | falar com o Pedro; a cena: a subida, o salão redondo, a fala da moça, o cerco, o "só um" da anfitriã, a porta de onde vêm os gemidos, os cinco que voltam e o Pedro que fica | **pronta só no 3D** (#114; momento `desafio`; o salão ainda não é cômodo — a voz do mundo o conta — e a sedução fica nas falas, P1) |
 
-Sem recompensa: é a história começando. O 2D para na fatia 6.1; o 3D fecha o
+Os dois primeiros passos não pagam, é a história começando; os dois do chamado
+(3 e 4) pagam 10 de XP cada (`recompensa.xp`, #107; critério da #114, 10/10/2026). O 2D para na fatia 6.1; o 3D fecha o
 capítulo 6 com a 6.2 e segue no 7, que o 2D nunca teve como missão (só a prosa
 em `docs/enredo/` e o corte em fatias do PLANO de lá, Fase 6):
 
