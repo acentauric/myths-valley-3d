@@ -89,8 +89,13 @@ const NOME_TAMANHO_ERRO := 16
 const HISTORICO_SIZE := Vector2(960, 600)
 const HISTORY_ROWS := 10
 ## Lista do histórico: fonte base (desce até o mínimo se a linha não couber) e respiro.
-const HISTORY_FONTE := 15
+const HISTORY_FONTE := 17
 const HISTORY_FONTE_MIN := 13
+## A data e o título da página, e o respiro entre as linhas (escolhidos pelo autor numa prévia da tela
+## inteira, 10/10/2026: a 14, 20 e 15 de antes ficavam pequenos na tela de 1920).
+const HISTORY_FONTE_DATA := 16
+const HISTORY_FONTE_TITULO := 28
+const HISTORY_ESPACO := 6
 ## Setas de página, compactas e juntas do "N / M".
 const HISTORY_SETA := Vector2(44, 32)
 const GAME_SCENE := "res://scenes/prototipo_3d/vale.tscn"
@@ -1440,13 +1445,13 @@ func _render_history() -> void:
 	var entry: Dictionary = history_entries[history_index]
 	# Sem foco em botão: as teclas ← → ficam livres para trocar de página.
 	_modal_header("Histórico", _home, "O que mudou no vale a cada versão.")
-	_label("%s · %s" % [entry.get("data", ""), IdiomaMenu.campo(entry, "estado")], 14)
-	_label(str(IdiomaMenu.campo(entry, "titulo")), 20)
+	_label("%s · %s" % [entry.get("data", ""), IdiomaMenu.campo(entry, "estado")], HISTORY_FONTE_DATA)
+	_label(str(IdiomaMenu.campo(entry, "titulo")), HISTORY_FONTE_TITULO)
 	var changes := VBoxContainer.new()
 	changes.name = "MudancasHistorico"
 	changes.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	changes.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	changes.add_theme_constant_override("separation", 4)
+	changes.add_theme_constant_override("separation", HISTORY_ESPACO)
 	content.add_child(changes)
 	# Os termos entre *asteriscos* no historico_3d.json aparecem em dourado.
 	for change in IdiomaMenu.campo(entry, "mudancas", []):
