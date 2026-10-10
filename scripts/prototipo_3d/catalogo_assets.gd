@@ -408,8 +408,8 @@ const DUAS_FACES := [
 ## oco ou com fenda (o ipê do adro, a pitangueira do quintal de toda casa).
 ## `tests/troncos_fechados.gd` mede cada árvore de tronco: de cada raio horizontal
 ## que cruza o pé dela, a fração cujo primeiro triângulo é de costas. As espécies
-## íntegras dão de 0 a 6%; estas dão de 9% a 79% (o ingazeiro leve e o de longe só
-## aparecem aqui depois que a laje de terra saiu do GLB deles, #141). Ficam com as duas faces, e as
+## íntegras dão de 0 a 6%; estas dão de 9% a 79% (o ingazeiro de longe só aparece aqui
+## depois que a laje de terra saiu do GLB dele, #141; o leve, sem o cavaco, voltou a 4%). Ficam com as duas faces, e as
 ## normais do GLB acompanham o sentido dos triângulos, então a face de trás sai
 ## bem iluminada. As outras seguem com o descarte ligado: não é ajuste global, e a
 ## lista só cresce com a medida (o portão reprova árvore que passa do limite e
@@ -417,7 +417,7 @@ const DUAS_FACES := [
 const TRONCO_DE_COSTAS := [
 	"pitangueira", "pitangueira_leve", "ipe_amarelo", "licurizeiro",
 	"clusia_leve", "jenipapeiro_leve", "mangue_leve", "mangue_longe",
-	"castanhola_longe", "piacava_longe", "ingazeiro_leve", "ingazeiro_longe",
+	"castanhola_longe", "piacava_longe", "ingazeiro_longe",
 ]
 
 
