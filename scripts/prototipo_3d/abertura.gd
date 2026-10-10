@@ -497,6 +497,9 @@ func _catmull_rom(amostras: PackedVector3Array, progress: float) -> Vector3:
 ## O retabulo cobre a esquerda. Corrige o eixo optico para que o olhar adiante
 ## apareca no terco direito, ajustando o angulo a largura real da janela.
 func _frame_flyover() -> void:
+	# Um sinal de autoload (Ajustes, Tela) pode chegar com a abertura já saindo da árvore.
+	if not camera.is_inside_tree():
+		return
 	camera.look_at(camera_target)
 	var tela := camera.get_viewport().get_visible_rect().size
 	var aspecto := tela.x / maxf(tela.y, 1.0)
