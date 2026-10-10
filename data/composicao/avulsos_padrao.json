@@ -1,0 +1,1415 @@
+{
+	"avulsos": [
+		{
+			"chave": "pau_brasil",
+			"giro": 0.0,
+			"grupo": "Árvores",
+			"id": "Pau-brasil",
+			"no_chao": true,
+			"pos": [
+				-24.397,
+				3.644,
+				3.5
+			],
+			"tamanho": 1.0,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "mangueira",
+			"giro": 0.4,
+			"grupo": "Árvores",
+			"id": "Mangueira 1",
+			"no_chao": true,
+			"pos": [
+				-18.75,
+				3.909,
+				-17.5
+			],
+			"tamanho": 1.0,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "cajueiro",
+			"giro": 1.9,
+			"grupo": "Árvores",
+			"id": "Cajueiro 1",
+			"no_chao": true,
+			"pos": [
+				-16.318,
+				3.924,
+				-11.932
+			],
+			"tamanho": 1.0,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "ipe_amarelo",
+			"giro": 0.0,
+			"grupo": "Árvores",
+			"id": "Ipê amarelo 1",
+			"no_chao": true,
+			"pos": [
+				-21.25,
+				3.437,
+				11.75
+			],
+			"tamanho": 1.0,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "jaqueira",
+			"giro": 2.6,
+			"grupo": "Árvores",
+			"id": "Jaqueira 1",
+			"no_chao": true,
+			"pos": [
+				-12.5,
+				2.848,
+				23.25
+			],
+			"tamanho": 1.0,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "mangueira",
+			"giro": 3.1,
+			"grupo": "Árvores",
+			"id": "Mangueira 2",
+			"no_chao": true,
+			"pos": [
+				11.5,
+				1.871,
+				28.647
+			],
+			"tamanho": 1.1,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "ipe_roxo",
+			"giro": 1.2,
+			"grupo": "Árvores",
+			"id": "Ipê roxo 1",
+			"no_chao": true,
+			"pos": [
+				9.307,
+				2.022,
+				21.579
+			],
+			"tamanho": 0.95,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "cajueiro",
+			"giro": 4.0,
+			"grupo": "Árvores",
+			"id": "Cajueiro 2",
+			"no_chao": true,
+			"pos": [
+				21.25,
+				2.69,
+				7.5
+			],
+			"tamanho": 1.05,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "jaqueira",
+			"giro": 0.7,
+			"grupo": "Árvores",
+			"id": "Jaqueira 2",
+			"no_chao": true,
+			"pos": [
+				21.25,
+				3.33,
+				-15.0
+			],
+			"tamanho": 0.9,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "embauba",
+			"giro": 0.0,
+			"grupo": "Árvores",
+			"id": "Embaúba 1",
+			"no_chao": true,
+			"pos": [
+				14.0,
+				3.577,
+				-21.5
+			],
+			"tamanho": 1.0,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "dendezeiro",
+			"giro": 2.2,
+			"grupo": "Árvores",
+			"id": "Dendezeiro 1",
+			"no_chao": true,
+			"pos": [
+				-13.053,
+				3.931,
+				-17.954
+			],
+			"tamanho": 1.0,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "mangueira",
+			"giro": 5.2,
+			"grupo": "Árvores",
+			"id": "Mangueira 3",
+			"no_chao": true,
+			"pos": [
+				-2.704,
+				3.988,
+				7.947
+			],
+			"tamanho": 0.9,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "mangueira",
+			"giro": 1.6,
+			"grupo": "Árvores",
+			"id": "Mangueira 4",
+			"no_chao": true,
+			"pos": [
+				11.864,
+				3.671,
+				-17.364
+			],
+			"tamanho": 0.85,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "mangueira",
+			"giro": 0.9,
+			"grupo": "Fazenda",
+			"id": "Mangueira da fazenda",
+			"no_chao": true,
+			"pos": [
+				55.017,
+				5.246,
+				-218.75
+			],
+			"tamanho": 1.15,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "cajueiro",
+			"giro": 2.4,
+			"grupo": "Fazenda",
+			"id": "Cajueiro da fazenda 1",
+			"no_chao": true,
+			"pos": [
+				74.966,
+				4.376,
+				-219.861
+			],
+			"tamanho": 1.0,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "cajueiro",
+			"giro": 0.3,
+			"grupo": "Fazenda",
+			"id": "Cajueiro da fazenda 2",
+			"no_chao": true,
+			"pos": [
+				75.517,
+				4.754,
+				-203.75
+			],
+			"tamanho": 0.9,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "coqueiro",
+			"giro": 5.0,
+			"grupo": "Píer",
+			"id": "Coqueiro do píer 1",
+			"no_chao": true,
+			"pos": [
+				72.197,
+				-0.008,
+				0.589
+			],
+			"tamanho": 1.0,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "coqueiro",
+			"giro": -4.0,
+			"grupo": "Píer",
+			"id": "Coqueiro do píer 2",
+			"no_chao": true,
+			"pos": [
+				67.707,
+				0.591,
+				-5.665
+			],
+			"tamanho": 1.0,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "pier",
+			"giro": 4.5472,
+			"grupo": "Píer",
+			"id": "Píer",
+			"no_chao": false,
+			"pos": [
+				86.013,
+				-0.12,
+				-2.433
+			],
+			"tamanho": 1.0,
+			"tipo": "construcao"
+		},
+		{
+			"chave": "ponte",
+			"giro": -1.7917,
+			"grupo": "Pontes",
+			"id": "Ponte",
+			"no_chao": false,
+			"pos": [
+				116.555,
+				4.79,
+				-261.153
+			],
+			"tamanho": 1.0,
+			"tipo": "construcao"
+		},
+		{
+			"chave": "ponte_grande",
+			"giro": -1.7542,
+			"grupo": "Pontes",
+			"id": "Ponte do rio central",
+			"no_chao": false,
+			"pos": [
+				8.259,
+				3.915,
+				-27.2
+			],
+			"tamanho": 1.0,
+			"tipo": "construcao"
+		},
+		{
+			"chave": "pedras",
+			"giro": 0.4,
+			"grupo": "Marcos",
+			"id": "Pedras",
+			"no_chao": false,
+			"pos": [
+				-87.85,
+				0.349,
+				158.838
+			],
+			"tamanho": 1.4,
+			"tipo": "adereco"
+		},
+		{
+			"chave": "poco",
+			"giro": 0.6,
+			"grupo": "Praça",
+			"id": "Poço",
+			"no_chao": true,
+			"pos": [
+				4.2,
+				4.081,
+				5.4
+			],
+			"tamanho": 1.0,
+			"tipo": "adereco"
+		},
+		{
+			"chave": "banco",
+			"giro": 0.0,
+			"grupo": "Praça",
+			"id": "Banco 1",
+			"no_chao": true,
+			"pos": [
+				-1.15,
+				0.0,
+				-0.025
+			],
+			"tamanho": 1.0,
+			"tipo": "adereco"
+		},
+		{
+			"chave": "banco",
+			"giro": 3.1416,
+			"grupo": "Praça",
+			"id": "Banco 2",
+			"no_chao": true,
+			"pos": [
+				3.2,
+				0.0,
+				-7.0
+			],
+			"tamanho": 1.0,
+			"tipo": "adereco"
+		},
+		{
+			"chave": "carroca",
+			"giro": -0.6,
+			"grupo": "Fazenda",
+			"id": "Carroça",
+			"no_chao": true,
+			"pos": [
+				73.017,
+				4.503,
+				-217.75
+			],
+			"tamanho": 1.0,
+			"tipo": "adereco"
+		},
+		{
+			"chave": "pote",
+			"giro": 0.0,
+			"grupo": "Píer",
+			"id": "Pote do píer",
+			"no_chao": false,
+			"pos": [
+				83.35,
+				0.26,
+				-4.702
+			],
+			"tamanho": 1.0,
+			"tipo": "adereco"
+		},
+		{
+			"chave": "enxada",
+			"giro": 1.2,
+			"grupo": "Fazenda",
+			"id": "Enxada",
+			"no_chao": true,
+			"pos": [
+				70.117,
+				5.016,
+				-211.05
+			],
+			"tamanho": 1.0,
+			"tipo": "item"
+		},
+		{
+			"chave": "balde",
+			"giro": 0.0,
+			"grupo": "Praça",
+			"id": "Balde",
+			"no_chao": true,
+			"pos": [
+				5.5,
+				4.081,
+				5.8
+			],
+			"tamanho": 1.0,
+			"tipo": "item"
+		},
+		{
+			"chave": "peixe",
+			"giro": 1.0,
+			"grupo": "Píer",
+			"id": "Peixe",
+			"no_chao": false,
+			"pos": [
+				87.789,
+				0.26,
+				-0.921
+			],
+			"tamanho": 1.0,
+			"tipo": "item"
+		},
+		{
+			"chave": "pedras_praia",
+			"giro": 3.8207,
+			"grupo": "Pedras",
+			"id": "Pedra da praia",
+			"no_chao": true,
+			"pos": [
+				-86.338,
+				0.045,
+				160.556
+			],
+			"tamanho": 1.0,
+			"tipo": "adereco"
+		},
+		{
+			"chave": "pedras_praia",
+			"giro": 4.2785,
+			"grupo": "Pedras",
+			"id": "Pedra da praia 2",
+			"no_chao": true,
+			"pos": [
+				-81.789,
+				0.03,
+				156.231
+			],
+			"tamanho": 0.526837885379791,
+			"tipo": "item"
+		},
+		{
+			"chave": "pedras_praia",
+			"giro": 2.6078,
+			"grupo": "Pedras",
+			"id": "Pedra da praia 3",
+			"no_chao": true,
+			"pos": [
+				-92.243,
+				0.089,
+				164.957
+			],
+			"tamanho": 0.470625787973404,
+			"tipo": "item"
+		},
+		{
+			"chave": "pedra_mare",
+			"giro": 5.5825,
+			"grupo": "Pedras",
+			"id": "Pedra da maré 1",
+			"no_chao": false,
+			"pos": [
+				-89.141,
+				-0.61,
+				175.691
+			],
+			"tamanho": 1.08937644958496,
+			"tipo": "item"
+		},
+		{
+			"chave": "pedra_mare",
+			"giro": 3.3005,
+			"grupo": "Pedras",
+			"id": "Pedra da maré 2",
+			"no_chao": false,
+			"pos": [
+				-80.567,
+				-0.581,
+				171.484
+			],
+			"tamanho": 0.849296927452087,
+			"tipo": "item"
+		},
+		{
+			"chave": "pedra_mare",
+			"giro": 1.6766,
+			"grupo": "Pedras",
+			"id": "Pedra da maré 3",
+			"no_chao": false,
+			"pos": [
+				-101.606,
+				-0.293,
+				169.45
+			],
+			"tamanho": 0.956990778446198,
+			"tipo": "item"
+		},
+		{
+			"chave": "pedra_mare",
+			"giro": 1.7951,
+			"grupo": "Pedras",
+			"id": "Pedra da maré 4",
+			"no_chao": false,
+			"pos": [
+				-101.2,
+				-0.293,
+				167.651
+			],
+			"tamanho": 0.911689937114716,
+			"tipo": "item"
+		},
+		{
+			"chave": "lampiao_poste",
+			"giro": 0.0,
+			"grupo": "Praça",
+			"id": "Lampião da praça 1",
+			"no_chao": true,
+			"pos": [
+				-9.0,
+				3.798,
+				8.5
+			],
+			"tamanho": 1.0,
+			"tipo": "lampiao"
+		},
+		{
+			"chave": "lampiao_poste",
+			"giro": 0.0,
+			"grupo": "Praça",
+			"id": "Lampião da praça 2",
+			"no_chao": true,
+			"pos": [
+				7.5,
+				3.918,
+				-12.0
+			],
+			"tamanho": 1.0,
+			"tipo": "lampiao"
+		},
+		{
+			"chave": "lampiao_poste",
+			"giro": 0.0,
+			"grupo": "Praça",
+			"id": "Lampião da praça 3",
+			"no_chao": true,
+			"pos": [
+				8.0,
+				3.272,
+				9.5
+			],
+			"tamanho": 1.0,
+			"tipo": "lampiao"
+		},
+		{
+			"chave": "candeeiro",
+			"giro": 0.0,
+			"grupo": "Píer",
+			"id": "Candeeiro do píer",
+			"no_chao": false,
+			"pos": [
+				87.937,
+				1.76,
+				-1.808
+			],
+			"tamanho": 1.0,
+			"tipo": "candeeiro"
+		},
+		{
+			"chave": "fogueira",
+			"giro": 0.0,
+			"grupo": "Fazenda",
+			"id": "Fogueira da fazenda",
+			"no_chao": true,
+			"pos": [
+				83.517,
+				4.294,
+				-208.25
+			],
+			"tamanho": 1.0,
+			"tipo": "fogueira"
+		},
+		{
+			"chave": "mangue",
+			"giro": -1.7027,
+			"grupo": "Manguezal",
+			"id": "Mangue 1",
+			"no_chao": true,
+			"pos": [
+				143.033,
+				-0.064,
+				-269.043
+			],
+			"tamanho": 0.858,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "mangue",
+			"giro": 3.0933,
+			"grupo": "Manguezal",
+			"id": "Mangue 2",
+			"no_chao": true,
+			"pos": [
+				136.538,
+				1.055,
+				-268.972
+			],
+			"tamanho": 0.867,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "mangue",
+			"giro": 0.1843,
+			"grupo": "Manguezal",
+			"id": "Mangue 3",
+			"no_chao": true,
+			"pos": [
+				132.441,
+				3.229,
+				-275.71
+			],
+			"tamanho": 1.061,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "mangue",
+			"giro": 1.8109,
+			"grupo": "Manguezal",
+			"id": "Mangue 4",
+			"no_chao": true,
+			"pos": [
+				68.461,
+				-0.004,
+				-34.839
+			],
+			"tamanho": 1.096,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "mangue",
+			"giro": 2.8677,
+			"grupo": "Manguezal",
+			"id": "Mangue 5",
+			"no_chao": true,
+			"pos": [
+				63.357,
+				0.117,
+				-41.622
+			],
+			"tamanho": 0.92,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "mangue",
+			"giro": 2.8307,
+			"grupo": "Manguezal",
+			"id": "Mangue 6",
+			"no_chao": true,
+			"pos": [
+				56.909,
+				1.179,
+				-36.961
+			],
+			"tamanho": 0.819,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "mangue",
+			"giro": -1.5685,
+			"grupo": "Manguezal",
+			"id": "Mangue 7",
+			"no_chao": true,
+			"pos": [
+				53.593,
+				1.845,
+				-34.559
+			],
+			"tamanho": 1.097,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "mangue",
+			"giro": 1.7236,
+			"grupo": "Manguezal",
+			"id": "Mangue 8",
+			"no_chao": true,
+			"pos": [
+				145.282,
+				0.161,
+				-236.253
+			],
+			"tamanho": 0.917,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "mangue",
+			"giro": 1.484,
+			"grupo": "Manguezal",
+			"id": "Mangue 9",
+			"no_chao": true,
+			"pos": [
+				148.32,
+				-0.069,
+				-242.982
+			],
+			"tamanho": 0.939,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "mangue",
+			"giro": 6.1478,
+			"grupo": "Manguezal",
+			"id": "Mangue 10",
+			"no_chao": true,
+			"pos": [
+				144.154,
+				0.261,
+				-246.478
+			],
+			"tamanho": 0.798,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "mangue",
+			"giro": 4.0079,
+			"grupo": "Manguezal",
+			"id": "Mangue 11",
+			"no_chao": true,
+			"pos": [
+				145.622,
+				0.071,
+				-247.805
+			],
+			"tamanho": 0.814,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "mangue",
+			"giro": 0.1397,
+			"grupo": "Manguezal",
+			"id": "Mangue 12",
+			"no_chao": true,
+			"pos": [
+				143.369,
+				0.211,
+				-252.186
+			],
+			"tamanho": 1.087,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "mangue",
+			"giro": 3.5172,
+			"grupo": "Manguezal",
+			"id": "Mangue 13",
+			"no_chao": true,
+			"pos": [
+				143.088,
+				0.142,
+				-255.434
+			],
+			"tamanho": 1.029,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "mangue",
+			"giro": 3.2226,
+			"grupo": "Manguezal",
+			"id": "Mangue 14",
+			"no_chao": true,
+			"pos": [
+				142.488,
+				0.049,
+				-263.057
+			],
+			"tamanho": 1.075,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "mangue",
+			"giro": 3.7627,
+			"grupo": "Manguezal",
+			"id": "Mangue 15",
+			"no_chao": true,
+			"pos": [
+				142.487,
+				0.005,
+				-266.39
+			],
+			"tamanho": 0.912,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "mangue",
+			"giro": 3.7542,
+			"grupo": "Manguezal",
+			"id": "Mangue 16",
+			"no_chao": true,
+			"pos": [
+				140.971,
+				0.123,
+				-283.553
+			],
+			"tamanho": 0.801,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "mangue",
+			"giro": 1.3421,
+			"grupo": "Manguezal",
+			"id": "Mangue 17",
+			"no_chao": true,
+			"pos": [
+				140.867,
+				0.184,
+				-288.265
+			],
+			"tamanho": 1.141,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "mangue",
+			"giro": 6.1676,
+			"grupo": "Manguezal",
+			"id": "Mangue 18",
+			"no_chao": true,
+			"pos": [
+				141.941,
+				0.098,
+				-292.888
+			],
+			"tamanho": 0.821,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "mangue",
+			"giro": 2.1437,
+			"grupo": "Manguezal",
+			"id": "Mangue 19",
+			"no_chao": true,
+			"pos": [
+				142.76,
+				0.019,
+				-294.298
+			],
+			"tamanho": 0.971,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "mangue",
+			"giro": 3.2688,
+			"grupo": "Manguezal",
+			"id": "Mangue 20",
+			"no_chao": true,
+			"pos": [
+				143.416,
+				0.081,
+				-302.498
+			],
+			"tamanho": 0.823,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "mangue",
+			"giro": 5.3924,
+			"grupo": "Manguezal",
+			"id": "Mangue 21",
+			"no_chao": true,
+			"pos": [
+				142.396,
+				0.316,
+				-305.462
+			],
+			"tamanho": 0.942,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "mangue",
+			"giro": 5.7058,
+			"grupo": "Manguezal",
+			"id": "Mangue 22",
+			"no_chao": true,
+			"pos": [
+				146.173,
+				-0.042,
+				-311.45
+			],
+			"tamanho": 1.113,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "mangue",
+			"giro": 5.5373,
+			"grupo": "Manguezal",
+			"id": "Mangue 23",
+			"no_chao": true,
+			"pos": [
+				72.736,
+				0.094,
+				-9.066
+			],
+			"tamanho": 0.975,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "mangue",
+			"giro": 1.4848,
+			"grupo": "Manguezal",
+			"id": "Mangue 24",
+			"no_chao": true,
+			"pos": [
+				72.052,
+				0.217,
+				-19.2
+			],
+			"tamanho": 1.141,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "mangue",
+			"giro": 3.1825,
+			"grupo": "Manguezal",
+			"id": "Mangue 25",
+			"no_chao": true,
+			"pos": [
+				71.816,
+				0.194,
+				-24.346
+			],
+			"tamanho": 1.14,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "mangue",
+			"giro": 4.7573,
+			"grupo": "Manguezal",
+			"id": "Mangue 26",
+			"no_chao": true,
+			"pos": [
+				72.089,
+				0.145,
+				-25.962
+			],
+			"tamanho": 0.895,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "mangue",
+			"giro": 0.6106,
+			"grupo": "Manguezal",
+			"id": "Mangue 27",
+			"no_chao": true,
+			"pos": [
+				71.433,
+				-0.002,
+				-34.712
+			],
+			"tamanho": 1.179,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "mangue",
+			"giro": 4.2482,
+			"grupo": "Manguezal",
+			"id": "Mangue 28",
+			"no_chao": true,
+			"pos": [
+				81.919,
+				-0.066,
+				-48.543
+			],
+			"tamanho": 0.766,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "mangue",
+			"giro": 3.5088,
+			"grupo": "Manguezal",
+			"id": "Mangue 29",
+			"no_chao": true,
+			"pos": [
+				83.429,
+				0.066,
+				-53.168
+			],
+			"tamanho": 1.048,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "mangue",
+			"giro": 2.1818,
+			"grupo": "Manguezal",
+			"id": "Mangue 30",
+			"no_chao": true,
+			"pos": [
+				87.316,
+				0.021,
+				-58.363
+			],
+			"tamanho": 0.999,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "mangue",
+			"giro": 2.4149,
+			"grupo": "Manguezal",
+			"id": "Mangue 31",
+			"no_chao": true,
+			"pos": [
+				88.761,
+				-0.026,
+				-59.726
+			],
+			"tamanho": 1.159,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "mangue",
+			"giro": 5.881,
+			"grupo": "Manguezal",
+			"id": "Mangue 32",
+			"no_chao": true,
+			"pos": [
+				91.967,
+				-0.073,
+				-64.354
+			],
+			"tamanho": 0.899,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "mangue",
+			"giro": 0.9982,
+			"grupo": "Manguezal",
+			"id": "Mangue 33",
+			"no_chao": true,
+			"pos": [
+				92.957,
+				0.072,
+				-70.74
+			],
+			"tamanho": 1.174,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "mangue",
+			"giro": 4.3257,
+			"grupo": "Manguezal",
+			"id": "Mangue 34",
+			"no_chao": true,
+			"pos": [
+				92.527,
+				0.276,
+				-73.768
+			],
+			"tamanho": 1.125,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "coqueiro",
+			"giro": 2.2313,
+			"grupo": "Coqueiros da orla",
+			"id": "Coqueiro da orla 1",
+			"no_chao": true,
+			"pos": [
+				-90.261,
+				-0.032,
+				164.988
+			],
+			"tamanho": 0.936,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "coqueiro",
+			"giro": 2.444,
+			"grupo": "Coqueiros da orla",
+			"id": "Coqueiro da orla 2",
+			"no_chao": true,
+			"pos": [
+				-75.944,
+				0.196,
+				150.438
+			],
+			"tamanho": 0.95,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "coqueiro",
+			"giro": 2.3324,
+			"grupo": "Coqueiros da orla",
+			"id": "Coqueiro da orla 3",
+			"no_chao": true,
+			"pos": [
+				-56.809,
+				0.103,
+				127.489
+			],
+			"tamanho": 1.03,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "coqueiro",
+			"giro": 2.2264,
+			"grupo": "Coqueiros da orla",
+			"id": "Coqueiro da orla 4",
+			"no_chao": true,
+			"pos": [
+				-49.854,
+				0.165,
+				120.82
+			],
+			"tamanho": 1.129,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "coqueiro",
+			"giro": 2.2461,
+			"grupo": "Coqueiros da orla",
+			"id": "Coqueiro da orla 5",
+			"no_chao": true,
+			"pos": [
+				-42.937,
+				0.169,
+				115.387
+			],
+			"tamanho": 1.052,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "coqueiro",
+			"giro": 2.2807,
+			"grupo": "Coqueiros da orla",
+			"id": "Coqueiro da orla 6",
+			"no_chao": true,
+			"pos": [
+				-36.316,
+				-0.022,
+				111.915
+			],
+			"tamanho": 1.011,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "coqueiro",
+			"giro": 2.3228,
+			"grupo": "Coqueiros da orla",
+			"id": "Coqueiro da orla 7",
+			"no_chao": true,
+			"pos": [
+				-22.784,
+				0.02,
+				99.098
+			],
+			"tamanho": 0.903,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "coqueiro",
+			"giro": 2.2865,
+			"grupo": "Coqueiros da orla",
+			"id": "Coqueiro da orla 8",
+			"no_chao": true,
+			"pos": [
+				-4.722,
+				0.17,
+				80.574
+			],
+			"tamanho": 0.812,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "coqueiro",
+			"giro": 2.3144,
+			"grupo": "Coqueiros da orla",
+			"id": "Coqueiro da orla 9",
+			"no_chao": true,
+			"pos": [
+				9.198,
+				0.222,
+				67.84
+			],
+			"tamanho": 0.999,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "coqueiro",
+			"giro": 2.3426,
+			"grupo": "Coqueiros da orla",
+			"id": "Coqueiro da orla 10",
+			"no_chao": true,
+			"pos": [
+				22.698,
+				0.241,
+				54.599
+			],
+			"tamanho": 1.087,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "coqueiro",
+			"giro": 2.3486,
+			"grupo": "Coqueiros da orla",
+			"id": "Coqueiro da orla 11",
+			"no_chao": true,
+			"pos": [
+				27.936,
+				0.13,
+				50.668
+			],
+			"tamanho": 0.755,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "coqueiro",
+			"giro": 2.2997,
+			"grupo": "Coqueiros da orla",
+			"id": "Coqueiro da orla 12",
+			"no_chao": true,
+			"pos": [
+				65.137,
+				-0.035,
+				14.081
+			],
+			"tamanho": 1.002,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "coqueiro",
+			"giro": 2.648,
+			"grupo": "Coqueiros da orla",
+			"id": "Coqueiro da orla 13",
+			"no_chao": true,
+			"pos": [
+				69.535,
+				0.047,
+				5.348
+			],
+			"tamanho": 0.811,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "coqueiro",
+			"giro": 2.8452,
+			"grupo": "Coqueiros da orla",
+			"id": "Coqueiro da orla 14",
+			"no_chao": true,
+			"pos": [
+				138.475,
+				0.032,
+				-154.14
+			],
+			"tamanho": 0.766,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "coqueiro",
+			"giro": 2.9582,
+			"grupo": "Coqueiros da orla",
+			"id": "Coqueiro da orla 15",
+			"no_chao": true,
+			"pos": [
+				143.063,
+				0.009,
+				-172.763
+			],
+			"tamanho": 0.864,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "coqueiro",
+			"giro": 3.0626,
+			"grupo": "Coqueiros da orla",
+			"id": "Coqueiro da orla 16",
+			"no_chao": true,
+			"pos": [
+				144.89,
+				0.089,
+				-198.284
+			],
+			"tamanho": 0.884,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "coqueiro",
+			"giro": 3.0795,
+			"grupo": "Coqueiros da orla",
+			"id": "Coqueiro da orla 17",
+			"no_chao": true,
+			"pos": [
+				147.847,
+				-0.039,
+				-225.289
+			],
+			"tamanho": 0.802,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "coqueiro",
+			"giro": -3.0714,
+			"grupo": "Coqueiros da orla",
+			"id": "Coqueiro da orla 18",
+			"no_chao": true,
+			"pos": [
+				147.687,
+				-0.021,
+				-236.011
+			],
+			"tamanho": 0.969,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "coqueiro",
+			"giro": -3.0516,
+			"grupo": "Coqueiros da orla",
+			"id": "Coqueiro da orla 19",
+			"no_chao": true,
+			"pos": [
+				142.235,
+				0.0,
+				-269.318
+			],
+			"tamanho": 1.011,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "coqueiro",
+			"giro": 3.1042,
+			"grupo": "Coqueiros da orla",
+			"id": "Coqueiro da orla 20",
+			"no_chao": true,
+			"pos": [
+				140.971,
+				0.257,
+				-281.874
+			],
+			"tamanho": 1.048,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "coqueiro",
+			"giro": 2.9965,
+			"grupo": "Coqueiros da orla",
+			"id": "Coqueiro da orla 21",
+			"no_chao": true,
+			"pos": [
+				145.391,
+				0.321,
+				-321.822
+			],
+			"tamanho": 1.004,
+			"tipo": "arvore"
+		},
+		{
+			"chave": "coqueiro",
+			"giro": 2.9965,
+			"grupo": "Coqueiros da orla",
+			"id": "Coqueiro da orla 22",
+			"no_chao": true,
+			"pos": [
+				147.415,
+				0.253,
+				-332.545
+			],
+			"tamanho": 0.87,
+			"tipo": "arvore"
+		}
+	],
+	"referencias": [
+		{
+			"chave": "ponte",
+			"nome": "Ponte",
+			"transform": [
+				-2.0122,
+				0.0,
+				8.9607,
+				0.0,
+				9.1838,
+				0.0,
+				-8.9607,
+				0.0,
+				-2.0122,
+				116.5577,
+				4.04,
+				-261.1572
+			]
+		},
+		{
+			"chave": "ponte_grande",
+			"nome": "Ponte do rio central",
+			"transform": [
+				-1.6813,
+				0.0,
+				9.0624,
+				0.0,
+				9.217,
+				0.0,
+				-9.0624,
+				0.0,
+				-1.6813,
+				8.2559,
+				2.8147,
+				-27.1998
+			]
+		}
+	],
+	"versao": 2
+}

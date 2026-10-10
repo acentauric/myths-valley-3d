@@ -209,6 +209,10 @@ ralo. Árvore no jogo ocupa mais de um tile e transborda para cima — o jogador
 passa por trás da copa. Isso é direção artística, não só técnica: a sensação de
 mata é a de não enxergar longe.
 
+**Orla:** coqueiral quase contínuo na beira da praia, manguezal no leito dos rios
+e nas fozes, pedras na areia e lajes no raso. As regras de posição, e onde
+editá-las no Godot, estão em [BIOMA_DA_ORLA.md](BIOMA_DA_ORLA.md).
+
 ---
 
 ## 5. Fauna
