@@ -84,7 +84,10 @@ luz, som ou moradores do 3D.
   mudança, um termo central entre `*asteriscos*`), conferindo o `git log` do dia
   e o CHANGELOG, e deixe de fora ferramenta interna, auditoria, docs e `.uid`.
   Numerar build (`versao_atual`/`build_numero`) continua sendo decisão de
-  release: só muda quando um build é fechado.
+  release: só muda quando um build é fechado, pelo roteiro de
+  [docs/projeto/FECHAR_BUILD.md](docs/projeto/FECHAR_BUILD.md). A versão acompanha o
+  build (`v0.<build>.<pacote>`; na `develop`, `0.<próximo>.0-dev`), e a `main` ganha
+  uma tag anotada por build fechada.
 - **Issue `modelos-3d` gasta crédito**: o custo do lote é aprovado na conversa
   antes de gerar, como manda "Geração paga".
 

@@ -228,7 +228,7 @@ func _ready() -> void:
 	var history_data = JSON.parse_string(FileAccess.get_file_as_string("res://data/historico_3d.json"))
 	if history_data is Dictionary:
 		history_entries = _paginar_historico(history_data.get("entradas", []))
-		version_text = "v%s · Build #%d%s" % [str(history_data.get("versao_atual", "0.1.0-dev")), int(history_data.get("build_numero", 1)), "B" if OS.has_feature("tripothon") else ""]
+		version_text = "v%s · Build #%d%s" % [str(history_data.get("versao_atual", "0.0.0-dev")), int(history_data.get("build_numero", 1)), "B" if OS.has_feature("tripothon") else ""]
 	var layer := CanvasLayer.new()
 	add_child(layer)
 	ajustes = PainelAjustes.new()
@@ -962,7 +962,7 @@ func _create_version_link() -> void:
 	content.add_child(filete)
 	version_link = Button.new()
 	version_link.text = version_text
-	# A versão no rodapé não ganha tooltip nem popover (#232): é só o texto "v0.1.0-dev · Build #N".
+	# A versão no rodapé não ganha tooltip nem popover (#232): é só o texto "v0.<build>.0 · Build #N".
 	version_link.flat = true
 	version_link.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	version_link.add_theme_font_override("font", Identidade.fonte_numeros(600))
