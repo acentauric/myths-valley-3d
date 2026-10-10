@@ -30,6 +30,7 @@ extends SceneTree
 ##      balança copiando a pata de trás, meio ciclo uma da outra, e parado a defasagem some.
 ##   5c. O CORPO ACOMPANHA A RAMPA: o focinho sobe com o chão que sobe (`BichoDeCasa.inclinacao_da_encosta`)
 ##      e a pose segue a inclinação sem salto.
+##   5d. A CRIATURA DA MATA (onça, caititu) acompanha a rampa como o cão; a Matinta, que não pisa o chão, não.
 ##   6. PARADO, ELE CONGELA NO QUADRO DE PÉ, e o bote (armar, pular, assentar) mexe em
 ##      posição e giro, sem esticar o corpo.
 ##   7. A CABRA DE CENA anda com o clipe, no ritmo do chão, e para.
@@ -236,6 +237,43 @@ func _run() -> void:
 	for i in 90:
 		cao._process(dt)
 	_conferir(absf(cao.pose.rotation.x) < 0.03, "cachorro_caramelo: de volta ao plano o corpo seguiu inclinado (%.2f rad)" % cao.pose.rotation.x)
+
+	# --- 5d. A CRIATURA DA MATA TAMBÉM ACOMPANHA A RAMPA (#149) ---------------------------------------
+	# A onça e o caititu medem o chão debaixo do corpo como o cão: na subida o focinho sobe, e a Matinta
+	# (que não pisa o chão) fica de fora. O chão aqui é uma rampa de 0,4 u por u de frente (+Z).
+	var rampa_gd := GDScript.new()
+	rampa_gd.source_code = "\n".join(["extends RefCounted", "func ground_position(p: Vector3, _extra: float = 0.0) -> Vector3:", "\treturn Vector3(p.x, p.z * 0.4, p.z)", ""])
+	_conferir(rampa_gd.reload() == OK, "o chão de rampa do portão não compilou")
+	var chao_de_rampa = rampa_gd.new()
+	for especie_da_mata in ["onca", "caititu"]:
+		var fera = Criatura.new()
+		fera.especie = especie_da_mata
+		fera.u_por_px = 2.1 / 62.0
+		arena.add_child(fera)
+		fera.set_physics_process(false)
+		fera._world = chao_de_rampa
+		fera.rotation.y = 0.0
+		fera._parar(0.2)
+		var fera_an = fera._animador
+		_conferir(fera_an.inclinacao_do_chao < -0.2, "%s na subida não ergueu o focinho (%.2f rad)" % [especie_da_mata, fera_an.inclinacao_do_chao])
+		fera_an.velocidade = 0.0
+		for i in 90:
+			fera_an._process(dt)
+		_conferir(fera_an.pose.rotation.x < -0.2, "%s na rampa de subida inclinou só %.2f rad" % [especie_da_mata, fera_an.pose.rotation.x])
+		fera.rotation.y = PI
+		fera._encosta_em = 0.0
+		fera._parar(0.2)
+		_conferir(fera_an.inclinacao_do_chao > 0.2, "%s de frente para a descida não baixou o focinho (%.2f rad)" % [especie_da_mata, fera_an.inclinacao_do_chao])
+		fera.queue_free()
+	var matinta = Criatura.new()
+	matinta.especie = "matinta"
+	matinta.u_por_px = 2.1 / 62.0
+	arena.add_child(matinta)
+	matinta.set_physics_process(false)
+	matinta._world = chao_de_rampa
+	matinta._parar(0.2)
+	_conferir(absf(matinta._animador.inclinacao_do_chao) < 0.001, "a Matinta, que não pisa o chão, inclinou com a rampa (%.2f rad)" % matinta._animador.inclinacao_do_chao)
+	matinta.queue_free()
 
 	# --- 6. PARADO CONGELA NO QUADRO DE PÉ; O BOTE NÃO ESTICA --------------------------------------------
 	for chave in ["cachorro_malhado", "onca_pintada", "gato_malhado", "porco"]:

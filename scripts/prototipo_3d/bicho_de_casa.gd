@@ -460,10 +460,17 @@ func _acompanhar_a_encosta(delta: float) -> void:
 	if _encosta_em > 0.0:
 		return
 	_encosta_em = ENCOSTA_A_CADA
-	var frente := Vector3(sin(rotation.y), 0.0, cos(rotation.y)) * ENCOSTA_PASSO
-	var adiante: float = world.ground_position(global_position + frente).y
-	var atras: float = world.ground_position(global_position - frente).y
-	_animador.inclinacao_do_chao = inclinacao_da_encosta(adiante, atras)
+	_animador.inclinacao_do_chao = inclinacao_no_ponto(world, global_position, rotation.y)
+
+
+## A inclinação do focinho (rad) de um bicho em `ponto`, de frente para `giro_y`, medida no chão do
+## `mundo` (`ground_position`) a `ENCOSTA_PASSO` à frente e atrás. Serve a quem anda de quatro patas
+## no vale: o bicho de casa e a criatura da mata (a onça, o caititu).
+static func inclinacao_no_ponto(mundo, ponto: Vector3, giro_y: float) -> float:
+	var frente := Vector3(sin(giro_y), 0.0, cos(giro_y)) * ENCOSTA_PASSO
+	var adiante: float = mundo.ground_position(ponto + frente).y
+	var atras: float = mundo.ground_position(ponto - frente).y
+	return inclinacao_da_encosta(adiante, atras)
 
 
 ## O quanto o focinho inclina (rad) com o chão em `altura_adiante` e `altura_atras`, a

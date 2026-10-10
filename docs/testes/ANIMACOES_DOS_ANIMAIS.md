@@ -144,3 +144,19 @@ ombro e do pescoço) mostra o cão nas quatro patas, com o corpo paralelo ao ch�
 correndo e parado; a cabeça fica no lugar e as patas da frente alternam. Quadros locais em
 `D:/MythsValleyPlaytestRuns/animais149-caramelo-08-10/`. Continuam pendentes a rampa e o
 cão seguindo o Pedro no cenário, as aves sem rig, o bode e a corrida dos gatos.
+
+## A criatura da mata na rampa (10/10/2026, quarta fatia)
+
+A onça-caçadora e o caititu (`criatura_vale.gd`) inclinavam o corpo só no bote. Agora medem
+o chão debaixo deles como o bicho de casa (`BichoDeCasa.inclinacao_no_ponto`: a altura do
+chão 0,35 u à frente e atrás, a cada 0,12 s, até 0,45 rad) e o animador inclina o focinho
+sem salto, andando ou parados. A espécie que não pisa o chão desliga isso com
+`"acompanha_a_encosta": false` em `criaturas_3d.json` (a Matinta). O portão `animais_animacao`
+ganha a pergunta 5d: sobre uma rampa simulada, a onça e o caititu erguem o focinho na subida e
+o baixam na descida, e a Matinta não inclina. **Não foi rodado** (uma bateria por lote).
+
+O que segue pendente, e não depende de código: as oito aves precisam de rig e clipe (o
+Mesh2Motion é gratuito mas o ajuste dos ossos é manual por modelo; o Tripo cobra 10 créditos
+por animação e só com pedido explícito), o bode precisa de rig com cadeia de patas, os quatro
+gatos precisam de clipe de corrida, e a aprovação visual no jogo (cada quadrúpede andando,
+correndo e parado, e o Caramelo seguindo o Pedro na rampa) pede alguém jogando.
