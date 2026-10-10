@@ -33,6 +33,45 @@ func _run() -> void:
 	casa.rotation.y += 0.2
 	var esperado := casa.position
 	var giro := casa.rotation.y
+	# AVULSOS: o poço movido no editor e um banco acrescentado (Ctrl+D) chegam ao jogo.
+	var avulsos := cena.get_node_or_null("Avulsos") as Node3D
+	if avulsos == null:
+		avulsos = Node3D.new()
+		avulsos.name = "Avulsos"
+		cena.add_child(avulsos)
+		avulsos.owner = cena
+	for velho in avulsos.find_children("Poço", "", true, false) + avulsos.find_children("Banco extra", "", true, false) + avulsos.find_children("Manguezal", "", false, false) + avulsos.find_children("Pontes", "", false, false):
+		velho.get_parent().remove_child(velho)
+		velho.free()
+	# Vegetação e ponte autorais: um manguezal de UM mangue e a ponte central movida.
+	var mangue_esperado := Vector2(120.0, -250.0)
+	var ponte_esperada := Vector3(9.5, 3.9, -26.0)
+	for par in [["Manguezal", "Mangue único", "arvore", "mangue", Vector3(mangue_esperado.x, 0.0, mangue_esperado.y), true], ["Pontes", "Ponte do rio central", "construcao", "ponte", ponte_esperada, false]]:
+		var subgrupo := Node3D.new()
+		subgrupo.name = par[0]
+		avulsos.add_child(subgrupo)
+		subgrupo.owner = cena
+		var peca := Node3D.new()
+		peca.set_script(load("res://scripts/prototipo_3d/peca_composicao.gd"))
+		peca.name = par[1]
+		peca.set("id", par[1])
+		peca.set("tipo", par[2])
+		peca.set("chave", par[3])
+		peca.set("no_chao", par[5])
+		peca.position = par[4]
+		subgrupo.add_child(peca)
+		peca.owner = cena
+	var poco_esperado := Vector3(6.5, 0.0, 8.0)
+	for par in [["Poço", "poco", poco_esperado], ["Banco extra", "banco", Vector3(-6.0, 0.0, 6.0)]]:
+		var peca := Node3D.new()
+		peca.set_script(load("res://scripts/prototipo_3d/peca_composicao.gd"))
+		peca.name = par[0]
+		peca.set("id", par[0])
+		peca.set("tipo", "adereco")
+		peca.set("chave", par[1])
+		peca.position = par[2]
+		avulsos.add_child(peca)
+		peca.owner = cena
 	var salvo := PackedScene.new()
 	_verificar(salvo.pack(cena) == OK, "edição pode ser empacotada")
 	var caminho := "user://composicao_teste.tscn"
@@ -61,6 +100,16 @@ func _run() -> void:
 		_verificar(resultado["pos"].distance_to(relido[nome]["pos"]) < 0.002, "jogo usa a posição salva: " + nome)
 		_verificar(absf(angle_difference(float(resultado["yaw"]), float(relido[nome]["yaw"]))) < 0.0001, "jogo usa o giro salvo: " + nome)
 	_verificar(mundo.ancoras["Casa de taipa"].distance_to(esperado) < 0.002, "âncora de moradores e missões acompanha a casa")
+	var poco_no_chao: Vector3 = mundo.ground_position(poco_esperado)
+	_verificar(Vector2(mundo.ancoras["Poço"].x, mundo.ancoras["Poço"].z).distance_to(Vector2(poco_no_chao.x, poco_no_chao.z)) < 0.002, "o poço autoral move a âncora do poço")
+	_verificar(mundo.avulsos_montados.has("Banco extra") and bool(mundo.avulsos_montados["Banco extra"]["visivel"]), "avulso acrescentado no editor entra no jogo")
+	_verificar(mundo.ancoras["Ponte do rio central"].distance_to(ponte_esperada) < 0.002, "a ponte autoral fica onde o autor a pôs")
+	var mangues: Array = []
+	for tronco in mundo._region._tree_trunks:
+		if String(tronco.get("especie", "")) == "mangue":
+			mangues.append(tronco["point"])
+	if CatalogoAssets.tem_tripo("mangue"):
+		_verificar(mangues.size() == 1 and (mangues[0] as Vector2).distance_to(mangue_esperado) < 0.002, "o manguezal autoral troca o sorteado (%d mangues)" % mangues.size())
 	var alvos := 0
 	for alvo in mundo._house_targets:
 		var propriedades: Dictionary = alvo.get_meta("house_properties")

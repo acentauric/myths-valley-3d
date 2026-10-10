@@ -285,6 +285,11 @@ var _estilo_tripo := false
 ## drapeada do jogo, mas para depois da terra. Assim o editor não mantém uma
 ## segunda interpretação do KML só para conseguir mostrar o chão.
 var terrain_only := false
+## VEGETAÇÃO AUTORAL DA ORLA (composicao_vale.tscn, Avulsos/"Coqueiros da orla" e
+## Avulsos/"Manguezal"): grupo -> [{"point": Vector2, "giro": float, "escala": float}].
+## O sorteio continua igual (a mata e a restinga dependem da mesma sequência);
+## só o plantio daquele grupo troca o sorteado pelo do autor.
+var vegetacao_autoral: Dictionary = {}
 ## Espécies da mata no estilo Tripo (chaves do CatalogoAssets) e no procedural (FloraReconcavo).
 ## Só modelos leves (~2,5 mil triângulos): o dendê (15 mil) fica para as árvores nomeadas.
 const ESPECIES_MATA_TRIPO := ["mata_alta", "mata_larga", "mata_alta", "embauba", "mata_larga"]
@@ -2506,9 +2511,10 @@ func _build_margens_do_rio(rng: RandomNumberGenerator) -> void:
 						if _no_vao_do_sobrevoo(ponto):
 							continue
 						var no_rio := Transform3D(giro, Vector3(ponto.x, chao - ARVORE_AFUNDADA, ponto.y)) * (mangue.base as Transform3D)
-						do_mangue.append(no_rio)
-						_tree_trunks.append({"point": ponto, "ground": chao, "height": minf(float(mangue.altura) * escala, 4.0), "radius": float(mangue.tronco) * escala, "especie": "mangue", "transformacao": no_rio})
-						registros_mangue.append(_tree_trunks.size() - 1)
+						if not vegetacao_autoral.has("Manguezal"):
+							do_mangue.append(no_rio)
+							_tree_trunks.append({"point": ponto, "ground": chao, "height": minf(float(mangue.altura) * escala, 4.0), "radius": float(mangue.tronco) * escala, "especie": "mangue", "transformacao": no_rio, "giro": giro.orthonormalized().get_euler().y, "escala": escala})
+							registros_mangue.append(_tree_trunks.size() - 1)
 					elif tem_inga and rng.randf() < 0.55:
 						var na_beira := Transform3D(giro, Vector3(ponto.x, chao - ARVORE_AFUNDADA, ponto.y)) * (inga.base as Transform3D)
 						# O pé do tronco, e não o ponto de plantio, apoia o ingazeiro na barranca (#141).
@@ -2548,13 +2554,23 @@ func _build_margens_do_rio(rng: RandomNumberGenerator) -> void:
 							continue
 						var chao := ground_height_at(Vector3(ponto.x, 0, ponto.y))
 						var escala := rng.randf_range(0.75, 1.2)
-						var na_foz := Transform3D(Basis.from_euler(Vector3(0, rng.randf() * TAU, 0)).scaled(Vector3.ONE * escala), Vector3(ponto.x, chao - ARVORE_AFUNDADA, ponto.y)) * (mangue.base as Transform3D)
+						var giro_foz := rng.randf() * TAU
+						var na_foz := Transform3D(Basis.from_euler(Vector3(0, giro_foz, 0)).scaled(Vector3.ONE * escala), Vector3(ponto.x, chao - ARVORE_AFUNDADA, ponto.y)) * (mangue.base as Transform3D)
 						# No vão do sobrevoo o mangue já foi sorteado, e só não nasce.
-						if _no_vao_do_sobrevoo(ponto):
+						if _no_vao_do_sobrevoo(ponto) or vegetacao_autoral.has("Manguezal"):
 							continue
 						do_mangue.append(na_foz)
-						_tree_trunks.append({"point": ponto, "ground": chao, "height": minf(float(mangue.altura) * escala, 4.0), "radius": float(mangue.tronco) * escala, "especie": "mangue", "transformacao": na_foz})
+						_tree_trunks.append({"point": ponto, "ground": chao, "height": minf(float(mangue.altura) * escala, 4.0), "radius": float(mangue.tronco) * escala, "especie": "mangue", "transformacao": na_foz, "giro": giro_foz, "escala": escala})
 						registros_mangue.append(_tree_trunks.size() - 1)
+	if tem_mangue and vegetacao_autoral.has("Manguezal"):
+		for item in vegetacao_autoral["Manguezal"]:
+			var ponto: Vector2 = item["point"]
+			var escala := float(item["escala"])
+			var chao := ground_height_at(Vector3(ponto.x, 0, ponto.y))
+			var autoral := Transform3D(Basis.from_euler(Vector3(0, float(item["giro"]), 0)).scaled(Vector3.ONE * escala), Vector3(ponto.x, chao - ARVORE_AFUNDADA, ponto.y)) * (mangue.base as Transform3D)
+			do_mangue.append(autoral)
+			_tree_trunks.append({"point": ponto, "ground": chao, "height": minf(float(mangue.altura) * escala, 4.0), "radius": float(mangue.tronco) * escala, "especie": "mangue", "transformacao": autoral, "giro": float(item["giro"]), "escala": escala})
+			registros_mangue.append(_tree_trunks.size() - 1)
 	if not do_mangue.is_empty():
 		_multimesh_em_blocos("Manguezal", mangue.mesh, do_mangue, LOD_ARVORE_RIO, registros_mangue)
 	if not do_inga.is_empty():
@@ -2692,27 +2708,36 @@ func _build_coast_palms(rng: RandomNumberGenerator) -> void:
 						(transforms_restinga[local] as Array[Transform3D]).append(na_restinga)
 						_tree_trunks.append({"point": candidate, "ground": ground + apoio_restinga, "height": minf(float(malha_local.altura) * scale, 4.0), "radius": float(malha_local.tronco) * scale, "especie": local, "transformacao": na_restinga})
 						(registros_restinga[local] as Array[int]).append(_tree_trunks.size() - 1)
-				elif not _em_clareira(candidate) and not _no_vao_do_sobrevoo(candidate):
-					var transformacao := Transform3D(Basis.from_euler(Vector3(0, yaw, 0)).scaled(Vector3.ONE * scale), Vector3(candidate.x, ground - ARVORE_AFUNDADA, candidate.y)) * lean * modelo_base
-					transforms.append(transformacao)
-					# O ponto de plantio serve à interação; a colisão segue a base
-					# visível do tronco, deslocada pelo coqueiro inclinado do GLB.
-					var tronco: Dictionary = {"point": candidate, "ground": ground, "height": minf(float(built.altura) * scale, 4.0), "radius": float(built.tronco) * scale, "especie": "coqueiro", "transformacao": transformacao}
-					if not referencias_tronco.is_empty():
-						tronco["base_tronco"] = transformacao * (referencias_tronco["base"] as Vector3)
-						tronco["alto_tronco"] = transformacao * (referencias_tronco["alto"] as Vector3)
-						tronco["raio_base"] = float(referencias_tronco["raio_base"]) * transformacao.basis.get_scale().x
-					_tree_trunks.append(tronco)
-					registros_coqueiros.append(_tree_trunks.size() - 1)
+				elif not _em_clareira(candidate) and not _no_vao_do_sobrevoo(candidate) and not vegetacao_autoral.has("Coqueiros da orla"):
+					_plantar_coqueiro_da_orla(candidate, ground, yaw, scale, lean, built, referencias_tronco, transforms, registros_coqueiros)
 			next_at += spacing * rng.randf_range(0.7, 1.4)
 		travelled += length
 	for local in transforms_restinga:
 		var lista_local: Array[Transform3D] = transforms_restinga[local]
 		if not lista_local.is_empty():
 			_multimesh_em_blocos("Restinga da orla: " + local, (malhas_restinga[local] as Dictionary).mesh, lista_local, LOD_RESTINGA, registros_restinga[local])
+	if vegetacao_autoral.has("Coqueiros da orla"):
+		var inclinado := Transform3D.IDENTITY if modelo_base == Transform3D.IDENTITY else Transform3D(Basis.from_euler(Vector3(0, 0, 0.14)), Vector3.ZERO)
+		for item in vegetacao_autoral["Coqueiros da orla"]:
+			var ponto: Vector2 = item["point"]
+			_plantar_coqueiro_da_orla(ponto, ground_height_at(Vector3(ponto.x, 0, ponto.y)), float(item["giro"]), float(item["escala"]), inclinado, built, referencias_tronco, transforms, registros_coqueiros)
 	if transforms.is_empty():
 		return
 	_multimesh_em_blocos("Coqueiros da orla", built.mesh, transforms, LOD_COQUEIRO, registros_coqueiros)
+
+
+## O ponto de plantio serve à interação; a colisão segue a base visível do tronco,
+## deslocada pelo coqueiro inclinado do GLB.
+func _plantar_coqueiro_da_orla(candidate: Vector2, ground: float, yaw: float, scale: float, lean: Transform3D, built: Dictionary, referencias_tronco: Dictionary, transforms: Array[Transform3D], registros_coqueiros: Array[int]) -> void:
+	var transformacao := Transform3D(Basis.from_euler(Vector3(0, yaw, 0)).scaled(Vector3.ONE * scale), Vector3(candidate.x, ground - ARVORE_AFUNDADA, candidate.y)) * lean * (built.base as Transform3D)
+	transforms.append(transformacao)
+	var tronco: Dictionary = {"point": candidate, "ground": ground, "height": minf(float(built.altura) * scale, 4.0), "radius": float(built.tronco) * scale, "especie": "coqueiro", "transformacao": transformacao, "giro": yaw, "escala": scale}
+	if not referencias_tronco.is_empty():
+		tronco["base_tronco"] = transformacao * (referencias_tronco["base"] as Vector3)
+		tronco["alto_tronco"] = transformacao * (referencias_tronco["alto"] as Vector3)
+		tronco["raio_base"] = float(referencias_tronco["raio_base"]) * transformacao.basis.get_scale().x
+	_tree_trunks.append(tronco)
+	registros_coqueiros.append(_tree_trunks.size() - 1)
 
 
 ## CORTA A ÁRVORE com o pé neste ponto — da mata, da orla ou da beira do rio,

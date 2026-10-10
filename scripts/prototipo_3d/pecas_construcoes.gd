@@ -8,7 +8,7 @@ extends RefCounted
 const TIPOS := ["arvore", "adereco", "item", "candeeiro", "lampiao", "luz_janela"]
 
 ## Modelo usado para cada tipo de luz (o tipo define a luz; a chave, o objeto).
-const CHAVE_LUZ := {"candeeiro": "candeeiro", "lampiao": "lampiao_poste"}
+const CHAVE_LUZ := {"candeeiro": "candeeiro", "lampiao": "lampiao_poste", "fogueira": "fogueira"}
 
 const POR_CASA := {
 	"Casa de taipa": [

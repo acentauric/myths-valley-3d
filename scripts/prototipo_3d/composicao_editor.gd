@@ -5,6 +5,8 @@ extends Node3D
 ## assentamento das peças; a malha é a mesma prévia gerada pelo GeoRegionRenderer.
 
 const CELULA := 4.0
+const SEMENTE_AVULSOS := "res://data/composicao/avulsos_padrao.json"
+const PECA := preload("res://scripts/prototipo_3d/peca_composicao.gd")
 
 var _triangulos := PackedVector3Array()
 var _grade: Dictionary = {}
@@ -27,11 +29,15 @@ func _mostrar_base() -> void:
 	var base := Node3D.new()
 	base.name = "BaseGeografica"
 	add_child(base, false, Node.INTERNAL_MODE_BACK)
-	for caminho in ["res://scenes/prototipo_3d/terreno_editavel.tscn", "res://scenes/prototipo_3d/ruas_referencia.tscn"]:
+	for caminho in ["res://scenes/prototipo_3d/terreno_editavel.tscn", "res://scenes/prototipo_3d/ruas_referencia.tscn", "res://scenes/prototipo_3d/paisagem_referencia.tscn"]:
+		if not ResourceLoader.exists(caminho):
+			continue
 		var recurso := load(caminho) as PackedScene
 		if recurso != null:
 			base.add_child(recurso.instantiate(), false, Node.INTERNAL_MODE_BACK)
+	_mostrar_referencias(base)
 	_indexar_terreno(base)
+	_garantir_avulsos()
 	# Casas e peças recalculam a prévia agora que o relevo responde.
 	get_tree().call_group("composicao_previas", "atualizar_previa")
 
@@ -96,3 +102,73 @@ func altura_em(posicao: Vector3) -> float:
 			continue
 		melhor = maxf(melhor, a.y + u * (b.y - a.y) + v * (c.y - a.y))
 	return melhor if is_finite(melhor) else NAN
+
+
+## Cria o grupo "Avulsos" (árvores soltas, píer, praça, fazenda...) a partir da
+## semente gerada por tools/mapas/semear_avulsos.gd, UMA vez: depois ele é do autor
+## e fica salvo na cena. Apagar o grupo inteiro recria das posições do código.
+func _garantir_avulsos() -> void:
+	var raiz := get_tree().edited_scene_root
+	if raiz != self or not FileAccess.file_exists(SEMENTE_AVULSOS):
+		return
+	var dados: Variant = JSON.parse_string(FileAccess.get_file_as_string(SEMENTE_AVULSOS))
+	if typeof(dados) != TYPE_DICTIONARY:
+		push_warning("Semente dos avulsos ilegível: " + SEMENTE_AVULSOS)
+		return
+	var avulsos := get_node_or_null("Avulsos") as Node3D
+	if avulsos == null:
+		avulsos = Node3D.new()
+		avulsos.name = "Avulsos"
+		avulsos.editor_description = "Objetos fora das casas. Mova e gire (Y) à vontade; Ctrl+D acrescenta, apagar tira do jogo. Os subgrupos só organizam (Coqueiros da orla e Manguezal: o jogo planta os daqui no lugar dos sorteados)."
+		add_child(avulsos)
+		avulsos.owner = self
+	# Só subgrupos que ainda não existem: o que o autor já tem fica como está.
+	var existentes := {}
+	for filho in avulsos.get_children():
+		existentes[String(filho.name)] = true
+	for item in (dados as Dictionary).get("avulsos", []):
+		var nome_grupo := String(item.get("grupo", ""))
+		if existentes.has(nome_grupo):
+			continue
+		var pai: Node3D = avulsos
+		if not nome_grupo.is_empty():
+			pai = avulsos.get_node_or_null(nome_grupo)
+			if pai == null:
+				pai = Node3D.new()
+				pai.name = nome_grupo
+				avulsos.add_child(pai)
+				pai.owner = self
+		var peca := Node3D.new()
+		peca.set_script(PECA)
+		peca.name = String(item["id"])
+		peca.set("id", item["id"])
+		peca.set("tipo", item["tipo"])
+		peca.set("chave", item["chave"])
+		peca.set("tamanho", float(item.get("tamanho", 1.0)))
+		peca.set("no_chao", bool(item.get("no_chao", true)))
+		var pos: Array = item["pos"]
+		peca.position = Vector3(float(pos[0]), float(pos[1]), float(pos[2]))
+		peca.rotation.y = float(item.get("giro", 0.0))
+		pai.add_child(peca)
+		peca.owner = self
+
+
+## Modelos só de referência (as pontes): seguem rua e rio, então o editor mostra
+## onde o jogo os põe, sem deixar mover. Vêm da mesma semente dos avulsos.
+func _mostrar_referencias(base: Node3D) -> void:
+	if not FileAccess.file_exists(SEMENTE_AVULSOS):
+		return
+	var dados: Variant = JSON.parse_string(FileAccess.get_file_as_string(SEMENTE_AVULSOS))
+	if typeof(dados) != TYPE_DICTIONARY:
+		return
+	for ref in (dados as Dictionary).get("referencias", []):
+		var chave := String(ref.get("chave", ""))
+		var t: Array = ref.get("transform", [])
+		if not CatalogoAssets.PECAS.has(chave) or t.size() != 12:
+			continue
+		var modelo := CatalogoAssets.instanciar(chave, base, Vector3.ZERO)
+		if modelo == null:
+			continue
+		modelo.name = String(ref.get("nome", chave))
+		modelo.transform = Transform3D(Basis(Vector3(t[0], t[1], t[2]), Vector3(t[3], t[4], t[5]), Vector3(t[6], t[7], t[8])), Vector3(t[9], t[10], t[11]))
+		modelo.set_meta("_edit_lock_", true)

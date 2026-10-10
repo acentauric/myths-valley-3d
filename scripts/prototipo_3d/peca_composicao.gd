@@ -8,7 +8,7 @@ extends Node3D
 	set(valor):
 		id = valor
 		update_configuration_warnings()
-@export_enum("arvore", "adereco", "item", "candeeiro", "lampiao", "luz_janela") var tipo: String = "adereco":
+@export_enum("arvore", "adereco", "item", "candeeiro", "lampiao", "luz_janela", "fogueira", "construcao") var tipo: String = "adereco":
 	set(valor):
 		tipo = valor
 		_agendar_previa()
@@ -66,7 +66,7 @@ func _montar_previa() -> void:
 		var visual := CatalogoAssets.instanciar(modelo, previa, Vector3.ZERO, tamanho)
 		if visual != null:
 			visual.set_meta("_edit_lock_", true)
-	if tipo in ["candeeiro", "lampiao", "luz_janela"]:
+	if tipo in ["candeeiro", "lampiao", "luz_janela", "fogueira"]:
 		var luz := OmniLight3D.new()
 		luz.light_color = Color(1.0, 0.72, 0.4)
 		luz.omni_range = 3.0

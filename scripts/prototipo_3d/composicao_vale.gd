@@ -57,3 +57,51 @@ static func extrair(cena: Node) -> Dictionary:
 				"visible": terreiro.visible,
 			}
 	return resultado
+
+
+## OS AVULSOS: objetos fora das casas (árvores soltas, píer, praça, fazenda...), no
+## grupo "Avulsos" da composição, em subgrupos só de organização. Posição no mundo.
+## Devolve {"criados": bool, "itens": {id: dados}}; sem o grupo, o jogo usa o código.
+static func ler_avulsos(caminho: String = CENA) -> Dictionary:
+	if not ResourceLoader.exists(caminho):
+		return {"criados": false, "itens": {}}
+	var recurso := load(caminho) as PackedScene
+	if recurso == null:
+		return {"criados": false, "itens": {}}
+	var cena := recurso.instantiate()
+	var resultado := extrair_avulsos(cena)
+	cena.free()
+	return resultado
+
+
+static func extrair_avulsos(cena: Node) -> Dictionary:
+	var grupo := cena.get_node_or_null("Avulsos") as Node3D
+	if grupo == null:
+		return {"criados": false, "itens": {}}
+	var itens := {}
+	var grupos: Array = []
+	for filho in grupo.get_children():
+		if not filho.has_method("dados"):
+			grupos.append(String(filho.name))
+	_coletar_avulsos(grupo, Transform3D.IDENTITY, itens)
+	return {"criados": true, "itens": itens, "grupos": grupos}
+
+
+static func _coletar_avulsos(no: Node, acumulado: Transform3D, itens: Dictionary, grupo: String = "") -> void:
+	for filho in no.get_children():
+		if not filho is Node3D:
+			continue
+		var transformacao: Transform3D = acumulado * (filho as Node3D).transform
+		if filho.has_method("dados"):
+			var dados: Dictionary = filho.dados()
+			var id := String(dados.get("id", ""))
+			if id.is_empty():
+				id = String(filho.name)
+			if itens.has(id):
+				push_error("Id de avulso repetido na composição: " + id)
+				continue
+			dados["transform"] = transformacao
+			dados["grupo"] = grupo
+			itens[id] = dados
+		else:
+			_coletar_avulsos(filho, transformacao, itens, String(filho.name) if grupo.is_empty() else grupo)

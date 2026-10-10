@@ -78,6 +78,11 @@ var _house_sites: Array[Dictionary] = []
 ##   gameleira  "na ponta do poente da praia, onde a estrada rareia" — no mato
 ##              da beira, perto das pedras.
 const TERREIRO_M := Vector3(-262, 0, -238)
+## Nome legível das espécies para os ids dos avulsos ("Mangueira 2").
+const NOMES_DAS_ESPECIES := {
+	"mangueira": "Mangueira", "cajueiro": "Cajueiro", "ipe_amarelo": "Ipê amarelo", "ipe_roxo": "Ipê roxo",
+	"jaqueira": "Jaqueira", "embauba": "Embaúba", "dendezeiro": "Dendezeiro", "coqueiro": "Coqueiro",
+}
 const GAMELEIRA_M := Vector3(-300, 0, 560)
 ## O VÃO NORTE DO SOBREVOO DO MENU, em metros no mesmo referencial: onde o voo
 ## gravado (`data/sobrevoo_menu.json`), aos 7 s, cruza a fileira do manguezal da
@@ -120,6 +125,18 @@ var pontes: Dictionary = {}
 var ignorar_composicao := false
 var caminho_composicao := ComposicaoVale.CENA
 var _casas_autorais: Dictionary = {}
+## Objetos avulsos (fora das casas) da composição: id -> dados autorais.
+var _avulsos_autorais: Dictionary = {}
+## O editor já criou o grupo Avulsos: o que não está lá foi apagado pelo autor.
+var _avulsos_criados := false
+var _avulsos_usados: Dictionary = {}
+var _avulsos_grupos: Array = []
+## Onde cada avulso ficou de fato (semente do editor, portões e depuração).
+var avulsos_montados: Dictionary = {}
+## Modelos que o editor mostra como referência, sem editar (as pontes).
+var referencias_montadas: Array = []
+## Usado só pela semente: monta os avulsos nas posições do código.
+var ignorar_avulsos := false
 ## Registros do resultado real, usados somente pela ferramenta de primeira extração.
 var construcoes_editaveis: Dictionary = {}
 ## Montagem aos poucos: o vale é erguido ao longo de vários quadros, com o progresso
@@ -639,6 +656,11 @@ func _montar() -> void:
 	visible = false
 	if not ignorar_composicao:
 		_casas_autorais = ComposicaoVale.ler(caminho_composicao)
+		if not ignorar_avulsos:
+			var avulsos: Dictionary = ComposicaoVale.ler_avulsos(caminho_composicao)
+			_avulsos_autorais = avulsos.get("itens", {})
+			_avulsos_criados = bool(avulsos.get("criados", false))
+			_avulsos_grupos = avulsos.get("grupos", [])
 	_build_lighting()
 	var region_data := _active_region_data()
 	if region_data.is_empty():
@@ -653,6 +675,7 @@ func _montar() -> void:
 	_region.set_meters_per_unit(_meters_per_unit)
 	_region.set_vertical_exaggeration(_vertical_exaggeration)
 	_region.set_estilo_tripo(estilo_tripo())
+	_region.vegetacao_autoral = _vegetacao_autoral()
 	# A região vale 0 a 75% do progresso; a vila, o resto.
 	_region.etapa.connect(func(fracao: float, texto: String) -> void: progresso.emit(fracao * 0.75, texto))
 	# Os marcos de fé que o mapa não tem pedem clareira antes de a mata nascer.
@@ -1094,6 +1117,119 @@ func _montar_pecas(tipos: Array) -> void:
 					_luzes.lampiao(pos, _adereco(chave_item if not chave_item.is_empty() else "lampiao_poste", pos, yaw, tamanho))
 				"luz_janela":
 					_luzes.janela(pos)
+
+
+## OBJETO AVULSO (fora das casas): a posição autoral do grupo Avulsos da composição,
+## ou a do código enquanto o editor ainda não criou os avulsos. Depois de criados,
+## o que o autor apagou some do jogo (visivel = false), menos o que a jogabilidade
+## exige (o píer), que volta ao lugar do mapa.
+func _avulso(id: String, tipo: String, chave: String, pos: Vector3, yaw: float = 0.0, tamanho: float = 1.0, no_chao: bool = true, grupo: String = "") -> Dictionary:
+	var item := {"id": id, "tipo": tipo, "chave": chave, "pos": pos, "yaw": yaw, "tamanho": tamanho, "no_chao": no_chao, "grupo": grupo, "visivel": true, "exato": false}
+	if _avulsos_autorais.has(id):
+		var autoria: Dictionary = _avulsos_autorais[id]
+		var transformacao: Transform3D = autoria["transform"]
+		item["pos"] = transformacao.origin
+		item["yaw"] = transformacao.basis.get_euler().y
+		if not String(autoria.get("chave", "")).is_empty():
+			item["chave"] = String(autoria["chave"])
+		item["tamanho"] = float(autoria.get("tamanho", tamanho))
+		item["no_chao"] = bool(autoria.get("no_chao", no_chao))
+		item["visivel"] = bool(autoria.get("visivel", true))
+		item["exato"] = true
+		if bool(item["no_chao"]):
+			item["pos"] = ground_position(item["pos"])
+	elif _avulsos_criados and _avulsos_grupos.has(grupo):
+		# Só some o que falta num grupo que existe na composição. Grupo que o editor
+		# ainda não criou (ou que o autor apagou inteiro) segue o código.
+		item["visivel"] = false
+	_avulsos_usados[id] = true
+	avulsos_montados[id] = item
+	return item
+
+
+## Coqueiros da orla e manguezal da composição: a região planta estes no lugar dos
+## sorteados, por grupo (só o grupo que existe na composição vira autoral).
+const GRUPOS_DE_VEGETACAO := ["Coqueiros da orla", "Manguezal"]
+
+func _vegetacao_autoral() -> Dictionary:
+	var resultado := {}
+	for grupo in _avulsos_grupos:
+		if grupo in GRUPOS_DE_VEGETACAO:
+			resultado[grupo] = []
+	for id in _avulsos_autorais:
+		var autoria: Dictionary = _avulsos_autorais[id]
+		var grupo := String(autoria.get("grupo", ""))
+		if not resultado.has(grupo):
+			continue
+		_avulsos_usados[id] = true
+		if not bool(autoria.get("visivel", true)):
+			continue
+		var t: Transform3D = autoria["transform"]
+		resultado[grupo].append({"point": Vector2(t.origin.x, t.origin.z), "giro": t.basis.get_euler().y, "escala": float(autoria.get("tamanho", 1.0))})
+	return resultado
+
+
+func _adereco_avulso(item: Dictionary) -> Node3D:
+	if not bool(item["visivel"]):
+		return null
+	return _adereco(String(item["chave"]), item["pos"], float(item["yaw"]), float(item["tamanho"]))
+
+
+func _arvore_avulsa(item: Dictionary) -> void:
+	if not bool(item["visivel"]):
+		return
+	var antes := _arvores_nomeadas.size()
+	_arvore(String(item["chave"]), item["pos"], float(item["tamanho"]), float(item["yaw"]), bool(item["exato"]))
+	if _arvores_nomeadas.size() > antes:
+		item["pos"] = _arvores_nomeadas[-1]["origem"]
+
+
+func _item_avulso(item: Dictionary) -> void:
+	if not bool(item["visivel"]) or not estilo_tripo():
+		return
+	var onde: Vector3 = item["pos"]
+	onde.y = maxf(onde.y, ground_height_at(onde))
+	CatalogoAssets.instanciar(String(item["chave"]), self, onde, float(item["tamanho"]), float(item["yaw"]))
+
+
+## Avulsos que o autor acrescentou no editor (Ctrl+D) e que o código não conhece.
+func _montar_avulsos_extras(tipos: Array) -> void:
+	for id in _avulsos_autorais:
+		if _avulsos_usados.has(id) or not tipos.has(String(_avulsos_autorais[id].get("tipo", ""))):
+			continue
+		var autoria: Dictionary = _avulsos_autorais[id]
+		var item := _avulso(String(id), String(autoria["tipo"]), String(autoria.get("chave", "")), (autoria["transform"] as Transform3D).origin)
+		match String(item["tipo"]):
+			"arvore":
+				_arvore_avulsa(item)
+			"adereco":
+				_adereco_avulso(item)
+			"item":
+				_item_avulso(item)
+			"construcao":
+				if bool(item["visivel"]) and estilo_tripo():
+					var no := CatalogoAssets.instanciar(String(item["chave"]), self, item["pos"], float(item["tamanho"]), float(item["yaw"]))
+					if no != null:
+						CatalogoAssets.colisao(String(item["chave"]), no, self, item["pos"], float(item["tamanho"]), float(item["yaw"]))
+			"lampiao", "candeeiro", "fogueira", "luz_janela":
+				_luz_avulsa(item)
+
+
+func _luz_avulsa(item: Dictionary, luz_padrao: Vector3 = Vector3.INF) -> void:
+	if not bool(item["visivel"]):
+		return
+	var pos: Vector3 = item["pos"]
+	var chave := String(item["chave"])
+	match String(item["tipo"]):
+		"lampiao":
+			_luzes.lampiao(pos, _adereco(chave if not chave.is_empty() else "lampiao_poste", pos, float(item["yaw"]), float(item["tamanho"])))
+		"candeeiro":
+			var luz := luz_padrao if luz_padrao.is_finite() and not bool(item["exato"]) else pos + Vector3.UP * 0.1
+			_luzes.candeeiro(luz, _adereco(chave if not chave.is_empty() else "candeeiro", pos, float(item["yaw"]), float(item["tamanho"])))
+		"fogueira":
+			_luzes.fogueira(pos, _adereco(chave if not chave.is_empty() else "fogueira", pos, float(item["yaw"]), float(item["tamanho"])))
+		"luz_janela":
+			_luzes.janela(pos)
 
 
 func _na_casa(ancora: String, deslocamento: Vector3) -> Vector3:
@@ -1588,7 +1724,7 @@ func _arvore(especie: String, origin: Vector3, size: float = 1.0, yaw: float = 0
 	placed_origin = ground_position(placed_origin)
 	_manual_tree_sites.append({"position": placed_origin, "radius": tree_radius})
 	var registro := _arvores_nomeadas.size()
-	_arvores_nomeadas.append({"especie": especie, "pos": placed_origin, "raio": size * 0.5})
+	_arvores_nomeadas.append({"especie": especie, "pos": placed_origin, "raio": size * 0.5, "origem": placed_origin})
 	if estilo_tripo():
 		var node := CatalogoAssets.instanciar(especie, self, placed_origin - Vector3(0.0, _region.ARVORE_AFUNDADA, 0.0), size, yaw)
 		if node != null:
@@ -1752,7 +1888,7 @@ func _build_farm() -> void:
 func _build_trees() -> void:
 	# Posições anotadas em metros reais ao redor da Praça (a cena converte para unidades).
 	# Espécies de docs/mundo/AMBIENTACAO.md §4.
-	_arvore("pau_brasil", _u(Vector3(-82, 0, 5)))
+	_arvore_avulsa(_avulso("Pau-brasil", "arvore", "pau_brasil", _u(Vector3(-82, 0, 5)), 0.0, 1.0, true, "Árvores"))
 	await _pausar()
 	var plan: Array = [
 		["mangueira", Vector3(-75, 0, -70), 1.0, 0.4],
@@ -1768,25 +1904,32 @@ func _build_trees() -> void:
 		["mangueira", Vector3(-34, 0, 38), 0.9, 5.2],
 		["mangueira", Vector3(22, 0, -44), 0.85, 1.6],
 	]
+	var contagem := {}
 	for entry in plan:
-		_arvore(String(entry[0]), _u(entry[1]), float(entry[2]), float(entry[3]))
+		var especie := String(entry[0])
+		contagem[especie] = int(contagem.get(especie, 0)) + 1
+		var id := "%s %d" % [String(NOMES_DAS_ESPECIES.get(especie, especie.capitalize())), contagem[especie]]
+		_arvore_avulsa(_avulso(id, "arvore", especie, _u(entry[1]), float(entry[3]), float(entry[2]), true, "Árvores"))
 		await _pausar()
 	var taipa: Vector3 = ancoras.get("Casa de taipa", _u(Vector3(-52, 0, -27)))
 	# Árvores dos quintais (bananeiras, dendezeiros, pitangueiras, ipês da igreja):
 	# vêm da composição autoral ou da tabela PecasConstrucoes.
 	await _montar_arvores_das_casas()
 	var farm: Vector3 = _region.get_feature_center("Fazenda", "area")
-	_arvore("mangueira", farm + Vector3(-9.5, 0, -6.5), 1.15, 0.9)
+	_arvore_avulsa(_avulso("Mangueira da fazenda", "arvore", "mangueira", farm + Vector3(-9.5, 0, -6.5), 0.9, 1.15, true, "Fazenda"))
 	await _pausar()
-	_arvore("cajueiro", farm + Vector3(9.0, 0, -8.0), 1.0, 2.4)
+	_arvore_avulsa(_avulso("Cajueiro da fazenda 1", "arvore", "cajueiro", farm + Vector3(9.0, 0, -8.0), 2.4, 1.0, true, "Fazenda"))
 	await _pausar()
-	_arvore("cajueiro", farm + Vector3(11.0, 0, 8.5), 0.9, 0.3)
+	_arvore_avulsa(_avulso("Cajueiro da fazenda 2", "arvore", "cajueiro", farm + Vector3(11.0, 0, 8.5), 0.3, 0.9, true, "Fazenda"))
 	await _pausar()
 	var pier: Vector3 = _region.get_feature_center("Pier", "poi")
 	var toward_praca: Vector3 = (_region.get_feature_center("Praça", "poi") - pier).normalized()
+	var coqueiro := 0
 	for step in [Vector3(14.0, 0, 5.0), Vector3(20.0, 0, -4.0)]:
-		_arvore("coqueiro", pier + toward_praca * step.x + Vector3(0, 0, step.z), 1.0, step.z)
+		coqueiro += 1
+		_arvore_avulsa(_avulso("Coqueiro do píer %d" % coqueiro, "arvore", "coqueiro", pier + toward_praca * step.x + Vector3(0, 0, step.z), step.z, 1.0, true, "Píer"))
 		await _pausar()
+	_montar_avulsos_extras(["arvore"])
 
 
 func _build_details() -> void:
@@ -1815,6 +1958,13 @@ func _erguer_ponte(point: Vector3, anchor: String) -> void:
 	# A PONTE GRANDE NA VILA (07/10): a travessia do rio central volta ao modelo de
 	# 26/09, maior; o rio grande fica com a ponte de pé e a caída da obra (#94).
 	var peca := "ponte_grande" if anchor == "Ponte do rio central" and CatalogoAssets.tem_tripo("ponte_grande") else "ponte"
+	# A PONTE AUTORAL (Avulsos/Pontes): como o píer, nunca some; apagada, volta ao
+	# cruzamento da rua com o rio.
+	var autoral := _avulso(anchor, "construcao", peca, bridge, bridge_yaw, 1.0, false, "Pontes")
+	if bool(autoral["exato"]):
+		bridge = autoral["pos"]
+		bridge_yaw = float(autoral["yaw"])
+		ancoras[anchor] = bridge
 	var modelo := _construcao(peca, bridge, bridge_yaw, func():
 		_box(Vector3(11, 0.35, 6), bridge + Vector3(0, 0.22, 0), Color("987b57"), true, null, bridge_yaw)
 		for side in [-2.8, 2.8]:
@@ -1850,6 +2000,9 @@ func _erguer_ponte(point: Vector3, anchor: String) -> void:
 			caida.visible = false
 			pontes[anchor]["modelos"] = {"de_pe": modelo, "caida": caida}
 
+	# As pontes seguem o cruzamento da rua com o rio; o editor só as mostra.
+	if modelo != null:
+		referencias_montadas.append({"chave": peca, "nome": anchor, "transform": modelo.transform})
 
 ## O RIO GRANDE NÃO TEM VAU (#81). Havia um, a oito unidades da ponte pela linha
 ## do rio, "onde se atravessa a pé, com água na canela, enquanto a ponte está
@@ -1888,6 +2041,13 @@ func _build_landmark_details() -> void:
 		pier_yaw += PI
 	else:
 		pier_direction = Vector3(sin(pier_yaw), 0.0, cos(pier_yaw))
+	# O PÍER AUTORAL: posição e giro do grupo Avulsos; as âncoras (piso, direção,
+	# lado) saem dele, então pote, peixe, vara e candeeiro padrão o acompanham.
+	var pier_autoral := _avulso("Píer", "construcao", "pier", pier_origin, pier_yaw, 1.0, false, "Píer")
+	if bool(pier_autoral["exato"]):
+		pier_origin = pier_autoral["pos"]
+		pier_yaw = float(pier_autoral["yaw"])
+		pier_direction = Vector3(-sin(pier_yaw), 0.0, -cos(pier_yaw)) if estilo_tripo() else Vector3(sin(pier_yaw), 0.0, cos(pier_yaw))
 	ancoras["Pier"] = pier_origin
 	var pier_base := ground_position(pier_origin, maxf(pier_origin.y - ground_height_at(pier_origin), 0.0))
 	var pier_floor_top := pier_base.y
@@ -1931,9 +2091,10 @@ func _build_landmark_details() -> void:
 	ancoras["Cemitério"] = cemetery
 	_assentar_as_covas(cemetery)
 	_capelinha_do_cemiterio(cemetery)
-	var stones: Vector3 = _region.get_feature_center("Pedras", "poi")
+	var pedras := _avulso("Pedras", "adereco", "pedras", _region.get_feature_center("Pedras", "poi"), 0.4, 1.4, false, "Marcos")
+	var stones: Vector3 = pedras["pos"]
 	ancoras["Pedras"] = stones
-	if _adereco("pedras", stones, 0.4, 1.4) == null:
+	if _adereco_avulso(pedras) == null and bool(pedras["visivel"]):
 		for index in range(13):
 			var rock := SphereMesh.new()
 			rock.radius = 0.8 + (index % 3) * 0.4
@@ -2032,16 +2193,21 @@ func _build_pedras() -> void:
 		var para_terra := (m2 - na_costa).normalized() if menor > 0.01 else Vector2.ZERO
 		var na_areia := na_costa + para_terra * 3.0
 		marco = Vector3(na_areia.x, 0.0, na_areia.y)
-		var chao := ground_position(marco)
-		var pedra := CatalogoAssets.instanciar("pedras_praia", self, chao, 1.0, rng.randf_range(0.0, TAU))
-		if pedra != null:
-			CatalogoAssets.colisao("pedras_praia", pedra, self, chao)
+		# Pedras editáveis (Avulsos/Pedras): o sorteio continua igual, para as demais
+		# não mudarem de lugar; a posição autoral, quando existe, prevalece.
+		var grande := _avulso("Pedra da praia", "adereco", "pedras_praia", ground_position(marco), rng.randf_range(0.0, TAU), 1.0, true, "Pedras")
+		if bool(grande["visivel"]):
+			var pedra := CatalogoAssets.instanciar("pedras_praia", self, grande["pos"], float(grande["tamanho"]), float(grande["yaw"]))
+			if pedra != null:
+				CatalogoAssets.colisao("pedras_praia", pedra, self, grande["pos"], float(grande["tamanho"]), float(grande["yaw"]))
 		# Pedras menores espalhadas ao longo da praia, dos dois lados da maior.
 		var ao_longo := Vector2(-para_terra.y, para_terra.x)
 		for k in 2:
 			var passo := ao_longo * (rng.randf_range(5.0, 9.0) * (1.0 if k == 0 else -1.0)) + para_terra * rng.randf_range(-1.0, 2.0)
 			var vizinho := ground_position(marco + Vector3(passo.x, 0, passo.y))
-			CatalogoAssets.instanciar("pedras_praia", self, vizinho, rng.randf_range(0.45, 0.65), rng.randf_range(0.0, TAU))
+			var tamanho := rng.randf_range(0.45, 0.65)
+			var menor_pedra := _avulso("Pedra da praia %d" % (k + 2), "item", "pedras_praia", vizinho, rng.randf_range(0.0, TAU), tamanho, true, "Pedras")
+			_item_avulso(menor_pedra)
 	if not CatalogoAssets.tem_tripo("pedra_mare"):
 		return
 	# Lajes no raso: procura pontos com pouca lâmina d'água mar adentro do marco.
@@ -2055,8 +2221,10 @@ func _build_pedras() -> void:
 		if lamina < 0.06 or lamina > 0.5 or _region._is_on_land(ponto):
 			continue
 		var pos := Vector3(ponto.x, water_level() - lamina - 0.05, ponto.z)
-		CatalogoAssets.instanciar("pedra_mare", self, pos, rng.randf_range(0.7, 1.2), rng.randf_range(0.0, TAU))
 		postas += 1
+		var laje := _avulso("Pedra da maré %d" % postas, "item", "pedra_mare", pos, rng.randf_range(0.0, TAU), rng.randf_range(0.7, 1.2), false, "Pedras")
+		if bool(laje["visivel"]):
+			CatalogoAssets.instanciar("pedra_mare", self, laje["pos"], float(laje["tamanho"]), float(laje["yaw"]))
 
 
 ## AS CLAREIRAS-DESTAQUE DA MATA: a metade das árvores que saiu da mata deu lugar
@@ -2154,10 +2322,11 @@ func _build_cardume() -> void:
 func _build_pecas() -> void:
 	# Peças soltas do 2D (gerador_mundo.gd ADORNOS): poço e bancos na praça, cruzeiro na
 	# igreja, varal, lenha e pote na casa de taipa, carroça na fazenda.
-	ancoras["Poço"] = ground_position(Vector3(4.2, 0, 5.4))
-	_adereco("poco", ancoras["Poço"], 0.6)
-	_adereco("banco", _u(Vector3(-4.6, 0, -0.1)))
-	_adereco("banco", Vector3(3.2, 0, -7.0), PI)
+	var poco := _avulso("Poço", "adereco", "poco", ground_position(Vector3(4.2, 0, 5.4)), 0.6, 1.0, true, "Praça")
+	ancoras["Poço"] = poco["pos"]
+	_adereco_avulso(poco)
+	_adereco_avulso(_avulso("Banco 1", "adereco", "banco", _u(Vector3(-4.6, 0, -0.1)), 0.0, 1.0, true, "Praça"))
+	_adereco_avulso(_avulso("Banco 2", "adereco", "banco", Vector3(3.2, 0, -7.0), PI, 1.0, true, "Praça"))
 	var taipa: Vector3 = ancoras.get("Casa de taipa", _u(Vector3(-52, 0, -27)))
 	# Adereços e itens das construções (varal, lenha, pote, cruzeiro, machado...).
 	# O CRUZEIRO é marco de fé (#52), e marco tem âncora: _montar_pecas a registra
@@ -2166,19 +2335,13 @@ func _build_pecas() -> void:
 	if not ancoras.has("Cruzeiro"):
 		ancoras["Cruzeiro"] = ground_position(_na_casa("Igreja", Vector3(0, 0, 9.0)))
 	var farm: Vector3 = _region.get_feature_center("Fazenda", "area")
-	_adereco("carroca", ground_position(farm + Vector3(8.5, 0, -5.5)), -0.6)
-	_adereco("pote", _posicao_no_pier(-1.8, -3.0))
+	_adereco_avulso(_avulso("Carroça", "adereco", "carroca", ground_position(farm + Vector3(8.5, 0, -5.5)), -0.6, 1.0, true, "Fazenda"))
+	_adereco_avulso(_avulso("Pote do píer", "adereco", "pote", _posicao_no_pier(-1.8, -3.0), 0.0, 1.0, false, "Píer"))
 	# Itens de mão espalhados como cenário (só no estilo Tripo, quando existirem).
-	if estilo_tripo():
-		var itens := [
-			["enxada", farm + Vector3(5.6, 0.0, 1.2), 1.2],
-			["balde", ancoras["Poço"] + Vector3(1.3, 0, 0.4), 0.0],
-			["peixe", _posicao_no_pier(1.2, 2.0), 1.0],
-		]
-		for item in itens:
-			var item_position: Vector3 = item[1]
-			item_position.y = maxf(item_position.y, ground_height_at(item_position))
-			CatalogoAssets.instanciar(String(item[0]), self, item_position, 1.0, float(item[2]))
+	_item_avulso(_avulso("Enxada", "item", "enxada", farm + Vector3(5.6, 0.0, 1.2), 1.2, 1.0, true, "Fazenda"))
+	_item_avulso(_avulso("Balde", "item", "balde", ancoras["Poço"] + Vector3(1.3, 0, 0.4), 0.0, 1.0, true, "Praça"))
+	_item_avulso(_avulso("Peixe", "item", "peixe", _posicao_no_pier(1.2, 2.0), 1.0, 1.0, false, "Píer"))
+	_montar_avulsos_extras(["adereco", "item", "construcao"])
 
 
 ## O primeiro dos `candidatos` que é terra firme, no chão; sem nenhum, `senao` no chão.
@@ -2205,19 +2368,22 @@ func _build_luzes_epoca() -> void:
 	var praca := ground_position(Vector3.ZERO)
 	var taipa: Vector3 = ancoras.get("Casa de taipa", _u(Vector3(-52, 0, -27)))
 	var farm: Vector3 = _region.get_feature_center("Fazenda", "area")
+	var lampiao := 0
 	for corner in [Vector3(-9.0, 0, 8.5), Vector3(7.5, 0, -12.0), Vector3(8.0, 0, 9.5)]:
-		var post_position := ground_position(praca + corner)
-		_luzes.lampiao(post_position, _adereco("lampiao_poste", post_position, 0.0))
+		lampiao += 1
+		_luz_avulsa(_avulso("Lampião da praça %d" % lampiao, "lampiao", "lampiao_poste", ground_position(praca + corner), 0.0, 1.0, true, "Praça"))
 	# Lampião da igreja, candeeiros das portas e velas nas janelas das construções.
 	_montar_pecas(["candeeiro", "lampiao", "luz_janela"])
 	var luz_no_pier := _posicao_no_pier(0.0, 2.0)
 	luz_no_pier.y += 1.6
 	var modelo_luz_no_pier := _posicao_no_pier(0.3, 2.0) + Vector3.UP * 1.5
-	_luzes.candeeiro(luz_no_pier, _adereco("candeeiro", modelo_luz_no_pier))
+	_luz_avulsa(_avulso("Candeeiro do píer", "candeeiro", "candeeiro", modelo_luz_no_pier, 0.0, 1.0, false, "Píer"), luz_no_pier)
 	# O lajedo de trabalho ocupa (8, 3) e seu modelo se estende além da colisão.
 	# A fogueira fica no terreiro, com folga visível entre as toras e o rochedo.
-	ancoras["Fogueira"] = ground_position(farm + Vector3(19.0, 0, 4.0))
-	_luzes.fogueira(ancoras["Fogueira"], _adereco("fogueira", ancoras["Fogueira"]))
+	var fogueira := _avulso("Fogueira da fazenda", "fogueira", "fogueira", ground_position(farm + Vector3(19.0, 0, 4.0)), 0.0, 1.0, true, "Fazenda")
+	ancoras["Fogueira"] = fogueira["pos"]
+	_luz_avulsa(fogueira)
+	_montar_avulsos_extras(["lampiao", "candeeiro", "fogueira", "luz_janela"])
 	# O fogo do terreiro de santo, aceso à noite como o da fazenda.
 	if is_instance_valid(_fogo_do_terreiro):
 		_luzes.fogueira(_fogo_do_terreiro.global_position, _fogo_do_terreiro)
