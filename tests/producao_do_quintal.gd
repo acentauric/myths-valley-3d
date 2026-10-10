@@ -22,8 +22,10 @@ extends SceneTree
 ## FALSIFICAR: `-- --sem-rendimento` e `-- --sem-pericia` tiram o talento no meio do portão, e
 ## ele tem que reprovar.
 const ServicoDoMorador = preload("res://scripts/prototipo_3d/servico_do_morador.gd")
-const CurralVale = preload("res://scripts/prototipo_3d/curral_vale.gd")
-const CadeiaDeMissoes = preload("res://scripts/prototipo_3d/cadeia_de_missoes.gd")
+## O curral e a cadeia falam com os autoloads (`Talentos`, `Afinidade`) pelo nome: no `--script` eles só
+## compilam depois que a árvore sobe, e por isso se carregam em `_initialize`, e não por `preload`.
+var CurralVale: GDScript
+var CadeiaDeMissoes: GDScript
 const PASSO := {"id": "capataz_manha", "trabalho_do": "cosme", "recompensa": {"xp": 10, "mandioca": 4, "lenha": 2}}
 
 var falhas := 0
@@ -32,6 +34,8 @@ var sem_pericia := false
 
 
 func _initialize() -> void:
+	CurralVale = load("res://scripts/prototipo_3d/curral_vale.gd")
+	CadeiaDeMissoes = load("res://scripts/prototipo_3d/cadeia_de_missoes.gd")
 	_run.call_deferred()
 
 
@@ -97,7 +101,7 @@ func _run() -> void:
 			_dar_talento("palavra_de_patrao", sem_rendimento)
 		if caso == "palavra_e_mestre":
 			_dar_talento("mestre_de_oficio", sem_pericia)
-		var fila := CadeiaDeMissoes.new()
+		var fila = CadeiaDeMissoes.new()
 		root.add_child(fila)
 		fila.set_process(false)
 		fila._pagar(PASSO)
@@ -111,7 +115,7 @@ func _run() -> void:
 	# Um passo SEM `trabalho_do` não passa pela conta, nem com os talentos.
 	_zerar()
 	talentos.destravados.append("palavra_de_patrao")
-	var comum := CadeiaDeMissoes.new()
+	var comum = CadeiaDeMissoes.new()
 	root.add_child(comum)
 	comum.set_process(false)
 	comum._pagar({"id": "comum", "recompensa": {"mandioca": 4, "lenha": 2}})
@@ -129,7 +133,7 @@ func _run() -> void:
 
 	# --- 5. O GALINHEIRO LÊ O CAMPO ----------------------------------------------------------------------
 	_zerar()
-	var curral := CurralVale.new()
+	var curral = CurralVale.new()
 	root.add_child(curral)
 	curral.set_process(false)
 	_conferir(not curral.tem_pastoreio(), "sem o Curral o galinheiro tem pastoreio")
