@@ -17,6 +17,19 @@ argumento a portão; portão novo que meça o vale de fundo liga `lobby_3d_pedid
 `load("res://scripts/prototipo_3d/abertura.gd").set("lobby_3d_pedido", true)`, com `load` e
 não `preload` (a abertura cita autoload).
 
+## Ver o voo no Godot
+
+Abra `tools/prototipo_3d/sobrevoo/ver_sobrevoo.tscn` no editor e rode a cena (F6). Ela
+monta só o cenário do vale e voa o trajeto gravado, com a linha do voo desenhada:
+dourada com folga, amarela perto de uma copa, vermelha a menos de 5 m. A árvore que
+aperta o voo ganha o nome dela na composição (`Coqueiro da orla 45`), e a lista sai
+na saída do Godot. Mova essa peça em `scenes/prototipo_3d/composicao_vale.tscn`
+(Avulsos), salve e rode a cena de novo. Espaço pausa, ←/→ andam no tempo, ↑/↓ mudam a
+velocidade, 1/2 trocam a câmera do voo pela de fora, N pula para o próximo aperto.
+
+A medida da cena é um guia (a copa como uma esfera no alto do modelo). Quem decide é
+o portão: `.\tools\prototipo_3d\testar.ps1 -Teste sobrevoo_livre,sobrevoo_livre_procedural`.
+
 ## Replanejar (uns 10 minutos)
 
 Rode a partir da raiz do projeto, no Git Bash. `S` é uma pasta de trabalho FORA do
