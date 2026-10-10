@@ -1890,6 +1890,10 @@ func _esconder_o_que_cobre_o_bloqueio(esconder: bool) -> void:
 		_escondidos_pelo_bloqueio.clear()
 		return
 	var alvos: Array = [painel_observador]
+	# A tela aberta (diário, mochila) fecha: o modal pergunta sozinho.
+	var telas = current_scene.get("telas") if _no_vale() else null
+	if telas != null and not str(telas.aberta()).is_empty():
+		telas.fechar_tudo()
 	var hud = current_scene.get("hud") if _no_vale() else null
 	if hud != null and hud.get("_house_info_panel") != null:
 		alvos.append(hud.get("_house_info_panel"))

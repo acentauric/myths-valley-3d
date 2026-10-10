@@ -200,7 +200,13 @@ static func _posicionar_tecla(marca: Label, e: float) -> void:
 	var folga := roundf(4.0 * e)
 	var interno := lado - 2.0 * folga
 	var tamanho := marca.get_combined_minimum_size()
-	var s := minf(e, (MARGEM - 4.0) / maxf(tamanho.x, 1.0))
+	# A PLAQUETA DO TAMANHO DAS DA BARRA DE MÃO (10/10/2026): M, C e J saíam maiores que os números
+	# 1 a 0, porque cresciam com a coluna. Agora a letra aparece no tamanho que o número da mão
+	# aparece (a escala da mão), não importa a escala da coluna em que mora.
+	var arvore := Engine.get_main_loop() as SceneTree
+	var tela := arvore.root.get_node_or_null("Tela") if arvore else null
+	var da_mao := float(tela.escala_componente("mao")) if tela != null else 1.0
+	var s := minf(da_mao, (MARGEM - 4.0) / maxf(tamanho.x, 1.0))
 	marca.scale = Vector2.ONE * s
 	# 2 px da plaqueta cobrem a borda da placa, para ela parecer parte do botão.
 	marca.position = Vector2(interno + folga - 2.0, (interno - tamanho.y * s) * 0.5)

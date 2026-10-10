@@ -113,7 +113,7 @@ func abrir(bloqueio: Dictionary) -> void:
 	var tentativas := (dadas as Array).size() if dadas is Array else int(dadas)
 	_tentativas.text = str(_t.call("bloqueio_tentativas")) % tentativas
 	_tentativas.visible = tentativas > 0
-	for par in [["Assumir", "cmd_assumir"], ["OutraRota", "bloqueio_outra"], ["Encerrar", "bloqueio_encerrar"]]:
+	for par in [["Assumir", "cmd_assumir_curto"], ["OutraRota", "bloqueio_outra"], ["Encerrar", "bloqueio_encerrar"]]:
 		(find_child(str(par[0]), true, false).find_child("Rotulo", true, false) as Label).text = _t.call(str(par[1]))
 	_restante = ESPERA_S
 	_aberto = true

@@ -1031,25 +1031,62 @@ func tarefa_concluida(texto: String) -> void:
 	_pulso_da_tarefa = create_tween()
 	_pulso_da_tarefa.tween_property(_heading, "modulate", OURO_DO_PULSO, PULSO_DA_TAREFA * 0.25).set_trans(Tween.TRANS_SINE)
 	_pulso_da_tarefa.tween_property(_heading, "modulate", Color(1, 1, 1, 1), PULSO_DA_TAREFA * 0.75).set_trans(Tween.TRANS_SINE)
-	if _risco_da_tarefa == null:
-		_risco_da_tarefa = _label("", 14, GOLD)
-		_risco_da_tarefa.name = "TarefaConcluida"
-		_risco_da_tarefa.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TITULO, 600, 1))
-		_risco_da_tarefa.clip_text = true
-		_risco_da_tarefa.z_index = 100
-		Identidade.sombra_texto(_risco_da_tarefa)
-		_place(_risco_da_tarefa, Vector2(_heading.position.x + 15.0, _heading.position.y + _heading.size.y + 6.0), Vector2(HEADING_WIDTH - 30.0, 22.0))
-	if _risco_tween != null:
-		_risco_tween.kill()
-	_risco_da_tarefa.text = "✓  " + texto
-	_risco_da_tarefa.position = Vector2(_heading.position.x + 15.0, _heading.position.y + _heading.size.y + 6.0)
-	_risco_da_tarefa.modulate = Color(1, 1, 1, 0)
-	_risco_da_tarefa.visible = true
-	_risco_tween = create_tween()
-	_risco_tween.tween_property(_risco_da_tarefa, "modulate:a", 1.0, 0.25)
-	_risco_tween.tween_interval(RISCO_DA_TAREFA)
-	_risco_tween.tween_property(_risco_da_tarefa, "modulate:a", 0.0, 0.6)
-	_risco_tween.tween_callback(func() -> void: _risco_da_tarefa.visible = false)
+	# O AVISO DA TAREFA FEITA NO CENTRO DE BAIXO, logo acima da barra de mão (10/10/2026): no
+	# canto da missão ele disputava lugar com os balões de fala. Chegando vários, entram em fila
+	# (o primeiro que chegou sai primeiro) e empilham de baixo para cima, cada um no seu tempo.
+	_fila_de_tarefas.append("✓  " + texto)
+	if _fila_de_tarefas.size() == 1:
+		_mostrar_proxima_tarefa()
+
+
+## O aviso de baixo: um por vez, até três empilhados se chegarem juntos.
+const TAREFAS_EMPILHADAS := 3
+var _fila_de_tarefas: Array[String] = []
+var _avisos_de_tarefa: Array[Label] = []
+
+
+func _mostrar_proxima_tarefa() -> void:
+	if _fila_de_tarefas.is_empty():
+		return
+	var aviso := _label("", 16, GOLD)
+	aviso.name = "TarefaConcluida"
+	aviso.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TITULO, 600, 1))
+	aviso.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	aviso.z_index = 100
+	Identidade.sombra_texto(aviso)
+	aviso.text = _fila_de_tarefas[0]
+	_risco_da_tarefa = aviso
+	_avisos_de_tarefa.append(aviso)
+	_arrumar_avisos_de_tarefa()
+	aviso.modulate = Color(1, 1, 1, 0)
+	var ritmo := create_tween()
+	ritmo.tween_property(aviso, "modulate:a", 1.0, 0.25)
+	# O seguinte da fila entra logo depois deste aparecer, empilhado acima.
+	ritmo.tween_callback(func() -> void:
+		if not _fila_de_tarefas.is_empty():
+			_fila_de_tarefas.pop_front()
+		if not _fila_de_tarefas.is_empty() and _avisos_de_tarefa.size() < TAREFAS_EMPILHADAS:
+			_mostrar_proxima_tarefa())
+	ritmo.tween_interval(RISCO_DA_TAREFA)
+	ritmo.tween_property(aviso, "modulate:a", 0.0, 0.6)
+	ritmo.tween_callback(func() -> void:
+		_avisos_de_tarefa.erase(aviso)
+		aviso.queue_free()
+		if _risco_da_tarefa == aviso:
+			_risco_da_tarefa = null if _avisos_de_tarefa.is_empty() else _avisos_de_tarefa.back()
+		_arrumar_avisos_de_tarefa()
+		if not _fila_de_tarefas.is_empty() and _avisos_de_tarefa.size() < TAREFAS_EMPILHADAS:
+			_mostrar_proxima_tarefa())
+
+
+## Empilha os avisos de baixo para cima, o mais antigo embaixo, acima da barra de mão.
+func _arrumar_avisos_de_tarefa() -> void:
+	var largura := minf(720.0, _root.size.x - 40.0)
+	var base := _root.size.y - BarraDeMao.MARGEM_DE_BAIXO - (BarraDeMao.ALTURA + 24.0) * Tela.escala_componente("mao") - 14.0
+	for i in _avisos_de_tarefa.size():
+		var aviso := _avisos_de_tarefa[i]
+		aviso.size = Vector2(largura, 24.0)
+		aviso.position = Vector2((_root.size.x - largura) * 0.5, base - 24.0 * (i + 1) - 4.0 * i)
 
 
 ## Para o portão: o risco da tarefa concluída que está à vista ("" sem nenhum).

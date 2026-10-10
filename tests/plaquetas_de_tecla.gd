@@ -46,6 +46,12 @@ func _run() -> void:
 			var contraste := (fundo.bg_color.srgb_to_linear().get_luminance() + 0.05) / (tinta.srgb_to_linear().get_luminance() + 0.05)
 			conferir(contraste >= 7, "tecla perdeu contraste")
 			conferir(botao.size.x <= canto.size.x and botao.size.y <= canto.size.y, "atalho aumentou área de clique")
+	# Todas as plaquetas com o mesmo tamanho na tela: as da coluna (M, C, J) e as da mão (1 a 0).
+	var da_mao: Label = hud._barra._espacos[0].get_node("TeclaDeAtalho")
+	var altura_mao: float = da_mao.get_global_rect().size.y
+	for marca_canto in root.find_children("*", "Label", true, false):
+		if marca_canto.get_parent() is Button and (marca_canto.get_parent() as Node).is_in_group("botoes_canto") and marca_canto.get_theme_stylebox("normal") is StyleBoxFlat and (marca_canto as Label).text.length() == 1:
+			conferir(absf((marca_canto as Label).get_global_rect().size.y - altura_mao) <= 1.0 and marca_canto.get_theme_font_size("font_size") == da_mao.get_theme_font_size("font_size"), "a plaqueta %s tem o tamanho das da mão" % (marca_canto as Label).text)
 	for espaco in hud._barra._espacos:
 		var marca: Label = espaco.get_node("TeclaDeAtalho")
 		conferir(not marca.get_global_rect().intersects(espaco.get_node("Icone").get_global_rect()), "número cobre o item")
