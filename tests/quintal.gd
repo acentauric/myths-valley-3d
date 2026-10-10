@@ -19,7 +19,7 @@ extends SceneTree
 ##   5. O CAPATAZ: falar com o Cosme fecha o passo (a resposta é dele); dormir fecha a
 ##      manhã, e a mandioca e a lenha entram na mochila, pagas por ele; a fila acaba.
 ##   6. O FOCO: ao lado do galinheiro, o E é do curral (`alvo_do_e`), e não de outra coisa.
-##   7. O SAVE: o ninho e o dia da postura vão e voltam; a lavoura leva a conta das colheitas.
+##   7. O SAVE: o ninho, o dia da postura e o dia de serviço do Cosme vão e voltam; a lavoura leva a conta das colheitas.
 ##   8. A LÍNGUA: a dica do galinheiro sai nos três idiomas.
 var falhas := 0
 var vale
@@ -179,6 +179,9 @@ func _run() -> void:
 	var estado: Dictionary = vale.estado_para_salvar()
 	_conferir((estado.get("curral", {}) as Dictionary).get("ovos", -1) == 6, "o save não leva os ovos do ninho: %s" % str(estado.get("curral")))
 	_conferir(int((estado.get("lavoura", {}) as Dictionary).get("colheitas", -1)) == 6, "o save não leva a conta das colheitas: %s" % str((estado.get("lavoura", {}) as Dictionary).get("colheitas")))
+	# O DIA DE SERVIÇO DO COSME vai no save com o ninho (servico_do_morador.gd): a manhã do capataz contou um.
+	_conferir(int(((estado.get("curral", {}) as Dictionary).get("servico", {}) as Dictionary).get("cosme", 0)) == 1,
+		"o save não leva o dia de serviço do Cosme: %s" % str((estado.get("curral", {}) as Dictionary).get("servico")))
 	curral.restaurar({"ovos": 2, "dia_da_postura": relogio.dia_absoluto()})
 	_conferir(curral.ovos == 2, "restaurar o ninho não trouxe os dois ovos")
 

@@ -2,6 +2,16 @@
 
 ## Em desenvolvimento — 10/10/2026
 
+- **Os quatro talentos de produção do quintal passam a valer (#160).** `pastoreio`, `pressa_do_curral`,
+  `rendimento_do_morador` e `pericia_do_morador` estavam declarados na teia e não eram lidos por ninguém
+  (a auditoria estrita os acusava). O galinheiro agora sobe pelo campo `pastoreio` do nó Curral; o Trato do
+  curral adianta a postura (as galinhas botam o ovo de amanhã a partir das 17h, no mesmo ritmo de um por
+  galinha por dia); e o dia de roçado do Cosme, no passo `capataz_manha`, vem pelo rendimento de quem
+  trabalha para o jogador (Palavra de patrão, Empreiteiro, Curimba: 4 mandiocas e 2 lenhas viram 6 e 3) e
+  pela perícia (o Mestre de ofício faz o dia valer por dois, o ofício se aprende em um só e o Cosme traz
+  um quarto a mais). A conta mora em `servico_do_morador.gd` e os dias de prática vão no save com o ninho.
+  Portão `producao_do_quintal` (com falsificadores `--sem-rendimento` e `--sem-pericia`); `quintal`
+  confere o dia de serviço no save.
 - **A narração manda na interface: nada fica por cima da caixa longa.** Com o Pedro (ou qualquer
   fala da caixa do Dialogo) aberto, o `foco_da_narracao` apagava só os painéis que o HUD nomeava;
   agora apaga QUALQUER painel do grupo `obstaculos_do_hud` que a cubra, o do testador incluído, e os

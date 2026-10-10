@@ -97,8 +97,13 @@ separada; ele não é a 33ª pergunta de gameplay.
   `pericia_do_morador`. Favor é desconto do preço da terra, conforme o
   consumidor histórico, e depende de #9/#22. Não reduz custo da oficina.
   #160 estava fechada sem produtores, fila ou pagamento equivalentes no HEAD;
-  foi reaberta com inventário de comportamento. Curral/trabalhadores e
-  frações de sua produção dependem dessa integração real.
+  foi reaberta com inventário de comportamento. Conferido em 10/10: a fila do
+  quintal, o galinheiro com os ovos e o dia de roçado do Cosme estão no código
+  (`curral_vale.gd`, `missoes_quintal.json`, `tests/quintal.gd`). Faltavam os
+  leitores dos quatro campos: `pastoreio` (galinheiro), `pressa_do_curral`
+  (postura adiantada) e `rendimento_do_morador`/`pericia_do_morador`
+  (pagamento do passo `capataz_manha`, `servico_do_morador.gd`), agora
+  cobertos por `tests/producao_do_quintal.gd`.
 - `consumidores_dos_talentos` reproduz três falhas com fontes anteriores do
   commit c022e0f carregadas em memória. Desligar passo/lenha/faro provoca
   2/1/1 falhas. Falsificadores de foco, porta de receita, fração e gosto
