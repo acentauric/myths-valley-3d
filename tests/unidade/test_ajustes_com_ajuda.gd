@@ -30,18 +30,18 @@ func test_ajustes_com_ajuda() -> void:
 				var fechar := cabecalho.get_child(cabecalho.get_child_count() - 1) as Button
 				var restaurar := cabecalho.get_children().filter(func(no: Node) -> bool: return str(no.name).begins_with("Restaurar"))
 				# #169: a aba Interface leva o seu próprio restaurar (Tamanho de cada interface) ao cabeçalho.
-				# 10/10/2026: um só ↺ antes do ×, com as opções num menu (duas em Geral e Sons, uma em Interface).
+				# 10/10/2026: botões de ícone antes do ×, no formato dele (dois em Geral e Sons, um em Interface),
+				# cada um com a dica do tema e a pergunta antes de restaurar.
 				var esperados := 2 if aba in [PainelAjustes.ABA_GERAL, PainelAjustes.ABA_SONS] else (1 if aba == PainelAjustes.ABA_INTERFACE else 0)
-				_conferir(restaurar.size() == (1 if esperados > 0 else 0), "um só restaurar no cabeçalho, nas abas com volumes ou tamanhos (aba %d)" % aba)
-				if esperados > 0 and restaurar.size() == 1:
-					var menu := (restaurar[0] as Node).get_node("OpcoesDeRestaurar") as PopupMenu
-					_conferir(menu != null and menu.item_count == esperados, "o restaurar tem %d opção(ões) no menu (aba %d)" % [esperados, aba])
-					_conferir(restaurar[0].get_index() == fechar.get_index() - 1, "o restaurar fica logo antes do × (aba %d)" % aba)
-					_conferir(is_equal_approx(restaurar[0].custom_minimum_size.y, fechar.custom_minimum_size.y) and (restaurar[0] as Button).text.is_empty(), "o restaurar é um ícone na altura do × (aba %d)" % aba)
-					# Escolher uma opção pergunta antes, e "não" não restaura nada.
-					menu.id_pressed.emit(0)
+				_conferir(restaurar.size() == esperados, "restaurar no cabeçalho só nas abas com volumes ou tamanhos (aba %d)" % aba)
+				if esperados > 0 and restaurar.size() == esperados:
+					_conferir((restaurar.back() as Node).get_index() == fechar.get_index() - 1, "os restaurar ficam logo antes do × (aba %d)" % aba)
+					for botao_r: Button in restaurar:
+						_conferir(botao_r.custom_minimum_size == fechar.custom_minimum_size and botao_r.text.is_empty() and botao_r.theme_type_variation == fechar.theme_type_variation, "o restaurar é um ícone no formato do × (aba %d)" % aba)
+						_conferir(not botao_r.tooltip_text.is_empty() and botao_r.find_child("OpcoesDeRestaurar", true, false) == null, "o restaurar tem a dica do tema, sem menu (aba %d)" % aba)
+					(restaurar[0] as Button).pressed.emit()
 					var pergunta := root.find_child("PerguntaRestaurar*", true, false)
-					_conferir(pergunta != null, "a opção de restaurar pergunta antes (aba %d)" % aba)
+					_conferir(pergunta != null, "o restaurar pergunta antes (aba %d)" % aba)
 					if pergunta != null:
 						pergunta.responder(false)
 						pergunta.queue_free()

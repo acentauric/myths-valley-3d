@@ -1,6 +1,6 @@
 extends Control
 ## Ícones vetoriais dos botões de canto do HUD, no mesmo traço do som e do relógio:
-## "casa" (HOME), "ajustes" (engrenagem), "restaurar" (seta circular), "mapa", "ajuda" (?), "tela_cheia" (cantos para fora em janela, para dentro em tela cheia), "fechar" (×), "minimizar" (—) e "maximizar" (□) do painel do mapa, "expandir" (setas para os cantos: a fala inteira em MODELOS), "salvar" (disquete), "tocar" (play), "pausar", "concluir" (✓), "externo" (link que sai do jogo), "camera" (anel dourado quando travada), "velocidade" (setas conforme
+## "casa" (HOME), "ajustes" (engrenagem), "restaurar" (seta circular), "restaurar_todos" (a seta com uma pilha dentro), "mapa", "ajuda" (?), "tela_cheia" (cantos para fora em janela, para dentro em tela cheia), "fechar" (×), "minimizar" (—) e "maximizar" (□) do painel do mapa, "expandir" (setas para os cantos: a fala inteira em MODELOS), "salvar" (disquete), "tocar" (play), "pausar", "concluir" (✓), "externo" (link que sai do jogo), "camera" (anel dourado quando travada), "velocidade" (setas conforme
 ## a Passagem do tempo, 0–3), "fala" (ondas de som em ouro que acendem uma a uma: o selo do viajante falando,
 ## `selo_do_viajante.gd`, com o `nivel` de 0 a 3 dizendo quantas ondas estão acesas) e "som", "cenario", "interface", "teclado" e "esforco" (as abas de Ajustes, com o "ajustes" na Geral), "estilo" (cubo para Tripo, chaves para Procedural), "editar" (lápis, um só:
 ## o do nome da vaga e o do painel MODELOS) e "apagar" (lixeira, vermelha pedindo a confirmação) dos
@@ -94,6 +94,14 @@ func _draw() -> void:
 			draw_arc(Vector2(12, 12.5), 6.5, deg_to_rad(-200.0), deg_to_rad(90.0), 24, cor_restaurar, 1.8, true)
 			var ponta := Vector2(12, 12.5) + Vector2.from_angle(deg_to_rad(-200.0)) * 6.5
 			draw_polyline(PackedVector2Array([ponta + Vector2(-1.5, -4.5), ponta, ponta + Vector2(4.5, -1.0)]), cor_restaurar, 1.8, true)
+		"restaurar_todos":
+			# A seta circular com três traços dentro (uma pilha): restaura tudo, e não só esta aba.
+			var cor_todos := tinta if ativo else Color(tinta, 0.35)
+			draw_arc(Vector2(12, 12.5), 8.0, deg_to_rad(-200.0), deg_to_rad(90.0), 28, cor_todos, 1.8, true)
+			var ponta_todos := Vector2(12, 12.5) + Vector2.from_angle(deg_to_rad(-200.0)) * 8.0
+			draw_polyline(PackedVector2Array([ponta_todos + Vector2(-1.5, -4.5), ponta_todos, ponta_todos + Vector2(4.5, -1.0)]), cor_todos, 1.8, true)
+			for i in 3:
+				draw_line(Vector2(9.0, 10.0 + i * 2.6), Vector2(15.0, 10.0 + i * 2.6), cor_todos, 1.4, true)
 		"ajustes":
 			# Engrenagem: aro, oito dentes e furo; dourada com os ajustes abertos.
 			var cor_ajustes := ouro if ativo else tinta

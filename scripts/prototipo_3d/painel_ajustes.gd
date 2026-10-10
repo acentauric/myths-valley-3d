@@ -515,61 +515,47 @@ func _volume(titulo: String, valor: float, ao_mudar: Callable, canal: String) ->
 	_pai = anterior
 
 
-## UM SÓ BOTÃO DE RESTAURAR NO CABEÇALHO (10/10/2026), o ↺ à esquerda do × e na altura dele:
-## passar o mouse (ou clicar) abre as opções — "Restaurar estes", só os volumes da aba aberta, e
-## "Restaurar todos", os das duas abas — e cada uma pergunta antes (`CaixaDePergunta`), para
-## ninguém perder os ajustes por um clique errado. Nos dois, nada fica silenciado.
+## OS BOTÕES DE RESTAURAR NO CABEÇALHO, à esquerda do × e no mesmo formato dele (ícone e dica
+## do tema, como a do ×): "Restaurar estes" (↺) volta ao padrão só os volumes da aba aberta, e
+## "Restaurar todos" (↺ com a pilha), os das duas abas. Cada um pergunta antes
+## (`CaixaDePergunta`), para ninguém perder os ajustes por um clique errado. Nos dois, nada fica
+## silenciado.
 func _restaurar_volumes(fechar: Button) -> void:
 	var desta_aba: Array = Audio.CAMADAS_AMBIENTE if aba == ABA_SONS else Audio.CANAIS_GERAIS
-	_botao_restaurar(fechar, [
-		["Restaurar estes", "Sons voltam ao padrão." if aba == ABA_SONS else "Música, narração, falas, efeitos e ambiente voltam ao padrão.",
-			func() -> void: Audio.restaurar_padroes(desta_aba)],
-		["Restaurar todos", "Todos os volumes, das duas abas, voltam ao padrão.", func() -> void: Audio.restaurar_padroes([])],
-	])
+	_botao_restaurar(fechar, "RestaurarEstes", "restaurar", ["Restaurar estes",
+		"Sons voltam ao padrão." if aba == ABA_SONS else "Música, narração, falas, efeitos e ambiente voltam ao padrão.",
+		func() -> void: Audio.restaurar_padroes(desta_aba)])
+	_botao_restaurar(fechar, "RestaurarTodos", "restaurar_todos", ["Restaurar todos",
+		"Todos os volumes, das duas abas, voltam ao padrão.", func() -> void: Audio.restaurar_padroes([])])
 
 
-## "Restaurar todas as interfaces" da aba Interface, no mesmo botão: devolve cada "Tamanho de
-## cada interface" a 100%.
+## "Restaurar todas as interfaces" da aba Interface, no mesmo formato: devolve cada "Tamanho
+## de cada interface" a 100%.
 func _restaurar_interfaces(fechar: Button) -> void:
 	var textos: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://data/interface_tamanhos.json"))
-	_botao_restaurar(fechar, [[str(IdiomaMenu.campo(textos["restaurar"], "texto")), "", func() -> void: Tela.restaurar_componentes()]])
+	_botao_restaurar(fechar, "RestaurarInterfaces", "restaurar_todos",
+		[str(IdiomaMenu.campo(textos["restaurar"], "texto")), "", func() -> void: Tela.restaurar_componentes()])
 
 
-## O ↺ do cabeçalho, inserido antes do ×, com o menu das `opcoes` ([rótulo, frase, ação]).
-func _botao_restaurar(fechar: Button, opcoes: Array) -> void:
+## Um botão de ícone do cabeçalho, inserido antes do ×, igual a ele: o ícone, a dica do tema
+## com o nome da ação e a pergunta antes de fazer. `opcao` é [rótulo, frase, ação].
+func _botao_restaurar(fechar: Button, nome: String, icone_nome: String, opcao: Array) -> void:
 	var linha := fechar.get_parent() as HBoxContainer
 	linha.add_theme_constant_override("separation", 8)
 	var botao := Button.new()
-	botao.name = "Restaurar"
-	botao.theme_type_variation = &"BotaoIcone"
-	botao.tooltip_text = tr("Restaurar o padrão")
-	botao.custom_minimum_size = Vector2(ALTURA_CABECALHO, ALTURA_CABECALHO)
-	botao.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	var icone: HudIcon = HudIcon.new().configurar("restaurar")
+	botao.name = nome
+	botao.theme_type_variation = fechar.theme_type_variation
+	botao.tooltip_text = tr(String(opcao[0]))
+	botao.custom_minimum_size = fechar.custom_minimum_size
+	botao.size_flags_vertical = fechar.size_flags_vertical
+	var icone: HudIcon = HudIcon.new().configurar(icone_nome)
 	icone.definir(true)
 	icone.position = Vector2.ONE * (ALTURA_CABECALHO - 24.0) / 2.0
 	icone.size = Vector2(24, 24)
 	icone.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	botao.add_child(icone)
-	var menu := PopupMenu.new()
-	menu.name = "OpcoesDeRestaurar"
-	for i in opcoes.size():
-		menu.add_item(tr(String(opcoes[i][0])), i)
-		if String(opcoes[i][1]) != "":
-			menu.set_item_tooltip(i, tr(String(opcoes[i][1])))
-	botao.add_child(menu)
-	var abrir := func() -> void:
-		if menu.visible:
-			return
-		var r := botao.get_global_rect()
-		menu.reset_size()
-		menu.position = Vector2i(roundi(r.end.x - menu.get_contents_minimum_size().x), roundi(r.end.y + 4.0))
-		menu.popup()
-	botao.mouse_entered.connect(func() -> void:
-		Audio.efeito("ui_hover")
-		abrir.call())
-	botao.pressed.connect(abrir)
-	menu.id_pressed.connect(func(i: int) -> void: _confirmar_restaurar(opcoes[i]))
+	botao.mouse_entered.connect(func() -> void: Audio.efeito("ui_hover"))
+	botao.pressed.connect(func() -> void: _confirmar_restaurar(opcao))
 	linha.add_child(botao)
 	linha.move_child(botao, fechar.get_index())
 
