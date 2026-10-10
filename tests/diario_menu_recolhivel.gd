@@ -171,10 +171,10 @@ func _conferir_letras(painel: Node, quando: String) -> void:
 	var tamanho_da_fala := fala.get_theme_font_size("font_size")
 	_conferir(tamanho_da_fala == int(Identidade.TAMANHO_LEITURA), "%s: a fala não usa o tamanho de leitura (%d)" % [quando, tamanho_da_fala])
 	_conferir(objetivo.get_theme_font_size("font_size") == tamanho_da_fala, "%s: o objetivo de agora (%d) tem tamanho diferente da fala (%d)" % [quando, objetivo.get_theme_font_size("font_size"), tamanho_da_fala])
-	_conferir(objetivo.get_theme_font("font") == fala.get_theme_font("font"), "%s: o objetivo de agora e a fala usam fontes diferentes" % quando)
+	_conferir(_mesma_fonte(objetivo.get_theme_font("font"), fala.get_theme_font("font")), "%s: o objetivo de agora e a fala usam fontes diferentes" % quando)
 	for feito: Label in feitos:
 		_conferir(feito.get_theme_font_size("font_size") == tamanho_da_fala, "%s: um objetivo cumprido (%d) tem tamanho diferente da fala (%d)" % [quando, feito.get_theme_font_size("font_size"), tamanho_da_fala])
-		_conferir(feito.get_theme_font("font") == fala.get_theme_font("font"), "%s: um objetivo cumprido e a fala usam fontes diferentes" % quando)
+		_conferir(_mesma_fonte(feito.get_theme_font("font"), fala.get_theme_font("font")), "%s: um objetivo cumprido e a fala usam fontes diferentes" % quando)
 		_conferir(feito.get_theme_color("font_color") != objetivo.get_theme_color("font_color"), "%s: o cumprido devia ser apagado, e tem a cor do objetivo de agora" % quando)
 	_conferir(fala.get_theme_constant("line_spacing") == objetivo.get_theme_constant("line_spacing"), "%s: o respiro entre linhas da fala e do objetivo difere" % quando)
 
@@ -191,6 +191,19 @@ func _conferir_sem_rolagem(painel: Node, quando: String) -> void:
 	var caixa := painel.find_child("Caixa", true, false) as Control
 	if botao != null and caixa != null:
 		_conferir(caixa.get_global_rect().encloses(botao.get_global_rect()), "%s: o botão Acompanhar sai da caixa do painel" % quando)
+
+
+## A MESMA LETRA, e não o mesmo objeto: `Identidade.fonte_do_hud()` monta uma FontVariation nova a cada rótulo,
+## então se comparam a fonte de base, as reservas e a variação.
+func _mesma_fonte(a: Font, b: Font) -> bool:
+	if a == b:
+		return true
+	if a is FontVariation and b is FontVariation:
+		var va := a as FontVariation
+		var vb := b as FontVariation
+		var mesma_base: bool = va.base_font == vb.base_font and va.fallbacks == vb.fallbacks
+		return mesma_base and va.variation_opentype == vb.variation_opentype and is_equal_approx(va.variation_embolden, vb.variation_embolden)
+	return false
 
 
 func _tecla(codigo: int) -> InputEventKey:
