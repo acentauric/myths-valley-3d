@@ -31,6 +31,7 @@ const CORES := {
 	"deterministic": Color("8fd1a5"),
 	"jev": Identidade.OURO,
 	"gpt": Color("8fb4e8"),
+	"manual": Color("e8a06a"),
 }
 
 ## O MODO DO TESTADOR EM ÍCONE (10/10/2026), no lugar da etiqueta escrita: o nome inteiro fica
@@ -71,6 +72,12 @@ class IconeModo extends Control:
 				draw_line(Vector2(17, 6), Vector2(17, 16), cor, 1.6, true)
 				for c in [Vector2(7, 8), Vector2(17, 6), Vector2(17, 16)]:
 					draw_circle(c, 3.0, cor)
+			"manual":
+				# A mão aberta: palma e quatro dedos, e o polegar de lado.
+				draw_rect(Rect2(7, 11, 10, 9), cor, false, 1.7, true)
+				for i in 4:
+					draw_line(Vector2(8.2 + i * 2.6, 11), Vector2(8.2 + i * 2.6, 4.5 + absf(i - 1.5)), cor, 1.7, true)
+				draw_line(Vector2(7, 15), Vector2(3.5, 11.5), cor, 1.7, true)
 			"gpt":
 				draw_colored_polygon(PackedVector2Array([Vector2(12, 2), Vector2(14, 10), Vector2(22, 12), Vector2(14, 14), Vector2(12, 22), Vector2(10, 14), Vector2(2, 12), Vector2(10, 10)]), cor)
 

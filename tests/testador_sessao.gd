@@ -191,6 +191,9 @@ func _painel() -> void:
 	painel.mostrar({"titulo": "Testando", "nivel": "jev", "sub": "", "acao": "", "decisoes": [], "minimizado": true, "faixa": "TESTANDO · 37 ações"})
 	_conferir(painel._linha_da_faixa.visible and painel._icone_da_faixa.modo == "jev" and painel._linha_da_faixa.get_child(0) == painel._icone_da_faixa, "minimizado, o ícone do modo vem à esquerda de TESTANDO")
 	painel.mostrar({"titulo": "Testando", "nivel": "jev", "sub": "", "acao": "", "decisoes": [], "minimizado": false})
+	painel.mostrar({"titulo": "Testando", "nivel": "manual", "sub": "", "acao": "", "decisoes": [], "minimizado": true, "faixa": "CONTROLE MANUAL · 12 ações"})
+	_conferir(painel._linha_da_faixa.visible and painel._icone_da_faixa.modo == "manual" and painel._icone_da_faixa.tooltip_text != "", "o controle manual é um modo do painel, com o ícone da mão na faixa")
+	painel.mostrar({"titulo": "Testando", "nivel": "jev", "sub": "", "acao": "", "decisoes": [], "minimizado": false})
 	var linha_dos_comandos: Array = painel.find_children("Minimizar", "Button", true, false) + painel.find_children("Parar", "Button", true, false)
 	_conferir(linha_dos_comandos.size() == 2 and is_equal_approx((linha_dos_comandos[0] as Button).global_position.y, (linha_dos_comandos[1] as Button).global_position.y), "os comandos ficam em linha")
 	# Os comandos empilhados (#234) somam uma linha ao painel de antes (~460 px).

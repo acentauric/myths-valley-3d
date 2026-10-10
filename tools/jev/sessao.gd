@@ -513,8 +513,13 @@ func _atualizar_painel() -> void:
 		gasto = ""
 	var espera := aguardando or d.is_empty()
 	var nivel_atual := str(d.get("nivel", "")) if robo else ""
+	# O CONTROLE MANUAL É UM MODO DO PAINEL (10/10/2026), como o determinístico, o Jev e o GPT: o
+	# painel minimizado no lugar de sempre, à direita, com o ícone da mão e "CONTROLE MANUAL", em
+	# vez da faixa vermelha no alto da tela.
+	if manual:
+		nivel_atual = "manual"
 	# O modo vai no ícone à esquerda da faixa, e não escrito: sobra espaço para o contador.
-	var faixa: Array = [_texto("testando")]
+	var faixa: Array = [_texto("manual_titulo") if manual else _texto("testando")]
 	faixa.append(_texto("n_acoes") % chamadas)
 	if int(progresso.get("total", 0)) > 0:
 		faixa.append(PainelSessao.TestadorApoios.numero(float(progresso.get("percentual", 0.0)), 1) + "%")
@@ -529,17 +534,17 @@ func _atualizar_painel() -> void:
 		"objetivo": _objetivo_atual(), "progresso": progresso, "ritmo": progresso.get("pace", {}),
 		"sinais": d.get("sinais", []), "bloqueado": ultima_acao == "blocked_step",
 		"decisoes": decisoes_recentes, "gasto": gasto,
-		"minimizado": minimizado, "faixa": " · ".join(faixa),
+		"minimizado": minimizado or manual, "faixa": " · ".join(faixa),
 		"minimizar_botao": _texto("cmd_maximizar" if minimizado else "cmd_minimizar"),
 		# Sempre o rótulo curto: os três comandos ficam lado a lado.
 		"manual_botao": _texto(("cmd_devolver" if manual else "cmd_assumir") + "_curto")})
 	if faixa_manual != null:
-		faixa_manual.visible = manual
-		faixa_manual.get_node("Aviso").text = _texto("manual_faixa")
+		faixa_manual.visible = false
 	# Telas grandes, diálogos e cutscenes precisam de toda a área; F8 permanece ativo.
 	if _no_vale() and bool(current_scene.get("carga_ok")):
-		painel_observador.visible = current_scene.get("telas").aberta().is_empty() and not root.get_node("Dialogo").ativo \
-			and not _em_cutscene()
+		# No controle manual o painel (a faixa) fica à vista mesmo com telas e falas abertas.
+		painel_observador.visible = (manual and not _em_cutscene()) or current_scene.get("telas").aberta().is_empty() and not root.get_node("Dialogo").ativo \
+			and not _em_cutscene() and not (modal_bloqueio != null and modal_bloqueio.aberto())
 	# Sem cobrir a barra de mão, o minimapa, a coluna de atalhos nem o resto do HUD: a cada meio
 	# segundo, no lugar livre (o preferido é à esquerda da coluna, #234).
 	if Time.get_ticks_msec() >= reposicionar_em:
@@ -1850,6 +1855,10 @@ func _tratar_bloqueio(bloqueio: Dictionary) -> void:
 		elif not aberto:
 			modal_bloqueio.abrir(bloqueio)
 			aberto = true
+		# O MODAL DO BLOQUEIO SOZINHO NA TELA (10/10/2026): o painel TESTANDO, a ficha da árvore e o
+		# aviso da primeira vez (Almanaque) se escondem enquanto ele pergunta, e voltam depois.
+		if aberto:
+			_esconder_o_que_cobre_o_bloqueio(true)
 		else:
 			modal_bloqueio.esconder_por_um_instante(false)
 			modal_bloqueio.avancar(delta)
@@ -1858,6 +1867,7 @@ func _tratar_bloqueio(bloqueio: Dictionary) -> void:
 		await process_frame
 	if modal_bloqueio.aberto():
 		modal_bloqueio.escolher("stop")
+	_esconder_o_que_cobre_o_bloqueio(false)
 	modal_bloqueio.escolhido.disconnect(ouvir)
 	var final: String = escolha[0] if escolha[0] != "" else "stop"
 	escolha_do_bloqueio = final
@@ -1865,6 +1875,33 @@ func _tratar_bloqueio(bloqueio: Dictionary) -> void:
 	if final == "takeover" and not manual:
 		_abrir_manual()
 	_atualizar_painel()
+
+
+## O que cobriria o modal do bloqueio: o painel do testador, a ficha do HUD (árvore, casa, lápide)
+## e o aviso da primeira vez. Escondidos com o modal aberto; ao fechar, voltam os que estavam.
+var _escondidos_pelo_bloqueio: Array = []
+
+
+func _esconder_o_que_cobre_o_bloqueio(esconder: bool) -> void:
+	if not esconder:
+		for no in _escondidos_pelo_bloqueio:
+			if is_instance_valid(no):
+				no.visible = true
+		_escondidos_pelo_bloqueio.clear()
+		return
+	var alvos: Array = [painel_observador]
+	var hud = current_scene.get("hud") if _no_vale() else null
+	if hud != null and hud.get("_house_info_panel") != null:
+		alvos.append(hud.get("_house_info_panel"))
+	for no in root.find_children("*", "CanvasLayer", true, false):
+		var roteiro: Script = (no as Node).get_script()
+		if roteiro != null and roteiro.resource_path.ends_with("aviso_da_primeira_vez.gd"):
+			alvos.append(no)
+	for no in alvos:
+		if is_instance_valid(no) and no.visible:
+			no.visible = false
+			if not _escondidos_pelo_bloqueio.has(no):
+				_escondidos_pelo_bloqueio.append(no)
 
 
 # --- o menu e o idioma (#175, #180) -----------------------------------------------
