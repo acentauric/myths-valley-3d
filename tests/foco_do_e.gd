@@ -151,15 +151,14 @@ func _run() -> void:
 	_conferir(_dica_acesa(moradores) and _dicas_acesas() == 1,
 		"virado para o Tonho, a dica dele não é a única acesa (%d acesas)" % _dicas_acesas())
 	# A DICA DIZ O QUE O E FAZ (#188): "Conversar", sem repetir o nome que a placa já diz; só a
-	# entrega nomeia a quem ("Entregar a Tonho", #97). Os moldes têm tradução em en/es e a
-	# placa de nome do Tonho fica à vista, em vez de ser dispensada por uma dica que não o nomeia.
+	# entrega nomeia a quem ("Entregar a Tonho", #97). Os moldes têm tradução em en/es.
 	var acao: String = (moradores._dica.find_child("Acao", true, false) as Label).text
 	var nome_do_tonho := str((tonho.dados as Dictionary).get("nome", "Tonho"))
 	_conferir(acao == TranslationServer.translate("Conversar") or (acao.begins_with(TranslationServer.translate("Entregar")) and acao.contains(nome_do_tonho)),
 		"virado para o Tonho, a dica do E não diz 'Conversar' nem entrega a ele: '%s'" % acao)
-	if acao == TranslationServer.translate("Conversar"):
-		_conferir(moradores._dica.get_meta("nome_identificado", null) == null,
-			"a dica 'Conversar' não diz o nome do Tonho, mas dispensou a placa de nome dele")
+	# Com a dica do E sobre o Tonho, a placa de nome dele sai (10/10/2026): dois balões na cabeça não.
+	_conferir(moradores._dica.get_meta("nome_identificado", null) == tonho,
+		"com a dica do E sobre o Tonho, a placa de nome dele devia sair")
 	var idioma = load("res://scripts/prototipo_3d/idioma_menu.gd")
 	for molde in ["Conversar", "Entregar a %s"]:
 		_conferir(idioma.EN.has(molde) and idioma.ES.has(molde), "a dica do E sem tradução: %s" % molde)

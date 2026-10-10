@@ -143,9 +143,10 @@ func _process(_delta: float) -> void:
 		return
 	var camera := get_viewport().get_camera_3d()
 	var altura := float(_perto.get("altura")) if _perto.get("altura") != null else 1.75
-	# Só a dica que diz o nome (a entrega) dispensa a placa de nome do morador.
+	# A DICA DO E DISPENSA A PLACA DE NOME (10/10/2026): "E Conversar" e "Pedro" eram dois
+	# balões em cima da mesma cabeça. Com a dica acesa sobre o morador, a placa dele sai.
 	var rotulo := _rotulo(_perto)
-	_dica.set_meta("nome_identificado", _perto if _nome_de(_perto) != "" and rotulo.contains("%s") else null)
+	_dica.set_meta("nome_identificado", _perto)
 	DicaTecla.mostrar_em(_dica, camera, _perto.global_position + Vector3.UP * (altura + ACIMA_DA_CABECA), _dica_de(_perto, rotulo))
 
 
