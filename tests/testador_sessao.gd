@@ -141,7 +141,7 @@ func _painel() -> void:
 		if (no as Label).visible:
 			textos_do_painel.append((no as Label).text)
 	var tudo := "\n".join(textos_do_painel)
-	_conferir(tudo.contains("Jev · plano 2 de 3"), "o painel diz quem decidiu e em que plano")
+	_conferir(painel._icone_modo.tooltip_text.contains("Jev · plano 2 de 3"), "o painel diz quem decidiu e em que plano (na dica do ícone)")
 	_conferir(tudo.contains("Aproximar de Tonho") and not tudo.contains("approach_MoradorTonho"), "a ação aparece em palavras, não pelo nome técnico")
 	_conferir(tudo.contains("Plano do Jev (2/3): contornar o Pedro"), "o motivo aparece")
 	_conferir(tudo.contains("Missão: Falar com o Tonho · 1/3"), "a missão e o contador aparecem")
@@ -169,7 +169,14 @@ func _painel() -> void:
 		if (no as Label).text == "F8":
 			teclas.append("F8")
 	_conferir(teclas.size() == 1, "a tecla F8 vem numa plaqueta ao lado do Parar")
-	_conferir(is_equal_approx(painel.size.x, PainelSessao.LARGURA) and painel.size.y > inicial.y, "o painel cresce com o conteúdo")
+	_conferir(painel.size.is_equal_approx(inicial), "o painel tem tamanho fixo, com ou sem conteúdo (%s -> %s)" % [inicial, painel.size])
+	_conferir(is_equal_approx(painel.size.x, PainelSessao.LARGURA), "a largura não cresce com a etiqueta do nível")
+	var icone_modo = painel._icone_modo
+	_conferir(icone_modo != null and icone_modo.visible and icone_modo.modo == "jev" and icone_modo.tooltip_text != "" and not painel._nivel.visible, "o modo é um ícone com o nome na dica")
+	painel.mostrar({"titulo": "Testando", "nivel": "deterministic", "modo": "local", "sub": "", "acao": "", "decisoes": []})
+	_conferir(icone_modo.modo == "local", "o determinístico em recuperação tem ícone próprio")
+	var linha_dos_comandos: Array = painel.find_children("Minimizar", "Button", true, false) + painel.find_children("Parar", "Button", true, false)
+	_conferir(linha_dos_comandos.size() == 2 and is_equal_approx((linha_dos_comandos[0] as Button).global_position.y, (linha_dos_comandos[1] as Button).global_position.y), "os comandos ficam em linha")
 	# Os comandos empilhados (#234) somam uma linha ao painel de antes (~460 px).
 	_conferir(painel.size.y <= 500.0, "o painel não passa de ~500 px (%.0f)" % painel.size.y)
 	var moldura := painel.get_theme_stylebox("panel") as StyleBoxFlat
@@ -212,7 +219,7 @@ func _painel() -> void:
 	painel.mostrar({"titulo": "Testando", "nivel": "", "sub": "0 ações", "acao": _t("aguardando_robot"), "decisoes": []})
 	await process_frame
 	await process_frame
-	_conferir(painel.size.y < alto and is_equal_approx(painel.size.y, painel.get_combined_minimum_size().y), "o painel encolhe quando o conteúdo diminui (%.0f -> %.0f)" % [alto, painel.size.y])
+	_conferir(is_equal_approx(painel.size.y, alto), "o painel não muda de altura quando o conteúdo diminui (%.0f -> %.0f)" % [alto, painel.size.y])
 	painel.posicionar([mao, minimapa])
 	_conferir(is_equal_approx(painel.size.y, painel.get_combined_minimum_size().y), "posicionar mantém a altura no mínimo do conteúdo")
 	painel.queue_free()
@@ -293,6 +300,22 @@ func _modal() -> void:
 	for _i in 5:
 		await process_frame
 	_conferir(fechou_menu[0] and not FileAccess.file_exists(abertura.TESTADOR_PRONTO), "o menu se fecha quando o vale da sessão abriu")
+	# Com um processo filho de verdade (o python que dorme), como o INICIAR abre a ponte.
+	fechou_menu[0] = false
+	var filho := OS.create_process("python", PackedStringArray(["-c", "import time; time.sleep(20)"]))
+	abertura._testador_pid = filho
+	abertura._testador_desde_ms = maxi(1, Time.get_ticks_msec())
+	for _i in 10:
+		await process_frame
+	_conferir(abertura._testador_pid == filho, "o processo filho vivo segue vigiado (%d)" % abertura._testador_pid)
+	aviso = FileAccess.open(abertura.TESTADOR_PRONTO, FileAccess.WRITE)
+	aviso.store_string("ok")
+	aviso.close()
+	for _i in 5:
+		await process_frame
+	_conferir(fechou_menu[0], "com o processo filho vivo, o aviso de pronto fecha o menu")
+	if filho > 0:
+		OS.kill(filho)
 	# Mesmo que o processo da ponte pareça ter saído, o aviso de pronto ainda fecha o menu.
 	fechou_menu[0] = false
 	abertura._testador_pid = 999999

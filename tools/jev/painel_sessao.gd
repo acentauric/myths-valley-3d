@@ -20,6 +20,11 @@ const FOLGA := 8.0                   # respiro mínimo entre o painel e o que el
 const TOPO := 70.0                   # abaixo do relógio e dos botões do alto
 const LARGURA_UTIL := LARGURA - 28.0   # a largura menos as duas margens de 14 do filete
 const MAX_DECISOES := 4
+## O PAINEL TEM TAMANHO FIXO (10/10/2026): crescia para a esquerda com a etiqueta do nível
+## ("DETERMINÍSTICO · RECUPERAÇÃO LOCAL") e subia e descia com as linhas que apareciam e
+## sumiam. Agora cada linha guarda sempre o seu número de linhas (vazia, guarda o espaço), a
+## etiqueta corta com reticências e as decisões são sempre quatro vagas.
+const LINHAS := {"sub": 1, "acao": 1, "motivo": 2, "objetivo": 1, "capitulo": 1, "agora": 2, "ritmo": 1, "travado": 1, "gasto": 1}
 const NOTA := Color("c9b98f")
 const ALERTA := Identidade.TERRACOTA
 const CORES := {
@@ -27,6 +32,40 @@ const CORES := {
 	"jev": Identidade.OURO,
 	"gpt": Color("8fb4e8"),
 }
+
+## O MODO DO TESTADOR EM ÍCONE (10/10/2026), no lugar da etiqueta escrita: o nome inteiro fica
+## na dica. "deterministic" é o robô; "local", o robô com a seta de recuperar; "jev", dois nós
+## ligados (o raciocínio do Jev); "gpt", a estrela de quatro pontas. Desenha na grade de 24.
+class IconeModo extends Control:
+	var modo := "deterministic"
+	var cor := Color.WHITE
+
+	func _init() -> void:
+		custom_minimum_size = Vector2(22.0, 22.0)
+		mouse_filter = Control.MOUSE_FILTER_STOP
+
+	func _draw() -> void:
+		draw_set_transform(Vector2.ZERO, 0.0, size / 24.0)
+		match modo:
+			"deterministic", "local":
+				draw_rect(Rect2(5, 7, 14, 11), cor, false, 1.7, true)
+				draw_line(Vector2(12, 7), Vector2(12, 4), cor, 1.5, true)
+				draw_circle(Vector2(12, 3.5), 1.3, cor)
+				draw_circle(Vector2(9.2, 12), 1.5, cor)
+				draw_circle(Vector2(14.8, 12), 1.5, cor)
+				draw_line(Vector2(9.5, 15.5), Vector2(14.5, 15.5), cor, 1.3, true)
+				if modo == "local":
+					draw_arc(Vector2(18.5, 18.5), 4.0, deg_to_rad(-200), deg_to_rad(60), 10, Identidade.OURO, 1.6, true)
+					draw_colored_polygon(PackedVector2Array([Vector2(20.5, 21.6), Vector2(23.5, 20.0), Vector2(20.6, 18.0)]), Identidade.OURO)
+			"jev":
+				draw_line(Vector2(7, 8), Vector2(17, 16), cor, 1.6, true)
+				draw_line(Vector2(7, 8), Vector2(17, 6), cor, 1.6, true)
+				draw_line(Vector2(17, 6), Vector2(17, 16), cor, 1.6, true)
+				for c in [Vector2(7, 8), Vector2(17, 6), Vector2(17, 16)]:
+					draw_circle(c, 3.0, cor)
+			"gpt":
+				draw_colored_polygon(PackedVector2Array([Vector2(12, 2), Vector2(14, 10), Vector2(22, 12), Vector2(14, 14), Vector2(12, 22), Vector2(10, 14), Vector2(2, 12), Vector2(10, 10)]), cor)
+
 
 ## A barra de progresso com um marco por capítulo: o trecho do capítulo atual fica em ouro
 ## cheio, os concluídos em ouro suave e os que faltam só como divisão.
@@ -57,6 +96,7 @@ var _t: Callable                  # chave -> frase no idioma da sessão
 var _titulo: Label
 var _pilula: PanelContainer
 var _nivel: Label
+var _icone_modo: IconeModo
 var _sub: Label
 var _acao: Label
 var _motivo: Label
@@ -91,6 +131,8 @@ func montar(t: Callable) -> void:
 	_faixa = Label.new()
 	_faixa.name = "Faixa"
 	_faixa.autowrap_mode = TextServer.AUTOWRAP_OFF
+	_faixa.clip_text = true
+	_faixa.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	_faixa.uppercase = true
 	_faixa.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TITULO, 600, 1))
 	_faixa.add_theme_font_size_override("font_size", 13)
@@ -110,10 +152,17 @@ func montar(t: Callable) -> void:
 	_titulo.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_pilula = PanelContainer.new()
 	_pilula.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	_pilula.add_theme_stylebox_override("panel", _estilo_da_pilula(Color.WHITE))
 	cabeca.add_child(_pilula)
 	_nivel = _rotulo(_pilula, 11, Color.WHITE, Identidade.fonte(Identidade.FONTE_TITULO, 700, 1))
 	_nivel.autowrap_mode = TextServer.AUTOWRAP_OFF
 	_nivel.uppercase = true
+	_nivel.clip_text = true
+	_nivel.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	# O nome do modo fica na dica do ícone; o rótulo só guarda o texto (o portão o lê).
+	_nivel.visible = false
+	_icone_modo = IconeModo.new()
+	_pilula.add_child(_icone_modo)
 	_sub = _rotulo(_corpo, 15, NOTA, Identidade.fonte(Identidade.FONTE_ITALICO, 500))
 	_corpo.add_child(Identidade.divisor())
 	_acao = _rotulo(_corpo, 19, Identidade.CREME, Identidade.fonte(Identidade.FONTE_TEXTO, 700))
@@ -131,6 +180,16 @@ func montar(t: Callable) -> void:
 	_decisoes.add_theme_constant_override("separation", 0)
 	_corpo.add_child(_decisoes)
 	_gasto = _rotulo(_corpo, 14, NOTA)
+	for chave in LINHAS:
+		_fixar(get("_" + chave) as Label, int(LINHAS[chave]))
+	for _i in MAX_DECISOES:
+		var vaga := Label.new()
+		vaga.add_theme_font_size_override("font_size", 14)
+		vaga.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TEXTO, 600))
+		vaga.clip_text = true
+		vaga.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+		vaga.custom_minimum_size = Vector2(LARGURA_UTIL, ceilf(vaga.get_line_height()))
+		_decisoes.add_child(vaga)
 	# OS COMANDOS NO MESMO PADRÃO (#234): plaqueta da tecla e rótulo curto, do mesmo tamanho.
 	# Maximizado ficam empilhados (F6, F7, F8); minimizado, lado a lado embaixo da faixa.
 	_comandos_em_pe = VBoxContainer.new()
@@ -203,9 +262,10 @@ func _rotular(botao: Button, texto: String) -> void:
 func _arrumar_modo() -> void:
 	_faixa.visible = minimizado
 	_corpo.visible = not minimizado
-	var destino: BoxContainer = _comandos_deitados if minimizado else _comandos_em_pe
-	_comandos_deitados.visible = minimizado
-	_comandos_em_pe.visible = not minimizado
+	# Os comandos ficam sempre lado a lado, com o rótulo curto (MINIMIZAR, ASSUMIR, PARAR).
+	var destino: BoxContainer = _comandos_deitados
+	_comandos_deitados.visible = true
+	_comandos_em_pe.visible = false
 	for botao in [_minimizar, _manual, _parar]:
 		if botao.get_parent() != destino:
 			botao.get_parent().remove_child(botao)
@@ -265,6 +325,16 @@ static func _plaqueta_da_tecla(letra: String) -> PanelContainer:
 	return tecla
 
 
+## A linha guarda sempre `linhas` linhas de altura, e o que passa disso corta com reticências.
+func _fixar(rotulo: Label, linhas: int) -> void:
+	rotulo.max_lines_visible = linhas
+	rotulo.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	rotulo.clip_text = true
+	if linhas == 1:
+		rotulo.autowrap_mode = TextServer.AUTOWRAP_OFF
+	rotulo.custom_minimum_size.y = ceilf(rotulo.get_line_height() * linhas + rotulo.get_theme_constant("line_spacing") * (linhas - 1))
+
+
 func _rotulo(pai: Control, tamanho: int, cor := Color.WHITE, fonte: Font = null) -> Label:
 	var r := Label.new()
 	r.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -284,7 +354,8 @@ func _rotulo(pai: Control, tamanho: int, cor := Color.WHITE, fonte: Font = null)
 func mostrar(d: Dictionary) -> void:
 	_titulo.text = str(d.get("titulo", ""))
 	var nivel := str(d.get("nivel", ""))
-	_pilula.visible = nivel != ""
+	# A pílula fica sempre no lugar (sem nível, transparente): a altura do painel não muda.
+	_pilula.modulate.a = 1.0 if nivel != "" else 0.0
 	if nivel != "":
 		var etiqueta: String = _t.call("nivel_" + nivel)
 		var modo := str(d.get("modo", "normal"))
@@ -293,6 +364,10 @@ func mostrar(d: Dictionary) -> void:
 		elif modo == "plan" and d.get("plano") is Array:
 			etiqueta += " · " + str(_t.call("modo_plan")) % [int(d["plano"][0]), int(d["plano"][1])]
 		_nivel.text = etiqueta
+		_icone_modo.modo = "local" if nivel == "deterministic" and modo == "local" else nivel
+		_icone_modo.cor = CORES.get(nivel, Color.WHITE)
+		_icone_modo.tooltip_text = etiqueta
+		_icone_modo.queue_redraw()
 		var cor: Color = CORES.get(nivel, Color.WHITE)
 		_nivel.add_theme_color_override("font_color", cor)
 		_pilula.add_theme_stylebox_override("panel", _estilo_da_pilula(cor))
@@ -300,16 +375,15 @@ func mostrar(d: Dictionary) -> void:
 	_acao.text = str(d.get("acao", ""))
 	_acao.tooltip_text = str(d.get("acao_tecnica", ""))
 	_motivo.text = str(d.get("motivo", ""))
-	_motivo.visible = _motivo.text != ""
 	var objetivo: Dictionary = d.get("objetivo", {})
 	_objetivo.text = str(_t.call("objetivo")) % [str(objetivo.get("titulo", "")), int(objetivo.get("feito", 0)), int(objetivo.get("total", 0))] \
 		if not objetivo.is_empty() else str(_t.call("sem_objetivo"))
 	var p: Dictionary = d.get("progresso", {})
 	var com_progresso := not p.is_empty() and int(p.get("total", 0)) > 0
-	_barra.visible = com_progresso
-	_capitulo.visible = com_progresso
-	_agora.visible = com_progresso and str(p.get("proximo_objetivo", "")) != ""
-	_ritmo.visible = com_progresso
+	_barra.modulate.a = 1.0 if com_progresso else 0.0
+	_capitulo.text = ""
+	_agora.text = ""
+	_ritmo.text = ""
 	if com_progresso:
 		_barra.valor = float(p["percentual"]) / 100.0
 		var marcos: Array = []
@@ -321,14 +395,14 @@ func mostrar(d: Dictionary) -> void:
 		_barra.queue_redraw()
 		_capitulo.text = "%s  ·  %s" % [str(_t.call("capitulo")) % [str(p.get("capitulo", "")), int(p.get("capitulo_feitos", 0)), int(p.get("capitulo_total", 0))],
 			str(_t.call("progresso_pct")) % TestadorApoios.numero(float(p["percentual"]), 1)]
-		_agora.text = str(_t.call("agora")) % str(p.get("proximo_objetivo", ""))
+		_agora.text = str(_t.call("agora")) % str(p.get("proximo_objetivo", "")) if str(p.get("proximo_objetivo", "")) != "" else ""
 		var ritmo: Dictionary = d.get("ritmo", {})
 		if ritmo.get("acoes_restantes") == null:
 			_ritmo.text = str(_t.call("ritmo_depois"))
 		else:
 			_ritmo.text = str(_t.call("ritmo")) % [int(ritmo["acoes_restantes"]), duracao(int(ritmo["segundos_restantes"]))]
 	var sinais: Array = d.get("sinais", [])
-	_travado.visible = not sinais.is_empty() or bool(d.get("bloqueado", false))
+	_travado.text = ""
 	if bool(d.get("bloqueado", false)):
 		_travado.text = _t.call("bloqueado")
 	elif not sinais.is_empty():
@@ -338,7 +412,6 @@ func mostrar(d: Dictionary) -> void:
 		_travado.text = str(_t.call("travado")) % ", ".join(palavras)
 	_listar(d.get("decisoes", []))
 	_gasto.text = str(d.get("gasto", ""))
-	_gasto.visible = _gasto.text != ""
 	minimizado = bool(d.get("minimizado", false))
 	_faixa.text = str(d.get("faixa", ""))
 	_arrumar_modo()
@@ -346,30 +419,16 @@ func mostrar(d: Dictionary) -> void:
 	_rotular(_parar, str(_t.call("parar_curto")))
 	_rotular(_manual, str(d.get("manual_botao", "")))
 	_manual.visible = str(d.get("manual_botao", "")) != ""
-	# Um Control solto cresce com o conteúdo mas não encolhe sozinho: sem isto a altura mais alta
-	# que o painel já teve ficaria como faixa vazia embaixo quando motivo, trava ou progresso somem.
 	reset_size()
 
 
 func _listar(todos: Array) -> void:
 	var itens := todos.slice(maxi(0, todos.size() - MAX_DECISOES))
-	_decisoes.visible = not itens.is_empty()
-	var existentes := _decisoes.get_children()
-	for i in range(maxi(itens.size(), existentes.size())):
-		if i >= itens.size():
-			existentes[i].queue_free()
-			continue
-		var r: Label
-		if i < existentes.size():
-			r = existentes[i]
-		else:
-			r = Label.new()
-			r.add_theme_font_size_override("font_size", 14)
-			r.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TEXTO, 600))
-			r.clip_text = true
-			_decisoes.add_child(r)
-		r.text = "● " + str(itens[i]["texto"])
-		r.add_theme_color_override("font_color", CORES.get(str(itens[i]["nivel"]), NOTA))
+	var vagas := _decisoes.get_children()
+	for i in vagas.size():
+		var r := vagas[i] as Label
+		r.text = "● " + str(itens[i]["texto"]) if i < itens.size() else ""
+		r.add_theme_color_override("font_color", CORES.get(str(itens[i]["nivel"]), NOTA) if i < itens.size() else NOTA)
 
 
 static func duracao(segundos: int) -> String:

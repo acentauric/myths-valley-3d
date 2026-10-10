@@ -2128,7 +2128,10 @@ const VIGIA_DO_TESTADOR_MS := 600000
 func _vigiar_testador() -> void:
 	if _testador_pid <= 0 and _testador_desde_ms <= 0:
 		return
-	if FileAccess.file_exists(TESTADOR_PRONTO):
+	# A INSTÂNCIA DE ORIGEM FECHA ASSIM QUE A DA SESSÃO ABRE A JANELA (10/10/2026): esperar o
+	# vale da sessão carregar (#175) deixava dois jogos abertos por quase um minuto. O aviso da
+	# janela (`--pronto` da ponte) basta; o do vale carregado fica de reserva.
+	if FileAccess.file_exists(TESTADOR_JANELA) or FileAccess.file_exists(TESTADOR_PRONTO):
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(TESTADOR_PRONTO))
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(TESTADOR_JANELA))
 		_testador_pid = 0

@@ -532,8 +532,8 @@ func _atualizar_painel() -> void:
 		"decisoes": decisoes_recentes, "gasto": gasto,
 		"minimizado": minimizado, "faixa": " · ".join(faixa),
 		"minimizar_botao": _texto("cmd_maximizar" if minimizado else "cmd_minimizar"),
-		# Maximizado, o rótulo inteiro; na faixa, o curto, para os três caberem lado a lado.
-		"manual_botao": _texto(("cmd_devolver" if manual else "cmd_assumir") + ("_curto" if minimizado else ""))})
+		# Sempre o rótulo curto: os três comandos ficam lado a lado.
+		"manual_botao": _texto(("cmd_devolver" if manual else "cmd_assumir") + "_curto")})
 	if faixa_manual != null:
 		faixa_manual.visible = manual
 		faixa_manual.get_node("Aviso").text = _texto("manual_faixa")
