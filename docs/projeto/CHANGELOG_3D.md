@@ -2,6 +2,15 @@
 
 ## Em desenvolvimento — 10/10/2026
 
+- **O golpe ganha lascas do material e um tranco na tela (#16).** Cada golpe que acerta solta uma rajada de
+  cubinhos a um braço do viajante, rumo ao alvo: cinza na pedra, marrom na madeira, verde no capim, claro na
+  ostra, terra na mão; o último golpe solta o dobro. A câmera dá um tranco curto (maior no último) e volta ao
+  zero, sem mexer na posição nem na colisão. Com o "movimento reduzido" ligado, não há sacudida e as lascas
+  são menos. A tabela de sons por ação (machado, picareta, foice, ostra, galho, porta, passo por terreno e o
+  "não pode" da mochila) já estava completa e fica cobrada por `sons_do_jogo`; as reações visuais moram em
+  `ReacoesVisuais` (o nome `Efeitos` do 3D é dos efeitos temporários), cobradas pelo portão `reacoes_visuais`.
+  Falta jogar para ajustar o tamanho das lascas e a força do tranco.
+
 - **Na cena do vale só ficam o balão de fala e as tarjas, a câmera desliza e o E pula.** Com uma cena
   tocando (a apresentação do Tonho, a vista da praça, a casa do tio), o painel de missão, o relógio e as
   barras, os atalhos, o minimapa, a barra de mão, a seta da missão, as plaquinhas, o "?"/"!" sobre as
