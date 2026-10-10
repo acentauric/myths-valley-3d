@@ -134,6 +134,9 @@ var version_link: Button
 var linha_atualizacao: Button
 var caption: Label
 var estado_testador: Label
+## Quem abre a ponte do testador: o `OS.create_process` de verdade; o portão troca por um
+## que só anota os argumentos, para apertar INICIAR sem abrir uma sessão.
+var lancar_testador: Callable = func(programa: String, argumentos: PackedStringArray) -> int: return OS.create_process(programa, argumentos)
 ## O PID do python que sobe o testador, enquanto o menu espera a janela da sessão (#175).
 var _testador_pid := 0
 ## Quanto falta do trecho da travessia na tela (1 → 0), para o jogador saber quando passa.
@@ -2079,8 +2082,15 @@ func _campo_numerico(rotulo: String, minimo: float, maximo: float, passo: float,
 
 ## Dispara a ponte com o que o modal marcou e volta ao menu, que mostra o estado da partida.
 func _iniciar_teste(jev: bool, gpt: bool, orcamento: float, minutos: int, continuar := false) -> void:
-	if _testador_pid > 0:
+	# INICIAR NUNCA FICA MUDO: com uma ponte ainda aberta, avisa na Home; a que já saiu
+	# (o pid ficou para trás) não segura o botão.
+	if _testador_pid > 0 and OS.is_process_running(_testador_pid):
+		_home()
+		estado_testador.text = tr("Abrindo o teste automático. Esta janela se fecha quando a sessão começar; F8 encerra a sessão e volta ao menu.")
+		estado_testador.show()
 		return
+	_testador_pid = 0
+	print("TESTADOR: INICIAR (jev=%s, gpt=%s, continuar=%s)" % [jev, gpt, continuar])
 	var pronto := ProjectSettings.globalize_path(TESTADOR_PRONTO)
 	var janela := ProjectSettings.globalize_path(TESTADOR_JANELA)
 	DirAccess.remove_absolute(pronto)
@@ -2093,7 +2103,7 @@ func _iniciar_teste(jev: bool, gpt: bool, orcamento: float, minutos: int, contin
 	# ao jogo) e a sessão o grava com a carga feita (`sessao.gd`, `_avisar_o_menu_que_o_vale_abriu`).
 	OS.set_environment("MV_JEV_PRONTO_VALE", pronto)
 	argumentos.append_array(PackedStringArray(["--idioma", idioma_atual, "--pronto", janela, "--voltar-ao-menu"]))
-	var pid := OS.create_process("python", argumentos)
+	var pid: int = lancar_testador.call("python", argumentos)
 	_home()
 	if pid <= 0:
 		estado_testador.text = tr("Não foi possível iniciar o testador. Confira a instalação do Python.")

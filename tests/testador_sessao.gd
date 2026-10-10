@@ -265,5 +265,32 @@ func _modal() -> void:
 		for no in abertura.panel.find_children("*", "Control", true, false):
 			var texto := str(no.get("text")) if no.get("text") != null else ""
 			_conferir(not texto.to_lower().contains("sk-") and not texto.contains("API_KEY"), "o modal nunca mostra chave")
+	# INICIAR abre a ponte (aqui, um lançador que só anota) e volta à Home com o aviso.
+	var lancados: Array = []
+	abertura.lancar_testador = func(programa: String, argumentos: PackedStringArray) -> int:
+		lancados.append([programa, argumentos])
+		return 4242
+	# Como quem joga costuma deixar: Jev e GPT ligados, orçamento no teto e "continuar a última sessão".
+	deteccao["apoios"]["gpt"] = {"disponivel": true, "motivo": "ok"}
+	Apoios.guardar_preferencias(true, true, 0.5, 0, true)
+	abertura._modal_testador(deteccao)
+	await process_frame
+	var iniciar := abertura.panel.find_child("IniciarTeste", true, false) as Button
+	iniciar.pressed.emit()
+	await process_frame
+	_conferir(lancados.size() == 1 and str(lancados[0][0]) == "python" and (lancados[0][1] as PackedStringArray)[0].ends_with("tools/jev/jogar.py"), "INICIAR abre a ponte do testador (%s)" % str(lancados))
+	if lancados.size() == 1:
+		var args := lancados[0][1] as PackedStringArray
+		_conferir(args.has("--apoio-jev") and args.has("--apoio-gpt") and args.has("--continuar") and args.has("--budget"), "INICIAR leva Jev, GPT, orçamento e a continuação (%s)" % str(args))
+	_conferir(abertura.panel.find_child("IniciarTeste", true, false) == null and abertura.estado_testador.visible, "INICIAR volta à Home com o aviso do testador")
+	# Um pid velho de uma ponte que já saiu não trava o INICIAR: ele recomeça, sem ficar mudo.
+	abertura._testador_pid = 999999
+	lancados.clear()
+	abertura._modal_testador(deteccao)
+	await process_frame
+	(abertura.panel.find_child("IniciarTeste", true, false) as Button).pressed.emit()
+	await process_frame
+	_conferir(lancados.size() == 1, "com um pid velho, INICIAR abre a ponte de novo")
+	abertura._testador_pid = 0
 	Apoios.guardar_preferencias(antes["jev"], antes["gpt"], antes["orcamento"] if antes["orcamento"] != null else 0.1, antes["duracao_min"], antes["continuar"])
 	abertura.queue_free()
