@@ -2,7 +2,7 @@ extends SceneTree
 ## REDIRECIONAR OS CLIPES DO MIXAMO PARA OS ESQUELETOS TRIPO (#190).
 ##
 ##     Godot_v4.7.2-stable_win64_console.exe --headless --path . \
-##         --script res://tools/prototipo_3d/mixamo/redirecionar.gd -- --fbx=D:/mixamo_fbx [--so=pedro] [--medir] [--inventario]
+##         --script res://tools/prototipo_3d/mixamo/redirecionar.gd -- --fbx=C:/VIRTUALENVS/myths-valley/mixamo_fbx [--so=pedro] [--medir] [--inventario]
 ##
 ## O QUE ENTRA: os FBX do Mixamo (sem pele, 30 quadros por segundo) numa pasta FORA
 ## do projeto (`--fbx`). Eles não vêm para o repositório: o repositório é público,
