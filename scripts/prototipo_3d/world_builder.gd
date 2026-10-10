@@ -1592,6 +1592,12 @@ func _arvore(especie: String, origin: Vector3, size: float = 1.0, yaw: float = 0
 	if estilo_tripo():
 		var node := CatalogoAssets.instanciar(especie, self, placed_origin - Vector3(0.0, _region.ARVORE_AFUNDADA, 0.0), size, yaw)
 		if node != null:
+			# O pé do tronco, e não o ponto de plantio, apoia a árvore na encosta (#141).
+			var apoio := _apoio_pelo_pe(especie, node, size, placed_origin.y)
+			if apoio != 0.0:
+				node.position.y += apoio
+				placed_origin.y += apoio
+				_arvores_nomeadas[registro]["pos"] = placed_origin
 			CatalogoAssets.colisao(especie, node, self, placed_origin, size, yaw)
 			_arvores_nomeadas[registro]["visual"] = node
 			var corpo := get_child(get_child_count() - 1) as StaticBody3D
@@ -1619,6 +1625,19 @@ func _arvore(especie: String, origin: Vector3, size: float = 1.0, yaw: float = 0
 	_arvores_nomeadas[registro]["colisao"] = corpo
 	if especie == "coqueiro":
 		_alinhar_colisao_coqueiro(instance, corpo)
+
+
+## O APOIO PELO PÉ DO TRONCO da árvore nomeada (#141): quanto ela sobe (+) ou desce (−) para o pé do
+## tronco, medido no modelo (`CatalogoAssets.tronco`), e não o ponto de plantio, ficar no chão. O
+## coqueiro, inclinado, mede o pé pela própria regra (`_alinhar_colisao_coqueiro`) e fica de fora.
+func _apoio_pelo_pe(especie: String, node: Node3D, size: float, ground: float) -> float:
+	if especie == "coqueiro" or _region == null:
+		return 0.0
+	var medido := CatalogoAssets.tronco(especie, size)
+	if medido.is_empty():
+		return 0.0
+	var pe: Vector3 = node.transform * (medido["centro"] as Vector3)
+	return clampf(ground_height_at(pe) - ground, -_region.APOIO_PELO_PE_MAXIMO, _region.APOIO_PELO_PE_MAXIMO)
 
 
 func _alinhar_colisao_coqueiro(visual: Node3D, corpo: StaticBody3D) -> void:

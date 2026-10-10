@@ -45,3 +45,30 @@ Portão: `testar.ps1 -Teste apresentacao_do_povoado`. Cobra os limites,
 os quatro essenciais, rig e colisão suspensos, missões preservadas,
 introdução por tempo e progresso, fade terminado e tempo salvo.
 Liberar todos os atores reprova as três perguntas de orçamento.
+
+## A introdução da chegada (reaberta em 09/10/2026)
+
+No passo 4/16, perto da Dona Candinha (09:33 a 10:09), o autor ainda via três cabras e o bode soltos
+no terreiro, entre os moradores, com 19 FPS (numa segunda captura, 9). O orçamento de 07/10 deixava
+entrar três quadrúpedes desde o primeiro segundo e mais dois a cada 45 s, e os soltava todos de uma vez
+ao fim da entrada na casa. Agora:
+
+- **Na introdução** (Pedro até o passo 6, antes de entrar com o viajante na casa do tio) os bichos de
+  casa (cabras, bode, porcos, cães, gatos) e os bandos de aves (galinhas) só entram em cena a
+  `INTRODUCAO_LONGE` (40 u) ou mais do jogador e da câmera, nos quintais mais longe do caminho; no máximo
+  um quadrúpede e um bando ao mesmo tempo, e o tempo não os amplia. Quem já está em cena não sai por isso.
+- **Depois da introdução** entram aos poucos: dois quadrúpedes e um bando no primeiro instante, mais um
+  quadrúpede a cada 12 s e um bando a cada 20 s (`ENTRADA_DOS_BICHOS`, `ENTRADA_DOS_BANDOS`), em vez de o
+  elenco inteiro de uma vez. Um save aberto depois da introdução não repete a entrada gradual.
+- **Fora de cena** não andam, não animam e não colidem (a suspensão de sempre, `_definir`); as cadeias de
+  missão continuam disponíveis. Os moradores seguem a regra de 07/10 (os quatro essenciais, mais dois, e dois
+  a cada 45 s).
+
+O portão `apresentacao_do_povoado` cobra: na introdução, no máximo um quadrúpede e um bando em cena,
+nenhum a menos de 40 u de quem chega, e o tempo (90 s) sem ampliar; terminada a introdução, no máximo dois
+quadrúpedes ao acabar, crescimento com o tempo, entrada com transparência e opaca depois do fade.
+
+**Medição pendente.** Ainda falta medir o FPS antes e depois, na mesma cena (perto da Candinha, 09 h) e
+com a GPU em P-state alto (`nvidia-smi`; ver o relatório de desempenho): o portão aceita `-- --medir` (e
+`--sem-orcamento` para o antes), nas condições da tabela acima, e salva as vistas em `scratch/populacao/`.
+Os números de 07/10 acima valem para a regra de então.

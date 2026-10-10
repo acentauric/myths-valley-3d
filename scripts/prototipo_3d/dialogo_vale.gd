@@ -137,6 +137,15 @@ func ocupado() -> bool:
 	return ativo or Engine.get_process_frames() <= _fechou_no_quadro + CARENCIA_EM_QUADROS
 
 
+## O retângulo da caixa em coordenadas da tela, ou vazio com ela fechada. A narração tem a
+## prioridade máxima da interface (`PopupsDoMundo.PRIORIDADE_NARRACAO`, #106): quem desenha
+## sobre a caixa (HUD, seta da missão, painel do testador) consulta isto para sair da frente.
+func retangulo_da_caixa() -> Rect2:
+	if not ativo or not is_instance_valid(_painel) or not _painel.is_inside_tree():
+		return Rect2()
+	return _painel.get_global_transform_with_canvas() * Rect2(Vector2.ZERO, _painel.size)
+
+
 ## Mostra as falas em sequência. Se já houver conversa aberta, espera a vez.
 ## `vozes`, quando vem, é a voz de cada linha (ver PASTA_VOZES).
 ##

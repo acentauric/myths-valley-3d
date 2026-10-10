@@ -11,7 +11,7 @@ extends Node
 ##     pés uma vez por modelo, e a reprodução acompanha o deslocamento (até
 ##     `ACELERA_ATE` vezes) para a pata não escorregar.
 ##   - PARADO é o mesmo clipe congelado no quadro de PÉ (o que mais se parece com
-##     o repouso do esqueleto), com a respiração por cima e, de tempos em tempos,
+##     o repouso do esqueleto), com a respiração (o peito erguendo o focinho) por cima e, de tempos em tempos,
 ##     um olhar de lado — cada bicho no seu ritmo.
 ##   - CORRER é o clipe acelerado, o corpo inclinado e, na carreira, o galope: o
 ##     corpo sobe e desce no compasso do clipe.
@@ -23,12 +23,13 @@ extends Node
 ## Sem clipe (a caixa cinza do procedural, ou um GLB que ainda não chegou), o
 ## quadrúpede anda com o balanço do passo — a mesma leitura, sem perna.
 ##
-## A RESPIRAÇÃO NÃO ENTRA NA ALTURA. A altura que o bicho persegue (`_altura`) é
-## guardada à parte da escala que se mostra: antes, a escala do quadro anterior —
-## já com o fôlego dentro — voltava a ser a base da seguinte, e o fôlego se
-## multiplicava a si mesmo (de 3 % a 15 % de esticada, e a 144 quadros por segundo
-## de 25 % a 43 %). O que se mostra é sempre `_altura * (1 + respiro)`, e nada do
-## que se mostra é lido de volta.
+## A RESPIRAÇÃO NÃO ESCALA O CORPO (#109: "o bicho fica esticando e voltando"). Escalar a
+## pose inteira esticava as pernas junto, e antes disso, quando a escala do quadro anterior
+## — já com o fôlego dentro — voltava a ser a base da seguinte, o fôlego se multiplicava a si
+## mesmo (de 3 % a 15 % de esticada, e a 144 quadros por segundo de 25 % a 43 %). Agora o
+## peito sobe girando o corpo rígido (o focinho ergue `RESPIRA`, ~0,7°, e a anca se apoia no
+## chão pela alavanca), e a escala que se mostra é sempre a altura que o bicho persegue
+## (`_altura`, que o espreitar e o bote mexem) e 1 na largura: nada do que se mostra é lido de volta.
 ##
 ## O CLIPE TORTO. Em dois modelos do Tripo (`CLIPE_TORTO`) o clipe de andar vem
 ## de um esqueleto-padrão que não casa com o do GLB: tocado, ele dobra a frente do
@@ -61,8 +62,13 @@ const ACELERA_ATE := 6.0
 const ACELERA_DE := 0.3
 ## Abaixo disto (u/s) o bicho está parado.
 const PARADO_ABAIXO := 0.08
-## Respiração parado: amplitude da escala e o ritmo (rad/s).
-const RESPIRA := 0.014
+## Respiração parado (#109): o peito sobe um fio e desce, e a escala do corpo NÃO muda —
+## escalar a pose inteira alongava as pernas junto ("o bicho fica esticando e voltando").
+## `RESPIRA` é o quanto o focinho sobe (rad, ~0,7°) e `RESPIRA_ALAVANCA` o meio comprimento (u)
+## em que o corpo se apoia, para a anca não afundar no chão enquanto o peito sobe.
+## `RITMO_DA_RESPIRACAO` em rad/s.
+const RESPIRA := 0.012
+const RESPIRA_ALAVANCA := 0.6
 const RITMO_DA_RESPIRACAO := 2.3
 ## Inclinação máxima na corrida (rad), e velocidade relativa ao passeio da
 ## espécie em que começa — independentemente do tamanho da passada do clipe.
@@ -417,11 +423,12 @@ func _process(delta: float) -> void:
 	else:
 		_olhar = move_toward(_olhar, 0.0, delta * 3.0)
 	if not andando:
-		# A respiração: o peito sobe e alarga, devagar — por cima da altura, e sem
-		# voltar a ser a base dela.
-		var respiro := sin(_tempo * RITMO_DA_RESPIRACAO + _fase) * RESPIRA
-		escala_y *= 1.0 + respiro
-		escala_xz = 1.0 + respiro * 0.5
+		# A respiração: o peito sobe um fio e volta, devagar, com o corpo inteiro rígido (só gira
+		# o focinho para cima, de 0 a `RESPIRA`) — sem escala, nada se estica, e o que sobe do
+		# lado da frente a anca não desce: o corpo ergue o que a alavanca afundaria.
+		var respiro := (0.5 + 0.5 * sin(_tempo * RITMO_DA_RESPIRACAO + _fase)) * RESPIRA
+		inclina -= respiro
+		y += respiro * RESPIRA_ALAVANCA
 	if _bote >= 0.0:
 		var forma := _forma_do_bote(_bote)
 		escala_y *= 1.0 - forma.x

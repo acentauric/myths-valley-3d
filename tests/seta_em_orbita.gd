@@ -36,6 +36,23 @@ func _run() -> void:
 	conferir(not Seta._cobre(desviado, coberto), "o chevron ficou sobre o painel do HUD: %s" % str(desviado))
 	conferir(desviado.distance_to(centro) <= raio.x + 1.0, "o chevron fugiu do painel para longe do jogador: %s" % str(desviado))
 	conferir(desviado != nominal, "o painel não tirou o chevron do lugar")
+	# Com a tela inteira coberta não há lugar livre: devolve INF (o chevron se apaga, não vai sobre o painel).
+	var tudo: Array[Rect2] = [Rect2(Vector2.ZERO, tela)]
+	conferir(not Seta.lugar_livre(centro, Vector2(1, 0), raio, tudo, area).is_finite(), "sem lugar livre o chevron devia pedir para apagar")
+	# O retângulo de um painel ampliado pelo componente de Ajustes (pivô + scale) vale o tamanho ampliado.
+	var PopupsDoMundo = load("res://scripts/prototipo_3d/popups_do_mundo.gd")
+	var ampliado := Control.new()
+	root.add_child(ampliado)
+	ampliado.position = Vector2(100, 100)
+	ampliado.size = Vector2(200, 100)
+	ampliado.pivot_offset = Vector2.ZERO
+	ampliado.scale = Vector2(1.5, 1.5)
+	var medido: Rect2 = PopupsDoMundo.retangulo_na_tela(ampliado)
+	conferir(medido.is_equal_approx(Rect2(100, 100, 300, 150)), "o painel ampliado devia medir 300x150, mediu %s" % str(medido))
+	ampliado.add_to_group("obstaculos_do_hud")
+	var vistos: Array[Rect2] = PopupsDoMundo.retangulos(root, "obstaculos_do_hud")
+	conferir(vistos.has(medido), "os painéis do HUD não trazem o retângulo ampliado")
+	ampliado.queue_free()
 	# O raio proporcional à janela e ao tamanho do HUD.
 	var seta_solta = Seta.new()
 	root.add_child(seta_solta)
@@ -94,8 +111,31 @@ func _run() -> void:
 	conferir(depois.distance_to(peito) <= raios.x + 2.0, "o chevron fugiu do painel para longe do jogador: %s" % str(depois))
 	conferir(chevron.visible and chevron.modulate.a > 0.99, "o chevron sumiu em vez de desviar do painel")
 
-	# O alvo volta à vista e perto: o chevron apaga (o cone sobre o alvo basta).
+	# A NARRAÇÃO MANDA (#106): a caixa longa do Dialogo é painel de que o chevron também foge.
 	painel.queue_free()
+	var dialogo := root.get_node_or_null("Dialogo")
+	if dialogo != null:
+		dialogo.transform = Transform2D.IDENTITY
+		dialogo.falar("Pedro", ["Uma fala longa de narração para a caixa abrir."])
+		await process_frame
+		await process_frame
+		var caixa: Rect2 = dialogo.retangulo_da_caixa()
+		conferir(caixa.has_area(), "a caixa da narração aberta devia ter retângulo")
+		# A caixa vai exatamente para onde o chevron estava.
+		var meio: Vector2 = chevron.position + chevron.pivot_offset
+		dialogo._painel.global_position += meio - caixa.get_center()
+		caixa = dialogo.retangulo_da_caixa()
+		conferir(caixa.has_point(meio), "o portão não conseguiu pôr a caixa sob o chevron (caixa %s, chevron %s)" % [str(caixa), str(meio)])
+		for i in 80:
+			seta._atualizar_chevron(0.1)
+		var sob_a_caixa: Vector2 = chevron.position + chevron.pivot_offset
+		conferir(not caixa.intersects(Rect2(sob_a_caixa - Vector2(14, 14), Vector2(28, 28))), "o chevron ficou sobre a caixa da narração: %s em %s" % [str(sob_a_caixa), str(caixa)])
+		conferir(chevron.visible and chevron.modulate.a > 0.99, "o chevron sumiu em vez de desviar da caixa da narração")
+		dialogo.calar()
+		await process_frame
+		await process_frame
+
+	# O alvo volta à vista e perto: o chevron apaga (o cone sobre o alvo basta).
 	seta.definir_alvo(Vector3(2, 0, 0), "")
 	for i in 40:
 		seta._atualizar_chevron(0.1)

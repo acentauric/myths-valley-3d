@@ -15,8 +15,10 @@ limitam a ampliação à janela; os cantos e centros de ancoragem permanecem.
 O HUD calcula o espaço usando a escala de cada medidor. Caso falte largura,
 o relógio e os medidores passam para baixo da missão. A matriz dos balões
 recebe os retângulos reais da missão, minimapa e barra. Avisos de espera
-procuram espaço abaixo do HUD ampliado e cedem diante da fala; o rodapé
-acompanha a altura da barra de mão.
+procuram espaço abaixo do HUD ampliado e cedem diante da fala. O aviso de
+recebimento e resultado mora no canto superior esquerdo, abaixo da missão (e
+das informações da casa), e desce junto com ela; o rodapé acompanha a altura
+da barra de mão.
 
 ## Evidência
 
@@ -91,3 +93,17 @@ janela, transformação comum e fechamento por Esc: verde em 7 s. O mutante
 `folheto` integrado passa em 41 s, incluindo coleta, leitura e troca de tela.
 Três capturas reais a 65%, padrão e máximo útil foram conferidas em
 `scratch/escala-folheto/`. A revisão geral da #140 continua aberta.
+
+### 10/10/2026: aceite da missão e aviso de primeira vez (#140, parcial)
+
+O catálogo passa a 34 componentes: `aceite` (a caixa do E no morador, com Aceitar e Agora não) e
+`aviso` (o cartão do primeiro cordel, da primeira árvore e da água funda). Cada um é vinculado
+ao centro da própria caixa, com limite pela janela, e tem texto e ajuda em pt/en/es em
+`data/interface_tamanhos.json`.
+
+`interfaces_de_cartoes` confere a declaração do componente, a independência entre os dois, o
+cabimento a 150% em 1280×720, 1440×900 e 1920×1080 nos três idiomas e a restauração; `--sem-escala`
+tira a escala do aceite e reprova uma asserção. Ainda sem escala própria: banner de conquista
+(animado por posição/escala) e legenda da narração. A revisão das combinações com texto global
+ampliado continua pendente.
+

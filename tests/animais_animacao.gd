@@ -6,9 +6,11 @@ extends SceneTree
 ##
 ## O que este portão pergunta, e nenhum outro:
 ##
-##   1. NÃO ESTICA PARADO. Parado, a altura do bicho fica em `1 ± 3 × RESPIRA` (±4,2 %) em
-##      600 quadros a 30, 60, 144 e 240 quadros por segundo, de pé e abaixado, quadrúpede
-##      e ave. (A respiração realimentava a própria escala: de +15 % a +43 %.)
+##   1. NÃO ESTICA PARADO. Parado, a escala do bicho não muda nada (a altura fica na que ele
+##      persegue, a largura em 1) em 600 quadros a 30, 60, 144 e 240 quadros por segundo, de pé e
+##      abaixado, quadrúpede e ave: a respiração (#109) só ergue o focinho até `RESPIRA` (0,7°), o
+##      corpo rígido, e a anca apoiada. (Antes ela escalava a pose e realimentava a própria escala:
+##      de +15 % a +43 %, pernas junto.)
 ##   2. NADA SE MEXE COM O JOGO PAUSADO: pose, osso do esqueleto, posição do clipe, e o
 ##      relógio do nado dos peixes (os shaders não usam mais o TIME do motor).
 ##   3. O CLIPE ANDA NO CHÃO: com clipe, ele toca em `velocidade / passada` — o dobro da
@@ -28,6 +30,7 @@ extends SceneTree
 ##      balança copiando a pata de trás, meio ciclo uma da outra, e parado a defasagem some.
 ##   5c. O CORPO ACOMPANHA A RAMPA: o focinho sobe com o chão que sobe (`BichoDeCasa.inclinacao_da_encosta`)
 ##      e a pose segue a inclinação sem salto.
+##   5d. A CRIATURA DA MATA (onça, caititu) acompanha a rampa como o cão; a Matinta, que não pisa o chão, não.
 ##   6. PARADO, ELE CONGELA NO QUADRO DE PÉ, e o bote (armar, pular, assentar) mexe em
 ##      posição e giro, sem esticar o corpo.
 ##   7. A CABRA DE CENA anda com o clipe, no ritmo do chão, e para.
@@ -60,6 +63,8 @@ const SEM_PASSADA := ["bode"]
 var falhas := 0
 var falsificar_clipe := false
 var falsificar_respiro := false
+## A amplitude da respiração de antes de #109, que escalava a pose: o falsificador a refaz.
+const RESPIRA_ANTIGA := 0.014
 var falsificar_pescoco := false
 var Animador
 var CabraDeCena
@@ -233,6 +238,43 @@ func _run() -> void:
 		cao._process(dt)
 	_conferir(absf(cao.pose.rotation.x) < 0.03, "cachorro_caramelo: de volta ao plano o corpo seguiu inclinado (%.2f rad)" % cao.pose.rotation.x)
 
+	# --- 5d. A CRIATURA DA MATA TAMBÉM ACOMPANHA A RAMPA (#149) ---------------------------------------
+	# A onça e o caititu medem o chão debaixo do corpo como o cão: na subida o focinho sobe, e a Matinta
+	# (que não pisa o chão) fica de fora. O chão aqui é uma rampa de 0,4 u por u de frente (+Z).
+	var rampa_gd := GDScript.new()
+	rampa_gd.source_code = "\n".join(["extends RefCounted", "func ground_position(p: Vector3, _extra: float = 0.0) -> Vector3:", "\treturn Vector3(p.x, p.z * 0.4, p.z)", ""])
+	_conferir(rampa_gd.reload() == OK, "o chão de rampa do portão não compilou")
+	var chao_de_rampa = rampa_gd.new()
+	for especie_da_mata in ["onca", "caititu"]:
+		var fera = Criatura.new()
+		fera.especie = especie_da_mata
+		fera.u_por_px = 2.1 / 62.0
+		arena.add_child(fera)
+		fera.set_physics_process(false)
+		fera._world = chao_de_rampa
+		fera.rotation.y = 0.0
+		fera._parar(0.2)
+		var fera_an = fera._animador
+		_conferir(fera_an.inclinacao_do_chao < -0.2, "%s na subida não ergueu o focinho (%.2f rad)" % [especie_da_mata, fera_an.inclinacao_do_chao])
+		fera_an.velocidade = 0.0
+		for i in 90:
+			fera_an._process(dt)
+		_conferir(fera_an.pose.rotation.x < -0.2, "%s na rampa de subida inclinou só %.2f rad" % [especie_da_mata, fera_an.pose.rotation.x])
+		fera.rotation.y = PI
+		fera._encosta_em = 0.0
+		fera._parar(0.2)
+		_conferir(fera_an.inclinacao_do_chao > 0.2, "%s de frente para a descida não baixou o focinho (%.2f rad)" % [especie_da_mata, fera_an.inclinacao_do_chao])
+		fera.queue_free()
+	var matinta = Criatura.new()
+	matinta.especie = "matinta"
+	matinta.u_por_px = 2.1 / 62.0
+	arena.add_child(matinta)
+	matinta.set_physics_process(false)
+	matinta._world = chao_de_rampa
+	matinta._parar(0.2)
+	_conferir(absf(matinta._animador.inclinacao_do_chao) < 0.001, "a Matinta, que não pisa o chão, inclinou com a rampa (%.2f rad)" % matinta._animador.inclinacao_do_chao)
+	matinta.queue_free()
+
 	# --- 6. PARADO CONGELA NO QUADRO DE PÉ; O BOTE NÃO ESTICA --------------------------------------------
 	for chave in ["cachorro_malhado", "onca_pintada", "gato_malhado", "porco"]:
 		var an = animais[chave]["an"]
@@ -356,7 +398,7 @@ func _run() -> void:
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("ANIMAIS_ANIMACAO_OK: parado o bicho respira sem esticar (±4 % a 30, 60, 144 e 240 qps, de pé e abaixado), com o jogo pausado nada se mexe (nem o osso, nem o clipe, nem o nado dos peixes), o clipe toca no ritmo do chão e a pata acompanha o corpo, os 14 clipes são saudáveis (o da onça pintada e o do cão caramelo, recentrados e de pescoço firme, a frente sem empinar), a perna dura da onça preta e do cão malhado balança, as patas da frente do cão alternam, o corpo acompanha a rampa, parado ele congela no quadro de pé, o bote pula sem esticar e a cabra de cena anda com o clipe")
+		print("ANIMAIS_ANIMACAO_OK: parado o bicho respira sem esticar (a escala não muda e só o focinho sobe 0,7° a 30, 60, 144 e 240 qps, de pé e abaixado), com o jogo pausado nada se mexe (nem o osso, nem o clipe, nem o nado dos peixes), o clipe toca no ritmo do chão e a pata acompanha o corpo, os 14 clipes são saudáveis (o da onça pintada e o do cão caramelo, recentrados e de pescoço firme, a frente sem empinar), a perna dura da onça preta e do cão malhado balança, as patas da frente do cão alternam, o corpo acompanha a rampa, parado ele congela no quadro de pé, o bote pula sem esticar e a cabra de cena anda com o clipe")
 	else:
 		print("animais_animacao: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)
@@ -394,8 +436,9 @@ func _montar_ave(onde: Vector3):
 
 # --- as perguntas -------------------------------------------------------------------------------------------
 
-## 600 quadros parado a `fps`: a escala vertical fica em `altura × (1 ± 3 × RESPIRA)`, o
-## olhar de lado não passa do limite e o corpo não sobe nem desce.
+## 600 quadros parado a `fps`: a escala não respira (a vertical fica na altura que o bicho
+## persegue, a horizontal em 1), o focinho só sobe até `RESPIRA`, o olhar de lado não passa
+## do limite e o corpo sobe no máximo a alavanca do focinho.
 func _conferir_banda(an, fps: int, altura: float, rotulo: String) -> void:
 	an.velocidade = 0.0
 	an.altura_alvo = altura
@@ -404,8 +447,12 @@ func _conferir_banda(an, fps: int, altura: float, rotulo: String) -> void:
 	var dt := 1.0 / float(fps)
 	var minimo := INF
 	var maximo := -INF
+	var largura_minima := INF
+	var largura_maxima := -INF
 	var maior_giro := 0.0
 	var maior_altura := 0.0
+	var focinho_sobe := 0.0
+	var focinho_desce := 0.0
 	var feedback := 1.0
 	for i in 600:
 		an._process(dt)
@@ -413,15 +460,23 @@ func _conferir_banda(an, fps: int, altura: float, rotulo: String) -> void:
 			# A realimentação de antes: a escala do quadro anterior, já com o fôlego dentro, é
 			# a base do seguinte (a altura persegue o alvo só `6 × dt` por quadro).
 			var base := lerpf(feedback, altura, minf(1.0, dt * 6.0))
-			feedback = base * (1.0 + sin(an._tempo * an.RITMO_DA_RESPIRACAO + an._fase) * an.RESPIRA)
+			feedback = base * (1.0 + sin(an._tempo * an.RITMO_DA_RESPIRACAO + an._fase) * RESPIRA_ANTIGA)
 			an.pose.scale.y = feedback
 		minimo = minf(minimo, an.pose.scale.y)
 		maximo = maxf(maximo, an.pose.scale.y)
+		largura_minima = minf(largura_minima, an.pose.scale.x)
+		largura_maxima = maxf(largura_maxima, an.pose.scale.x)
+		focinho_sobe = maxf(focinho_sobe, -an.pose.rotation.x)
+		focinho_desce = maxf(focinho_desce, an.pose.rotation.x)
 		maior_giro = maxf(maior_giro, absf(an.pose.rotation.y))
 		maior_altura = maxf(maior_altura, absf(an.pose.position.y))
-	var folga: float = 3.0 * an.RESPIRA
-	_conferir(minimo >= altura * (1.0 - folga) and maximo <= altura * (1.0 + folga),
-		"%s: a altura foi de %.3f a %.3f (devia ficar em %.3f ± %.1f %%): o corpo estica" % [rotulo, minimo, maximo, altura, folga * 100.0])
+	_conferir(minimo >= altura - 0.001 and maximo <= altura + 0.001,
+		"%s: a altura foi de %.4f a %.4f (devia ficar em %.3f, sem escala de respiração): o corpo estica" % [rotulo, minimo, maximo, altura])
+	_conferir(largura_minima >= 0.999 and largura_maxima <= 1.001,
+		"%s: a largura foi de %.4f a %.4f (devia ficar em 1): o corpo alarga" % [rotulo, largura_minima, largura_maxima])
+	_conferir(focinho_sobe <= an.RESPIRA + 0.001 and focinho_desce <= 0.001,
+		"%s: o focinho subiu %.4f rad e desceu %.4f (a respiração só ergue até %.4f)" % [rotulo, focinho_sobe, focinho_desce, an.RESPIRA])
+	_conferir(focinho_sobe > an.RESPIRA * 0.5 or falsificar_respiro, "%s: o bicho parado não respira (o focinho subiu só %.4f rad)" % [rotulo, focinho_sobe])
 	_conferir(maior_giro <= an.OLHA_ATE + 0.02, "%s: o olhar de lado passou do limite (%.2f rad)" % [rotulo, maior_giro])
 	_conferir(maior_altura < 0.01, "%s: o corpo parado subiu e desceu %.3f u" % [rotulo, maior_altura])
 	an.altura_alvo = 1.0

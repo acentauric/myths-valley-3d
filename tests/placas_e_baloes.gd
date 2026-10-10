@@ -12,6 +12,10 @@ extends SceneTree
 ##   2. O BALÃO some além do alcance dele.
 ##   3. UM BALÃO POR VEZ: a saudação de quem passa cai quando outro morador fala
 ##      com você pelo E; e com alguém falando, quem passa não cumprimenta.
+##   4. O BALÃO POR CIMA DA PLAQUINHA: ela mora numa camada abaixo (#103).
+##   5. O BALÃO TEM PRIORIDADE (#218): com uma fala no ar nenhuma plaquinha de nome fica na tela;
+##      elas voltam com o fade quando a fala acaba, sem piscar entre falas seguidas.
+##      `--falsificar` tira a prioridade e o portão reprova.
 
 var falhas := 0
 
@@ -106,7 +110,61 @@ func _run() -> void:
 	var camada_do_balao: CanvasLayer = tonho.balao.get_canvas_layer_node()
 	_conferir(camada_da_placa != null and camada_do_balao != null and camada_da_placa.layer < camada_do_balao.layer,
 		"a plaquinha (camada %s) não fica abaixo do balão (camada %s)" % [str(camada_da_placa.layer) if camada_da_placa != null else "?", str(camada_do_balao.layer) if camada_do_balao != null else "?"])
+
+	# --- 5. O BALÃO TEM PRIORIDADE: NENHUMA PLAQUINHA COM UMA FALA NO AR (#218) ----------
+	# "A Dona Zefa fala no balão e a placa 'Dona Estefânia' aparece logo ao lado." Agora, com qualquer
+	# balão no ar, todas as plaquinhas apagam (no fade de sempre) e só voltam quando a fala acaba, depois
+	# de um respiro que cobre o vão entre duas falas seguidas.
+	if "--falsificar" in OS.get_cmdline_user_args():
+		placas.cala_com_balao = false
+	tonho.balao.esconder()
+	candinha.balao.esconder()
+	candinha.global_position = tonho.global_position + Vector3(2.0, 0.0, 0.0)
+	candinha.velocity = Vector3.ZERO
+	# A cinco passos, como na seção 1: mais perto, a dica do E já diz o nome de quem a recebe e a placa
+	# dele cede a ela (`placas_nomes._nome_ja_identificado`) — e a medida não teria placa nenhuma acesa.
+	_pôr_o_jogador_a(jogador, mundo, tonho, perto - 1.0)
+	var acesas_antes := false
+	for _tentativa in 40:
+		await _esperar(0.1)
+		if _placas_acesas(placas) > 0:
+			acesas_antes = true
+			break
+	_conferir(acesas_antes, "sem nenhuma fala no ar, nenhuma plaquinha acendeu perto do jogador: a medida não vale")
+	candinha.mostrar_balao("Deus lhe guie.", 30.0)
+	await _esperar(0.8)
+	_conferir(candinha.balao.a_vista(), "o balão da Dona Candinha não abriu")
+	_conferir(_placas_acesas(placas) == 0, "com o balão da Dona Candinha no ar há %d plaquinha(s) de nome na tela" % _placas_acesas(placas))
+	# Falas seguidas: uma acaba e a outra abre dentro do respiro, e nenhuma plaquinha pisca no vão.
+	candinha.balao.esconder()
+	var piscou := 0
+	var vao := Time.get_ticks_msec() + int(float(placas.SILENCIO_APOS_O_BALAO) * 500.0)
+	while Time.get_ticks_msec() < vao:
+		await process_frame
+		piscou += _placas_acesas(placas)
+	tonho.mostrar_balao("Boa tarde.", 30.0)
+	await _esperar(0.8)
+	_conferir(piscou == 0, "no vão entre duas falas as plaquinhas piscaram (%d quadros com placa acesa)" % piscou)
+	_conferir(_placas_acesas(placas) == 0, "com o balão do Tonho no ar há %d plaquinha(s) de nome na tela" % _placas_acesas(placas))
+	# Acabou a fala: depois do respiro elas voltam.
+	tonho.balao.esconder()
+	var voltaram := false
+	for _tentativa in 40:
+		await _esperar(0.1)
+		if _placas_acesas(placas) > 0:
+			voltaram = true
+			break
+	_conferir(voltaram, "as plaquinhas não voltaram depois que a fala acabou")
 	_fechar()
+
+
+## Quantas plaquinhas de nome estão acesas na tela.
+func _placas_acesas(placas) -> int:
+	var acesas := 0
+	for placa: Control in (placas.get("_placas") as Dictionary).values():
+		if is_instance_valid(placa) and placa.visible and placa.modulate.a > 0.05:
+			acesas += 1
+	return acesas
 
 
 ## Quadros por `segundos` de relógio: a câmera suave anda com o tempo, não com o quadro.
@@ -130,7 +188,7 @@ func _pôr_o_jogador_a(jogador, mundo, morador, distancia: float) -> void:
 func _fechar() -> void:
 	print("")
 	if falhas == 0:
-		print("PLACAS_E_BALOES_OK: a plaquinha de nome some longe, aparece perto e esmaece entre; o balão só aparece ao alcance; a conversa do E cala a saudação de quem passa, e ninguém cumprimenta por cima de uma fala")
+		print("PLACAS_E_BALOES_OK: a plaquinha de nome some longe, aparece perto e esmaece entre; o balão só aparece ao alcance; a conversa do E cala a saudação de quem passa, e ninguém cumprimenta por cima de uma fala; com um balão no ar nenhuma plaquinha fica, e elas voltam sem piscar")
 	else:
 		print("placas_e_baloes: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

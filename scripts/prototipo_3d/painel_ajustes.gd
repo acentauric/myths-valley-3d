@@ -18,6 +18,7 @@ const CaixaDePergunta = preload("res://scripts/prototipo_3d/caixa_de_pergunta.gd
 const SustosDaMata = preload("res://scripts/prototipo_3d/sustos_da_mata.gd")
 const DicasDosMoradores = preload("res://scripts/prototipo_3d/dicas_dos_moradores.gd")
 const SeloDoViajante = preload("res://scripts/prototipo_3d/selo_do_viajante.gd")
+const FasesDaLua = preload("res://scripts/prototipo_3d/fases_da_lua.gd")
 
 ## × do cabeçalho (o anfitrião fecha o modal).
 signal fechar_pedido
@@ -326,6 +327,11 @@ func _aba_cenario(esquerda: VBoxContainer, direita: VBoxContainer) -> void:
 	# O vulto da mata e o rastro do Curupira (sustos_da_mata.gd): ligados, menos na edição Tripothon.
 	_escolha("Sustos", ["Ligados", "Desligados"], 0 if SustosDaMata.ligado() else 1,
 		func(i: int) -> void: SustosDaMata.definir_ligado(i == 0), 0 if SustosDaMata.padrao_de_fabrica() else 1)
+	# As fases da lua (#229): "Sim" deixa a noite de lua nova escura de verdade; "Suaves" encolhe a
+	# diferença para quem tem monitor escuro. Re-emite a hora para o céu reaplicar na hora.
+	_escolha("Noites escuras", FasesDaLua.ROTULOS, 1 if FasesDaLua.suaves() else 0, func(i: int) -> void:
+		FasesDaLua.definir_suaves(i == 1)
+		Dia.definir_hora(Dia.hora), 0)
 	if no_jogo:
 		return
 	_pai = direita

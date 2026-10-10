@@ -1,0 +1,4850 @@
+{
+	"ab_gpu": [
+		{
+			"base_antes": {
+				"cauda_ms": 5.101,
+				"draws": 375,
+				"fisica_passos_por_quadro": 0.33,
+				"fisica_scripts_ms": 0.063,
+				"fisica_servidor_ms": 0.011,
+				"fps": 180.0,
+				"max_ms": 6.25,
+				"mediana_ms": 5.56,
+				"objetos": 852,
+				"p95_ms": 6.06,
+				"pausado": false,
+				"primitivas": 869816,
+				"process_scripts_ms": 0.382,
+				"quadro_ms": 5.56,
+				"quadros": 270,
+				"rs_cpu_ms": 1.586,
+				"rs_gpu_ms": 4.833,
+				"rs_setup_ms": 0.084,
+				"sub_cpu_ms": 0.0,
+				"sub_gpu_ms": 0.0
+			},
+			"base_depois": {
+				"cauda_ms": 5.065,
+				"draws": 376,
+				"fisica_passos_por_quadro": 0.33,
+				"fisica_scripts_ms": 0.066,
+				"fisica_servidor_ms": 0.011,
+				"fps": 180.3,
+				"max_ms": 6.74,
+				"mediana_ms": 5.52,
+				"objetos": 853,
+				"p95_ms": 6.15,
+				"pausado": false,
+				"primitivas": 869828,
+				"process_scripts_ms": 0.406,
+				"quadro_ms": 5.55,
+				"quadros": 271,
+				"rs_cpu_ms": 1.751,
+				"rs_gpu_ms": 4.871,
+				"rs_setup_ms": 0.091,
+				"sub_cpu_ms": 0.0,
+				"sub_gpu_ms": 0.0
+			},
+			"base_ms": 5.56,
+			"com": {
+				"cauda_ms": 5.123,
+				"draws": 351,
+				"fisica_passos_por_quadro": 0.33,
+				"fisica_scripts_ms": 0.063,
+				"fisica_servidor_ms": 0.011,
+				"fps": 179.0,
+				"max_ms": 6.69,
+				"mediana_ms": 5.58,
+				"objetos": 828,
+				"p95_ms": 6.06,
+				"pausado": false,
+				"primitivas": 846866,
+				"process_scripts_ms": 0.389,
+				"quadro_ms": 5.59,
+				"quadros": 269,
+				"rs_cpu_ms": 1.512,
+				"rs_gpu_ms": 4.834,
+				"rs_setup_ms": 0.083,
+				"sub_cpu_ms": 0.0,
+				"sub_gpu_ms": 0.0
+			},
+			"com_ms": 5.59,
+			"fps_base": 180.0,
+			"fps_com": 179.0,
+			"ganho_ms": -0.04,
+			"n": 14,
+			"nome": "casa: casca e teto ESCONDIDOS (visible=false, em vez de so sombra)"
+		},
+		{
+			"base_antes": {
+				"cauda_ms": 5.065,
+				"draws": 376,
+				"fisica_passos_por_quadro": 0.33,
+				"fisica_scripts_ms": 0.066,
+				"fisica_servidor_ms": 0.011,
+				"fps": 180.3,
+				"max_ms": 6.74,
+				"mediana_ms": 5.52,
+				"objetos": 853,
+				"p95_ms": 6.15,
+				"pausado": false,
+				"primitivas": 869828,
+				"process_scripts_ms": 0.406,
+				"quadro_ms": 5.55,
+				"quadros": 271,
+				"rs_cpu_ms": 1.751,
+				"rs_gpu_ms": 4.871,
+				"rs_setup_ms": 0.091,
+				"sub_cpu_ms": 0.0,
+				"sub_gpu_ms": 0.0
+			},
+			"base_depois": {
+				"cauda_ms": 5.203,
+				"draws": 376,
+				"fisica_passos_por_quadro": 0.34,
+				"fisica_scripts_ms": 0.069,
+				"fisica_servidor_ms": 0.011,
+				"fps": 177.0,
+				"max_ms": 6.43,
+				"mediana_ms": 5.64,
+				"objetos": 853,
+				"p95_ms": 6.14,
+				"pausado": false,
+				"primitivas": 869828,
+				"process_scripts_ms": 0.366,
+				"quadro_ms": 5.65,
+				"quadros": 266,
+				"rs_cpu_ms": 1.487,
+				"rs_gpu_ms": 4.856,
+				"rs_setup_ms": 0.084,
+				"sub_cpu_ms": 0.0,
+				"sub_gpu_ms": 0.0
+			},
+			"base_ms": 5.6,
+			"com": {
+				"cauda_ms": 4.492,
+				"draws": 364,
+				"fisica_passos_por_quadro": 0.3,
+				"fisica_scripts_ms": 0.056,
+				"fisica_servidor_ms": 0.01,
+				"fps": 202.8,
+				"max_ms": 5.88,
+				"mediana_ms": 4.92,
+				"objetos": 841,
+				"p95_ms": 5.37,
+				"pausado": false,
+				"primitivas": 858353,
+				"process_scripts_ms": 0.374,
+				"quadro_ms": 4.93,
+				"quadros": 305,
+				"rs_cpu_ms": 1.578,
+				"rs_gpu_ms": 4.194,
+				"rs_setup_ms": 0.085,
+				"sub_cpu_ms": 0.0,
+				"sub_gpu_ms": 0.0
+			},
+			"com_ms": 4.93,
+			"fps_base": 178.6,
+			"fps_com": 202.8,
+			"ganho_ms": 0.67,
+			"n": 14,
+			"nome": "casa: casca e teto sem projetar sombra (14 malhas)"
+		},
+		{
+			"base_antes": {
+				"cauda_ms": 5.203,
+				"draws": 376,
+				"fisica_passos_por_quadro": 0.34,
+				"fisica_scripts_ms": 0.069,
+				"fisica_servidor_ms": 0.011,
+				"fps": 177.0,
+				"max_ms": 6.43,
+				"mediana_ms": 5.64,
+				"objetos": 853,
+				"p95_ms": 6.14,
+				"pausado": false,
+				"primitivas": 869828,
+				"process_scripts_ms": 0.366,
+				"quadro_ms": 5.65,
+				"quadros": 266,
+				"rs_cpu_ms": 1.487,
+				"rs_gpu_ms": 4.856,
+				"rs_setup_ms": 0.084,
+				"sub_cpu_ms": 0.0,
+				"sub_gpu_ms": 0.0
+			},
+			"base_depois": {
+				"cauda_ms": 5.152,
+				"draws": 376,
+				"fisica_passos_por_quadro": 0.34,
+				"fisica_scripts_ms": 0.071,
+				"fisica_servidor_ms": 0.012,
+				"fps": 177.5,
+				"max_ms": 8.02,
+				"mediana_ms": 5.65,
+				"objetos": 853,
+				"p95_ms": 6.15,
+				"pausado": false,
+				"primitivas": 869828,
+				"process_scripts_ms": 0.397,
+				"quadro_ms": 5.63,
+				"quadros": 267,
+				"rs_cpu_ms": 1.585,
+				"rs_gpu_ms": 4.873,
+				"rs_setup_ms": 0.087,
+				"sub_cpu_ms": 0.0,
+				"sub_gpu_ms": 0.0
+			},
+			"base_ms": 5.64,
+			"com": {
+				"cauda_ms": 4.713,
+				"draws": 376,
+				"fisica_passos_por_quadro": 0.31,
+				"fisica_scripts_ms": 0.063,
+				"fisica_servidor_ms": 0.012,
+				"fps": 192.8,
+				"max_ms": 7.2,
+				"mediana_ms": 5.2,
+				"objetos": 853,
+				"p95_ms": 5.6,
+				"pausado": false,
+				"primitivas": 869828,
+				"process_scripts_ms": 0.398,
+				"quadro_ms": 5.19,
+				"quadros": 290,
+				"rs_cpu_ms": 1.625,
+				"rs_gpu_ms": 4.501,
+				"rs_setup_ms": 0.09,
+				"sub_cpu_ms": 0.0,
+				"sub_gpu_ms": 0.0
+			},
+			"com_ms": 5.19,
+			"fps_base": 177.3,
+			"fps_com": 192.8,
+			"ganho_ms": 0.45,
+			"n": 3,
+			"nome": "casa: luzes do comodo escondidas (3)"
+		},
+		{
+			"base_antes": {
+				"cauda_ms": 5.152,
+				"draws": 376,
+				"fisica_passos_por_quadro": 0.34,
+				"fisica_scripts_ms": 0.071,
+				"fisica_servidor_ms": 0.012,
+				"fps": 177.5,
+				"max_ms": 8.02,
+				"mediana_ms": 5.65,
+				"objetos": 853,
+				"p95_ms": 6.15,
+				"pausado": false,
+				"primitivas": 869828,
+				"process_scripts_ms": 0.397,
+				"quadro_ms": 5.63,
+				"quadros": 267,
+				"rs_cpu_ms": 1.585,
+				"rs_gpu_ms": 4.873,
+				"rs_setup_ms": 0.087,
+				"sub_cpu_ms": 0.0,
+				"sub_gpu_ms": 0.0
+			},
+			"base_depois": {
+				"cauda_ms": 5.156,
+				"draws": 376,
+				"fisica_passos_por_quadro": 0.34,
+				"fisica_scripts_ms": 0.073,
+				"fisica_servidor_ms": 0.012,
+				"fps": 177.4,
+				"max_ms": 6.41,
+				"mediana_ms": 5.65,
+				"objetos": 853,
+				"p95_ms": 6.1,
+				"pausado": false,
+				"primitivas": 869828,
+				"process_scripts_ms": 0.396,
+				"quadro_ms": 5.64,
+				"quadros": 267,
+				"rs_cpu_ms": 1.532,
+				"rs_gpu_ms": 4.873,
+				"rs_setup_ms": 0.085,
+				"sub_cpu_ms": 0.0,
+				"sub_gpu_ms": 0.0
+			},
+			"base_ms": 5.64,
+			"com": {
+				"cauda_ms": 4.823,
+				"draws": 376,
+				"fisica_passos_por_quadro": 0.32,
+				"fisica_scripts_ms": 0.066,
+				"fisica_servidor_ms": 0.011,
+				"fps": 189.0,
+				"max_ms": 6.14,
+				"mediana_ms": 5.28,
+				"objetos": 853,
+				"p95_ms": 5.8,
+				"pausado": false,
+				"primitivas": 869828,
+				"process_scripts_ms": 0.391,
+				"quadro_ms": 5.29,
+				"quadros": 284,
+				"rs_cpu_ms": 1.583,
+				"rs_gpu_ms": 4.56,
+				"rs_setup_ms": 0.089,
+				"sub_cpu_ms": 0.0,
+				"sub_gpu_ms": 0.0
+			},
+			"com_ms": 5.29,
+			"fps_base": 177.5,
+			"fps_com": 189.0,
+			"ganho_ms": 0.34,
+			"n": 1,
+			"nome": "casa: sonda de reflexo escondida"
+		},
+		{
+			"base_antes": {
+				"cauda_ms": 5.156,
+				"draws": 376,
+				"fisica_passos_por_quadro": 0.34,
+				"fisica_scripts_ms": 0.073,
+				"fisica_servidor_ms": 0.012,
+				"fps": 177.4,
+				"max_ms": 6.41,
+				"mediana_ms": 5.65,
+				"objetos": 853,
+				"p95_ms": 6.1,
+				"pausado": false,
+				"primitivas": 869828,
+				"process_scripts_ms": 0.396,
+				"quadro_ms": 5.64,
+				"quadros": 267,
+				"rs_cpu_ms": 1.532,
+				"rs_gpu_ms": 4.873,
+				"rs_setup_ms": 0.085,
+				"sub_cpu_ms": 0.0,
+				"sub_gpu_ms": 0.0
+			},
+			"base_depois": {
+				"cauda_ms": 5.168,
+				"draws": 376,
+				"fisica_passos_por_quadro": 0.34,
+				"fisica_scripts_ms": 0.07,
+				"fisica_servidor_ms": 0.012,
+				"fps": 177.6,
+				"max_ms": 6.28,
+				"mediana_ms": 5.64,
+				"objetos": 853,
+				"p95_ms": 6.13,
+				"pausado": false,
+				"primitivas": 869828,
+				"process_scripts_ms": 0.381,
+				"quadro_ms": 5.63,
+				"quadros": 267,
+				"rs_cpu_ms": 1.624,
+				"rs_gpu_ms": 4.893,
+				"rs_setup_ms": 0.087,
+				"sub_cpu_ms": 0.0,
+				"sub_gpu_ms": 0.0
+			},
+			"base_ms": 5.64,
+			"com": {
+				"cauda_ms": 5.234,
+				"draws": 356,
+				"fisica_passos_por_quadro": 0.34,
+				"fisica_scripts_ms": 0.07,
+				"fisica_servidor_ms": 0.012,
+				"fps": 175.7,
+				"max_ms": 6.29,
+				"mediana_ms": 5.68,
+				"objetos": 832,
+				"p95_ms": 6.16,
+				"pausado": false,
+				"primitivas": 881034,
+				"process_scripts_ms": 0.376,
+				"quadro_ms": 5.69,
+				"quadros": 264,
+				"rs_cpu_ms": 1.485,
+				"rs_gpu_ms": 4.895,
+				"rs_setup_ms": 0.083,
+				"sub_cpu_ms": 0.0,
+				"sub_gpu_ms": 0.0
+			},
+			"com_ms": 5.69,
+			"fps_base": 177.5,
+			"fps_com": 175.7,
+			"ganho_ms": -0.06,
+			"n": 5,
+			"nome": "casa: sombra do sol de volta a 70 u (antes do #185)"
+		},
+		{
+			"base_antes": {
+				"cauda_ms": 5.168,
+				"draws": 376,
+				"fisica_passos_por_quadro": 0.34,
+				"fisica_scripts_ms": 0.07,
+				"fisica_servidor_ms": 0.012,
+				"fps": 177.6,
+				"max_ms": 6.28,
+				"mediana_ms": 5.64,
+				"objetos": 853,
+				"p95_ms": 6.13,
+				"pausado": false,
+				"primitivas": 869828,
+				"process_scripts_ms": 0.381,
+				"quadro_ms": 5.63,
+				"quadros": 267,
+				"rs_cpu_ms": 1.624,
+				"rs_gpu_ms": 4.893,
+				"rs_setup_ms": 0.087,
+				"sub_cpu_ms": 0.0,
+				"sub_gpu_ms": 0.0
+			},
+			"base_depois": {
+				"cauda_ms": 5.149,
+				"draws": 376,
+				"fisica_passos_por_quadro": 0.34,
+				"fisica_scripts_ms": 0.072,
+				"fisica_servidor_ms": 0.013,
+				"fps": 177.5,
+				"max_ms": 6.4,
+				"mediana_ms": 5.63,
+				"objetos": 853,
+				"p95_ms": 6.16,
+				"pausado": false,
+				"primitivas": 869828,
+				"process_scripts_ms": 0.399,
+				"quadro_ms": 5.63,
+				"quadros": 267,
+				"rs_cpu_ms": 1.694,
+				"rs_gpu_ms": 4.906,
+				"rs_setup_ms": 0.092,
+				"sub_cpu_ms": 0.0,
+				"sub_gpu_ms": 0.0
+			},
+			"base_ms": 5.63,
+			"com": {
+				"cauda_ms": 5.212,
+				"draws": 346,
+				"fisica_passos_por_quadro": 0.34,
+				"fisica_scripts_ms": 0.07,
+				"fisica_servidor_ms": 0.012,
+				"fps": 176.7,
+				"max_ms": 6.32,
+				"mediana_ms": 5.66,
+				"objetos": 821,
+				"p95_ms": 6.17,
+				"pausado": false,
+				"primitivas": 865890,
+				"process_scripts_ms": 0.366,
+				"quadro_ms": 5.66,
+				"quadros": 266,
+				"rs_cpu_ms": 1.473,
+				"rs_gpu_ms": 4.871,
+				"rs_setup_ms": 0.085,
+				"sub_cpu_ms": 0.0,
+				"sub_gpu_ms": 0.0
+			},
+			"com_ms": 5.66,
+			"fps_base": 177.6,
+			"fps_com": 176.7,
+			"ganho_ms": -0.03,
+			"n": 5,
+			"nome": "casa: sombra do sol a 12 u"
+		},
+		{
+			"base_antes": {
+				"cauda_ms": 5.149,
+				"draws": 376,
+				"fisica_passos_por_quadro": 0.34,
+				"fisica_scripts_ms": 0.072,
+				"fisica_servidor_ms": 0.013,
+				"fps": 177.5,
+				"max_ms": 6.4,
+				"mediana_ms": 5.63,
+				"objetos": 853,
+				"p95_ms": 6.16,
+				"pausado": false,
+				"primitivas": 869828,
+				"process_scripts_ms": 0.399,
+				"quadro_ms": 5.63,
+				"quadros": 267,
+				"rs_cpu_ms": 1.694,
+				"rs_gpu_ms": 4.906,
+				"rs_setup_ms": 0.092,
+				"sub_cpu_ms": 0.0,
+				"sub_gpu_ms": 0.0
+			},
+			"base_depois": {
+				"cauda_ms": 5.148,
+				"draws": 376,
+				"fisica_passos_por_quadro": 0.34,
+				"fisica_scripts_ms": 0.075,
+				"fisica_servidor_ms": 0.013,
+				"fps": 177.8,
+				"max_ms": 6.74,
+				"mediana_ms": 5.66,
+				"objetos": 853,
+				"p95_ms": 6.12,
+				"pausado": false,
+				"primitivas": 869828,
+				"process_scripts_ms": 0.389,
+				"quadro_ms": 5.63,
+				"quadros": 267,
+				"rs_cpu_ms": 1.63,
+				"rs_gpu_ms": 4.912,
+				"rs_setup_ms": 0.086,
+				"sub_cpu_ms": 0.0,
+				"sub_gpu_ms": 0.0
+			},
+			"base_ms": 5.63,
+			"com": {
+				"cauda_ms": 5.084,
+				"draws": 378,
+				"fisica_passos_por_quadro": 0.33,
+				"fisica_scripts_ms": 0.067,
+				"fisica_servidor_ms": 0.011,
+				"fps": 180.8,
+				"max_ms": 6.16,
+				"mediana_ms": 5.55,
+				"objetos": 853,
+				"p95_ms": 6.01,
+				"pausado": false,
+				"primitivas": 869828,
+				"process_scripts_ms": 0.369,
+				"quadro_ms": 5.53,
+				"quadros": 272,
+				"rs_cpu_ms": 1.54,
+				"rs_gpu_ms": 4.74,
+				"rs_setup_ms": 0.086,
+				"sub_cpu_ms": 0.0,
+				"sub_gpu_ms": 0.0
+			},
+			"com_ms": 5.53,
+			"fps_base": 177.6,
+			"fps_com": 180.8,
+			"ganho_ms": 0.1,
+			"n": 1,
+			"nome": "casa: far da camera a 60 u"
+		},
+		{
+			"base_antes": {
+				"cauda_ms": 5.148,
+				"draws": 376,
+				"fisica_passos_por_quadro": 0.34,
+				"fisica_scripts_ms": 0.075,
+				"fisica_servidor_ms": 0.013,
+				"fps": 177.8,
+				"max_ms": 6.74,
+				"mediana_ms": 5.66,
+				"objetos": 853,
+				"p95_ms": 6.12,
+				"pausado": false,
+				"primitivas": 869828,
+				"process_scripts_ms": 0.389,
+				"quadro_ms": 5.63,
+				"quadros": 267,
+				"rs_cpu_ms": 1.63,
+				"rs_gpu_ms": 4.912,
+				"rs_setup_ms": 0.086,
+				"sub_cpu_ms": 0.0,
+				"sub_gpu_ms": 0.0
+			},
+			"base_depois": {
+				"cauda_ms": 5.175,
+				"draws": 376,
+				"fisica_passos_por_quadro": 0.34,
+				"fisica_scripts_ms": 0.071,
+				"fisica_servidor_ms": 0.011,
+				"fps": 176.8,
+				"max_ms": 6.64,
+				"mediana_ms": 5.65,
+				"objetos": 853,
+				"p95_ms": 6.17,
+				"pausado": false,
+				"primitivas": 869828,
+				"process_scripts_ms": 0.4,
+				"quadro_ms": 5.66,
+				"quadros": 266,
+				"rs_cpu_ms": 1.613,
+				"rs_gpu_ms": 4.914,
+				"rs_setup_ms": 0.087,
+				"sub_cpu_ms": 0.0,
+				"sub_gpu_ms": 0.0
+			},
+			"base_ms": 5.65,
+			"com": {
+				"cauda_ms": 4.763,
+				"draws": 224,
+				"fisica_passos_por_quadro": 0.31,
+				"fisica_scripts_ms": 0.063,
+				"fisica_servidor_ms": 0.011,
+				"fps": 191.6,
+				"max_ms": 6.03,
+				"mediana_ms": 5.22,
+				"objetos": 692,
+				"p95_ms": 5.76,
+				"pausado": false,
+				"primitivas": 525133,
+				"process_scripts_ms": 0.383,
+				"quadro_ms": 5.22,
+				"quadros": 288,
+				"rs_cpu_ms": 1.326,
+				"rs_gpu_ms": 4.468,
+				"rs_setup_ms": 0.085,
+				"sub_cpu_ms": 0.0,
+				"sub_gpu_ms": 0.0
+			},
+			"com_ms": 5.22,
+			"fps_base": 177.1,
+			"fps_com": 191.6,
+			"ganho_ms": 0.42,
+			"n": 5,
+			"nome": "casa: sol sem sombra"
+		}
+	],
+	"ab_gpu_base_final": {
+		"cauda_ms": 5.175,
+		"draws": 376,
+		"fisica_passos_por_quadro": 0.34,
+		"fisica_scripts_ms": 0.071,
+		"fisica_servidor_ms": 0.011,
+		"fps": 176.8,
+		"max_ms": 6.64,
+		"mediana_ms": 5.65,
+		"objetos": 853,
+		"p95_ms": 6.17,
+		"pausado": false,
+		"primitivas": 869828,
+		"process_scripts_ms": 0.4,
+		"quadro_ms": 5.66,
+		"quadros": 266,
+		"rs_cpu_ms": 1.613,
+		"rs_gpu_ms": 4.914,
+		"rs_setup_ms": 0.087,
+		"sub_cpu_ms": 0.0,
+		"sub_gpu_ms": 0.0
+	},
+	"ab_gpu_base_inicial": {
+		"cauda_ms": 5.101,
+		"draws": 375,
+		"fisica_passos_por_quadro": 0.33,
+		"fisica_scripts_ms": 0.063,
+		"fisica_servidor_ms": 0.011,
+		"fps": 180.0,
+		"max_ms": 6.25,
+		"mediana_ms": 5.56,
+		"objetos": 852,
+		"p95_ms": 6.06,
+		"pausado": false,
+		"primitivas": 869816,
+		"process_scripts_ms": 0.382,
+		"quadro_ms": 5.56,
+		"quadros": 270,
+		"rs_cpu_ms": 1.586,
+		"rs_gpu_ms": 4.833,
+		"rs_setup_ms": 0.084,
+		"sub_cpu_ms": 0.0,
+		"sub_gpu_ms": 0.0
+	},
+	"ab_gpu_como_jogado": {
+		"cauda_ms": 3.384,
+		"draws": 375,
+		"fisica_passos_por_quadro": 0.55,
+		"fisica_scripts_ms": 1.404,
+		"fisica_servidor_ms": 0.127,
+		"fps": 109.8,
+		"max_ms": 17.41,
+		"mediana_ms": 8.85,
+		"objetos": 852,
+		"p95_ms": 14.46,
+		"pausado": false,
+		"primitivas": 869816,
+		"process_scripts_ms": 4.193,
+		"quadro_ms": 9.11,
+		"quadros": 165,
+		"rs_cpu_ms": 1.598,
+		"rs_gpu_ms": 4.394,
+		"rs_setup_ms": 0.271,
+		"sub_cpu_ms": 0.0,
+		"sub_gpu_ms": 0.0
+	},
+	"ab_gpu_vista": {
+		"alternancias": 8,
+		"lugar": "dentro:casa",
+		"rumo_graus": 135,
+		"scripts_congelados": true
+	},
+	"avisos": [],
+	"censo": {
+		"animation_players": 51,
+		"animation_players_tocando": 45,
+		"areas_monitorando": 0,
+		"audio_tocando": 9,
+		"canvas_layers": [
+			{
+				"caminho": "/root/Vale3D/NarracaoDoVale",
+				"layer": 10,
+				"script": "res://scripts/prototipo_3d/narracao_do_vale.gd",
+				"visivel": true
+			},
+			{
+				"caminho": "/root/Vale3D/LuzDourada",
+				"layer": 8,
+				"script": "res://scripts/prototipo_3d/luz_dourada.gd",
+				"visivel": true
+			},
+			{
+				"caminho": "/root/Vale3D/ConquistaDaMissao",
+				"layer": 9,
+				"script": "res://scripts/prototipo_3d/conquista_da_missao.gd",
+				"visivel": true
+			},
+			{
+				"caminho": "/root/Vale3D/AvisoDaPrimeiraVez",
+				"layer": 25,
+				"script": "res://scripts/prototipo_3d/aviso_da_primeira_vez.gd",
+				"visivel": true
+			},
+			{
+				"caminho": "/root/Vale3D/Painel",
+				"layer": 25,
+				"script": "res://scripts/prototipo_3d/painel_vale.gd",
+				"visivel": false
+			},
+			{
+				"caminho": "/root/Vale3D/Queda/TelaDaQueda",
+				"layer": 30,
+				"script": "",
+				"visivel": true
+			},
+			{
+				"caminho": "/root/Vale3D/Tubarao/TelaTubarao",
+				"layer": 96,
+				"script": "",
+				"visivel": false
+			},
+			{
+				"caminho": "/root/Vale3D/CamadaDasPlacas",
+				"layer": 8,
+				"script": "",
+				"visivel": true
+			},
+			{
+				"caminho": "/root/Vale3D/MoradorPedro/@CanvasLayer@2429",
+				"layer": 10,
+				"script": "",
+				"visivel": true
+			},
+			{
+				"caminho": "/root/Vale3D/MoradorMestre Saveiro/@CanvasLayer@2415",
+				"layer": 10,
+				"script": "",
+				"visivel": true
+			},
+			{
+				"caminho": "/root/Vale3D/MoradorMenina/@CanvasLayer@2401",
+				"layer": 10,
+				"script": "",
+				"visivel": true
+			},
+			{
+				"caminho": "/root/Vale3D/MoradorMenino/@CanvasLayer@2387",
+				"layer": 10,
+				"script": "",
+				"visivel": true
+			},
+			{
+				"caminho": "/root/Vale3D/MoradorCarpinteiro/@CanvasLayer@2373",
+				"layer": 10,
+				"script": "",
+				"visivel": true
+			},
+			{
+				"caminho": "/root/Vale3D/MoradorQuituteira/@CanvasLayer@2358",
+				"layer": 10,
+				"script": "",
+				"visivel": true
+			},
+			{
+				"caminho": "/root/Vale3D/MoradorRendeira/@CanvasLayer@2344",
+				"layer": 10,
+				"script": "",
+				"visivel": true
+			},
+			{
+				"caminho": "/root/Vale3D/MoradorLavadeira/@CanvasLayer@2329",
+				"layer": 10,
+				"script": "",
+				"visivel": true
+			},
+			{
+				"caminho": "/root/Vale3D/MoradorMarisqueira/@CanvasLayer@2314",
+				"layer": 10,
+				"script": "",
+				"visivel": true
+			},
+			{
+				"caminho": "/root/Vale3D/MoradorPescador/@CanvasLayer@2299",
+				"layer": 10,
+				"script": "",
+				"visivel": true
+			},
+			{
+				"caminho": "/root/Vale3D/MoradorGuarda/@CanvasLayer@2285",
+				"layer": 10,
+				"script": "",
+				"visivel": true
+			},
+			{
+				"caminho": "/root/Vale3D/MoradorMercador/@CanvasLayer@2271",
+				"layer": 10,
+				"script": "",
+				"visivel": true
+			},
+			{
+				"caminho": "/root/Vale3D/MoradorBeata/@CanvasLayer@2256",
+				"layer": 10,
+				"script": "",
+				"visivel": true
+			},
+			{
+				"caminho": "/root/Vale3D/MoradorSacristao/@CanvasLayer@2242",
+				"layer": 10,
+				"script": "",
+				"visivel": true
+			},
+			{
+				"caminho": "/root/Vale3D/MoradorPadre/@CanvasLayer@2228",
+				"layer": 10,
+				"script": "",
+				"visivel": true
+			},
+			{
+				"caminho": "/root/Vale3D/MoradorQuirino/@CanvasLayer@2214",
+				"layer": 10,
+				"script": "",
+				"visivel": true
+			},
+			{
+				"caminho": "/root/Vale3D/MoradorDamiao/@CanvasLayer@2200",
+				"layer": 10,
+				"script": "",
+				"visivel": true
+			},
+			{
+				"caminho": "/root/Vale3D/MoradorCandinha/@CanvasLayer@2186",
+				"layer": 10,
+				"script": "",
+				"visivel": true
+			},
+			{
+				"caminho": "/root/Vale3D/MoradorFilo/@CanvasLayer@2172",
+				"layer": 10,
+				"script": "",
+				"visivel": true
+			},
+			{
+				"caminho": "/root/Vale3D/MoradorTonho/@CanvasLayer@2158",
+				"layer": 10,
+				"script": "",
+				"visivel": true
+			},
+			{
+				"caminho": "/root/Vale3D/MoradorCosme/@CanvasLayer@2144",
+				"layer": 10,
+				"script": "",
+				"visivel": true
+			},
+			{
+				"caminho": "/root/Vale3D/MoradorZefa/@CanvasLayer@2130",
+				"layer": 10,
+				"script": "",
+				"visivel": true
+			},
+			{
+				"caminho": "/root/Vale3D/MoradorBenedito/@CanvasLayer@2116",
+				"layer": 10,
+				"script": "",
+				"visivel": true
+			},
+			{
+				"caminho": "/root/Vale3D/TelaControles",
+				"layer": 27,
+				"script": "res://scripts/prototipo_3d/tela_controles.gd",
+				"visivel": false
+			},
+			{
+				"caminho": "/root/Vale3D/TeiaSocial",
+				"layer": 26,
+				"script": "res://scripts/prototipo_3d/teia_social.gd",
+				"visivel": false
+			},
+			{
+				"caminho": "/root/Vale3D/TeiaTalentos",
+				"layer": 26,
+				"script": "res://scripts/prototipo_3d/teia_talentos.gd",
+				"visivel": false
+			},
+			{
+				"caminho": "/root/Vale3D/MenuPausa",
+				"layer": 27,
+				"script": "res://scripts/prototipo_3d/menu_pausa.gd",
+				"visivel": false
+			},
+			{
+				"caminho": "/root/Vale3D/Apoios",
+				"layer": 35,
+				"script": "res://scripts/prototipo_3d/apoios_vale.gd",
+				"visivel": true
+			},
+			{
+				"caminho": "/root/Vale3D/HUD",
+				"layer": 20,
+				"script": "res://scripts/prototipo_3d/prototype_hud.gd",
+				"visivel": true
+			},
+			{
+				"caminho": "/root/Vale3D/HUD/CamadaAlmanaque",
+				"layer": 25,
+				"script": "",
+				"visivel": true
+			},
+			{
+				"caminho": "/root/Amanhecer",
+				"layer": 31,
+				"script": "res://scripts/prototipo_3d/amanhecer_vale.gd",
+				"visivel": false
+			},
+			{
+				"caminho": "/root/Folheto",
+				"layer": 25,
+				"script": "res://scripts/ui/folheto.gd",
+				"visivel": false
+			},
+			{
+				"caminho": "/root/Dialogo",
+				"layer": 25,
+				"script": "res://scripts/prototipo_3d/dialogo_vale.gd",
+				"visivel": true
+			},
+			{
+				"caminho": "/root/Mochila",
+				"layer": 25,
+				"script": "res://scripts/prototipo_3d/mochila_vale.gd",
+				"visivel": false
+			}
+		],
+		"controles": 934,
+		"controles_visiveis": 120,
+		"corpos": {
+			"AnimatableBody3D": 8,
+			"CharacterBody3D": 49,
+			"StaticBody3D": 719
+		},
+		"esqueletos": 52,
+		"faces_trimesh": 271614,
+		"formas_de_colisao": {
+			"BoxShape3D": 610,
+			"CapsuleShape3D": 46,
+			"ConcavePolygonShape3D": 26,
+			"ConvexPolygonShape3D": 3,
+			"CylinderShape3D": 122,
+			"HeightMapShape3D": 1,
+			"WorldBoundaryShape3D": 5
+		},
+		"glb_instanciados": [
+			{
+				"chave": "Galinha",
+				"instancias": 25,
+				"tri": 3885,
+				"tri_total": 97125
+			},
+			{
+				"chave": "Pintinho",
+				"instancias": 7,
+				"tri": 3653,
+				"tri_total": 25571
+			},
+			{
+				"chave": "Cerca",
+				"instancias": 6,
+				"tri": 3950,
+				"tri_total": 23700
+			},
+			{
+				"chave": "Gato Malhado",
+				"instancias": 4,
+				"tri": 5599,
+				"tri_total": 22396
+			},
+			{
+				"chave": "Mangueira",
+				"instancias": 1,
+				"tri": 20453,
+				"tri_total": 20453
+			},
+			{
+				"chave": "Candeeiro",
+				"instancias": 5,
+				"tri": 3864,
+				"tri_total": 19320
+			},
+			{
+				"chave": "Galinha Dangola",
+				"instancias": 5,
+				"tri": 3509,
+				"tri_total": 17545
+			},
+			{
+				"chave": "Cabra Solta",
+				"instancias": 3,
+				"tri": 5814,
+				"tri_total": 17442
+			},
+			{
+				"chave": "Casarao Fazenda",
+				"instancias": 1,
+				"tri": 17319,
+				"tri_total": 17319
+			},
+			{
+				"chave": "Cama",
+				"instancias": 3,
+				"tri": 5657,
+				"tri_total": 16971
+			},
+			{
+				"chave": "Pote",
+				"instancias": 4,
+				"tri": 4231,
+				"tri_total": 16924
+			},
+			{
+				"chave": "Cachorro Caramelo",
+				"instancias": 3,
+				"tri": 5566,
+				"tri_total": 16698
+			},
+			{
+				"chave": "Penedo Lapa",
+				"instancias": 3,
+				"tri": 5411,
+				"tri_total": 16233
+			},
+			{
+				"chave": "Pau Brasil",
+				"instancias": 1,
+				"tri": 15978,
+				"tri_total": 15978
+			},
+			{
+				"chave": "Cachorro Malhado",
+				"instancias": 3,
+				"tri": 5240,
+				"tri_total": 15720
+			},
+			{
+				"chave": "Cajueiro",
+				"instancias": 1,
+				"tri": 15420,
+				"tri_total": 15420
+			},
+			{
+				"chave": "Ipe Roxo",
+				"instancias": 1,
+				"tri": 15418,
+				"tri_total": 15418
+			},
+			{
+				"chave": "Ipe Amarelo",
+				"instancias": 1,
+				"tri": 15148,
+				"tri_total": 15148
+			},
+			{
+				"chave": "Benedito",
+				"instancias": 1,
+				"tri": 15119,
+				"tri_total": 15119
+			},
+			{
+				"chave": "Dendezeiro",
+				"instancias": 1,
+				"tri": 15014,
+				"tri_total": 15014
+			},
+			{
+				"chave": "Zefa",
+				"instancias": 1,
+				"tri": 14970,
+				"tri_total": 14970
+			},
+			{
+				"chave": "Damiao",
+				"instancias": 1,
+				"tri": 14881,
+				"tri_total": 14881
+			},
+			{
+				"chave": "Filo",
+				"instancias": 1,
+				"tri": 14760,
+				"tri_total": 14760
+			},
+			{
+				"chave": "Bananeira",
+				"instancias": 1,
+				"tri": 14753,
+				"tri_total": 14753
+			},
+			{
+				"chave": "Pato",
+				"instancias": 4,
+				"tri": 3684,
+				"tri_total": 14736
+			},
+			{
+				"chave": "Coqueiro",
+				"instancias": 1,
+				"tri": 14716,
+				"tri_total": 14716
+			},
+			{
+				"chave": "Jaqueira",
+				"instancias": 1,
+				"tri": 14680,
+				"tri_total": 14680
+			},
+			{
+				"chave": "Tonho",
+				"instancias": 1,
+				"tri": 14576,
+				"tri_total": 14576
+			},
+			{
+				"chave": "Quirino",
+				"instancias": 1,
+				"tri": 14509,
+				"tri_total": 14509
+			},
+			{
+				"chave": "Pedro",
+				"instancias": 1,
+				"tri": 14400,
+				"tri_total": 14400
+			},
+			{
+				"chave": "Cosme",
+				"instancias": 1,
+				"tri": 14399,
+				"tri_total": 14399
+			},
+			{
+				"chave": "Beata",
+				"instancias": 1,
+				"tri": 14355,
+				"tri_total": 14355
+			},
+			{
+				"chave": "Candinha",
+				"instancias": 1,
+				"tri": 14218,
+				"tri_total": 14218
+			},
+			{
+				"chave": "Quituteira",
+				"instancias": 1,
+				"tri": 13898,
+				"tri_total": 13898
+			},
+			{
+				"chave": "Igreja",
+				"instancias": 1,
+				"tri": 13332,
+				"tri_total": 13332
+			},
+			{
+				"chave": "Lavadeira",
+				"instancias": 1,
+				"tri": 13243,
+				"tri_total": 13243
+			},
+			{
+				"chave": "Pescador",
+				"instancias": 1,
+				"tri": 13182,
+				"tri_total": 13182
+			},
+			{
+				"chave": "Marisqueira",
+				"instancias": 1,
+				"tri": 12777,
+				"tri_total": 12777
+			},
+			{
+				"chave": "Casa Carro Quebrado",
+				"instancias": 1,
+				"tri": 12477,
+				"tri_total": 12477
+			},
+			{
+				"chave": "Mirante",
+				"instancias": 1,
+				"tri": 12388,
+				"tri_total": 12388
+			},
+			{
+				"chave": "Capelinha",
+				"instancias": 1,
+				"tri": 12326,
+				"tri_total": 12326
+			},
+			{
+				"chave": "Pavoa",
+				"instancias": 3,
+				"tri": 4040,
+				"tri_total": 12120
+			},
+			{
+				"chave": "Ponte Grande",
+				"instancias": 1,
+				"tri": 11914,
+				"tri_total": 11914
+			},
+			{
+				"chave": "Bote",
+				"instancias": 2,
+				"tri": 5892,
+				"tri_total": 11784
+			},
+			{
+				"chave": "Capela",
+				"instancias": 1,
+				"tri": 11775,
+				"tri_total": 11775
+			},
+			{
+				"chave": "Pier",
+				"instancias": 1,
+				"tri": 11747,
+				"tri_total": 11747
+			},
+			{
+				"chave": "Casa Pasto",
+				"instancias": 1,
+				"tri": 11654,
+				"tri_total": 11654
+			},
+			{
+				"chave": "Gameleira",
+				"instancias": 1,
+				"tri": 11646,
+				"tri_total": 11646
+			},
+			{
+				"chave": "Canoa",
+				"instancias": 3,
+				"tri": 3864,
+				"tri_total": 11592
+			},
+			{
+				"chave": "Mercador",
+				"instancias": 1,
+				"tri": 11438,
+				"tri_total": 11438
+			},
+			{
+				"chave": "Gato Preto",
+				"instancias": 2,
+				"tri": 5713,
+				"tri_total": 11426
+			},
+			{
+				"chave": "Gato Amarelo",
+				"instancias": 2,
+				"tri": 5680,
+				"tri_total": 11360
+			},
+			{
+				"chave": "Casa Taipa",
+				"instancias": 1,
+				"tri": 11343,
+				"tri_total": 11343
+			},
+			{
+				"chave": "Venda",
+				"instancias": 1,
+				"tri": 11287,
+				"tri_total": 11287
+			},
+			{
+				"chave": "Galo",
+				"instancias": 3,
+				"tri": 3760,
+				"tri_total": 11280
+			},
+			{
+				"chave": "Menino",
+				"instancias": 1,
+				"tri": 11142,
+				"tri_total": 11142
+			},
+			{
+				"chave": "Porco",
+				"instancias": 2,
+				"tri": 5566,
+				"tri_total": 11132
+			},
+			{
+				"chave": "Mestre Saveiro",
+				"instancias": 1,
+				"tri": 11108,
+				"tri_total": 11108
+			},
+			{
+				"chave": "Rendeira",
+				"instancias": 1,
+				"tri": 11059,
+				"tri_total": 11059
+			},
+			{
+				"chave": "Menina",
+				"instancias": 1,
+				"tri": 10999,
+				"tri_total": 10999
+			},
+			{
+				"chave": "Guarda",
+				"instancias": 1,
+				"tri": 10976,
+				"tri_total": 10976
+			},
+			{
+				"chave": "Casa Meia Agua",
+				"instancias": 1,
+				"tri": 10905,
+				"tri_total": 10905
+			},
+			{
+				"chave": "Sacristao",
+				"instancias": 1,
+				"tri": 10864,
+				"tri_total": 10864
+			},
+			{
+				"chave": "Saveiro",
+				"instancias": 1,
+				"tri": 10862,
+				"tri_total": 10862
+			},
+			{
+				"chave": "Carpinteiro",
+				"instancias": 1,
+				"tri": 10787,
+				"tri_total": 10787
+			},
+			{
+				"chave": "Casa Taipa Ocre",
+				"instancias": 1,
+				"tri": 10402,
+				"tri_total": 10402
+			},
+			{
+				"chave": "Padre",
+				"instancias": 1,
+				"tri": 10302,
+				"tri_total": 10302
+			},
+			{
+				"chave": "Casa Varanda",
+				"instancias": 1,
+				"tri": 10285,
+				"tri_total": 10285
+			},
+			{
+				"chave": "Casa Taipa Rosa",
+				"instancias": 1,
+				"tri": 10220,
+				"tri_total": 10220
+			},
+			{
+				"chave": "PonteCaida",
+				"instancias": 1,
+				"tri": 10129,
+				"tri_total": 10129
+			},
+			{
+				"chave": "Casa Farinha",
+				"instancias": 1,
+				"tri": 10027,
+				"tri_total": 10027
+			},
+			{
+				"chave": "Casa Pescador",
+				"instancias": 1,
+				"tri": 9961,
+				"tri_total": 9961
+			},
+			{
+				"chave": "Cantareira",
+				"instancias": 2,
+				"tri": 4953,
+				"tri_total": 9906
+			},
+			{
+				"chave": "Casa Paroquial",
+				"instancias": 1,
+				"tri": 9895,
+				"tri_total": 9895
+			},
+			{
+				"chave": "Pitangueira",
+				"instancias": 1,
+				"tri": 9688,
+				"tri_total": 9688
+			},
+			{
+				"chave": "Oratorio",
+				"instancias": 2,
+				"tri": 4811,
+				"tri_total": 9622
+			},
+			{
+				"chave": "Casa Taipa Azul",
+				"instancias": 1,
+				"tri": 9529,
+				"tri_total": 9529
+			},
+			{
+				"chave": "Ponte",
+				"instancias": 1,
+				"tri": 9502,
+				"tri_total": 9502
+			},
+			{
+				"chave": "Casa Taipa Verde",
+				"instancias": 1,
+				"tri": 9297,
+				"tri_total": 9297
+			},
+			{
+				"chave": "Cruzeiro",
+				"instancias": 2,
+				"tri": 4609,
+				"tri_total": 9218
+			},
+			{
+				"chave": "Barril",
+				"instancias": 3,
+				"tri": 2783,
+				"tri_total": 8349
+			},
+			{
+				"chave": "Banco",
+				"instancias": 2,
+				"tri": 4016,
+				"tri_total": 8032
+			},
+			{
+				"chave": "Bau",
+				"instancias": 2,
+				"tri": 3874,
+				"tri_total": 7748
+			},
+			{
+				"chave": "Pedras",
+				"instancias": 2,
+				"tri": 3816,
+				"tri_total": 7632
+			},
+			{
+				"chave": "Canoa Amarela",
+				"instancias": 2,
+				"tri": 3673,
+				"tri_total": 7346
+			},
+			{
+				"chave": "Rede",
+				"instancias": 2,
+				"tri": 3618,
+				"tri_total": 7236
+			},
+			{
+				"chave": "Guarita Fazenda",
+				"instancias": 1,
+				"tri": 6373,
+				"tri_total": 6373
+			},
+			{
+				"chave": "Cesto",
+				"instancias": 3,
+				"tri": 2036,
+				"tri_total": 6108
+			},
+			{
+				"chave": "Balde",
+				"instancias": 2,
+				"tri": 3004,
+				"tri_total": 6008
+			},
+			{
+				"chave": "Portao Fazenda",
+				"instancias": 1,
+				"tri": 6006,
+				"tri_total": 6006
+			},
+			{
+				"chave": "Pedras Praia",
+				"instancias": 1,
+				"tri": 5924,
+				"tri_total": 5924
+			},
+			{
+				"chave": "Fogao Barro",
+				"instancias": 1,
+				"tri": 5694,
+				"tri_total": 5694
+			},
+			{
+				"chave": "Jumento",
+				"instancias": 1,
+				"tri": 5599,
+				"tri_total": 5599
+			},
+			{
+				"chave": "Caititu",
+				"instancias": 1,
+				"tri": 5582,
+				"tri_total": 5582
+			},
+			{
+				"chave": "Onca Preta",
+				"instancias": 1,
+				"tri": 5570,
+				"tri_total": 5570
+			},
+			{
+				"chave": "Bode",
+				"instancias": 1,
+				"tri": 5512,
+				"tri_total": 5512
+			},
+			{
+				"chave": "Galinheiro",
+				"instancias": 1,
+				"tri": 5455,
+				"tri_total": 5455
+			},
+			{
+				"chave": "Leitao",
+				"instancias": 1,
+				"tri": 5438,
+				"tri_total": 5438
+			},
+			{
+				"chave": "Onca Pintada",
+				"instancias": 1,
+				"tri": 5407,
+				"tri_total": 5407
+			},
+			{
+				"chave": "Filhote Caramelo",
+				"instancias": 1,
+				"tri": 5405,
+				"tri_total": 5405
+			},
+			{
+				"chave": "Chiqueiro",
+				"instancias": 1,
+				"tri": 5305,
+				"tri_total": 5305
+			},
+			{
+				"chave": "Pedra Mare",
+				"instancias": 1,
+				"tri": 4865,
+				"tri_total": 4865
+			},
+			{
+				"chave": "Canoa Em Obra",
+				"instancias": 1,
+				"tri": 4837,
+				"tri_total": 4837
+			},
+			{
+				"chave": "Tumulo",
+				"instancias": 1,
+				"tri": 4320,
+				"tri_total": 4320
+			},
+			{
+				"chave": "Banco Tosco",
+				"instancias": 2,
+				"tri": 2133,
+				"tri_total": 4266
+			},
+			{
+				"chave": "Mesa",
+				"instancias": 1,
+				"tri": 4206,
+				"tri_total": 4206
+			},
+			{
+				"chave": "Poco",
+				"instancias": 1,
+				"tri": 4132,
+				"tri_total": 4132
+			},
+			{
+				"chave": "Varal",
+				"instancias": 1,
+				"tri": 4122,
+				"tri_total": 4122
+			},
+			{
+				"chave": "Tronco Caido",
+				"instancias": 1,
+				"tri": 4118,
+				"tri_total": 4118
+			},
+			{
+				"chave": "Carroca",
+				"instancias": 1,
+				"tri": 4115,
+				"tri_total": 4115
+			},
+			{
+				"chave": "Rede De Pesca",
+				"instancias": 1,
+				"tri": 4026,
+				"tri_total": 4026
+			},
+			{
+				"chave": "Lenha",
+				"instancias": 1,
+				"tri": 3997,
+				"tri_total": 3997
+			},
+			{
+				"chave": "Lampiao Poste",
+				"instancias": 1,
+				"tri": 3971,
+				"tri_total": 3971
+			},
+			{
+				"chave": "Mandioca Canteiro",
+				"instancias": 1,
+				"tri": 3949,
+				"tri_total": 3949
+			},
+			{
+				"chave": "Peru",
+				"instancias": 1,
+				"tri": 3935,
+				"tri_total": 3935
+			},
+			{
+				"chave": "Pedra Solta",
+				"instancias": 1,
+				"tri": 3816,
+				"tri_total": 3816
+			},
+			{
+				"chave": "Lapa",
+				"instancias": 1,
+				"tri": 3816,
+				"tri_total": 3816
+			},
+			{
+				"chave": "Pavao",
+				"instancias": 1,
+				"tri": 3706,
+				"tri_total": 3706
+			},
+			{
+				"chave": "Ervas Secando",
+				"instancias": 1,
+				"tri": 3566,
+				"tri_total": 3566
+			},
+			{
+				"chave": "Moringa",
+				"instancias": 2,
+				"tri": 1782,
+				"tri_total": 3564
+			},
+			{
+				"chave": "Pilao",
+				"instancias": 1,
+				"tri": 3199,
+				"tri_total": 3199
+			},
+			{
+				"chave": "Tabuleiro",
+				"instancias": 1,
+				"tri": 3009,
+				"tri_total": 3009
+			},
+			{
+				"chave": "Lavadouro Pedra",
+				"instancias": 1,
+				"tri": 3004,
+				"tri_total": 3004
+			},
+			{
+				"chave": "Varal Bambu",
+				"instancias": 1,
+				"tri": 2963,
+				"tri_total": 2963
+			},
+			{
+				"chave": "Embauba",
+				"instancias": 1,
+				"tri": 2963,
+				"tri_total": 2963
+			},
+			{
+				"chave": "Varal Estacas",
+				"instancias": 1,
+				"tri": 2942,
+				"tri_total": 2942
+			},
+			{
+				"chave": "Capim",
+				"instancias": 1,
+				"tri": 2907,
+				"tri_total": 2907
+			},
+			{
+				"chave": "Fitas Gameleira",
+				"instancias": 1,
+				"tri": 2831,
+				"tri_total": 2831
+			},
+			{
+				"chave": "Massaranduba",
+				"instancias": 1,
+				"tri": 2819,
+				"tri_total": 2819
+			},
+			{
+				"chave": "Jequitiba",
+				"instancias": 1,
+				"tri": 2791,
+				"tri_total": 2791
+			},
+			{
+				"chave": "Fogueira",
+				"instancias": 1,
+				"tri": 2675,
+				"tri_total": 2675
+			},
+			{
+				"chave": "Mastro Pano",
+				"instancias": 1,
+				"tri": 2648,
+				"tri_total": 2648
+			},
+			{
+				"chave": "Mata Alta",
+				"instancias": 1,
+				"tri": 2489,
+				"tri_total": 2489
+			},
+			{
+				"chave": "Remos",
+				"instancias": 1,
+				"tri": 2477,
+				"tri_total": 2477
+			},
+			{
+				"chave": "Sapucaia",
+				"instancias": 1,
+				"tri": 2439,
+				"tri_total": 2439
+			},
+			{
+				"chave": "Mata Larga",
+				"instancias": 1,
+				"tri": 2436,
+				"tri_total": 2436
+			},
+			{
+				"chave": "Moita",
+				"instancias": 1,
+				"tri": 2370,
+				"tri_total": 2370
+			},
+			{
+				"chave": "Gamela",
+				"instancias": 1,
+				"tri": 2335,
+				"tri_total": 2335
+			},
+			{
+				"chave": "Trouxa Roupa",
+				"instancias": 1,
+				"tri": 2330,
+				"tri_total": 2330
+			},
+			{
+				"chave": "Enxada",
+				"instancias": 1,
+				"tri": 2300,
+				"tri_total": 2300
+			},
+			{
+				"chave": "Cocho",
+				"instancias": 1,
+				"tri": 2273,
+				"tri_total": 2273
+			},
+			{
+				"chave": "Angico",
+				"instancias": 1,
+				"tri": 2202,
+				"tri_total": 2202
+			},
+			{
+				"chave": "Farinha",
+				"instancias": 1,
+				"tri": 2151,
+				"tri_total": 2151
+			},
+			{
+				"chave": "Jatoba",
+				"instancias": 1,
+				"tri": 2151,
+				"tri_total": 2151
+			},
+			{
+				"chave": "Cana",
+				"instancias": 1,
+				"tri": 1978,
+				"tri_total": 1978
+			},
+			{
+				"chave": "Cacho Banana",
+				"instancias": 1,
+				"tri": 1966,
+				"tri_total": 1966
+			},
+			{
+				"chave": "Machado",
+				"instancias": 1,
+				"tri": 1904,
+				"tri_total": 1904
+			},
+			{
+				"chave": "Peixe",
+				"instancias": 1,
+				"tri": 1802,
+				"tri_total": 1802
+			},
+			{
+				"chave": "Vara Pescar",
+				"instancias": 1,
+				"tri": 1758,
+				"tri_total": 1758
+			}
+		],
+		"interno_por_classe": {
+			"AnimationPlayer": 45,
+			"AudioStreamPlayer": 4,
+			"AudioStreamPlayer3D": 5,
+			"GPUParticles3D": 29,
+			"RayCast3D": 1,
+			"Skeleton3D": 52,
+			"SpringArm3D": 1
+		},
+		"label3d": 58,
+		"lods_das_maiores": [
+			{
+				"exemplo": "/root/Vale3D/Lombada/@Node3D@2652/tripo_node_dd9dbd6e-7e73-4161-9188-ae0b2b0c3584",
+				"niveis_lod": 2,
+				"tri": 3816
+			},
+			{
+				"exemplo": "/root/Vale3D/Cenario/@Node3D@514/tripo_node_8be39db8-0749-4754-b077-68ae2074a678",
+				"niveis_lod": 0,
+				"tri": 9688
+			},
+			{
+				"exemplo": "/root/Vale3D/Cenario/bom_jesus_dos_pobres/Terra",
+				"niveis_lod": 0,
+				"tri": 130644
+			},
+			{
+				"exemplo": "/root/Vale3D/Cenario/@Node3D@750/tripo_node_abe689bd-9eb4-4fdd-8b09-d3447072f725",
+				"niveis_lod": 2,
+				"tri": 20453
+			},
+			{
+				"exemplo": "/root/Vale3D/BichosDeCasa/BandoCasaDoCarpinteiro/Galinha2/Pose/GalinhaTripo/galinha_tripo/tripo_node_e708c1a5-c07b-4492-b979-99777d3121bb",
+				"niveis_lod": 1,
+				"tri": 3885
+			},
+			{
+				"exemplo": "/root/Vale3D/Cenario/@Node3D@694/tripo_node_1a6a166c-c665-4442-8d7c-2e7c94591cc4",
+				"niveis_lod": 1,
+				"tri": 11343
+			},
+			{
+				"exemplo": "/root/Vale3D/Cenario/@Node3D@535/tripo_node_1fafb40d-486f-4b54-81cb-0556e9e99fb9",
+				"niveis_lod": 1,
+				"tri": 15420
+			},
+			{
+				"exemplo": "/root/Vale3D/Cenario/@Node3D@462/tripo_node_a365e1b7-c4de-47f2-9f76-21dbe96041fd",
+				"niveis_lod": 2,
+				"tri": 14753
+			},
+			{
+				"exemplo": "/root/Vale3D/Cenario/@Node3D@797/tripo_node_c555017f-f0a9-4acb-adf7-e1c390110f53",
+				"niveis_lod": 1,
+				"tri": 14680
+			},
+			{
+				"exemplo": "/root/Vale3D/Interiores/Interior_casa_pedro/PoteTripo/tripo_node_cadb6594-b90b-498a-bb48-de1f5f6cd291",
+				"niveis_lod": 1,
+				"tri": 4231
+			},
+			{
+				"exemplo": "/root/Vale3D/Cenario/Penedo da onça preta/Penedo LapaTripo/tripo_node_cbd026d7-43f9-4f75-900e-19868c1f2266",
+				"niveis_lod": 1,
+				"tri": 5411
+			},
+			{
+				"exemplo": "/root/Vale3D/Cenario/@Node3D@634/tripo_node_7e364e54-34bf-4753-9ab9-97767be096ac",
+				"niveis_lod": 0,
+				"tri": 4320
+			},
+			{
+				"exemplo": "/root/Vale3D/Cenario/@Node3D@1761/tripo_node_ac7492e1-3c9d-4e8e-89ef-d66d12b875ec",
+				"niveis_lod": 0,
+				"tri": 2370
+			},
+			{
+				"exemplo": "/root/Vale3D/Cenario/@Node3D@844/tripo_node_f20da46f-824f-4c10-9bda-2dbb42071033",
+				"niveis_lod": 0,
+				"tri": 15418
+			},
+			{
+				"exemplo": "/root/Vale3D/Cenario/@Node3D@856/tripo_node_6b9c6818-ab7d-453d-976e-6b935654bc7e",
+				"niveis_lod": 0,
+				"tri": 15148
+			},
+			{
+				"exemplo": "/root/Vale3D/Cenario/@Node3D@526/tripo_node_02088195-581c-44b2-8acb-956e4832cb03",
+				"niveis_lod": 1,
+				"tri": 15014
+			},
+			{
+				"exemplo": "/root/Vale3D/Cenario/@Node3D@689/tripo_node_c381d20a-63a6-4d28-8a89-0b24085d8108",
+				"niveis_lod": 0,
+				"tri": 5455
+			},
+			{
+				"exemplo": "/root/Vale3D/Cenario/@Node3D@1860/tripo_node_78bce9f7-4097-4562-ba44-f13a3c52586a",
+				"niveis_lod": 1,
+				"tri": 4865
+			},
+			{
+				"exemplo": "/root/Vale3D/Cenario/@Node3D@353/tripo_node_a411570a-eaa6-4a7a-a3e8-f712362de9af",
+				"niveis_lod": 2,
+				"tri": 12477
+			},
+			{
+				"exemplo": "/root/Vale3D/Interiores/Interior_casa_zefa/CandeeiroTripo/tripo_node_848c7c92-2056-4751-b30d-79b724212361",
+				"niveis_lod": 1,
+				"tri": 3864
+			},
+			{
+				"exemplo": "/root/Vale3D/Interiores/Interior_igreja/@Node3D@1453/tripo_node_1bf40edf-745c-4b12-81d4-ccd9b07b2c6e",
+				"niveis_lod": 1,
+				"tri": 4016
+			},
+			{
+				"exemplo": "/root/Vale3D/Cenario/@Node3D@868/tripo_node_3e2a33aa-2933-4e90-8240-cbd915f0ccda",
+				"niveis_lod": 1,
+				"tri": 15978
+			},
+			{
+				"exemplo": "/root/Vale3D/Cenario/@Node3D@880/tripo_node_dd212b6a-faa5-4ef2-8431-cd8aa0f8e103",
+				"niveis_lod": 1,
+				"tri": 10402
+			},
+			{
+				"exemplo": "/root/Vale3D/Cenario/@Node3D@539/tripo_node_f11b6d63-ef27-4b0b-8276-bc1b90381f9a",
+				"niveis_lod": 1,
+				"tri": 14716
+			},
+			{
+				"exemplo": "/root/Vale3D/Jogador/Visual/viajante_tripo/Armature/Skeleton3D/tripo_node_f1b49c50-7028-4d81-a187-4f3b48b6a1fd",
+				"niveis_lod": 2,
+				"tri": 14461
+			},
+			{
+				"exemplo": "/root/Vale3D/Cenario/@Node3D@688/tripo_node_1765aab7-d122-4e78-9b29-0ffbaa657a72",
+				"niveis_lod": 1,
+				"tri": 4122
+			},
+			{
+				"exemplo": "/root/Vale3D/Lavoura/Leito_5_3",
+				"niveis_lod": 0,
+				"tri": 1152
+			},
+			{
+				"exemplo": "/root/Vale3D/BichosDeCasa/BandoCasaDoPescador/Pintinho6/Pose/PintinhoTripo/pintinho_tripo/tripo_node_3688b919-d8ad-4e0d-8358-2895cc979402",
+				"niveis_lod": 1,
+				"tri": 3653
+			},
+			{
+				"exemplo": "/root/Vale3D/PonteDoRio/@Node3D@2615/CercaTripo/tripo_node_483112f9-bb2d-41b7-9297-1b8b7d6cdb42",
+				"niveis_lod": 1,
+				"tri": 3950
+			}
+		],
+		"luzes": [
+			{
+				"alcance": 2.73104095458984,
+				"caminho": "/root/Vale3D/Interiores/Interior_arraial_5/Lampiao",
+				"classe": "OmniLight3D",
+				"energia": 0.75,
+				"fade": false,
+				"sombra": false,
+				"visivel": true
+			},
+			{
+				"alcance": 5.09794330596924,
+				"caminho": "/root/Vale3D/Interiores/Interior_arraial_5/LuzDaJanela",
+				"classe": "SpotLight3D",
+				"energia": 0.915199995040894,
+				"fade": false,
+				"sombra": false,
+				"visivel": true
+			},
+			{
+				"alcance": 2.82946586608887,
+				"caminho": "/root/Vale3D/Interiores/Interior_casa_zefa/Lampiao",
+				"classe": "OmniLight3D",
+				"energia": 0.75,
+				"fade": false,
+				"sombra": false,
+				"visivel": true
+			},
+			{
+				"alcance": 3.01809692382813,
+				"caminho": "/root/Vale3D/Interiores/Interior_casa_zefa/Lamparina_1",
+				"classe": "OmniLight3D",
+				"energia": 0.757733702659607,
+				"fade": false,
+				"sombra": false,
+				"visivel": true
+			},
+			{
+				"alcance": 2.59999990463257,
+				"caminho": "/root/Vale3D/Interiores/Interior_casa_zefa/LuzDoOratorio_0",
+				"classe": "OmniLight3D",
+				"energia": 0.390497595071793,
+				"fade": false,
+				"sombra": false,
+				"visivel": true
+			},
+			{
+				"alcance": 5.28166961669922,
+				"caminho": "/root/Vale3D/Interiores/Interior_casa_zefa/LuzDaJanela",
+				"classe": "SpotLight3D",
+				"energia": 0.915199995040894,
+				"fade": false,
+				"sombra": false,
+				"visivel": true
+			},
+			{
+				"alcance": 2.82719707489014,
+				"caminho": "/root/Vale3D/Interiores/Interior_casa_pedro/Lampiao",
+				"classe": "OmniLight3D",
+				"energia": 0.75,
+				"fade": false,
+				"sombra": false,
+				"visivel": true
+			},
+			{
+				"alcance": 3.39263653755188,
+				"caminho": "/root/Vale3D/Interiores/Interior_casa_pedro/Lamparina_0",
+				"classe": "OmniLight3D",
+				"energia": 0.890497624874115,
+				"fade": false,
+				"sombra": false,
+				"visivel": true
+			},
+			{
+				"alcance": 5.27743434906006,
+				"caminho": "/root/Vale3D/Interiores/Interior_casa_pedro/LuzDaJanela",
+				"classe": "SpotLight3D",
+				"energia": 0.915199995040894,
+				"fade": false,
+				"sombra": false,
+				"visivel": true
+			},
+			{
+				"alcance": 2.91959953308105,
+				"caminho": "/root/Vale3D/Interiores/Interior_casa/Lampiao",
+				"classe": "OmniLight3D",
+				"energia": 0.75,
+				"fade": false,
+				"sombra": false,
+				"visivel": true
+			},
+			{
+				"alcance": 3.5035195350647,
+				"caminho": "/root/Vale3D/Interiores/Interior_casa/Lamparina_0",
+				"classe": "OmniLight3D",
+				"energia": 1.0060932636261,
+				"fade": false,
+				"sombra": false,
+				"visivel": true
+			},
+			{
+				"alcance": 5.4499192237854,
+				"caminho": "/root/Vale3D/Interiores/Interior_casa/LuzDaJanela",
+				"classe": "SpotLight3D",
+				"energia": 0.915199995040894,
+				"fade": false,
+				"sombra": false,
+				"visivel": true
+			},
+			{
+				"alcance": 5.59056663513184,
+				"caminho": "/root/Vale3D/Interiores/Interior_igreja/Lampiao",
+				"classe": "OmniLight3D",
+				"energia": 0.75,
+				"fade": false,
+				"sombra": false,
+				"visivel": true
+			},
+			{
+				"alcance": 6.44750881195068,
+				"caminho": "/root/Vale3D/Interiores/Interior_igreja/@SpotLight3D@1437",
+				"classe": "SpotLight3D",
+				"energia": 0.915199995040894,
+				"fade": false,
+				"sombra": false,
+				"visivel": true
+			},
+			{
+				"alcance": 6.44750881195068,
+				"caminho": "/root/Vale3D/Interiores/Interior_igreja/LuzDaJanela",
+				"classe": "SpotLight3D",
+				"energia": 0.915199995040894,
+				"fade": false,
+				"sombra": false,
+				"visivel": true
+			},
+			{
+				"alcance": 4.47245359420776,
+				"caminho": "/root/Vale3D/Interiores/Interior_igreja/Vela_1",
+				"classe": "OmniLight3D",
+				"energia": 1.24664270877838,
+				"fade": false,
+				"sombra": false,
+				"visivel": true
+			},
+			{
+				"alcance": 4.47245359420776,
+				"caminho": "/root/Vale3D/Interiores/Interior_igreja/Vela_0",
+				"classe": "OmniLight3D",
+				"energia": 1.20609331130981,
+				"fade": false,
+				"sombra": false,
+				"visivel": true
+			},
+			{
+				"alcance": 9.0,
+				"caminho": "/root/Vale3D/Cenario/LuzesDeEpoca/@OmniLight3D@961",
+				"classe": "OmniLight3D",
+				"energia": 2.29505062103271,
+				"fade": false,
+				"sombra": false,
+				"visivel": true
+			},
+			{
+				"alcance": 9.0,
+				"caminho": "/root/Vale3D/Cenario/LuzesDeEpoca/@OmniLight3D@960",
+				"classe": "OmniLight3D",
+				"energia": 2.34371495246887,
+				"fade": false,
+				"sombra": false,
+				"visivel": true
+			},
+			{
+				"alcance": 4.5,
+				"caminho": "/root/Vale3D/Cenario/LuzesDeEpoca/@OmniLight3D@955",
+				"classe": "OmniLight3D",
+				"energia": 1.07771468162537,
+				"fade": false,
+				"sombra": false,
+				"visivel": true
+			},
+			{
+				"alcance": 4.5,
+				"caminho": "/root/Vale3D/Cenario/LuzesDeEpoca/@OmniLight3D@952",
+				"classe": "OmniLight3D",
+				"energia": 1.0458664894104,
+				"fade": false,
+				"sombra": false,
+				"visivel": true
+			},
+			{
+				"alcance": 4.5,
+				"caminho": "/root/Vale3D/Cenario/LuzesDeEpoca/@OmniLight3D@949",
+				"classe": "OmniLight3D",
+				"energia": 1.08936417102814,
+				"fade": false,
+				"sombra": false,
+				"visivel": true
+			},
+			{
+				"alcance": 3.5,
+				"caminho": "/root/Vale3D/Cenario/LuzesDeEpoca/@OmniLight3D@947",
+				"classe": "OmniLight3D",
+				"energia": 0.74403703212738,
+				"fade": false,
+				"sombra": false,
+				"visivel": true
+			},
+			{
+				"alcance": 7.5,
+				"caminho": "/root/Vale3D/Cenario/LuzesDeEpoca/@OmniLight3D@944",
+				"classe": "OmniLight3D",
+				"energia": 1.99790287017822,
+				"fade": false,
+				"sombra": false,
+				"visivel": true
+			},
+			{
+				"alcance": 3.5,
+				"caminho": "/root/Vale3D/Cenario/LuzesDeEpoca/@OmniLight3D@940",
+				"classe": "OmniLight3D",
+				"energia": 0.697115123271942,
+				"fade": false,
+				"sombra": false,
+				"visivel": true
+			},
+			{
+				"alcance": 4.5,
+				"caminho": "/root/Vale3D/Cenario/LuzesDeEpoca/@OmniLight3D@937",
+				"classe": "OmniLight3D",
+				"energia": 1.10860586166382,
+				"fade": false,
+				"sombra": false,
+				"visivel": true
+			},
+			{
+				"alcance": 7.5,
+				"caminho": "/root/Vale3D/Cenario/LuzesDeEpoca/@OmniLight3D@935",
+				"classe": "OmniLight3D",
+				"energia": 1.87043392658234,
+				"fade": false,
+				"sombra": false,
+				"visivel": true
+			},
+			{
+				"alcance": 7.5,
+				"caminho": "/root/Vale3D/Cenario/LuzesDeEpoca/@OmniLight3D@930",
+				"classe": "OmniLight3D",
+				"energia": 1.87317562103271,
+				"fade": false,
+				"sombra": false,
+				"visivel": true
+			},
+			{
+				"alcance": 7.5,
+				"caminho": "/root/Vale3D/Cenario/LuzesDeEpoca/@OmniLight3D@925",
+				"classe": "OmniLight3D",
+				"energia": 1.87247097492218,
+				"fade": false,
+				"sombra": false,
+				"visivel": true
+			},
+			{
+				"blend_splits": false,
+				"caminho": "/root/Vale3D/Cenario/Lua",
+				"classe": "DirectionalLight3D",
+				"dist_max": 100.0,
+				"energia": 0.1684799939394,
+				"modo_sombra": 2,
+				"sombra": false,
+				"visivel": true
+			},
+			{
+				"blend_splits": false,
+				"caminho": "/root/Vale3D/Cenario/Sol",
+				"classe": "DirectionalLight3D",
+				"dist_max": 24.0,
+				"energia": 0.404799997806549,
+				"modo_sombra": 1,
+				"sombra": true,
+				"visivel": true
+			},
+			{
+				"blend_splits": false,
+				"caminho": "/root/Mochila/Painel/@VBoxContainer@4/@HBoxContainer@15/@VBoxContainer@68/BonecoDaMochila/Palco/Mundo/@DirectionalLight3D@2022",
+				"classe": "DirectionalLight3D",
+				"dist_max": 100.0,
+				"energia": 0.800000011920929,
+				"modo_sombra": 2,
+				"sombra": false,
+				"visivel": true
+			},
+			{
+				"blend_splits": false,
+				"caminho": "/root/Mochila/Painel/@VBoxContainer@4/@HBoxContainer@15/@VBoxContainer@68/BonecoDaMochila/Palco/Mundo/@DirectionalLight3D@2021",
+				"classe": "DirectionalLight3D",
+				"dist_max": 100.0,
+				"energia": 0.400000005960464,
+				"modo_sombra": 2,
+				"sombra": false,
+				"visivel": true
+			},
+			{
+				"blend_splits": false,
+				"caminho": "/root/Mochila/Painel/@VBoxContainer@4/@HBoxContainer@15/@VBoxContainer@68/BonecoDaMochila/Palco/Mundo/@DirectionalLight3D@2020",
+				"classe": "DirectionalLight3D",
+				"dist_max": 100.0,
+				"energia": 1.20000004768372,
+				"modo_sombra": 2,
+				"sombra": false,
+				"visivel": true
+			}
+		],
+		"maiores_malhas": [
+			{
+				"exemplo": "/root/Vale3D/Lombada/@Node3D@2652/tripo_node_dd9dbd6e-7e73-4161-9188-ae0b2b0c3584",
+				"instancias": 129,
+				"recurso": "res://assets/prototipo_3d/aderecos/pedras_tripo.glb::ArrayMesh_ytcjk",
+				"tri": 3816,
+				"tri_total": 492264
+			},
+			{
+				"exemplo": "/root/Vale3D/Cenario/@Node3D@514/tripo_node_8be39db8-0749-4754-b077-68ae2074a678",
+				"instancias": 18,
+				"recurso": "res://assets/prototipo_3d/arvores/pitangueira_tripo.glb::ArrayMesh_7wgb3",
+				"tri": 9688,
+				"tri_total": 174384
+			},
+			{
+				"exemplo": "/root/Vale3D/Cenario/bom_jesus_dos_pobres/Fundo do mar",
+				"instancias": 1,
+				"recurso": "",
+				"tri": 137500,
+				"tri_total": 137500
+			},
+			{
+				"exemplo": "/root/Vale3D/Cenario/bom_jesus_dos_pobres/Terra",
+				"instancias": 1,
+				"recurso": "",
+				"tri": 130644,
+				"tri_total": 130644
+			},
+			{
+				"exemplo": "/root/Vale3D/Cenario/@Node3D@750/tripo_node_abe689bd-9eb4-4fdd-8b09-d3447072f725",
+				"instancias": 6,
+				"recurso": "res://assets/prototipo_3d/arvores/mangueira_tripo.glb::ArrayMesh_l7fpv",
+				"tri": 20453,
+				"tri_total": 122718
+			},
+			{
+				"exemplo": "/root/Vale3D/BichosDeCasa/BandoCasaDoCarpinteiro/Galinha2/Pose/GalinhaTripo/galinha_tripo/tripo_node_e708c1a5-c07b-4492-b979-99777d3121bb",
+				"instancias": 25,
+				"recurso": "res://assets/prototipo_3d/animais/galinha_tripo.glb::ArrayMesh_7nvty",
+				"tri": 3885,
+				"tri_total": 97125
+			},
+			{
+				"exemplo": "/root/Vale3D/Cenario/@Node3D@694/tripo_node_1a6a166c-c665-4442-8d7c-2e7c94591cc4",
+				"instancias": 7,
+				"recurso": "res://assets/prototipo_3d/construcoes/casa_taipa_tripo.glb::ArrayMesh_qx01r",
+				"tri": 11343,
+				"tri_total": 79401
+			},
+			{
+				"exemplo": "/root/Vale3D/Cenario/@Node3D@535/tripo_node_1fafb40d-486f-4b54-81cb-0556e9e99fb9",
+				"instancias": 4,
+				"recurso": "res://assets/prototipo_3d/arvores/cajueiro_tripo.glb::ArrayMesh_neaq6",
+				"tri": 15420,
+				"tri_total": 61680
+			},
+			{
+				"exemplo": "/root/Vale3D/Cenario/@Node3D@462/tripo_node_a365e1b7-c4de-47f2-9f76-21dbe96041fd",
+				"instancias": 4,
+				"recurso": "res://assets/prototipo_3d/arvores/bananeira_tripo.glb::ArrayMesh_g2bgi",
+				"tri": 14753,
+				"tri_total": 59012
+			},
+			{
+				"exemplo": "/root/Vale3D/Cenario/@Node3D@797/tripo_node_c555017f-f0a9-4acb-adf7-e1c390110f53",
+				"instancias": 4,
+				"recurso": "res://assets/prototipo_3d/arvores/jaqueira_tripo.glb::ArrayMesh_t58x3",
+				"tri": 14680,
+				"tri_total": 58720
+			},
+			{
+				"exemplo": "/root/Vale3D/Interiores/Interior_casa_pedro/PoteTripo/tripo_node_cadb6594-b90b-498a-bb48-de1f5f6cd291",
+				"instancias": 13,
+				"recurso": "res://assets/prototipo_3d/aderecos/pote_tripo.glb::ArrayMesh_vjwn0",
+				"tri": 4231,
+				"tri_total": 55003
+			},
+			{
+				"exemplo": "/root/Vale3D/Cenario/Penedo da onça preta/Penedo LapaTripo/tripo_node_cbd026d7-43f9-4f75-900e-19868c1f2266",
+				"instancias": 10,
+				"recurso": "res://assets/prototipo_3d/aderecos/penedo_lapa_tripo.glb::ArrayMesh_k6dcq",
+				"tri": 5411,
+				"tri_total": 54110
+			},
+			{
+				"exemplo": "/root/Vale3D/Cenario/@Node3D@634/tripo_node_7e364e54-34bf-4753-9ab9-97767be096ac",
+				"instancias": 12,
+				"recurso": "res://assets/prototipo_3d/aderecos/tumulo_tripo.glb::ArrayMesh_nw0ee",
+				"tri": 4320,
+				"tri_total": 51840
+			},
+			{
+				"exemplo": "/root/Vale3D/Cenario/@Node3D@1761/tripo_node_ac7492e1-3c9d-4e8e-89ef-d66d12b875ec",
+				"instancias": 21,
+				"recurso": "res://assets/prototipo_3d/arvores/moita_tripo.glb::ArrayMesh_wo2uy",
+				"tri": 2370,
+				"tri_total": 49770
+			},
+			{
+				"exemplo": "/root/Vale3D/Cenario/@Node3D@844/tripo_node_f20da46f-824f-4c10-9bda-2dbb42071033",
+				"instancias": 3,
+				"recurso": "res://assets/prototipo_3d/arvores/ipe_roxo_tripo.glb::ArrayMesh_1acr8",
+				"tri": 15418,
+				"tri_total": 46254
+			},
+			{
+				"exemplo": "/root/Vale3D/Cenario/@Node3D@856/tripo_node_6b9c6818-ab7d-453d-976e-6b935654bc7e",
+				"instancias": 3,
+				"recurso": "res://assets/prototipo_3d/arvores/ipe_amarelo_tripo.glb::ArrayMesh_1iam5",
+				"tri": 15148,
+				"tri_total": 45444
+			},
+			{
+				"exemplo": "/root/Vale3D/Cenario/@Node3D@526/tripo_node_02088195-581c-44b2-8acb-956e4832cb03",
+				"instancias": 3,
+				"recurso": "res://assets/prototipo_3d/arvores/dende_tripo.glb::ArrayMesh_yy2sm",
+				"tri": 15014,
+				"tri_total": 45042
+			},
+			{
+				"exemplo": "/root/Vale3D/Cenario/@Node3D@689/tripo_node_c381d20a-63a6-4d28-8a89-0b24085d8108",
+				"instancias": 8,
+				"recurso": "res://assets/prototipo_3d/aderecos/galinheiro_tripo.glb::ArrayMesh_weunh",
+				"tri": 5455,
+				"tri_total": 43640
+			},
+			{
+				"exemplo": "/root/Vale3D/Cenario/@Node3D@1860/tripo_node_78bce9f7-4097-4562-ba44-f13a3c52586a",
+				"instancias": 8,
+				"recurso": "res://assets/prototipo_3d/aderecos/pedra_mare_tripo.glb::ArrayMesh_pqtfj",
+				"tri": 4865,
+				"tri_total": 38920
+			},
+			{
+				"exemplo": "/root/Vale3D/Cenario/@Node3D@353/tripo_node_a411570a-eaa6-4a7a-a3e8-f712362de9af",
+				"instancias": 3,
+				"recurso": "res://assets/prototipo_3d/casas/casa_carro_quebrado_tripo.glb::ArrayMesh_p8t10",
+				"tri": 12477,
+				"tri_total": 37431
+			},
+			{
+				"exemplo": "/root/Vale3D/Interiores/Interior_casa_zefa/CandeeiroTripo/tripo_node_848c7c92-2056-4751-b30d-79b724212361",
+				"instancias": 9,
+				"recurso": "res://assets/prototipo_3d/aderecos/candeeiro_tripo.glb::ArrayMesh_f2q7n",
+				"tri": 3864,
+				"tri_total": 34776
+			},
+			{
+				"exemplo": "/root/Vale3D/Interiores/Interior_igreja/@Node3D@1453/tripo_node_1bf40edf-745c-4b12-81d4-ccd9b07b2c6e",
+				"instancias": 8,
+				"recurso": "res://assets/prototipo_3d/aderecos/banco_tripo.glb::ArrayMesh_i1763",
+				"tri": 4016,
+				"tri_total": 32128
+			},
+			{
+				"exemplo": "/root/Vale3D/Cenario/@Node3D@868/tripo_node_3e2a33aa-2933-4e90-8240-cbd915f0ccda",
+				"instancias": 2,
+				"recurso": "res://assets/prototipo_3d/arvores/pau_brasil_tripo.glb::ArrayMesh_nlnkr",
+				"tri": 15978,
+				"tri_total": 31956
+			},
+			{
+				"exemplo": "/root/Vale3D/Cenario/@Node3D@880/tripo_node_dd212b6a-faa5-4ef2-8431-cd8aa0f8e103",
+				"instancias": 3,
+				"recurso": "res://assets/prototipo_3d/construcoes/casa_taipa_ocre_tripo.glb::ArrayMesh_ljfw8",
+				"tri": 10402,
+				"tri_total": 31206
+			},
+			{
+				"exemplo": "/root/Vale3D/Cenario/@Node3D@539/tripo_node_f11b6d63-ef27-4b0b-8276-bc1b90381f9a",
+				"instancias": 2,
+				"recurso": "res://assets/prototipo_3d/arvores/coqueiro_tripo.glb::ArrayMesh_t5vp1",
+				"tri": 14716,
+				"tri_total": 29432
+			},
+			{
+				"exemplo": "/root/Vale3D/Jogador/Visual/viajante_tripo/Armature/Skeleton3D/tripo_node_f1b49c50-7028-4d81-a187-4f3b48b6a1fd",
+				"instancias": 2,
+				"recurso": "res://assets/prototipo_3d/personagens/viajante_tripo.glb::ArrayMesh_3ud46",
+				"tri": 14461,
+				"tri_total": 28922
+			},
+			{
+				"exemplo": "/root/Vale3D/Cenario/@Node3D@688/tripo_node_1765aab7-d122-4e78-9b29-0ffbaa657a72",
+				"instancias": 7,
+				"recurso": "res://assets/prototipo_3d/aderecos/varal_tripo.glb::ArrayMesh_16wvf",
+				"tri": 4122,
+				"tri_total": 28854
+			},
+			{
+				"exemplo": "/root/Vale3D/Lavoura/Leito_5_3",
+				"instancias": 24,
+				"recurso": "",
+				"tri": 1152,
+				"tri_total": 27648
+			},
+			{
+				"exemplo": "/root/Vale3D/BichosDeCasa/BandoCasaDoPescador/Pintinho6/Pose/PintinhoTripo/pintinho_tripo/tripo_node_3688b919-d8ad-4e0d-8358-2895cc979402",
+				"instancias": 7,
+				"recurso": "res://assets/prototipo_3d/animais/pintinho_tripo.glb::ArrayMesh_3apim",
+				"tri": 3653,
+				"tri_total": 25571
+			},
+			{
+				"exemplo": "/root/Vale3D/PonteDoRio/@Node3D@2615/CercaTripo/tripo_node_483112f9-bb2d-41b7-9297-1b8b7d6cdb42",
+				"instancias": 6,
+				"recurso": "res://assets/prototipo_3d/aderecos/cerca_tripo.glb::ArrayMesh_nnndc",
+				"tri": 3950,
+				"tri_total": 23700
+			},
+			{
+				"exemplo": "/root/Vale3D/Cenario/@Node3D@1782/tripo_node_b1ef4bb9-68b9-4844-aadd-9b1b507de9cf",
+				"instancias": 8,
+				"recurso": "res://assets/prototipo_3d/arvores/capim_tripo.glb::ArrayMesh_xsvnu",
+				"tri": 2907,
+				"tri_total": 23256
+			},
+			{
+				"exemplo": "/root/Vale3D/BichosDeCasa/@CharacterBody3D@2544/Pose/Gato MalhadoTripo/gato_malhado_tripo/Armature/Skeleton3D/tripo_node_0ce9902a-ed92-47af-ad54-17260ffa3034",
+				"instancias": 4,
+				"recurso": "res://assets/prototipo_3d/animais/gato_malhado_tripo.glb::ArrayMesh_70ik8",
+				"tri": 5599,
+				"tri_total": 22396
+			},
+			{
+				"exemplo": "/root/Vale3D/Cenario/@Node3D@895/tripo_node_3f61feeb-cd2a-4bd0-83b5-5b64874e5736",
+				"instancias": 2,
+				"recurso": "res://assets/prototipo_3d/construcoes/casa_taipa_verde_tripo.glb::ArrayMesh_x1u76",
+				"tri": 9297,
+				"tri_total": 18594
+			},
+			{
+				"exemplo": "/root/Vale3D/Cenario/bom_jesus_dos_pobres/Fundo do mar distante",
+				"instancias": 1,
+				"recurso": "",
+				"tri": 18432,
+				"tri_total": 18432
+			},
+			{
+				"exemplo": "/root/Vale3D/Cenario/@Node3D@1792/tripo_node_ecabbb34-5d20-436b-a43f-5c00a963a7f4",
+				"instancias": 6,
+				"recurso": "res://assets/prototipo_3d/arvores/embauba_tripo.glb::ArrayMesh_1qj47",
+				"tri": 2963,
+				"tri_total": 17778
+			},
+			{
+				"exemplo": "/root/Vale3D/Cenario/@Node3D@679/tripo_node_5c61eafd-1c36-469f-93c3-338e628dbfa2",
+				"instancias": 6,
+				"recurso": "res://assets/prototipo_3d/aderecos/varal_bambu_tripo.glb::ArrayMesh_c1tb6",
+				"tri": 2963,
+				"tri_total": 17778
+			},
+			{
+				"exemplo": "/root/Vale3D/Cenario/@Node3D@729/tripo_node_d6aa0bbb-27b1-4072-9fc0-a45e93d07017",
+				"instancias": 3,
+				"recurso": "res://assets/prototipo_3d/aderecos/pedras_praia_tripo.glb::ArrayMesh_vkip6",
+				"tri": 5924,
+				"tri_total": 17772
+			},
+			{
+				"exemplo": "/root/Vale3D/Cenario/@Node3D@687/tripo_node_2170a21e-6a37-4547-8585-bcdf19a571ce",
+				"instancias": 6,
+				"recurso": "res://assets/prototipo_3d/aderecos/varal_estacas_tripo.glb::ArrayMesh_0lr1h",
+				"tri": 2942,
+				"tri_total": 17652
+			},
+			{
+				"exemplo": "/root/Vale3D/BichosDeCasa/BandoCasaDaZefa/GalinhaDangola4/Pose/Galinha DangolaTripo/galinha_dangola_tripo/tripo_node_d5e89711-a636-4c43-8cc0-10531e7a0b66",
+				"instancias": 5,
+				"recurso": "res://assets/prototipo_3d/animais/galinha_dangola_tripo.glb::ArrayMesh_2jvaa",
+				"tri": 3509,
+				"tri_total": 17545
+			},
+			{
+				"exemplo": "/root/Vale3D/Lombada/@Node3D@2656/Pose/Cabra SoltaTripo/cabra_tripo/Armature/Skeleton3D/tripo_node_033575d4-6ab3-46fb-9775-2e1df0a88531",
+				"instancias": 3,
+				"recurso": "res://assets/prototipo_3d/animais/cabra_tripo.glb::ArrayMesh_w63sd",
+				"tri": 5814,
+				"tri_total": 17442
+			}
+		],
+		"malhas_distintas": 552,
+		"mesh_instances_com_skin": 52,
+		"mesh_instances_com_sombra": 910,
+		"mesh_instances_com_visibility_range": 451,
+		"mesh_instances_visiveis": 864,
+		"monitores": {
+			"buffers_mb": 131.0,
+			"fisica_corpos_ativos": 7.0,
+			"fisica_ilhas": 7.0,
+			"fisica_pares": 516.0,
+			"memoria_estatica_mb": 417.7,
+			"nos": 7263.0,
+			"nos_orfaos": 0.0,
+			"objetos": 16917.0,
+			"recursos": 1997.0,
+			"tempo_fisica_max_ms": 9.25,
+			"tempo_navegacao_ms": 0.02,
+			"tempo_process_max_ms": 20.62,
+			"texturas_mb": 1396.8,
+			"video_mb": 1591.1
+		},
+		"multimesh_por_grupo": {
+			"Copa distante, modelo_ Coqueiros da orla": {
+				"blocos": 12,
+				"cull": 0,
+				"instancias": 22,
+				"lod_bias": 1.0,
+				"material": "StandardMaterial3D",
+				"niveis_lod": 1,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": 0,
+				"tri_lod0": 36564,
+				"tri_por_instancia": 1662,
+				"vis_begin": 160.0,
+				"vis_end": 600.0,
+				"visiveis": 12
+			},
+			"Copa distante, modelo_ Ingazeiros do rio": {
+				"blocos": 13,
+				"cull": 2,
+				"instancias": 25,
+				"lod_bias": 1.0,
+				"material": "StandardMaterial3D",
+				"niveis_lod": 0,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": 0,
+				"tri_lod0": 37950,
+				"tri_por_instancia": 1518,
+				"vis_begin": 150.0,
+				"vis_end": 600.0,
+				"visiveis": 13
+			},
+			"Copa distante, modelo_ Manguezal": {
+				"blocos": 6,
+				"cull": 2,
+				"instancias": 34,
+				"lod_bias": 1.0,
+				"material": "StandardMaterial3D",
+				"niveis_lod": 0,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": 0,
+				"tri_lod0": 47328,
+				"tri_por_instancia": 1392,
+				"vis_begin": 150.0,
+				"vis_end": 600.0,
+				"visiveis": 6
+			},
+			"Copa distante, modelo_ Mata_ dendezeiro": {
+				"blocos": 32,
+				"cull": 0,
+				"instancias": 113,
+				"lod_bias": 1.0,
+				"material": "StandardMaterial3D",
+				"niveis_lod": 0,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": 0,
+				"tri_lod0": 193908,
+				"tri_por_instancia": 1716,
+				"vis_begin": 170.0,
+				"vis_end": 600.0,
+				"visiveis": 32
+			},
+			"Copa distante, modelo_ Mata_ ingazeiro": {
+				"blocos": 15,
+				"cull": 2,
+				"instancias": 50,
+				"lod_bias": 1.0,
+				"material": "StandardMaterial3D",
+				"niveis_lod": 0,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": 0,
+				"tri_lod0": 75900,
+				"tri_por_instancia": 1518,
+				"vis_begin": 170.0,
+				"vis_end": 600.0,
+				"visiveis": 15
+			},
+			"Copa distante, modelo_ Mata_ piacava": {
+				"blocos": 8,
+				"cull": 2,
+				"instancias": 34,
+				"lod_bias": 1.0,
+				"material": "StandardMaterial3D",
+				"niveis_lod": 0,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": 0,
+				"tri_lod0": 54502,
+				"tri_por_instancia": 1603,
+				"vis_begin": 170.0,
+				"vis_end": 600.0,
+				"visiveis": 8
+			},
+			"Copa distante, modelo_ Restinga da orla_ castanhola": {
+				"blocos": 6,
+				"cull": 2,
+				"instancias": 10,
+				"lod_bias": 1.0,
+				"material": "StandardMaterial3D",
+				"niveis_lod": 1,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": 0,
+				"tri_lod0": 14850,
+				"tri_por_instancia": 1485,
+				"vis_begin": 130.0,
+				"vis_end": 600.0,
+				"visiveis": 6
+			},
+			"Copa distante, modelo_ Restinga da orla_ piacava": {
+				"blocos": 4,
+				"cull": 2,
+				"instancias": 4,
+				"lod_bias": 1.0,
+				"material": "StandardMaterial3D",
+				"niveis_lod": 0,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": 0,
+				"tri_lod0": 6412,
+				"tri_por_instancia": 1603,
+				"vis_begin": 130.0,
+				"vis_end": 600.0,
+				"visiveis": 4
+			},
+			"Copa distante_ Coqueiros da orla": {
+				"blocos": 12,
+				"cull": -1,
+				"instancias": 22,
+				"lod_bias": 1.0,
+				"material": "ShaderMaterial",
+				"niveis_lod": 0,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": -1,
+				"tri_lod0": 1408,
+				"tri_por_instancia": 64,
+				"vis_begin": 600.0,
+				"vis_end": 1200.0,
+				"visiveis": 12
+			},
+			"Copa distante_ Ingazeiros do rio": {
+				"blocos": 13,
+				"cull": -1,
+				"instancias": 25,
+				"lod_bias": 1.0,
+				"material": "ShaderMaterial",
+				"niveis_lod": 0,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": -1,
+				"tri_lod0": 1600,
+				"tri_por_instancia": 64,
+				"vis_begin": 600.0,
+				"vis_end": 1200.0,
+				"visiveis": 13
+			},
+			"Copa distante_ Manguezal": {
+				"blocos": 6,
+				"cull": -1,
+				"instancias": 34,
+				"lod_bias": 1.0,
+				"material": "ShaderMaterial",
+				"niveis_lod": 0,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": -1,
+				"tri_lod0": 2176,
+				"tri_por_instancia": 64,
+				"vis_begin": 600.0,
+				"vis_end": 1200.0,
+				"visiveis": 6
+			},
+			"Copa distante_ Mata_ angico": {
+				"blocos": 25,
+				"cull": -1,
+				"instancias": 246,
+				"lod_bias": 1.0,
+				"material": "ShaderMaterial",
+				"niveis_lod": 0,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": -1,
+				"tri_lod0": 15744,
+				"tri_por_instancia": 64,
+				"vis_begin": 170.0,
+				"vis_end": 1200.0,
+				"visiveis": 25
+			},
+			"Copa distante_ Mata_ aroeira": {
+				"blocos": 33,
+				"cull": -1,
+				"instancias": 141,
+				"lod_bias": 1.0,
+				"material": "ShaderMaterial",
+				"niveis_lod": 0,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": -1,
+				"tri_lod0": 9024,
+				"tri_por_instancia": 64,
+				"vis_begin": 170.0,
+				"vis_end": 1200.0,
+				"visiveis": 33
+			},
+			"Copa distante_ Mata_ cajueiro": {
+				"blocos": 4,
+				"cull": -1,
+				"instancias": 10,
+				"lod_bias": 1.0,
+				"material": "ShaderMaterial",
+				"niveis_lod": 0,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": -1,
+				"tri_lod0": 640,
+				"tri_por_instancia": 64,
+				"vis_begin": 170.0,
+				"vis_end": 1200.0,
+				"visiveis": 4
+			},
+			"Copa distante_ Mata_ clusia": {
+				"blocos": 7,
+				"cull": -1,
+				"instancias": 52,
+				"lod_bias": 1.0,
+				"material": "ShaderMaterial",
+				"niveis_lod": 0,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": -1,
+				"tri_lod0": 3328,
+				"tri_por_instancia": 64,
+				"vis_begin": 170.0,
+				"vis_end": 1200.0,
+				"visiveis": 7
+			},
+			"Copa distante_ Mata_ dendezeiro": {
+				"blocos": 32,
+				"cull": -1,
+				"instancias": 113,
+				"lod_bias": 1.0,
+				"material": "ShaderMaterial",
+				"niveis_lod": 0,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": -1,
+				"tri_lod0": 7232,
+				"tri_por_instancia": 64,
+				"vis_begin": 600.0,
+				"vis_end": 1200.0,
+				"visiveis": 32
+			},
+			"Copa distante_ Mata_ embauba": {
+				"blocos": 93,
+				"cull": -1,
+				"instancias": 353,
+				"lod_bias": 1.0,
+				"material": "ShaderMaterial",
+				"niveis_lod": 0,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": -1,
+				"tri_lod0": 22592,
+				"tri_por_instancia": 64,
+				"vis_begin": 170.0,
+				"vis_end": 1200.0,
+				"visiveis": 93
+			},
+			"Copa distante_ Mata_ ingazeiro": {
+				"blocos": 15,
+				"cull": -1,
+				"instancias": 50,
+				"lod_bias": 1.0,
+				"material": "ShaderMaterial",
+				"niveis_lod": 0,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": -1,
+				"tri_lod0": 3200,
+				"tri_por_instancia": 64,
+				"vis_begin": 600.0,
+				"vis_end": 1200.0,
+				"visiveis": 15
+			},
+			"Copa distante_ Mata_ ipe_amarelo": {
+				"blocos": 36,
+				"cull": -1,
+				"instancias": 166,
+				"lod_bias": 1.0,
+				"material": "ShaderMaterial",
+				"niveis_lod": 0,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": -1,
+				"tri_lod0": 10624,
+				"tri_por_instancia": 64,
+				"vis_begin": 170.0,
+				"vis_end": 1200.0,
+				"visiveis": 36
+			},
+			"Copa distante_ Mata_ jaqueira": {
+				"blocos": 21,
+				"cull": -1,
+				"instancias": 46,
+				"lod_bias": 1.0,
+				"material": "ShaderMaterial",
+				"niveis_lod": 0,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": -1,
+				"tri_lod0": 2944,
+				"tri_por_instancia": 64,
+				"vis_begin": 170.0,
+				"vis_end": 1200.0,
+				"visiveis": 21
+			},
+			"Copa distante_ Mata_ jatoba": {
+				"blocos": 81,
+				"cull": -1,
+				"instancias": 521,
+				"lod_bias": 1.0,
+				"material": "ShaderMaterial",
+				"niveis_lod": 0,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": -1,
+				"tri_lod0": 33344,
+				"tri_por_instancia": 64,
+				"vis_begin": 170.0,
+				"vis_end": 1200.0,
+				"visiveis": 81
+			},
+			"Copa distante_ Mata_ jenipapeiro": {
+				"blocos": 30,
+				"cull": -1,
+				"instancias": 164,
+				"lod_bias": 1.0,
+				"material": "ShaderMaterial",
+				"niveis_lod": 0,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": -1,
+				"tri_lod0": 10496,
+				"tri_por_instancia": 64,
+				"vis_begin": 170.0,
+				"vis_end": 1200.0,
+				"visiveis": 30
+			},
+			"Copa distante_ Mata_ jequitiba": {
+				"blocos": 65,
+				"cull": -1,
+				"instancias": 446,
+				"lod_bias": 1.0,
+				"material": "ShaderMaterial",
+				"niveis_lod": 0,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": -1,
+				"tri_lod0": 28544,
+				"tri_por_instancia": 64,
+				"vis_begin": 170.0,
+				"vis_end": 1200.0,
+				"visiveis": 65
+			},
+			"Copa distante_ Mata_ massaranduba": {
+				"blocos": 37,
+				"cull": -1,
+				"instancias": 257,
+				"lod_bias": 1.0,
+				"material": "ShaderMaterial",
+				"niveis_lod": 0,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": -1,
+				"tri_lod0": 16448,
+				"tri_por_instancia": 64,
+				"vis_begin": 170.0,
+				"vis_end": 1200.0,
+				"visiveis": 37
+			},
+			"Copa distante_ Mata_ mata_alta": {
+				"blocos": 28,
+				"cull": -1,
+				"instancias": 147,
+				"lod_bias": 1.0,
+				"material": "ShaderMaterial",
+				"niveis_lod": 0,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": -1,
+				"tri_lod0": 9408,
+				"tri_por_instancia": 64,
+				"vis_begin": 170.0,
+				"vis_end": 1200.0,
+				"visiveis": 28
+			},
+			"Copa distante_ Mata_ pau_brasil": {
+				"blocos": 30,
+				"cull": -1,
+				"instancias": 112,
+				"lod_bias": 1.0,
+				"material": "ShaderMaterial",
+				"niveis_lod": 0,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": -1,
+				"tri_lod0": 7168,
+				"tri_por_instancia": 64,
+				"vis_begin": 170.0,
+				"vis_end": 1200.0,
+				"visiveis": 30
+			},
+			"Copa distante_ Mata_ piacava": {
+				"blocos": 8,
+				"cull": -1,
+				"instancias": 34,
+				"lod_bias": 1.0,
+				"material": "ShaderMaterial",
+				"niveis_lod": 0,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": -1,
+				"tri_lod0": 2176,
+				"tri_por_instancia": 64,
+				"vis_begin": 600.0,
+				"vis_end": 1200.0,
+				"visiveis": 8
+			},
+			"Copa distante_ Mata_ pitangueira": {
+				"blocos": 3,
+				"cull": -1,
+				"instancias": 7,
+				"lod_bias": 1.0,
+				"material": "ShaderMaterial",
+				"niveis_lod": 0,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": -1,
+				"tri_lod0": 448,
+				"tri_por_instancia": 64,
+				"vis_begin": 170.0,
+				"vis_end": 1200.0,
+				"visiveis": 3
+			},
+			"Copa distante_ Restinga da orla_ castanhola": {
+				"blocos": 6,
+				"cull": -1,
+				"instancias": 10,
+				"lod_bias": 1.0,
+				"material": "ShaderMaterial",
+				"niveis_lod": 0,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": -1,
+				"tri_lod0": 640,
+				"tri_por_instancia": 64,
+				"vis_begin": 600.0,
+				"vis_end": 1200.0,
+				"visiveis": 6
+			},
+			"Copa distante_ Restinga da orla_ clusia": {
+				"blocos": 4,
+				"cull": -1,
+				"instancias": 6,
+				"lod_bias": 1.0,
+				"material": "ShaderMaterial",
+				"niveis_lod": 0,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": -1,
+				"tri_lod0": 384,
+				"tri_por_instancia": 64,
+				"vis_begin": 130.0,
+				"vis_end": 1200.0,
+				"visiveis": 4
+			},
+			"Copa distante_ Restinga da orla_ piacava": {
+				"blocos": 4,
+				"cull": -1,
+				"instancias": 4,
+				"lod_bias": 1.0,
+				"material": "ShaderMaterial",
+				"niveis_lod": 0,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": -1,
+				"tri_lod0": 256,
+				"tri_por_instancia": 64,
+				"vis_begin": 600.0,
+				"vis_end": 1200.0,
+				"visiveis": 4
+			},
+			"Coqueiros da orla": {
+				"blocos": 12,
+				"cull": 0,
+				"instancias": 22,
+				"lod_bias": 0.649999976158142,
+				"material": "StandardMaterial3D",
+				"niveis_lod": 1,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": 0,
+				"tri_lod0": 323752,
+				"tri_por_instancia": 14716,
+				"vis_begin": 0.0,
+				"vis_end": 160.0,
+				"visiveis": 12
+			},
+			"Estacas": {
+				"blocos": 1,
+				"cull": 0,
+				"instancias": 56,
+				"lod_bias": 1.0,
+				"material": "StandardMaterial3D",
+				"niveis_lod": -1,
+				"sombra": 1,
+				"superficies": 1,
+				"transparencia": 0,
+				"tri_lod0": 2016,
+				"tri_por_instancia": 36,
+				"vis_begin": 0.0,
+				"vis_end": 0.0,
+				"visiveis": 1
+			},
+			"Ingazeiros do rio": {
+				"blocos": 13,
+				"cull": 0,
+				"instancias": 25,
+				"lod_bias": 0.649999976158142,
+				"material": "StandardMaterial3D",
+				"niveis_lod": 1,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": 0,
+				"tri_lod0": 396500,
+				"tri_por_instancia": 15860,
+				"vis_begin": 0.0,
+				"vis_end": 150.0,
+				"visiveis": 13
+			},
+			"Manguezal": {
+				"blocos": 6,
+				"cull": 0,
+				"instancias": 34,
+				"lod_bias": 0.649999976158142,
+				"material": "StandardMaterial3D",
+				"niveis_lod": 1,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": 0,
+				"tri_lod0": 614686,
+				"tri_por_instancia": 18079,
+				"vis_begin": 0.0,
+				"vis_end": 150.0,
+				"visiveis": 6
+			},
+			"Mata_ angico": {
+				"blocos": 25,
+				"cull": 0,
+				"instancias": 246,
+				"lod_bias": 0.649999976158142,
+				"material": "StandardMaterial3D",
+				"niveis_lod": 0,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": 0,
+				"tri_lod0": 541692,
+				"tri_por_instancia": 2202,
+				"vis_begin": 0.0,
+				"vis_end": 170.0,
+				"visiveis": 25
+			},
+			"Mata_ aroeira": {
+				"blocos": 33,
+				"cull": 0,
+				"instancias": 141,
+				"lod_bias": 0.649999976158142,
+				"material": "StandardMaterial3D",
+				"niveis_lod": 0,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": 0,
+				"tri_lod0": 479823,
+				"tri_por_instancia": 3403,
+				"vis_begin": 0.0,
+				"vis_end": 170.0,
+				"visiveis": 33
+			},
+			"Mata_ cajueiro": {
+				"blocos": 4,
+				"cull": 0,
+				"instancias": 10,
+				"lod_bias": 0.649999976158142,
+				"material": "StandardMaterial3D",
+				"niveis_lod": 0,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": 0,
+				"tri_lod0": 56700,
+				"tri_por_instancia": 5670,
+				"vis_begin": 0.0,
+				"vis_end": 170.0,
+				"visiveis": 4
+			},
+			"Mata_ clusia": {
+				"blocos": 7,
+				"cull": 2,
+				"instancias": 52,
+				"lod_bias": 0.649999976158142,
+				"material": "StandardMaterial3D",
+				"niveis_lod": 0,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": 0,
+				"tri_lod0": 268580,
+				"tri_por_instancia": 5165,
+				"vis_begin": 0.0,
+				"vis_end": 170.0,
+				"visiveis": 7
+			},
+			"Mata_ dendezeiro": {
+				"blocos": 32,
+				"cull": 0,
+				"instancias": 113,
+				"lod_bias": 0.649999976158142,
+				"material": "StandardMaterial3D",
+				"niveis_lod": 0,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": 0,
+				"tri_lod0": 630879,
+				"tri_por_instancia": 5583,
+				"vis_begin": 0.0,
+				"vis_end": 170.0,
+				"visiveis": 32
+			},
+			"Mata_ embauba": {
+				"blocos": 93,
+				"cull": 0,
+				"instancias": 353,
+				"lod_bias": 0.649999976158142,
+				"material": "StandardMaterial3D",
+				"niveis_lod": 1,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": 0,
+				"tri_lod0": 1045939,
+				"tri_por_instancia": 2963,
+				"vis_begin": 0.0,
+				"vis_end": 170.0,
+				"visiveis": 93
+			},
+			"Mata_ ingazeiro": {
+				"blocos": 15,
+				"cull": 2,
+				"instancias": 50,
+				"lod_bias": 0.649999976158142,
+				"material": "StandardMaterial3D",
+				"niveis_lod": 0,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": 0,
+				"tri_lod0": 244350,
+				"tri_por_instancia": 4887,
+				"vis_begin": 0.0,
+				"vis_end": 170.0,
+				"visiveis": 15
+			},
+			"Mata_ ipe_amarelo": {
+				"blocos": 36,
+				"cull": 0,
+				"instancias": 166,
+				"lod_bias": 0.649999976158142,
+				"material": "StandardMaterial3D",
+				"niveis_lod": 0,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": 0,
+				"tri_lod0": 931592,
+				"tri_por_instancia": 5612,
+				"vis_begin": 0.0,
+				"vis_end": 170.0,
+				"visiveis": 36
+			},
+			"Mata_ jaqueira": {
+				"blocos": 21,
+				"cull": 0,
+				"instancias": 46,
+				"lod_bias": 0.649999976158142,
+				"material": "StandardMaterial3D",
+				"niveis_lod": 0,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": 0,
+				"tri_lod0": 186392,
+				"tri_por_instancia": 4052,
+				"vis_begin": 0.0,
+				"vis_end": 170.0,
+				"visiveis": 21
+			},
+			"Mata_ jatoba": {
+				"blocos": 81,
+				"cull": 0,
+				"instancias": 521,
+				"lod_bias": 0.649999976158142,
+				"material": "StandardMaterial3D",
+				"niveis_lod": 0,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": 0,
+				"tri_lod0": 1120671,
+				"tri_por_instancia": 2151,
+				"vis_begin": 0.0,
+				"vis_end": 170.0,
+				"visiveis": 81
+			},
+			"Mata_ jenipapeiro": {
+				"blocos": 30,
+				"cull": 2,
+				"instancias": 164,
+				"lod_bias": 0.649999976158142,
+				"material": "StandardMaterial3D",
+				"niveis_lod": 1,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": 0,
+				"tri_lod0": 926928,
+				"tri_por_instancia": 5652,
+				"vis_begin": 0.0,
+				"vis_end": 170.0,
+				"visiveis": 30
+			},
+			"Mata_ jequitiba": {
+				"blocos": 65,
+				"cull": 0,
+				"instancias": 446,
+				"lod_bias": 0.649999976158142,
+				"material": "StandardMaterial3D",
+				"niveis_lod": 1,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": 0,
+				"tri_lod0": 1244786,
+				"tri_por_instancia": 2791,
+				"vis_begin": 0.0,
+				"vis_end": 170.0,
+				"visiveis": 65
+			},
+			"Mata_ massaranduba": {
+				"blocos": 37,
+				"cull": 0,
+				"instancias": 257,
+				"lod_bias": 0.649999976158142,
+				"material": "StandardMaterial3D",
+				"niveis_lod": 1,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": 0,
+				"tri_lod0": 724483,
+				"tri_por_instancia": 2819,
+				"vis_begin": 0.0,
+				"vis_end": 170.0,
+				"visiveis": 37
+			},
+			"Mata_ mata_alta": {
+				"blocos": 28,
+				"cull": 0,
+				"instancias": 147,
+				"lod_bias": 0.649999976158142,
+				"material": "StandardMaterial3D",
+				"niveis_lod": 0,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": 0,
+				"tri_lod0": 365883,
+				"tri_por_instancia": 2489,
+				"vis_begin": 0.0,
+				"vis_end": 170.0,
+				"visiveis": 28
+			},
+			"Mata_ pau_brasil": {
+				"blocos": 30,
+				"cull": 0,
+				"instancias": 112,
+				"lod_bias": 0.649999976158142,
+				"material": "StandardMaterial3D",
+				"niveis_lod": 1,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": 0,
+				"tri_lod0": 630448,
+				"tri_por_instancia": 5629,
+				"vis_begin": 0.0,
+				"vis_end": 170.0,
+				"visiveis": 30
+			},
+			"Mata_ piacava": {
+				"blocos": 8,
+				"cull": 0,
+				"instancias": 34,
+				"lod_bias": 0.649999976158142,
+				"material": "StandardMaterial3D",
+				"niveis_lod": 0,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": 0,
+				"tri_lod0": 200396,
+				"tri_por_instancia": 5894,
+				"vis_begin": 0.0,
+				"vis_end": 170.0,
+				"visiveis": 8
+			},
+			"Mata_ pitangueira": {
+				"blocos": 3,
+				"cull": 2,
+				"instancias": 7,
+				"lod_bias": 0.649999976158142,
+				"material": "StandardMaterial3D",
+				"niveis_lod": 0,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": 0,
+				"tri_lod0": 26516,
+				"tri_por_instancia": 3788,
+				"vis_begin": 0.0,
+				"vis_end": 170.0,
+				"visiveis": 3
+			},
+			"Paisagismo_ aroeira_leve 140": {
+				"blocos": 4,
+				"cull": 0,
+				"instancias": 11,
+				"lod_bias": 0.649999976158142,
+				"material": "StandardMaterial3D",
+				"niveis_lod": 0,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": 0,
+				"tri_lod0": 37433,
+				"tri_por_instancia": 3403,
+				"vis_begin": 0.0,
+				"vis_end": 140.0,
+				"visiveis": 4
+			},
+			"Paisagismo_ bananeira_leve 140": {
+				"blocos": 9,
+				"cull": 0,
+				"instancias": 515,
+				"lod_bias": 0.649999976158142,
+				"material": "StandardMaterial3D",
+				"niveis_lod": 1,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": 0,
+				"tri_lod0": 2687785,
+				"tri_por_instancia": 5219,
+				"vis_begin": 0.0,
+				"vis_end": 140.0,
+				"visiveis": 9
+			},
+			"Paisagismo_ bromelia 60": {
+				"blocos": 7,
+				"cull": 0,
+				"instancias": 10,
+				"lod_bias": 0.649999976158142,
+				"material": "StandardMaterial3D",
+				"niveis_lod": 1,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": 0,
+				"tri_lod0": 22190,
+				"tri_por_instancia": 2219,
+				"vis_begin": 0.0,
+				"vis_end": 60.0,
+				"visiveis": 7
+			},
+			"Paisagismo_ cajueiro_leve 140": {
+				"blocos": 8,
+				"cull": 0,
+				"instancias": 25,
+				"lod_bias": 0.649999976158142,
+				"material": "StandardMaterial3D",
+				"niveis_lod": 0,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": 0,
+				"tri_lod0": 141750,
+				"tri_por_instancia": 5670,
+				"vis_begin": 0.0,
+				"vis_end": 140.0,
+				"visiveis": 8
+			},
+			"Paisagismo_ capim 140": {
+				"blocos": 4,
+				"cull": 0,
+				"instancias": 66,
+				"lod_bias": 0.649999976158142,
+				"material": "StandardMaterial3D",
+				"niveis_lod": 1,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": 0,
+				"tri_lod0": 191862,
+				"tri_por_instancia": 2907,
+				"vis_begin": 0.0,
+				"vis_end": 140.0,
+				"visiveis": 4
+			},
+			"Paisagismo_ capim 60": {
+				"blocos": 39,
+				"cull": 0,
+				"instancias": 140,
+				"lod_bias": 0.649999976158142,
+				"material": "StandardMaterial3D",
+				"niveis_lod": 1,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": 0,
+				"tri_lod0": 406980,
+				"tri_por_instancia": 2907,
+				"vis_begin": 0.0,
+				"vis_end": 60.0,
+				"visiveis": 39
+			},
+			"Paisagismo_ cerca_varas": {
+				"blocos": 16,
+				"cull": 2,
+				"instancias": 175,
+				"lod_bias": 0.649999976158142,
+				"material": "StandardMaterial3D",
+				"niveis_lod": 0,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": 0,
+				"tri_lod0": 355075,
+				"tri_por_instancia": 2029,
+				"vis_begin": 0.0,
+				"vis_end": 75.0,
+				"visiveis": 16
+			},
+			"Paisagismo_ clusia_leve 140": {
+				"blocos": 2,
+				"cull": 2,
+				"instancias": 2,
+				"lod_bias": 0.649999976158142,
+				"material": "StandardMaterial3D",
+				"niveis_lod": 0,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": 0,
+				"tri_lod0": 10330,
+				"tri_por_instancia": 5165,
+				"vis_begin": 0.0,
+				"vis_end": 140.0,
+				"visiveis": 2
+			},
+			"Paisagismo_ dendezeiro_leve 140": {
+				"blocos": 6,
+				"cull": 0,
+				"instancias": 36,
+				"lod_bias": 0.649999976158142,
+				"material": "StandardMaterial3D",
+				"niveis_lod": 0,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": 0,
+				"tri_lod0": 200988,
+				"tri_por_instancia": 5583,
+				"vis_begin": 0.0,
+				"vis_end": 140.0,
+				"visiveis": 6
+			},
+			"Paisagismo_ goiabeira 140": {
+				"blocos": 11,
+				"cull": 0,
+				"instancias": 67,
+				"lod_bias": 0.649999976158142,
+				"material": "StandardMaterial3D",
+				"niveis_lod": 1,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": 0,
+				"tri_lod0": 514694,
+				"tri_por_instancia": 7682,
+				"vis_begin": 0.0,
+				"vis_end": 140.0,
+				"visiveis": 11
+			},
+			"Paisagismo_ heliconia 60": {
+				"blocos": 2,
+				"cull": 0,
+				"instancias": 3,
+				"lod_bias": 0.649999976158142,
+				"material": "StandardMaterial3D",
+				"niveis_lod": 1,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": 0,
+				"tri_lod0": 9441,
+				"tri_por_instancia": 3147,
+				"vis_begin": 0.0,
+				"vis_end": 60.0,
+				"visiveis": 2
+			},
+			"Paisagismo_ heliconia 80": {
+				"blocos": 4,
+				"cull": 0,
+				"instancias": 16,
+				"lod_bias": 0.649999976158142,
+				"material": "StandardMaterial3D",
+				"niveis_lod": 1,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": 0,
+				"tri_lod0": 50352,
+				"tri_por_instancia": 3147,
+				"vis_begin": 0.0,
+				"vis_end": 80.0,
+				"visiveis": 4
+			},
+			"Paisagismo_ ingazeiro_leve 140": {
+				"blocos": 3,
+				"cull": 2,
+				"instancias": 11,
+				"lod_bias": 0.649999976158142,
+				"material": "StandardMaterial3D",
+				"niveis_lod": 0,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": 0,
+				"tri_lod0": 53757,
+				"tri_por_instancia": 4887,
+				"vis_begin": 0.0,
+				"vis_end": 140.0,
+				"visiveis": 3
+			},
+			"Paisagismo_ jaqueira_leve 140": {
+				"blocos": 4,
+				"cull": 0,
+				"instancias": 16,
+				"lod_bias": 0.649999976158142,
+				"material": "StandardMaterial3D",
+				"niveis_lod": 0,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": 0,
+				"tri_lod0": 64832,
+				"tri_por_instancia": 4052,
+				"vis_begin": 0.0,
+				"vis_end": 140.0,
+				"visiveis": 4
+			},
+			"Paisagismo_ jenipapeiro_leve 140": {
+				"blocos": 4,
+				"cull": 2,
+				"instancias": 18,
+				"lod_bias": 0.649999976158142,
+				"material": "StandardMaterial3D",
+				"niveis_lod": 1,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": 0,
+				"tri_lod0": 101736,
+				"tri_por_instancia": 5652,
+				"vis_begin": 0.0,
+				"vis_end": 140.0,
+				"visiveis": 4
+			},
+			"Paisagismo_ mamoeiro 140": {
+				"blocos": 14,
+				"cull": 0,
+				"instancias": 50,
+				"lod_bias": 0.649999976158142,
+				"material": "StandardMaterial3D",
+				"niveis_lod": 1,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": 0,
+				"tri_lod0": 254350,
+				"tri_por_instancia": 5087,
+				"vis_begin": 0.0,
+				"vis_end": 140.0,
+				"visiveis": 14
+			},
+			"Paisagismo_ mangueira_leve 140": {
+				"blocos": 7,
+				"cull": 0,
+				"instancias": 27,
+				"lod_bias": 0.649999976158142,
+				"material": "StandardMaterial3D",
+				"niveis_lod": 0,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": 0,
+				"tri_lod0": 104544,
+				"tri_por_instancia": 3872,
+				"vis_begin": 0.0,
+				"vis_end": 140.0,
+				"visiveis": 7
+			},
+			"Paisagismo_ pe_de_fumo 80": {
+				"blocos": 5,
+				"cull": 0,
+				"instancias": 179,
+				"lod_bias": 0.649999976158142,
+				"material": "StandardMaterial3D",
+				"niveis_lod": 1,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": 0,
+				"tri_lod0": 415817,
+				"tri_por_instancia": 2323,
+				"vis_begin": 0.0,
+				"vis_end": 80.0,
+				"visiveis": 5
+			},
+			"Paisagismo_ pe_de_mandioca 80": {
+				"blocos": 12,
+				"cull": 0,
+				"instancias": 417,
+				"lod_bias": 0.649999976158142,
+				"material": "StandardMaterial3D",
+				"niveis_lod": 0,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": 0,
+				"tri_lod0": 738924,
+				"tri_por_instancia": 1772,
+				"vis_begin": 0.0,
+				"vis_end": 80.0,
+				"visiveis": 12
+			},
+			"Paisagismo_ pe_de_milho 80": {
+				"blocos": 4,
+				"cull": 0,
+				"instancias": 295,
+				"lod_bias": 0.649999976158142,
+				"material": "StandardMaterial3D",
+				"niveis_lod": 0,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": 0,
+				"tri_lod0": 590295,
+				"tri_por_instancia": 2001,
+				"vis_begin": 0.0,
+				"vis_end": 80.0,
+				"visiveis": 4
+			},
+			"Paisagismo_ piacava_leve 140": {
+				"blocos": 5,
+				"cull": 0,
+				"instancias": 26,
+				"lod_bias": 0.649999976158142,
+				"material": "StandardMaterial3D",
+				"niveis_lod": 0,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": 0,
+				"tri_lod0": 153244,
+				"tri_por_instancia": 5894,
+				"vis_begin": 0.0,
+				"vis_end": 140.0,
+				"visiveis": 5
+			},
+			"Paisagismo_ pitangueira_leve 140": {
+				"blocos": 10,
+				"cull": 2,
+				"instancias": 105,
+				"lod_bias": 0.649999976158142,
+				"material": "StandardMaterial3D",
+				"niveis_lod": 0,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": 0,
+				"tri_lod0": 397740,
+				"tri_por_instancia": 3788,
+				"vis_begin": 0.0,
+				"vis_end": 140.0,
+				"visiveis": 10
+			},
+			"Paisagismo_ samambaia 60": {
+				"blocos": 6,
+				"cull": 0,
+				"instancias": 8,
+				"lod_bias": 0.649999976158142,
+				"material": "StandardMaterial3D",
+				"niveis_lod": 0,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": 0,
+				"tri_lod0": 17008,
+				"tri_por_instancia": 2126,
+				"vis_begin": 0.0,
+				"vis_end": 60.0,
+				"visiveis": 6
+			},
+			"Paisagismo_ samambaia 80": {
+				"blocos": 4,
+				"cull": 0,
+				"instancias": 18,
+				"lod_bias": 0.649999976158142,
+				"material": "StandardMaterial3D",
+				"niveis_lod": 0,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": 0,
+				"tri_lod0": 38268,
+				"tri_por_instancia": 2126,
+				"vis_begin": 0.0,
+				"vis_end": 80.0,
+				"visiveis": 4
+			},
+			"Paisagismo_ touceira_bambu 80": {
+				"blocos": 1,
+				"cull": 0,
+				"instancias": 4,
+				"lod_bias": 0.649999976158142,
+				"material": "StandardMaterial3D",
+				"niveis_lod": 0,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": 0,
+				"tri_lod0": 21884,
+				"tri_por_instancia": 5471,
+				"vis_begin": 0.0,
+				"vis_end": 80.0,
+				"visiveis": 1
+			},
+			"Paisagismo_ touceira_cana 60": {
+				"blocos": 4,
+				"cull": 0,
+				"instancias": 10,
+				"lod_bias": 0.649999976158142,
+				"material": "StandardMaterial3D",
+				"niveis_lod": 0,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": 0,
+				"tri_lod0": 29960,
+				"tri_por_instancia": 2996,
+				"vis_begin": 0.0,
+				"vis_end": 60.0,
+				"visiveis": 4
+			},
+			"PecaDistante": {
+				"blocos": 92,
+				"cull": 2,
+				"instancias": 92,
+				"lod_bias": 1.0,
+				"material": "StandardMaterial3D",
+				"niveis_lod": 0,
+				"sombra": 1,
+				"superficies": 1,
+				"transparencia": 0,
+				"tri_lod0": 4488,
+				"tri_por_instancia": 64,
+				"vis_begin": 260.0,
+				"vis_end": 1200.0,
+				"visiveis": 92
+			},
+			"Peixes": {
+				"blocos": 37,
+				"cull": -1,
+				"instancias": 301,
+				"lod_bias": 1.0,
+				"material": "ShaderMaterial",
+				"niveis_lod": 1,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": -1,
+				"tri_lod0": 686787,
+				"tri_por_instancia": 2492,
+				"vis_begin": 0.0,
+				"vis_end": 120.0,
+				"visiveis": 3
+			},
+			"Pé das árvores (areia)": {
+				"blocos": 15,
+				"cull": 0,
+				"instancias": 94,
+				"lod_bias": 1.0,
+				"material": "StandardMaterial3D",
+				"niveis_lod": -1,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": 2,
+				"tri_lod0": 188,
+				"tri_por_instancia": 2,
+				"vis_begin": 0.0,
+				"vis_end": 0.0,
+				"visiveis": 15
+			},
+			"Pé das árvores (grama)": {
+				"blocos": 26,
+				"cull": 0,
+				"instancias": 58,
+				"lod_bias": 1.0,
+				"material": "StandardMaterial3D",
+				"niveis_lod": -1,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": 2,
+				"tri_lod0": 116,
+				"tri_por_instancia": 2,
+				"vis_begin": 0.0,
+				"vis_end": 0.0,
+				"visiveis": 26
+			},
+			"Restinga da orla_ castanhola": {
+				"blocos": 6,
+				"cull": 0,
+				"instancias": 10,
+				"lod_bias": 0.649999976158142,
+				"material": "StandardMaterial3D",
+				"niveis_lod": 2,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": 0,
+				"tri_lod0": 162840,
+				"tri_por_instancia": 16284,
+				"vis_begin": 0.0,
+				"vis_end": 130.0,
+				"visiveis": 6
+			},
+			"Restinga da orla_ clusia": {
+				"blocos": 4,
+				"cull": 0,
+				"instancias": 6,
+				"lod_bias": 0.649999976158142,
+				"material": "StandardMaterial3D",
+				"niveis_lod": 1,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": 0,
+				"tri_lod0": 65724,
+				"tri_por_instancia": 10954,
+				"vis_begin": 0.0,
+				"vis_end": 130.0,
+				"visiveis": 4
+			},
+			"Restinga da orla_ piacava": {
+				"blocos": 4,
+				"cull": 0,
+				"instancias": 4,
+				"lod_bias": 0.649999976158142,
+				"material": "StandardMaterial3D",
+				"niveis_lod": 1,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": 0,
+				"tri_lod0": 63168,
+				"tri_por_instancia": 15792,
+				"vis_begin": 0.0,
+				"vis_end": 130.0,
+				"visiveis": 4
+			},
+			"Sub-bosque": {
+				"blocos": 147,
+				"cull": 0,
+				"instancias": 946,
+				"lod_bias": 0.649999976158142,
+				"material": "StandardMaterial3D",
+				"niveis_lod": 1,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": 0,
+				"tri_lod0": 7040132,
+				"tri_por_instancia": 7442,
+				"vis_begin": 0.0,
+				"vis_end": 55.0,
+				"visiveis": 147
+			},
+			"Varas": {
+				"blocos": 1,
+				"cull": 0,
+				"instancias": 102,
+				"lod_bias": 1.0,
+				"material": "StandardMaterial3D",
+				"niveis_lod": -1,
+				"sombra": 1,
+				"superficies": 1,
+				"transparencia": 0,
+				"tri_lod0": 3672,
+				"tri_por_instancia": 36,
+				"vis_begin": 0.0,
+				"vis_end": 0.0,
+				"visiveis": 1
+			},
+			"rastro_1": {
+				"blocos": 1,
+				"cull": 2,
+				"instancias": 70,
+				"lod_bias": 1.0,
+				"material": "StandardMaterial3D",
+				"niveis_lod": -1,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": 1,
+				"tri_lod0": 140,
+				"tri_por_instancia": 2,
+				"vis_begin": 0.0,
+				"vis_end": 0.0,
+				"visiveis": 1
+			},
+			"rastro_2": {
+				"blocos": 1,
+				"cull": 2,
+				"instancias": 72,
+				"lod_bias": 1.0,
+				"material": "StandardMaterial3D",
+				"niveis_lod": -1,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": 1,
+				"tri_lod0": 144,
+				"tri_por_instancia": 2,
+				"vis_begin": 0.0,
+				"vis_end": 0.0,
+				"visiveis": 1
+			},
+			"rastro_3": {
+				"blocos": 1,
+				"cull": 2,
+				"instancias": 74,
+				"lod_bias": 1.0,
+				"material": "StandardMaterial3D",
+				"niveis_lod": -1,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": 1,
+				"tri_lod0": 148,
+				"tri_por_instancia": 2,
+				"vis_begin": 0.0,
+				"vis_end": 0.0,
+				"visiveis": 1
+			},
+			"rastro_4": {
+				"blocos": 1,
+				"cull": 2,
+				"instancias": 73,
+				"lod_bias": 1.0,
+				"material": "StandardMaterial3D",
+				"niveis_lod": -1,
+				"sombra": 0,
+				"superficies": 1,
+				"transparencia": 1,
+				"tri_lod0": 146,
+				"tri_por_instancia": 2,
+				"vis_begin": 0.0,
+				"vis_end": 0.0,
+				"visiveis": 1
+			}
+		},
+		"nos": 7166,
+		"ossos": 2371,
+		"physics_por_script": {
+			"res://scripts/compartilhado/vida.gd": 1,
+			"res://scripts/prototipo_3d/bando_de_chao.gd": 1,
+			"res://scripts/prototipo_3d/bicho_de_casa.gd": 2,
+			"res://scripts/prototipo_3d/cadeia_de_missoes.gd": 52,
+			"res://scripts/prototipo_3d/canoas.gd": 1,
+			"res://scripts/prototipo_3d/cardume.gd": 37,
+			"res://scripts/prototipo_3d/criatura_vale.gd": 3,
+			"res://scripts/prototipo_3d/espuma_agua.gd": 24,
+			"res://scripts/prototipo_3d/fauna_vale.gd": 1,
+			"res://scripts/prototipo_3d/guia_pedro.gd": 1,
+			"res://scripts/prototipo_3d/luta_vale.gd": 1,
+			"res://scripts/prototipo_3d/npc.gd": 4,
+			"res://scripts/prototipo_3d/player_controller.gd": 1,
+			"res://scripts/prototipo_3d/tubarao.gd": 1
+		},
+		"por_classe": {
+			"AnimatableBody3D": 8,
+			"AnimationPlayer": 51,
+			"Area3D": 21,
+			"AudioStreamPlayer": 12,
+			"AudioStreamPlayer3D": 30,
+			"BoneAttachment3D": 6,
+			"Button": 30,
+			"Camera3D": 3,
+			"CanvasLayer": 42,
+			"CenterContainer": 3,
+			"CharacterBody3D": 49,
+			"CollisionShape3D": 813,
+			"ColorRect": 46,
+			"Control": 142,
+			"Decal": 23,
+			"DirectionalLight3D": 5,
+			"GPUParticles3D": 29,
+			"GridContainer": 2,
+			"HBoxContainer": 63,
+			"HFlowContainer": 2,
+			"Label": 269,
+			"Label3D": 58,
+			"MarginContainer": 1,
+			"MeshInstance3D": 1025,
+			"MultiMeshInstance3D": 1800,
+			"NavigationRegion3D": 1,
+			"NinePatchRect": 7,
+			"Node": 213,
+			"Node3D": 1228,
+			"OmniLight3D": 23,
+			"Panel": 88,
+			"PanelContainer": 107,
+			"ProgressBar": 4,
+			"RayCast3D": 1,
+			"ReflectionProbe": 5,
+			"ScrollContainer": 9,
+			"Skeleton3D": 52,
+			"SpotLight3D": 6,
+			"SpringArm3D": 1,
+			"StaticBody3D": 719,
+			"SubViewport": 1,
+			"TextureRect": 88,
+			"Timer": 4,
+			"VBoxContainer": 69,
+			"VSeparator": 4,
+			"Window": 1,
+			"WorldEnvironment": 2
+		},
+		"process_por_script": {
+			"res://addons/godot_mcp/runtime/mcp_runtime.gd": 1,
+			"res://scripts/autoload/atualizacao.gd": 1,
+			"res://scripts/autoload/dia.gd": 1,
+			"res://scripts/autoload/mare.gd": 1,
+			"res://scripts/compartilhado/relogio.gd": 1,
+			"res://scripts/prototipo_3d/achados_vale.gd": 1,
+			"res://scripts/prototipo_3d/ambiente_vale.gd": 1,
+			"res://scripts/prototipo_3d/animador_bicho.gd": 75,
+			"res://scripts/prototipo_3d/apresentacao_do_povoado.gd": 1,
+			"res://scripts/prototipo_3d/arvores_info.gd": 1,
+			"res://scripts/prototipo_3d/authored_animator.gd": 25,
+			"res://scripts/prototipo_3d/balao_fala.gd": 23,
+			"res://scripts/prototipo_3d/bando_de_chao.gd": 1,
+			"res://scripts/prototipo_3d/bicho_de_casa.gd": 2,
+			"res://scripts/prototipo_3d/bichos_de_casa.gd": 1,
+			"res://scripts/prototipo_3d/boneco_da_mochila.gd": 1,
+			"res://scripts/prototipo_3d/cardume.gd": 37,
+			"res://scripts/prototipo_3d/casa_do_jogador.gd": 1,
+			"res://scripts/prototipo_3d/cemiterio_vale.gd": 1,
+			"res://scripts/prototipo_3d/coleta_no_chao.gd": 1,
+			"res://scripts/prototipo_3d/conquista_da_missao.gd": 1,
+			"res://scripts/prototipo_3d/curral_vale.gd": 1,
+			"res://scripts/prototipo_3d/dialogo_vale.gd": 1,
+			"res://scripts/prototipo_3d/dicas_dos_moradores.gd": 1,
+			"res://scripts/prototipo_3d/falas_do_viajante.gd": 1,
+			"res://scripts/prototipo_3d/fantasma_da_mata.gd": 1,
+			"res://scripts/prototipo_3d/fazenda_vale.gd": 1,
+			"res://scripts/prototipo_3d/fiado_tonho.gd": 1,
+			"res://scripts/prototipo_3d/fila_de_falas.gd": 1,
+			"res://scripts/prototipo_3d/foco_da_narracao.gd": 1,
+			"res://scripts/prototipo_3d/foco_do_e.gd": 1,
+			"res://scripts/prototipo_3d/geo_region_renderer.gd": 1,
+			"res://scripts/prototipo_3d/guia_pedro.gd": 1,
+			"res://scripts/prototipo_3d/interior_casa.gd": 4,
+			"res://scripts/prototipo_3d/interior_igreja.gd": 1,
+			"res://scripts/prototipo_3d/interiores.gd": 1,
+			"res://scripts/prototipo_3d/lapides.gd": 1,
+			"res://scripts/prototipo_3d/latido_caramelo.gd": 3,
+			"res://scripts/prototipo_3d/lavoura_vale.gd": 1,
+			"res://scripts/prototipo_3d/lombada_vale.gd": 1,
+			"res://scripts/prototipo_3d/loucura_do_mapa.gd": 1,
+			"res://scripts/prototipo_3d/luta_vale.gd": 1,
+			"res://scripts/prototipo_3d/luzes_epoca.gd": 1,
+			"res://scripts/prototipo_3d/mapa_jogo.gd": 1,
+			"res://scripts/prototipo_3d/marcos_da_fe.gd": 1,
+			"res://scripts/prototipo_3d/minimapa.gd": 1,
+			"res://scripts/prototipo_3d/npc.gd": 4,
+			"res://scripts/prototipo_3d/pegadas.gd": 1,
+			"res://scripts/prototipo_3d/pesca_vale.gd": 1,
+			"res://scripts/prototipo_3d/placas_nomes.gd": 1,
+			"res://scripts/prototipo_3d/player_controller.gd": 1,
+			"res://scripts/prototipo_3d/ponte_vale.gd": 1,
+			"res://scripts/prototipo_3d/prototype.gd": 1,
+			"res://scripts/prototipo_3d/prototype_hud.gd": 1,
+			"res://scripts/prototipo_3d/rastro_do_curupira.gd": 1,
+			"res://scripts/prototipo_3d/recursos_3d.gd": 1,
+			"res://scripts/prototipo_3d/revoar_vale.gd": 1,
+			"res://scripts/prototipo_3d/saveiro_vale.gd": 1,
+			"res://scripts/prototipo_3d/seta_missao.gd": 1,
+			"res://scripts/prototipo_3d/tecla_das_bancadas.gd": 1,
+			"res://scripts/prototipo_3d/tecla_dos_moradores.gd": 1
+		},
+		"tri_em_mesh_instances": 3502361,
+		"tri_em_mesh_instances_com_skin": 471405
+	},
+	"config": {
+		"ambiente": {
+			"adjustment_enabled": "false",
+			"ambient_light_energy": "0.42320001125336",
+			"ambient_light_source": "2",
+			"background_mode": "2",
+			"fog_aerial_perspective": "1.0",
+			"fog_density": "0.0018591999542",
+			"fog_enabled": "true",
+			"fog_mode": "0",
+			"fog_sky_affect": "0.0",
+			"glow_enabled": "false",
+			"reflected_light_source": "0",
+			"sdfgi_enabled": "false",
+			"sky_material": "ShaderMaterial",
+			"sky_process_mode": 3,
+			"sky_radiance_size": 3,
+			"sky_shader": "res://assets/prototipo_3d/ceu/ceu_vale.gdshader",
+			"ssao_enabled": "false",
+			"ssil_enabled": "false",
+			"ssr_enabled": "false",
+			"tonemap_mode": "2",
+			"volumetric_fog_enabled": "false"
+		},
+		"application/run/max_fps": "0",
+		"camera": {
+			"far": 2800.0,
+			"fov": 58.0,
+			"near": 0.0799999982118607,
+			"projecao": 0
+		},
+		"debanding": false,
+		"display/window/vsync/vsync_mode": "1",
+		"fisica_hz": 60,
+		"janela_px": [
+			1920,
+			1080
+		],
+		"max_fps": 0,
+		"max_passos_fisica_por_quadro": 5,
+		"mesh_lod_threshold": 4.0,
+		"modo_janela": 3,
+		"msaa_3d": 0,
+		"occlusion_culling": false,
+		"physics/3d/physics_engine": "DEFAULT",
+		"physics/common/max_physics_steps_per_frame": "5",
+		"physics/common/physics_ticks_per_second": "60",
+		"positional_shadow_atlas": 4096,
+		"rendering/anti_aliasing/quality/msaa_3d": "0",
+		"rendering/driver/threads/thread_model": "1",
+		"rendering/environment/glow/upscale_mode": "1",
+		"rendering/environment/ssao/quality": "2",
+		"rendering/global_illumination/gi/use_half_resolution": "false",
+		"rendering/lights_and_shadows/directional_shadow/16_bits": "true",
+		"rendering/lights_and_shadows/directional_shadow/size": "2048",
+		"rendering/lights_and_shadows/directional_shadow/soft_shadow_filter_quality": "2",
+		"rendering/lights_and_shadows/positional_shadow/atlas_size": "4096",
+		"rendering/lights_and_shadows/positional_shadow/soft_shadow_filter_quality": "2",
+		"rendering/limits/cluster_builder/max_clustered_elements": "512",
+		"rendering/mesh_lod/lod_change/threshold_pixels": "4.0",
+		"rendering/occlusion_culling/use_occlusion_culling": "false",
+		"rendering/reflections/sky_reflections/ggx_samples": "32",
+		"rendering/reflections/sky_reflections/roughness_layers": "8",
+		"rendering/rendering_device/pipeline_cache/enable": "true",
+		"rendering/scaling_3d/mode": "0",
+		"rendering/scaling_3d/scale": "1.0",
+		"rendering/shading/overrides/force_vertex_shading": "false",
+		"rendering/textures/default_filters/anisotropic_filtering_level": "2",
+		"rendering/textures/vram_compression/import_s3tc_bptc": "false",
+		"scaling_3d_mode": 0,
+		"scaling_3d_scale": 1.0,
+		"screen_space_aa": 1,
+		"subviewports": [
+			{
+				"cameras_3d": 1,
+				"caminho": "/root/Mochila/Painel/@VBoxContainer@4/@HBoxContainer@15/@VBoxContainer@68/BonecoDaMochila/Palco",
+				"disable_3d": false,
+				"mesmo_mundo_da_tela": false,
+				"msaa_3d": 2,
+				"own_world_3d": true,
+				"px": [
+					384,
+					540
+				],
+				"transparente": true,
+				"update_mode": 0,
+				"visivel_pai": "false"
+			}
+		],
+		"taa": false,
+		"viewport_px": [
+			1920,
+			1080
+		],
+		"vsync": 0
+	},
+	"estabilizado_ms": 42316,
+	"fim_ok": true,
+	"gpu": [
+		{
+			"codigo": 0,
+			"godot_buffers_mb": 131.0,
+			"godot_texturas_mb": 1396.8,
+			"godot_video_mb": 1591.1,
+			"linha": "3026, 6144, 35, 64, 30.08, 1785",
+			"ms": 48495,
+			"quando": "vale pronto"
+		},
+		{
+			"codigo": 0,
+			"godot_buffers_mb": 131.0,
+			"godot_texturas_mb": 1396.8,
+			"godot_video_mb": 1591.1,
+			"linha": "3026, 6144, 2, 64, 30.00, 1785",
+			"ms": 49628,
+			"quando": "inicio das vistas"
+		},
+		{
+			"codigo": 0,
+			"godot_buffers_mb": 131.6,
+			"godot_texturas_mb": 1408.0,
+			"godot_video_mb": 1602.8,
+			"linha": "3028, 6144, 85, 74, 34.54, 1770",
+			"ms": 74205,
+			"quando": "fim das vistas"
+		},
+		{
+			"codigo": 0,
+			"godot_buffers_mb": 131.6,
+			"godot_texturas_mb": 1408.0,
+			"godot_video_mb": 1602.8,
+			"linha": "3028, 6144, 93, 78, 59.19, 1770",
+			"ms": 81473,
+			"quando": "inicio do A/B gpu"
+		},
+		{
+			"codigo": 0,
+			"godot_buffers_mb": 131.6,
+			"godot_texturas_mb": 1408.0,
+			"godot_video_mb": 1602.8,
+			"linha": "3028, 6144, 93, 80, 49.44, 1755",
+			"ms": 114331,
+			"quando": "fim do A/B gpu"
+		}
+	],
+	"horas": [],
+	"jogo_pronto_ms": 38311,
+	"monitores_depois_das_vistas": {
+		"buffers_mb": 131.6,
+		"fisica_corpos_ativos": 4.0,
+		"fisica_ilhas": 4.0,
+		"fisica_pares": 513.0,
+		"memoria_estatica_mb": 446.4,
+		"nos": 7917.0,
+		"nos_orfaos": 0.0,
+		"objetos": 18094.0,
+		"recursos": 2012.0,
+		"tempo_fisica_max_ms": 7.6,
+		"tempo_navegacao_ms": 0.01,
+		"tempo_process_max_ms": 10.4,
+		"texturas_mb": 1408.0,
+		"video_mb": 1602.8
+	},
+	"montagem_ms": 31659,
+	"passeio": {},
+	"relogio": {
+		"pausado_ao_chegar": false,
+		"segundos_por_hora": 30.0,
+		"velocidade": 2
+	},
+	"vistas": [
+		{
+			"cauda_ms": 5.702,
+			"draws": 1052,
+			"fisica_passos_por_quadro": 1.78,
+			"fisica_scripts_ms": 24.41,
+			"fisica_servidor_ms": 0.467,
+			"fps": 26.8,
+			"lugar": "praca",
+			"max_ms": 247.82,
+			"mediana_ms": 17.15,
+			"objetos": 1623,
+			"p95_ms": 212.26,
+			"pausado": false,
+			"posicao": [
+				0.0,
+				4.4,
+				0.0
+			],
+			"primitivas": 2263676,
+			"process_scripts_ms": 6.7,
+			"quadro_ms": 37.28,
+			"quadros": 27,
+			"rs_cpu_ms": 3.264,
+			"rs_gpu_ms": 11.478,
+			"rs_setup_ms": 0.286,
+			"rumo_graus": 0,
+			"sub_cpu_ms": 0.0,
+			"sub_gpu_ms": 0.0
+		},
+		{
+			"cauda_ms": 4.447,
+			"draws": 923,
+			"fisica_passos_por_quadro": 0.98,
+			"fisica_scripts_ms": 7.579,
+			"fisica_servidor_ms": 0.327,
+			"fps": 60.6,
+			"lugar": "praca",
+			"max_ms": 26.57,
+			"mediana_ms": 16.56,
+			"objetos": 1487,
+			"p95_ms": 20.09,
+			"pausado": false,
+			"posicao": [
+				0.0,
+				4.4,
+				0.0
+			],
+			"primitivas": 2260395,
+			"process_scripts_ms": 4.158,
+			"quadro_ms": 16.51,
+			"quadros": 61,
+			"rs_cpu_ms": 2.358,
+			"rs_gpu_ms": 5.461,
+			"rs_setup_ms": 0.249,
+			"rumo_graus": 90,
+			"sub_cpu_ms": 0.0,
+			"sub_gpu_ms": 0.0
+		},
+		{
+			"cauda_ms": 3.527,
+			"draws": 488,
+			"fisica_passos_por_quadro": 0.76,
+			"fisica_scripts_ms": 4.639,
+			"fisica_servidor_ms": 0.216,
+			"fps": 79.2,
+			"lugar": "praca",
+			"max_ms": 21.17,
+			"mediana_ms": 13.5,
+			"objetos": 1039,
+			"p95_ms": 15.9,
+			"pausado": false,
+			"posicao": [
+				0.0,
+				4.4,
+				0.0
+			],
+			"primitivas": 1630760,
+			"process_scripts_ms": 4.251,
+			"quadro_ms": 12.63,
+			"quadros": 80,
+			"rs_cpu_ms": 1.658,
+			"rs_gpu_ms": 4.696,
+			"rs_setup_ms": 0.241,
+			"rumo_graus": 180,
+			"sub_cpu_ms": 0.0,
+			"sub_gpu_ms": 0.0
+		},
+		{
+			"cauda_ms": 4.103,
+			"draws": 804,
+			"fisica_passos_por_quadro": 0.79,
+			"fisica_scripts_ms": 4.445,
+			"fisica_servidor_ms": 0.222,
+			"fps": 75.0,
+			"lugar": "praca",
+			"max_ms": 19.33,
+			"mediana_ms": 14.11,
+			"objetos": 1371,
+			"p95_ms": 16.33,
+			"pausado": false,
+			"posicao": [
+				0.0,
+				4.4,
+				0.0
+			],
+			"primitivas": 1991684,
+			"process_scripts_ms": 4.571,
+			"quadro_ms": 13.34,
+			"quadros": 76,
+			"rs_cpu_ms": 2.089,
+			"rs_gpu_ms": 4.802,
+			"rs_setup_ms": 0.247,
+			"rumo_graus": 270,
+			"sub_cpu_ms": 0.0,
+			"sub_gpu_ms": 0.0
+		},
+		{
+			"cauda_ms": 3.233,
+			"draws": 361,
+			"fisica_passos_por_quadro": 0.47,
+			"fisica_scripts_ms": 1.035,
+			"fisica_servidor_ms": 0.105,
+			"fps": 125.6,
+			"lugar": "casa_de_taipa",
+			"max_ms": 22.88,
+			"mediana_ms": 7.88,
+			"objetos": 895,
+			"p95_ms": 10.52,
+			"pausado": false,
+			"posicao": [
+				64.5,
+				5.4,
+				-212.2
+			],
+			"primitivas": 789482,
+			"process_scripts_ms": 3.591,
+			"quadro_ms": 7.96,
+			"quadros": 126,
+			"rs_cpu_ms": 1.517,
+			"rs_gpu_ms": 4.368,
+			"rs_setup_ms": 0.238,
+			"rumo_graus": 0,
+			"sub_cpu_ms": 0.0,
+			"sub_gpu_ms": 0.0
+		},
+		{
+			"cauda_ms": 3.245,
+			"draws": 382,
+			"fisica_passos_por_quadro": 0.48,
+			"fisica_scripts_ms": 0.996,
+			"fisica_servidor_ms": 0.103,
+			"fps": 125.5,
+			"lugar": "casa_de_taipa",
+			"max_ms": 13.04,
+			"mediana_ms": 8.15,
+			"objetos": 925,
+			"p95_ms": 11.41,
+			"pausado": false,
+			"posicao": [
+				64.5,
+				5.4,
+				-212.2
+			],
+			"primitivas": 862876,
+			"process_scripts_ms": 3.627,
+			"quadro_ms": 7.97,
+			"quadros": 126,
+			"rs_cpu_ms": 1.532,
+			"rs_gpu_ms": 4.447,
+			"rs_setup_ms": 0.233,
+			"rumo_graus": 90,
+			"sub_cpu_ms": 0.0,
+			"sub_gpu_ms": 0.0
+		},
+		{
+			"cauda_ms": 2.977,
+			"draws": 360,
+			"fisica_passos_por_quadro": 0.45,
+			"fisica_scripts_ms": 0.963,
+			"fisica_servidor_ms": 0.105,
+			"fps": 133.3,
+			"lugar": "casa_de_taipa",
+			"max_ms": 11.56,
+			"mediana_ms": 7.26,
+			"objetos": 897,
+			"p95_ms": 9.44,
+			"pausado": false,
+			"posicao": [
+				64.5,
+				5.4,
+				-212.2
+			],
+			"primitivas": 677396,
+			"process_scripts_ms": 3.459,
+			"quadro_ms": 7.5,
+			"quadros": 134,
+			"rs_cpu_ms": 1.452,
+			"rs_gpu_ms": 4.287,
+			"rs_setup_ms": 0.228,
+			"rumo_graus": 180,
+			"sub_cpu_ms": 0.0,
+			"sub_gpu_ms": 0.0
+		},
+		{
+			"cauda_ms": 3.355,
+			"draws": 372,
+			"fisica_passos_por_quadro": 0.51,
+			"fisica_scripts_ms": 1.173,
+			"fisica_servidor_ms": 0.106,
+			"fps": 117.5,
+			"lugar": "casa_de_taipa",
+			"max_ms": 15.51,
+			"mediana_ms": 8.2,
+			"objetos": 918,
+			"p95_ms": 13.62,
+			"pausado": false,
+			"posicao": [
+				64.5,
+				5.4,
+				-212.2
+			],
+			"primitivas": 815391,
+			"process_scripts_ms": 3.878,
+			"quadro_ms": 8.51,
+			"quadros": 118,
+			"rs_cpu_ms": 1.584,
+			"rs_gpu_ms": 4.389,
+			"rs_setup_ms": 0.25,
+			"rumo_graus": 270,
+			"sub_cpu_ms": 0.0,
+			"sub_gpu_ms": 0.0
+		},
+		{
+			"cauda_ms": 3.574,
+			"draws": 511,
+			"fisica_passos_por_quadro": 0.52,
+			"fisica_scripts_ms": 0.88,
+			"fisica_servidor_ms": 0.131,
+			"fps": 117.4,
+			"lugar": "porta:casa",
+			"max_ms": 11.45,
+			"mediana_ms": 8.59,
+			"objetos": 1119,
+			"p95_ms": 9.92,
+			"pausado": false,
+			"posicao": [
+				65.4,
+				5.1,
+				-208.6
+			],
+			"primitivas": 1720815,
+			"process_scripts_ms": 3.936,
+			"quadro_ms": 8.52,
+			"quadros": 118,
+			"rs_cpu_ms": 1.756,
+			"rs_gpu_ms": 5.492,
+			"rs_setup_ms": 0.225,
+			"rumo_graus": 0,
+			"sub_cpu_ms": 0.0,
+			"sub_gpu_ms": 0.0
+		},
+		{
+			"cauda_ms": 5.279,
+			"draws": 1082,
+			"fisica_passos_por_quadro": 0.69,
+			"fisica_scripts_ms": 1.549,
+			"fisica_servidor_ms": 0.149,
+			"fps": 86.3,
+			"lugar": "porta:casa",
+			"max_ms": 25.73,
+			"mediana_ms": 10.96,
+			"objetos": 1688,
+			"p95_ms": 16.95,
+			"pausado": false,
+			"posicao": [
+				65.4,
+				5.1,
+				-208.6
+			],
+			"primitivas": 2123454,
+			"process_scripts_ms": 4.617,
+			"quadro_ms": 11.59,
+			"quadros": 87,
+			"rs_cpu_ms": 2.92,
+			"rs_gpu_ms": 5.617,
+			"rs_setup_ms": 0.275,
+			"rumo_graus": 90,
+			"sub_cpu_ms": 0.0,
+			"sub_gpu_ms": 0.0
+		},
+		{
+			"cauda_ms": 2.862,
+			"draws": 206,
+			"fisica_passos_por_quadro": 0.47,
+			"fisica_scripts_ms": 1.022,
+			"fisica_servidor_ms": 0.118,
+			"fps": 127.1,
+			"lugar": "porta:casa",
+			"max_ms": 10.87,
+			"mediana_ms": 7.81,
+			"objetos": 681,
+			"p95_ms": 9.61,
+			"pausado": false,
+			"posicao": [
+				65.4,
+				5.1,
+				-208.6
+			],
+			"primitivas": 501826,
+			"process_scripts_ms": 3.866,
+			"quadro_ms": 7.87,
+			"quadros": 128,
+			"rs_cpu_ms": 1.278,
+			"rs_gpu_ms": 4.366,
+			"rs_setup_ms": 0.254,
+			"rumo_graus": 180,
+			"sub_cpu_ms": 0.0,
+			"sub_gpu_ms": 0.0
+		},
+		{
+			"cauda_ms": 3.86,
+			"draws": 618,
+			"fisica_passos_por_quadro": 0.56,
+			"fisica_scripts_ms": 1.096,
+			"fisica_servidor_ms": 0.125,
+			"fps": 107.3,
+			"lugar": "porta:casa",
+			"max_ms": 19.23,
+			"mediana_ms": 9.07,
+			"objetos": 1250,
+			"p95_ms": 13.59,
+			"pausado": false,
+			"posicao": [
+				65.4,
+				5.1,
+				-208.6
+			],
+			"primitivas": 1905975,
+			"process_scripts_ms": 4.244,
+			"quadro_ms": 9.32,
+			"quadros": 108,
+			"rs_cpu_ms": 1.954,
+			"rs_gpu_ms": 4.83,
+			"rs_setup_ms": 0.248,
+			"rumo_graus": 270,
+			"sub_cpu_ms": 0.0,
+			"sub_gpu_ms": 0.0
+		},
+		{
+			"cauda_ms": 2.906,
+			"draws": 363,
+			"fisica_passos_por_quadro": 0.42,
+			"fisica_scripts_ms": 0.919,
+			"fisica_servidor_ms": 0.107,
+			"fps": 142.2,
+			"lugar": "dentro:casa",
+			"max_ms": 10.52,
+			"mediana_ms": 6.92,
+			"objetos": 890,
+			"p95_ms": 9.18,
+			"pausado": false,
+			"posicao": [
+				64.5,
+				5.4,
+				-212.5
+			],
+			"primitivas": 812561,
+			"process_scripts_ms": 3.099,
+			"quadro_ms": 7.03,
+			"quadros": 143,
+			"rs_cpu_ms": 1.41,
+			"rs_gpu_ms": 4.544,
+			"rs_setup_ms": 0.197,
+			"rumo_graus": 0,
+			"sub_cpu_ms": 0.0,
+			"sub_gpu_ms": 0.0
+		},
+		{
+			"cauda_ms": 3.142,
+			"draws": 383,
+			"fisica_passos_por_quadro": 0.45,
+			"fisica_scripts_ms": 1.074,
+			"fisica_servidor_ms": 0.109,
+			"fps": 134.7,
+			"lugar": "dentro:casa",
+			"max_ms": 15.98,
+			"mediana_ms": 7.38,
+			"objetos": 943,
+			"p95_ms": 12.2,
+			"pausado": false,
+			"posicao": [
+				64.5,
+				5.4,
+				-212.5
+			],
+			"primitivas": 874539,
+			"process_scripts_ms": 3.098,
+			"quadro_ms": 7.42,
+			"quadros": 135,
+			"rs_cpu_ms": 1.514,
+			"rs_gpu_ms": 4.565,
+			"rs_setup_ms": 0.196,
+			"rumo_graus": 90,
+			"sub_cpu_ms": 0.0,
+			"sub_gpu_ms": 0.0
+		},
+		{
+			"cauda_ms": 2.789,
+			"draws": 363,
+			"fisica_passos_por_quadro": 0.39,
+			"fisica_scripts_ms": 0.864,
+			"fisica_servidor_ms": 0.104,
+			"fps": 152.4,
+			"lugar": "dentro:casa",
+			"max_ms": 11.06,
+			"mediana_ms": 6.11,
+			"objetos": 913,
+			"p95_ms": 8.74,
+			"pausado": false,
+			"posicao": [
+				64.5,
+				5.4,
+				-212.5
+			],
+			"primitivas": 710989,
+			"process_scripts_ms": 2.803,
+			"quadro_ms": 6.56,
+			"quadros": 153,
+			"rs_cpu_ms": 1.381,
+			"rs_gpu_ms": 4.465,
+			"rs_setup_ms": 0.174,
+			"rumo_graus": 180,
+			"sub_cpu_ms": 0.0,
+			"sub_gpu_ms": 0.0
+		},
+		{
+			"cauda_ms": 2.911,
+			"draws": 374,
+			"fisica_passos_por_quadro": 0.41,
+			"fisica_scripts_ms": 0.977,
+			"fisica_servidor_ms": 0.1,
+			"fps": 145.0,
+			"lugar": "dentro:casa",
+			"max_ms": 19.04,
+			"mediana_ms": 6.26,
+			"objetos": 935,
+			"p95_ms": 10.34,
+			"pausado": false,
+			"posicao": [
+				64.5,
+				5.4,
+				-212.5
+			],
+			"primitivas": 830915,
+			"process_scripts_ms": 2.91,
+			"quadro_ms": 6.9,
+			"quadros": 147,
+			"rs_cpu_ms": 1.41,
+			"rs_gpu_ms": 4.527,
+			"rs_setup_ms": 0.18,
+			"rumo_graus": 270,
+			"sub_cpu_ms": 0.0,
+			"sub_gpu_ms": 0.0
+		}
+	]
+}

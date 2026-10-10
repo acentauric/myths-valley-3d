@@ -15,8 +15,17 @@ extends Node3D
 ## troncos da chegada moram por ali. Vai em `ancoras["Galinheiro"]` SEMPRE, levantado ou não,
 ## porque o `Lugares` promete o nome ("galinheiro") e o passo do curral aponta para lá.
 ##
-## O que vai no save: os ovos no ninho e o dia da última postura (`estado_para_salvar`). O
-## galinheiro em si não vai: ele é o talento, e o talento vai.
+## O TALENTO É LIDO PELO CAMPO, e não pelo nome do nó: o galinheiro sobe quando
+## `Talentos.bonus("pastoreio")` passa de zero, que é o que o nó Curral concede (e o que a
+## auditoria de talentos cobra, `tools/prototipo_3d/auditar_talentos.gd`). O TRATO DO CURRAL
+## (`pressa_do_curral`, "bicho seu rende um dia antes") adianta a postura: as galinhas botam o
+## ovo de amanhã ao cair da tarde de hoje (`HORA_DA_POSTURA_ADIANTADA`), e o ritmo de um ovo por
+## galinha por dia não muda — o ninho só enche meio dia antes.
+##
+## O que vai no save: os ovos no ninho e o dia da última postura (`estado_para_salvar`), e os
+## dias de serviço dos moradores (`servico_do_morador.gd`, o dia de roçado do Cosme), que viajam
+## aqui por não terem casa própria no vale. O galinheiro em si não vai: ele é o talento, e o
+## talento vai.
 const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
 const DicaTecla = preload("res://scripts/prototipo_3d/dica_tecla.gd")
 const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
@@ -26,7 +35,9 @@ const BandoDeChao = preload("res://scripts/prototipo_3d/bando_de_chao.gd")
 const TEXTOS := "res://data/quintal.json"
 const BICHOS := "res://data/bichos_de_casa.json"
 const CASA := "Casa de taipa"
-const TALENTO := "curral"
+const ServicoDoMorador = preload("res://scripts/prototipo_3d/servico_do_morador.gd")
+## A hora a partir da qual o Trato do curral já bota o ovo do dia seguinte.
+const HORA_DA_POSTURA_ADIANTADA := 17
 const CADEIA := "pedro_quintal"
 const EVENTO := "destravou:curral"
 ## Os cantos do quintal, no referencial da casa (x para a direita de quem olha a frente
@@ -70,6 +81,7 @@ func configurar(mundo, vale, jogador: Node3D, hud) -> void:
 	var lido = JSON.parse_string(FileAccess.get_file_as_string(TEXTOS))
 	_textos = lido if lido is Dictionary else {}
 	add_to_group("curral")
+	ServicoDoMorador.limpar()
 	_escolher_o_lugar()
 	if hud != null and hud.has_method("map_layer"):
 		_dica = DicaTecla.criar(hud.map_layer(), Atalhos.letra("interagir"), "")
@@ -86,6 +98,11 @@ func _exit_tree() -> void:
 		Talentos.mudou.disconnect(_ao_mudar_os_talentos)
 	if Relogio.dia_comecou.is_connected(_ao_comecar_o_dia):
 		Relogio.dia_comecou.disconnect(_ao_comecar_o_dia)
+
+
+## O talento Curral, pelo campo que ele concede.
+func tem_pastoreio() -> bool:
+	return Talentos.bonus("pastoreio") > 0.0
 
 
 func levantado() -> bool:
@@ -110,7 +127,7 @@ func _ao_mudar_os_talentos() -> void:
 ## talento no segundo tutorial fecha também para quem já o tinha ("pula se já tinha o
 ## talento", no 2D): a fila ganha o acontecimento aqui, sem esperar outra teia.
 func acertar(avisar: bool = false) -> void:
-	if not Talentos.tem(TALENTO) or not _lugar.is_finite():
+	if not tem_pastoreio() or not _lugar.is_finite():
 		return
 	if _galinheiro == null:
 		_levantar()
@@ -137,10 +154,17 @@ func _ao_comecar_o_dia(_dia: int, _estacao: int, _ano: int) -> void:
 func _postura() -> void:
 	if _galinheiro == null or dia_da_postura < 0:
 		return
-	var hoje := Relogio.dia_absoluto()
+	var hoje := dia_da_postura_vigente(Relogio.dia_absoluto(), Relogio.hora(),
+			Talentos.bonus("pressa_do_curral") > 0.0)
 	if hoje > dia_da_postura:
 		ovos = mini(TETO_DE_OVOS, ovos + GALINHAS)
 		dia_da_postura = hoje
+
+
+## O DIA DE POSTURA QUE JÁ VALE: o de hoje, ou o de amanhã quando o Trato do curral adianta a
+## postura e a tarde já caiu. Pura, para o portão conferir sem relógio.
+static func dia_da_postura_vigente(hoje: int, hora: int, pressa: bool) -> int:
+	return hoje + 1 if pressa and hora >= HORA_DA_POSTURA_ADIANTADA else hoje
 
 
 ## O E NO GALINHEIRO: recolhe o que está no ninho, um a um (a mochila cheia fica com o resto).
@@ -324,11 +348,13 @@ func _avisar(chave: String, quanto: int = 0) -> void:
 
 
 func estado_para_salvar() -> Dictionary:
-	return {"ovos": ovos, "dia_da_postura": dia_da_postura}
+	return {"ovos": ovos, "dia_da_postura": dia_da_postura, "servico": ServicoDoMorador.estado_para_salvar()}
 
 
 func restaurar(estado: Dictionary) -> void:
 	ovos = int(estado.get("ovos", ovos))
 	dia_da_postura = int(estado.get("dia_da_postura", dia_da_postura))
+	var servico = estado.get("servico", {})
+	ServicoDoMorador.restaurar(servico if servico is Dictionary else {})
 	acertar()
 	_postura()

@@ -237,6 +237,10 @@ func _atualizar_chevron(delta: float) -> void:
 	var giro := _chevron.rotation
 	if not some:
 		var obstaculos := PopupsDoMundo.paineis_do_hud(tamanho, self)
+		# A NARRAÇÃO MANDA (#106): a caixa longa do Dialogo também é um painel de que o chevron foge.
+		var caixa := _caixa_da_narracao()
+		if caixa.has_area():
+			obstaculos.append(caixa)
 		if na_tela:
 			# Visível mas longe: paira sobre o ponto, apontando para baixo, para ele.
 			pos = projecao - Vector2(0, 46)
@@ -251,6 +255,10 @@ func _atualizar_chevron(delta: float) -> void:
 			# Fora da visão ORBITA O JOGADOR rumo ao alvo, fugindo dos painéis do HUD.
 			pos = lugar_livre(_centro_da_orbita(camera, area, centro), rumo, _raio_da_orbita(tamanho), obstaculos, area)
 			giro = rumo.angle()
+			# Sem um só lugar livre na volta inteira, ele se apaga: nunca fica sobre um painel.
+			if not pos.is_finite():
+				pos = _mola.posicao
+				some = true
 	var quer := 0.0 if some else 1.0
 	if quer > 0.0 and _alfa <= 0.0:
 		# ACENDE NO LUGAR: o chevron que nasce não desliza de onde ficou da última vez.
@@ -302,6 +310,14 @@ func _centro_da_orbita(camera: Camera3D, area: Rect2, padrao: Vector2) -> Vector
 	return padrao
 
 
+## A caixa da narração aberta, em tela; vazia com ela fechada (ou sem o autoload, num portão solto).
+func _caixa_da_narracao() -> Rect2:
+	var dialogo: Node = get_node_or_null("/root/Dialogo") if is_inside_tree() else null
+	if dialogo == null or not dialogo.has_method("retangulo_da_caixa"):
+		return Rect2()
+	return dialogo.call("retangulo_da_caixa")
+
+
 ## Os dois raios da elipse (px): proporcionais à altura da janela e ao tamanho do HUD de Ajustes.
 func _raio_da_orbita(tamanho: Vector2) -> Vector2:
 	var escala := 1.0
@@ -323,7 +339,8 @@ static func _cobre(p: Vector2, obstaculos: Array[Rect2]) -> bool:
 
 ## O lugar do chevron na órbita: o ponto da elipse (centro `centro`, raios `raio`) na direção
 ## `rumo`; se ele cair sobre um painel ou fora da `area`, desliza pela elipse para os dois lados
-## (até um quarto de volta), depois diminui o raio, e só então tenta a volta inteira.
+## (até um quarto de volta), depois diminui o raio, e só então tenta a volta inteira. Sem lugar
+## livre em nenhuma delas devolve `Vector2.INF` (quem chama apaga o chevron, não o põe sobre o painel).
 static func lugar_livre(centro: Vector2, rumo: Vector2, raio: Vector2, obstaculos: Array[Rect2], area: Rect2) -> Vector2:
 	var direcao := rumo.normalized() if rumo.length_squared() > 0.0001 else Vector2(0, 1)
 	var fase := atan2(direcao.y / raio.y, direcao.x / raio.x)
@@ -336,8 +353,7 @@ static func lugar_livre(centro: Vector2, rumo: Vector2, raio: Vector2, obstaculo
 					var p := centro + Vector2(cos(angulo) * raio.x, sin(angulo) * raio.y) * fator
 					if area.has_point(p) and not _cobre(p, obstaculos):
 						return p
-	var menor: float = FATORES_DA_ORBITA[FATORES_DA_ORBITA.size() - 1]
-	return centro + Vector2(cos(fase) * raio.x, sin(fase) * raio.y) * menor
+	return Vector2.INF
 
 
 ## Chevron 2D desenhado à mão: seta apontando +X, girada pela rotação do Control.

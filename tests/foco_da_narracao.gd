@@ -27,10 +27,29 @@ func _run() -> void:
 	await process_frame
 	await process_frame
 	if "--sem-reserva" in OS.get_cmdline_user_args():
-		aviso.modulate = cor
-	conferir(aviso.modulate.a == 0.0, "o aviso sob a caixa cede")
+		hud._barra.modulate = cor
+	# O aviso mora no canto superior esquerdo (#102): a caixa da narração fica embaixo e não o cobre.
+	conferir(aviso.modulate.a == 1.0, "o aviso do canto superior não cede à caixa da narração")
 	conferir(hud._barra.modulate.a == 0.0, "a barra de mao sob a caixa cede")
 	conferir(hud._heading.modulate.a == 1.0, "a missao fora da caixa permanece")
+	# A narração manda (#106): QUALQUER painel do grupo obstaculos_do_hud que a cobre se apaga (o do
+	# testador, por exemplo), e o que está longe dela fica.
+	var caixa: Rect2 = dialogo.retangulo_da_caixa()
+	conferir(caixa.has_area(), "a caixa da narração aberta devia ter retângulo")
+	var sobre := Control.new()
+	sobre.add_to_group("obstaculos_do_hud")
+	root.add_child(sobre)
+	sobre.position = caixa.position + Vector2(12, 12)
+	sobre.size = Vector2(120, 40)
+	var longe := Control.new()
+	longe.add_to_group("obstaculos_do_hud")
+	root.add_child(longe)
+	longe.position = Vector2(2, 2)
+	longe.size = Vector2(16, 16)
+	await process_frame
+	await process_frame
+	conferir(sobre.modulate.a == 0.0, "o painel sobre a caixa da narração não se apagou")
+	conferir(longe.modulate.a == 1.0, "o painel longe da caixa se apagou sem motivo")
 	var foco: Control
 	for filho in hud._root.get_children():
 		if filho.get_script() == load("res://scripts/prototipo_3d/foco_da_narracao.gd"):
@@ -46,6 +65,9 @@ func _run() -> void:
 	dialogo.calar()
 	await process_frame
 	await process_frame
+	conferir(sobre.modulate.a == 1.0, "o painel sobre a caixa não voltou ao fechar a narração")
+	sobre.queue_free()
+	longe.queue_free()
 	conferir(aviso.modulate == cor, "a cor original volta")
 	conferir(not aviso.visible, "aviso expirado nao reaparece")
 	conferir(hud._barra.modulate.a == 1.0, "a mao volta apos a fala")

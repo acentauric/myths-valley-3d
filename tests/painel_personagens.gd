@@ -6,6 +6,22 @@ extends SceneTree
 ## restaura o padrão.
 
 
+## #213: cada nome de cartão aparece inteiro, em até duas linhas que cabem na largura útil do botão, e o
+## cartão é baixo (no teto da grade) e comporta as linhas.
+func _confere_nomes(painel, grade: GridContainer, rotulo: String) -> void:
+	for cartao: Button in grade.get_children():
+		var fonte := cartao.get_theme_font("font")
+		var tamanho := cartao.get_theme_font_size("font_size")
+		var caixa := cartao.get_theme_stylebox("normal")
+		var util := cartao.size.x - caixa.get_margin(SIDE_LEFT) - caixa.get_margin(SIDE_RIGHT)
+		var linhas := cartao.text.split("\n")
+		_assert(linhas.size() <= 2, "%s: o nome de '%s' ocupa %d linhas" % [rotulo, cartao.name, linhas.size()])
+		for linha in linhas:
+			_assert(fonte.get_string_size(linha, HORIZONTAL_ALIGNMENT_LEFT, -1, tamanho).x <= util, "%s: '%s' corta no cartão (%.0f de %.0f px)" % [rotulo, linha, fonte.get_string_size(linha, HORIZONTAL_ALIGNMENT_LEFT, -1, tamanho).x, util])
+		_assert(cartao.size.y <= painel.ALTURA_MAX_CARTAO + 0.5, "%s: o cartão '%s' tem %.0f px de altura; o teto é %.0f" % [rotulo, cartao.name, cartao.size.y, painel.ALTURA_MAX_CARTAO])
+		_assert(cartao.size.y >= linhas.size() * fonte.get_height(tamanho) + caixa.get_margin(SIDE_TOP) + caixa.get_margin(SIDE_BOTTOM) - 1.0, "%s: o cartão '%s' não comporta as linhas do nome" % [rotulo, cartao.name])
+
+
 func _initialize() -> void:
 	_run.call_deferred()
 
@@ -28,11 +44,15 @@ func _run() -> void:
 	# Com os moradores novos de 05/10 são mais de uma página de cartões: a primeira vem cheia, e o viajante fecha a lista.
 	var capacidade: Vector2i = painel._capacidade()
 	_assert(cartoes.columns == capacidade.x and cartoes.get_child_count() == mini(painel._pessoas.size(), capacidade.x * capacidade.y), "moradores em cartões")
-	# #171: a grade ocupa o modal, no mínimo 5 colunas por 5 linhas, e não deixa faixa vazia antes da navegação.
-	_assert(capacidade.x >= 5 and capacidade.y >= 5, "grade de cartões com ao menos 5 x 5 (%s)" % capacidade)
+	# #171 e #213: a grade ocupa o modal, no mínimo 6 colunas por 5 linhas, de cartões baixos, e a faixa vazia
+	# embaixo é menos que uma linha de cartões.
+	_assert(capacidade.x >= 6 and capacidade.y >= 5, "grade de cartões com ao menos 6 x 5 (%s)" % capacidade)
 	var vazio_embaixo: float = painel._rodape.get_global_rect().position.y - cartoes.get_global_rect().end.y
-	_assert(vazio_embaixo < 40.0, "sem faixa vazia entre a grade e a navegação (%.0f px)" % vazio_embaixo)
+	var uma_linha: float = painel.ALTURA_MAX_CARTAO + painel.SEPARACAO_GRADE + painel.SEPARACAO_COLUNA
+	_assert(vazio_embaixo < uma_linha, "sobra menos que uma linha de cartões entre a grade e a navegação (%.0f px)" % vazio_embaixo)
 	_assert(painel._rolagem.get_global_rect().encloses(cartoes.get_global_rect()), "a grade cabe na rolagem")
+	_assert(not painel._rolagem.get_v_scroll_bar().visible, "a grade de moradores não rola")
+	_confere_nomes(painel, cartoes, "moradores")
 	_assert(str(cartoes.get_child(0).name) == "Morador_pedro" and str((painel._pessoas.back() as Dictionary).get("id", "")) == "viajante", "Pedro abre os cartões e o viajante fecha")
 	var ids_na_lista: Array = []
 	for pessoa: Dictionary in painel._pessoas:
@@ -176,7 +196,9 @@ func _run() -> void:
 	var primeiro_cartao := str(grade.get_child(0).name)
 	_assert(grade.columns == capacidade.x and grade.get_child_count() == capacidade.x * capacidade.y, "assets em grade paginada")
 	# Nome que corta no cartão aparece inteiro no tooltip.
-	_assert(str(grade.get_child(0).tooltip_text).begins_with(str(grade.get_child(0).text).strip_edges().trim_suffix("•").strip_edges()), "o tooltip do cartão traz o nome inteiro")
+	_assert(str(grade.get_child(0).tooltip_text).begins_with(str(grade.get_child(0).text).replace("\n", " ").strip_edges().trim_suffix("•").strip_edges()), "o tooltip do cartão traz o nome inteiro")
+	_assert(not painel._rolagem.get_v_scroll_bar().visible, "a grade de assets não rola")
+	_confere_nomes(painel, grade, "assets")
 	_assert(painel._lista.find_children("*", "SpinBox", true, false).is_empty(), "grade não abre editores")
 	_assert(painel._rolagem.get_global_rect().encloses(painel._lista.get_global_rect()), "grade cabe sem rolagem")
 	for chave: String in CatalogoAssets.PECAS:

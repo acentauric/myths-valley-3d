@@ -94,7 +94,11 @@ var _mapa_largo: RID
 var _regiao_larga: RID
 var _larga_pronta := false
 var _larga_de_novo := false
+## A larga assou e ainda entra no mapa dela (alguns quadros de física).
+var _larga_assentando := false
 var _fonte_da_vez: NavigationMeshSourceGeometryData3D
+## A conta dos corrimãos em curso no WorkerThreadPool (`_assar`), ou -1. Quem sai da árvore espera por ela.
+var _tarefa_dos_corrimaos := -1
 var _malha: NavigationMesh
 var _agua := -INF
 var _sonda := Vector3.INF
@@ -188,7 +192,25 @@ func _assar() -> void:
 	# conta da estreita (o raio dela cabe no tabuleiro e subiria no corrimão); na larga, de 0,6, o
 	# corrimão inteiro é o que segura o caminho no meio da ponte, como era até 08/10.
 	_fonte_da_vez = _copia_da_fonte(fonte)
-	_corrimaos_das_pontes(fonte)
+	# OS CORRIMÃOS SAEM FORA DA LINHA PRINCIPAL: a volta pelos triângulos do vale (`_sem_corrimaos`)
+	# roda numa linha de trabalho, e o quadro segue enquanto ela conta.
+	var zonas := _zonas_das_pontes()
+	if not zonas.is_empty():
+		var vertices := fonte.get_vertices()
+		var indices := fonte.get_indices()
+		var saida: Array = []
+		var tarefa := WorkerThreadPool.add_task(func() -> void: saida.append(_sem_corrimaos(vertices, indices, zonas[0], zonas[1])))
+		_tarefa_dos_corrimaos = tarefa
+		var arvore := get_tree()
+		while not WorkerThreadPool.is_task_completed(tarefa) and arvore != null and is_inside_tree():
+			await arvore.process_frame
+		# Saindo da árvore, o `_exit_tree` já esperou a conta e a assada não segue.
+		if _tarefa_dos_corrimaos != tarefa or not is_inside_tree():
+			_assando = false
+			return
+		WorkerThreadPool.wait_for_task_completion(tarefa)
+		_tarefa_dos_corrimaos = -1
+		fonte.set_indices(saida[0])
 	_obstaculos_das_pontes(fonte)
 	NavigationServer3D.bake_from_source_geometry_data_async(_malha, fonte, _ao_assar)
 
@@ -254,34 +276,74 @@ func _obstaculos_da_ponte_grande(fonte: NavigationMeshSourceGeometryData3D, pont
 ## que a simplificação ligue um caminho sobre ele ao tabuleiro. A geometria
 ## de colisão e o modelo permanecem completos; somente a leitura da malha muda.
 func _corrimaos_das_pontes(fonte: NavigationMeshSourceGeometryData3D) -> void:
-	var vertices := fonte.get_vertices()
-	var indices := fonte.get_indices()
+	var zonas := _zonas_das_pontes()
+	if not zonas.is_empty():
+		fonte.set_indices(_sem_corrimaos(fonte.get_vertices(), fonte.get_indices(), zonas[0], zonas[1]))
+
+
+## As pontes medidas para `_sem_corrimaos`, na linha principal: [as zonas, os limites], ou vazio sem
+## ponte. Cada zona: centro (x, z), eixo (x, z), a altura acima da qual a face é corrimão, e as meias
+## medidas com a folga. O eixo é horizontal (`world_builder`), e o lado é ele girado. Os limites: o
+## retângulo (x, z) que cobre todas as pontes e a altura mais baixa de corrimão.
+func _zonas_das_pontes() -> Array:
+	var zonas: Array[PackedFloat64Array] = []
+	var limites := PackedFloat64Array([INF, -INF, INF, -INF, INF])
+	for ponte in _mundo.pontes.values():
+		var centro: Vector3 = ponte.centro
+		var modelo: Node3D = (ponte.get("modelos", {}) as Dictionary).get("de_pe")
+		var piso := float(modelo.get_meta("piso_do_tabuleiro", centro.y + 0.31)) if modelo != null else centro.y + 0.31
+		if modelo == null and ponte.has("corrimao"):
+			# A tábua mais alta da ponte grande fica a 0,7 sobre o centro dela (medido no GLB): com o
+			# piso em 0,31 as tábuas altas saíam da malha junto com o corrimão, e o tabuleiro ficava furado.
+			piso = centro.y + PISO_DA_PONTE_GRANDE
+		var eixo: Vector3 = ponte.ao_longo
+		var meio_comprimento := float(ponte.comprimento) * 0.5 + 0.3
+		var meia_largura := float(ponte.largura) * 0.5 + 0.3
+		zonas.append(PackedFloat64Array([centro.x, centro.z, eixo.x, eixo.z, piso + 0.09, meio_comprimento, meia_largura]))
+		var alcance := sqrt(meio_comprimento * meio_comprimento + meia_largura * meia_largura)
+		limites[0] = minf(limites[0], centro.x - alcance)
+		limites[1] = maxf(limites[1], centro.x + alcance)
+		limites[2] = minf(limites[2], centro.z - alcance)
+		limites[3] = maxf(limites[3], centro.z + alcance)
+		limites[4] = minf(limites[4], piso + 0.09)
+	return [] if zonas.is_empty() else [zonas, limites]
+
+
+## OS ÍNDICES SEM AS FACES DE CORRIMÃO: a face cujo meio cai na pegada de uma ponte (com a folga) e que
+## sobe acima do tabuleiro dela. Conta pura, sem cena: roda fora da linha principal (`_assar`). A volta
+## passa por todos os triângulos do vale (meio milhão); o que cai fora do retângulo de todas as pontes
+## sai com duas contas, e o que fica se escreve no lugar. A versão que pedia a ponte (e o `get_meta`
+## do modelo) a cada triângulo parava o quadro 5,5 s por assada — e a casa que abre de perto pede
+## uma (`Interiores._avisar_a_malha`, #205).
+static func _sem_corrimaos(vertices: PackedFloat32Array, indices: PackedInt32Array, zonas: Array[PackedFloat64Array], limites: PackedFloat64Array) -> PackedInt32Array:
 	var filtrados := PackedInt32Array()
+	filtrados.resize(indices.size())
+	var n := 0
 	for i in range(0, indices.size(), 3):
-		var meio := Vector3.ZERO
-		var alto := -INF
-		for j in 3:
-			var v := indices[i + j] * 3
-			meio += Vector3(vertices[v], vertices[v + 1], vertices[v + 2]) / 3.0
-			alto = maxf(alto, vertices[v + 1])
+		var a := indices[i] * 3
+		var b := indices[i + 1] * 3
+		var c := indices[i + 2] * 3
+		var mx := (vertices[a] + vertices[b] + vertices[c]) / 3.0
+		var mz := (vertices[a + 2] + vertices[b + 2] + vertices[c + 2]) / 3.0
 		var corrimao := false
-		for ponte in _mundo.pontes.values():
-			var centro: Vector3 = ponte.centro
-			var modelo: Node3D = (ponte.get("modelos", {}) as Dictionary).get("de_pe")
-			var piso := float(modelo.get_meta("piso_do_tabuleiro", centro.y + 0.31)) if modelo != null else centro.y + 0.31
-			if modelo == null and ponte.has("corrimao"):
-				# A tábua mais alta da ponte grande fica a 0,7 sobre o centro dela (medido no GLB): com o
-				# piso em 0,31 as tábuas altas saíam da malha junto com o corrimão, e o tabuleiro ficava furado.
-				piso = centro.y + PISO_DA_PONTE_GRANDE
-			var eixo: Vector3 = ponte.ao_longo
-			var lado := Vector3(-eixo.z, 0, eixo.x)
-			var relativo := meio - centro
-			if alto > piso + 0.09 and absf(relativo.dot(eixo)) < float(ponte.comprimento) * 0.5 + 0.3 and absf(relativo.dot(lado)) < float(ponte.largura) * 0.5 + 0.3:
-				corrimao = true
-				break
+		if mx > limites[0] and mx < limites[1] and mz > limites[2] and mz < limites[3]:
+			var alto := maxf(vertices[a + 1], maxf(vertices[b + 1], vertices[c + 1]))
+			if alto > limites[4]:
+				for zona in zonas:
+					if alto <= zona[4]:
+						continue
+					var rx := mx - zona[0]
+					var rz := mz - zona[1]
+					if absf(rx * zona[2] + rz * zona[3]) < zona[5] and absf(rz * zona[2] - rx * zona[3]) < zona[6]:
+						corrimao = true
+						break
 		if not corrimao:
-			filtrados.append_array(indices.slice(i, i + 3))
-	fonte.set_indices(filtrados)
+			filtrados[n] = indices[i]
+			filtrados[n + 1] = indices[i + 1]
+			filtrados[n + 2] = indices[i + 2]
+			n += 3
+	filtrados.resize(n)
+	return filtrados
 
 
 ## O CASCO DO SAVEIRO ATRACADO como obstáculo: o retângulo dele (`SaveiroVale.pegada_do_casco`),
@@ -372,6 +434,17 @@ func esta_pronta() -> bool:
 	return _pronta
 
 
+## A MALHA ESTÁ EM DIA: pronta, sem assada em curso nem pedida, a estreita e a larga já no mapa. `esta_pronta`
+## só diz que a primeira entrou; quem confere o caminho com o vale mudado (um cômodo que abriu de perto,
+## o cercado, o barco) espera por este.
+func em_dia() -> bool:
+	if not _pronta or _adiada or _assando or _de_novo:
+		return false
+	if not _larga_pronta or _larga_de_novo or _larga_assentando or _fonte_da_vez != null:
+		return false
+	return _malha_larga == null or not NavigationServer3D.is_baking_navigation_mesh(_malha_larga)
+
+
 ## O caminho de `de` até `para` pela malha, ou vazio sem malha.
 ## Entre cômodos, chega pela soleira e cruza o vão alinhado. Cortar a quina
 ## do umbral prendia a cápsula da igreja com a passagem central livre.
@@ -383,6 +456,10 @@ func caminho(de: Vector3, para: Vector3) -> PackedVector3Array:
 		return _caminho_na_malha(de, para)
 	var saida: String = interiores.contem(de)
 	var entrada: String = interiores.contem(para)
+	# O DESTINO É DENTRO DE CASA pela planta: a âncora do meio da casa tem o y do terreno (ou nenhum), e a altura do
+	# chão do cômodo a deixava "fora" — o caminho ia direto pela malha e acabava na parede (#205).
+	if entrada == "" and saida == "":
+		entrada = interiores.contem_na_planta(para)
 	if saida == entrada:
 		return _caminho_na_malha(de, para)
 	var sala_saida: Node3D = interiores.sala_de(saida)
@@ -447,6 +524,10 @@ func larga_pronta() -> bool:
 
 ## O mapa e a região da malha larga são do servidor de navegação: devolvidos ao sair, ou vazam.
 func _exit_tree() -> void:
+	# A conta dos corrimãos roda noutra linha com o código deste nó: o jogo que fecha no meio dela espera o fim.
+	if _tarefa_dos_corrimaos >= 0:
+		WorkerThreadPool.wait_for_task_completion(_tarefa_dos_corrimaos)
+		_tarefa_dos_corrimaos = -1
 	if _regiao_larga.is_valid():
 		NavigationServer3D.free_rid(_regiao_larga)
 		_regiao_larga = RID()
@@ -1086,6 +1167,7 @@ func _ao_assar_larga() -> void:
 			continue
 		chao.add_polygon(poligono)
 	var iteracao := NavigationServer3D.map_get_iteration_id(_mapa_largo)
+	_larga_assentando = true
 	NavigationServer3D.region_set_navigation_mesh(_regiao_larga, chao)
 	for i in 600:
 		await get_tree().physics_frame
@@ -1095,6 +1177,7 @@ func _ao_assar_larga() -> void:
 		if perto != Vector3.ZERO:
 			break
 	_larga_pronta = true
+	_larga_assentando = false
 	if _larga_de_novo and _fonte_da_vez != null:
 		_assar_a_larga()
 

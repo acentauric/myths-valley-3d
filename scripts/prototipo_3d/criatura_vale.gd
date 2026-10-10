@@ -42,6 +42,7 @@ extends CharacterBody3D
 ## quem foge da mata se livra dela de verdade.
 
 const Animador = preload("res://scripts/prototipo_3d/animador_bicho.gd")
+const BichoDeCasa = preload("res://scripts/prototipo_3d/bicho_de_casa.gd")
 const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
 
 signal mordeu(quanto: float)
@@ -158,6 +159,8 @@ var _rng := RandomNumberGenerator.new()
 var _corpo: Node3D
 var _modelo: Node3D
 var _animador
+## Quanto falta para medir de novo a encosta debaixo do corpo (s).
+var _encosta_em := 0.0
 var _malhas: Array[GeometryInstance3D] = []
 var _tinta_do_aviso: StandardMaterial3D
 var _tinta_da_pancada: StandardMaterial3D
@@ -764,6 +767,19 @@ func _morder() -> void:
 
 # --- corpo -------------------------------------------------------------------
 
+## O corpo acompanha a encosta (#149: "também em rampa"), como o do bicho de casa: de quando em quando mede
+## o chão à frente e atrás, e o animador inclina o focinho sem salto. "acompanha_a_encosta": false
+## na espécie (a Matinta, que não pisa o chão) liga isto fora.
+func _acompanhar_a_encosta(delta: float) -> void:
+	if _world == null or not bool(dados().get("acompanha_a_encosta", true)):
+		return
+	_encosta_em -= delta
+	if _encosta_em > 0.0:
+		return
+	_encosta_em = BichoDeCasa.ENCOSTA_A_CADA
+	_animador.inclinacao_do_chao = BichoDeCasa.inclinacao_no_ponto(_world, global_position, rotation.y)
+
+
 func _mover(delta: float) -> void:
 	if not is_on_floor():
 		velocity.y -= 20.0 * delta
@@ -777,12 +793,14 @@ func _mover(delta: float) -> void:
 		global_position = antes
 		velocity = Vector3.ZERO
 	_animador.velocidade = Vector2(velocity.x, velocity.z).length()
+	_acompanhar_a_encosta(delta)
 
 
 func _parar(delta: float) -> void:
 	velocity.x = 0.0
 	velocity.z = 0.0
 	_animador.velocidade = 0.0
+	_acompanhar_a_encosta(delta)
 	if not is_on_floor():
 		velocity.y -= 20.0 * delta
 		move_and_slide()

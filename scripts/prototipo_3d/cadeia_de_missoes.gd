@@ -89,6 +89,7 @@ signal cena(nome: String)
 const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
 const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
 const FilaDeFalas = preload("res://scripts/prototipo_3d/fila_de_falas.gd")
+const ServicoDoMorador = preload("res://scripts/prototipo_3d/servico_do_morador.gd")
 ## Toda cadeia viva entra neste grupo: é por ele que um morador pergunta se tem
 ## missão com o jogador antes de cumprimentar (`npc.gd`, `tem_missao`).
 const GRUPO := &"cadeias_de_missoes"
@@ -978,14 +979,27 @@ func _eventos_feitos(meta: Dictionary) -> int:
 ##
 ## O QUE NÃO COUBE NA MOCHILA fica devendo (`_dar`): o HUD diz "Recebido" só do
 ## que entrou, e o resto entra quando abrir espaço.
+##
+## PASSO COM `trabalho_do` é o dia de serviço de um morador do jogador (o roçado do Cosme, no
+## segundo tutorial, #160): os itens que ele traz vêm pelo rendimento e pela perícia dos
+## talentos (`servico_do_morador.gd`); réis e XP não, que não são fruto do serviço.
 func _pagar(passo: Dictionary) -> void:
 	var recompensa: Dictionary = passo.get("recompensa", {})
 	if recompensa.is_empty():
 		return
+	var trabalhador := str(passo.get("trabalho_do", ""))
+	var rendimento := 0.0
+	var oficio_aprendido := false
+	if trabalhador != "":
+		rendimento = Talentos.bonus("rendimento_do_morador")
+		ServicoDoMorador.registrar_dia(trabalhador, Talentos.bonus("pericia_do_morador"))
+		oficio_aprendido = ServicoDoMorador.aprendeu(trabalhador)
 	var entrou: Array[String] = []
 	var ficou: Array[String] = []
 	for chave in recompensa:
 		var quanto := int(recompensa[chave])
+		if trabalhador != "" and Catalogo.existe(str(chave)):
+			quanto = ServicoDoMorador.pagamento(quanto, rendimento, oficio_aprendido)
 		if str(chave) == "reis":
 			Jogo.dinheiro += quanto
 			entrou.append(tr("%d réis") % quanto)

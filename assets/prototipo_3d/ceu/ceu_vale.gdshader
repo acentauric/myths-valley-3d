@@ -13,6 +13,11 @@ render_mode use_half_res_pass, disable_fog;
 // Direção PARA o sol e para a lua (unitárias), sem a trava de 2° que a luz usa.
 uniform vec3 sol_dir = vec3(0.0, 1.0, 0.0);
 uniform vec3 lua_dir = vec3(0.0, -1.0, 0.0);
+// A fase da lua (#229): 0 = nova, 0,5 = cheia, de volta a 1 (dia do calendário, em ceu_vale.gd);
+// o brilho é a fração iluminada do disco (0 na nova, 1 na cheia). A crescente acende à esquerda,
+// como no céu do hemisfério sul.
+uniform float lua_fase : hint_range(0.0, 1.0) = 0.5;
+uniform float lua_brilho : hint_range(0.0, 1.0) = 1.0;
 // 0 no fundo da noite, 1 de dia (Dia.luz_do_dia).
 uniform float luz : hint_range(0.0, 1.0) = 1.0;
 // 1 no crepúsculo: sol perto do horizonte, acima ou pouco abaixo dele.
@@ -204,19 +209,29 @@ void sky() {
 		ceu += cor_sol * (pow(max(cs, 0.0), 1800.0) * 1.4 + pow(max(cs, 0.0), 90.0) * 0.22) * luz_sol * mix(0.6, 1.0, luz);
 		if (d.y >= 0.0) {
 			if (!cubo) {
-				ceu += ceu_estrelado(d) * pow(1.0 - luz, 3.0) * smoothstep(0.0, 0.2, d.y);
+				// Sem lua no céu (a nova) as estrelas aparecem mais.
+				ceu += ceu_estrelado(d) * pow(1.0 - luz, 3.0) * smoothstep(0.0, 0.2, d.y) * mix(1.35, 1.0, lua_brilho);
 			}
 			// Lua: disco com mares sorteados por ruído e um halo frio.
 			float cl = dot(d, lua_dir);
 			float lua_vis = smoothstep(-0.02, 0.03, lua_dir.y);
-			ceu += vec3(0.5, 0.58, 0.75) * (pow(max(cl, 0.0), 900.0) * 0.35 + pow(max(cl, 0.0), 40.0) * 0.06) * (1.0 - luz) * lua_vis;
+			ceu += vec3(0.5, 0.58, 0.75) * (pow(max(cl, 0.0), 900.0) * 0.35 + pow(max(cl, 0.0), 40.0) * 0.06) * (1.0 - luz) * lua_vis * lua_brilho;
 			if (!cubo && cl > 0.99) {
 				vec3 t = normalize(cross(lua_dir, vec3(0.0, 1.0, 0.0)) + vec3(0.0001, 0.0, 0.0));
 				vec2 local = vec2(dot(d, t), dot(d, cross(t, lua_dir))) / 0.0125;
 				float r = length(local);
 				float mares = smoothstep(0.46, 0.62, textureLod(ruido, local * 0.18 + vec2(0.31, 0.62), 0.0).r);
 				vec3 disco = vec3(0.97, 0.95, 0.88) * (1.0 - 0.32 * mares) * (0.8 + 0.2 * sqrt(max(1.0 - r * r, 0.0)));
-				ceu = mix(ceu, disco * mix(2.4, 1.05, luz), smoothstep(1.0, 0.9, r) * lua_vis * mix(1.0, 0.35, luz));
+				// A fase: o terminador é a elipse de meia-largura w·cos(fase). A crescente (fase < 0,5)
+				// acende à esquerda, a minguante à direita; na nova o disco some, e nas outras o resto
+				// dele fica num cinza de luz refletida da Terra.
+				float largura = sqrt(max(1.0 - local.y * local.y, 0.0));
+				float terminador = cos(TAU * lua_fase) * largura;
+				float dentro_da_luz = lua_fase < 0.5 ? (-terminador - local.x) : (local.x - terminador);
+				float iluminado = smoothstep(-0.04, 0.04, dentro_da_luz) * smoothstep(0.0, 0.08, lua_brilho);
+				float cinza = 0.04 * smoothstep(0.0, 0.3, lua_brilho) * (1.0 - iluminado);
+				float forma = smoothstep(1.0, 0.9, r) * lua_vis * mix(1.0, 0.35, luz);
+				ceu = mix(ceu, disco * mix(2.4, 1.05, luz), forma * (iluminado + cinza));
 			}
 			// Disco do sol (~0,7°).
 			if (!cubo) {

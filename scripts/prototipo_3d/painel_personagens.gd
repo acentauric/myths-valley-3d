@@ -23,7 +23,12 @@ const Humanoide = preload("res://scripts/prototipo_3d/personagem_procedural.gd")
 const MixamoUso = preload("res://scripts/prototipo_3d/mixamo_uso.gd")
 ## Cartão da grade: tamanho mínimo e separação. Colunas e linhas por página saem do espaço
 ## que o modal deixa à lista (`_capacidade()`), e os cartões esticam para preencher a grade.
-const CARTAO_MIN := Vector2(140, 56)
+## O cartão é BAIXO (#213): 42 px de mínimo e 64 de teto, para a grade ganhar linhas (6 colunas
+## por 5 ou mais, sem rolagem) em vez de poucos cartões altos. A fonte é 12, e o nome que não
+## cabe numa linha quebra em duas pelo espaço entre as palavras (ver `_nome_no_cartao`).
+const CARTAO_MIN := Vector2(140, 42)
+const ALTURA_MAX_CARTAO := 64.0
+const FONTE_CARTAO := 12
 const SEPARACAO_GRADE := 8
 ## Margens internas do modal (as da moldura) e separação entre os blocos da coluna.
 const MARGEM_CAIXA := Vector2(56, 44)
@@ -540,29 +545,56 @@ func _montar_cartoes() -> void:
 	grade.add_theme_constant_override("h_separation", SEPARACAO_GRADE)
 	grade.add_theme_constant_override("v_separation", SEPARACAO_GRADE)
 	_lista.add_child(grade)
-	# Cartões mais altos que o mínimo ocupam a sobra, sem faixa vazia antes da navegação. A
+	# Cartões mais altos que o mínimo ocupam a sobra, até o teto (ALTURA_MAX_CARTAO). A
 	# página que não enche a grade (24 moradores numa grade de 30) divide a altura pelas
-	# linhas que usa, até 1,6 vez o mínimo, para a última página filtrada não virar tijolo.
+	# linhas que usa, até o teto, para a última página filtrada não virar tijolo.
 	var da_pagina := itens.slice(_paginas[aba] * por_pagina, (_paginas[aba] + 1) * por_pagina)
 	var linhas := clampi(ceili(float(da_pagina.size()) / capacidade.x), 1, capacidade.y)
-	var altura_cartao := minf(floorf((_espaco_cartoes().y - SEPARACAO_GRADE * (linhas - 1)) / linhas), CARTAO_MIN.y * 1.6)
+	var altura_cartao := minf(floorf((_espaco_cartoes().y - SEPARACAO_GRADE * (linhas - 1)) / linhas), ALTURA_MAX_CARTAO)
+	var largura_cartao := floorf((_espaco_cartoes().x - SEPARACAO_GRADE * (capacidade.x - 1)) / capacidade.x)
 	for item: Array in da_pagina:
 		var chave: String = item[0]
 		var cartao := Button.new()
 		cartao.name = ("Morador_" if aba == 0 else "Peca_") + chave
-		cartao.text = str(item[1]) + ("  •" if item[2] else "")
 		# O nome pode cortar no cartão: o tooltip o mostra inteiro, e a chave embaixo.
 		cartao.tooltip_text = str(item[1]) if str(item[1]) == chave else "%s\n%s" % [item[1], chave]
 		cartao.clip_text = true
-		cartao.add_theme_font_size_override("font_size", 14)
+		cartao.add_theme_font_size_override("font_size", FONTE_CARTAO)
 		cartao.custom_minimum_size = Vector2(CARTAO_MIN.x, maxf(CARTAO_MIN.y, altura_cartao))
 		cartao.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		cartao.pressed.connect(func() -> void: _abrir(chave))
 		grade.add_child(cartao)
+		# Depois de entrar na árvore: a fonte e as margens vêm do tema do painel.
+		cartao.text = _nome_no_cartao(cartao, str(item[1]) + ("  •" if item[2] else ""), largura_cartao)
 	if paginas > 1:
 		_navegacao(_paginas[aba], paginas, func(passo: int) -> void:
 			_paginas[aba] += passo
 			_reconstruir_lista())
+
+
+## O nome inteiro dentro do cartão, sem corte (#213): numa linha se cabe na largura útil
+## (a do cartão menos as margens do botão); senão em duas, quebrando entre as palavras no
+## ponto que deixa a linha mais larga a mais curta ("SACRISTÃO / ZACARIAS"). Um nome de uma
+## palavra só, ou sem espaço (chinês), segue como está, e o tooltip o traz inteiro.
+func _nome_no_cartao(cartao: Button, texto: String, largura_do_cartao: float) -> String:
+	var fonte := cartao.get_theme_font("font")
+	var tamanho := roundi(FONTE_CARTAO * Tela.escala_texto)
+	var caixa := cartao.get_theme_stylebox("normal")
+	var util := largura_do_cartao - caixa.get_margin(SIDE_LEFT) - caixa.get_margin(SIDE_RIGHT) - 2.0
+	if fonte.get_string_size(texto, HORIZONTAL_ALIGNMENT_LEFT, -1, tamanho).x <= util:
+		return texto
+	var palavras := texto.split(" ", false)
+	var melhor := texto
+	var menor := INF
+	for corte in range(1, palavras.size()):
+		var primeira := " ".join(palavras.slice(0, corte))
+		var segunda := " ".join(palavras.slice(corte))
+		var mais_larga := maxf(fonte.get_string_size(primeira, HORIZONTAL_ALIGNMENT_LEFT, -1, tamanho).x,
+			fonte.get_string_size(segunda, HORIZONTAL_ALIGNMENT_LEFT, -1, tamanho).x)
+		if mais_larga < menor:
+			menor = mais_larga
+			melhor = primeira + "\n" + segunda
+	return melhor
 
 
 func _abrir(chave: String) -> void:

@@ -112,8 +112,12 @@ var _house_info_panel: Panel
 var _house_info_label: Label
 var _house_info_heading: Label
 var _clock_label: Label
-## A largura máxima do aviso do rodapé (#102): cabe entre o minimapa e os botões.
-const LARGURA_DO_AVISO := 640.0
+## A largura máxima do aviso do canto superior esquerdo (#102): a mesma do quadro
+## da missão, e a coluna do canto fica alinhada de cima a baixo.
+const LARGURA_DO_AVISO := 360.0
+## A margem do canto e o respiro entre dois quadros da coluna da esquerda.
+const MARGEM_DO_CANTO := 18.0
+const FOLGA_DA_COLUNA := 12.0
 var _clock_panel: Panel
 var _clock_estado: Label
 ## O BLOCO DO TOPO (#177): a placa do relógio e a pilha das três barras têm a
@@ -277,10 +281,12 @@ func _ready() -> void:
 	get_viewport().size_changed.connect(_layout_controls_modal)
 
 	# O AVISO (#102): a fala do Pedro, o que se recebeu, o que se entregou. Era
-	# uma faixa de largura inteira no rodapé, atrás do minimapa e por cima do
-	# "mão livre" da barra. Agora é uma caixa no meio, acima da barra de mão, de
-	# até LARGURA_DO_AVISO, que quebra a linha e cresce para cima — na identidade
-	# do vale, como a caixa de fala: a laca, o filete de ouro, a Cormorant.
+	# uma faixa de largura inteira no rodapé, atrás do minimapa; depois uma caixa
+	# no meio, acima da barra de mão. Por orientação do autor (07/10) ele mora no
+	# CANTO SUPERIOR ESQUERDO, na coluna da missão: logo abaixo do quadro da tarefa
+	# (e das informações da casa, quando abertas), com a largura dele, quebrando a
+	# linha e crescendo para baixo — na identidade do vale, como a caixa de fala: a
+	# laca, o filete de ouro, a Cormorant. O rodapé fica só com o minimapa e a mão.
 	var estilo_do_aviso := StyleBoxFlat.new()
 	estilo_do_aviso.bg_color = Color(Identidade.LACA, 0.94)
 	estilo_do_aviso.border_color = Color(Identidade.OURO, 0.75)
@@ -299,21 +305,20 @@ func _ready() -> void:
 	_notice_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_notice_panel.add_theme_stylebox_override("panel", estilo_do_aviso)
 	_root.add_child(_notice_panel)
-	# ACIMA DA BARRA DE MÃO, e a medida vem dela (`BarraDeMao.altura_ocupada`);
-	# ancorada no rodapé e crescendo para cima conforme o texto.
-	var acima := BarraDeMao.altura_ocupada()
-	_notice_panel.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
-	_notice_panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	_notice_panel.grow_vertical = Control.GROW_DIRECTION_BEGIN
-	_notice_panel.offset_left = -LARGURA_DO_AVISO * 0.5
-	_notice_panel.offset_right = LARGURA_DO_AVISO * 0.5
-	_notice_panel.offset_top = -acima - 8.0 - 30.0
-	_notice_panel.offset_bottom = -acima - 8.0
+	# Âncora no canto de cima; a altura nominal é a de uma linha e o painel cresce
+	# para baixo até o texto caber. A posição vertical vem de `_posicionar_aviso`.
+	_notice_panel.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	_notice_panel.grow_horizontal = Control.GROW_DIRECTION_END
+	_notice_panel.grow_vertical = Control.GROW_DIRECTION_END
+	_notice_panel.offset_left = MARGEM_DO_CANTO
+	_notice_panel.offset_right = MARGEM_DO_CANTO + LARGURA_DO_AVISO
+	_notice_panel.offset_top = MARGEM_DO_CANTO + 96.0 + FOLGA_DA_COLUNA
+	_notice_panel.offset_bottom = _notice_panel.offset_top + 30.0
 	_notice_panel.visible = not _notice.is_empty()
 	_notice_label = _label(_notice, 16, Identidade.TEXTO)
 	_notice_label.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TEXTO, 600))
 	_notice_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_notice_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_notice_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	_notice_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_notice_panel.add_child(_notice_label)
 
@@ -405,7 +410,8 @@ func _ready() -> void:
 	_almanaque = almanaque
 
 	_agrupar_componente([_heading, _region_label, _mission_step, _quest_label, _objective_label], "missao", Vector2(18, 18))
-	_agrupar_componente([_notice_panel], "avisos", Vector2(_root.size.x * 0.5, _root.size.y - BarraDeMao.altura_ocupada()))
+	# O aviso cresce a partir do canto de cima, como a coluna da missão (#102).
+	Tela.vincular_componente(_notice_panel, "avisos", Vector2.ZERO)
 	var foco = load("res://scripts/prototipo_3d/foco_da_narracao.gd").new()
 	foco.hud = self
 	_root.add_child(foco)
@@ -654,7 +660,7 @@ func _agrupar_componente(controles: Array, chave: String, pivo: Vector2) -> void
 	for controle: Control in controles:
 		controle.reparent(grupo, false)
 	var aplicar := func() -> void:
-		grupo.pivot_offset = Vector2(_root.size.x * 0.5, _root.size.y - BarraDeMao.altura_ocupada()) if chave == "avisos" else pivo
+		grupo.pivot_offset = pivo
 		grupo.scale = Vector2.ONE * Tela.escala_componente(chave)
 	Tela.componentes_mudaram.connect(aplicar)
 	grupo.resized.connect(aplicar)
@@ -762,6 +768,7 @@ func set_model_status(value: String) -> void:
 ## Avisos cedem apenas onde uma fala ou interação precisa do mesmo espaço.
 ## A intenção vem do texto atual; fechar uma fala nunca revive aviso expirado.
 func _sincronizar_prioridade_dos_avisos() -> void:
+	_posicionar_aviso()
 	var permitido := not mapa_aberto and not controls_open()
 	var superiores := PopupsDoMundo.retangulos_dos_baloes(self)
 	superiores.append_array(PopupsDoMundo.retangulos(self, PopupsDoMundo.GRUPO_DICAS))
@@ -816,16 +823,47 @@ func _layout_notice() -> void:
 		_notice_panel.visible = not _notice.is_empty()
 		# A caixa se mede pelo texto: curta para um aviso curto, até a largura
 		# máxima (LARGURA_DO_AVISO, ou o que a janela e a escala dos avisos deixam)
-		# para a fala do Pedro, que então quebra a linha e cresce para cima — o
+		# para a fala do Pedro, que então quebra a linha e cresce para baixo — o
 		# rótulo mora dentro da caixa, e ela acompanha a altura dele.
 		var font := _notice_label.get_theme_font("font")
-		var largura := minf(LARGURA_DO_AVISO, maxf(160.0, _root.get_viewport_rect().size.x * 0.68 / Tela.escala_componente("avisos")))
-		var half := minf(font.get_string_size(_notice, HORIZONTAL_ALIGNMENT_LEFT, -1, _notice_label.get_theme_font_size("font_size")).x * 0.5 + 30.0, largura * 0.5)
-		var acima := BarraDeMao.altura_ocupada()
-		_notice_panel.offset_left = -half
-		_notice_panel.offset_right = half
-		_notice_panel.offset_top = -acima - 8.0 - 30.0
-		_notice_panel.offset_bottom = -acima - 8.0
+		var maxima := minf(LARGURA_DO_AVISO, maxf(160.0, _root.get_viewport_rect().size.x * 0.68 / Tela.escala_componente("avisos")))
+		var largura := minf(font.get_string_size(_notice, HORIZONTAL_ALIGNMENT_LEFT, -1, _notice_label.get_theme_font_size("font_size")).x + 60.0, maxima)
+		_notice_panel.offset_left = MARGEM_DO_CANTO
+		_notice_panel.offset_right = MARGEM_DO_CANTO + largura
+		# Volta à altura de uma linha: o painel cresce de novo até o texto novo caber.
+		_notice_panel.offset_bottom = _notice_panel.offset_top + 30.0
+		_posicionar_aviso()
+
+
+## O RETÂNGULO NA TELA de um controle, com a escala do componente a que ele pertence.
+func _retangulo_em_tela(controle: Control) -> Rect2:
+	return controle.get_global_transform_with_canvas() * Rect2(Vector2.ZERO, controle.size)
+
+
+## ONDE O AVISO COMEÇA, na coluna do canto superior esquerdo (#102): logo abaixo do
+## último quadro que ocupa a mesma faixa horizontal — a missão, as informações da
+## casa, o relógio e as barras (quando a janela é estreita e eles descem para baixo
+## do quadro) e o aviso de espera. Sem nenhum deles à frente, vai para o fim da
+## missão. Os quadros mudam de altura (a tarefa longa, a escala de cada
+## componente), e o aviso os acompanha em vez de uma altura fixa.
+func _posicionar_aviso() -> void:
+	if not is_instance_valid(_notice_panel) or not is_instance_valid(_heading):
+		return
+	var largura := (_notice_panel.offset_right - _notice_panel.offset_left) * Tela.escala_componente("avisos")
+	var direita := MARGEM_DO_CANTO + largura
+	var topo := MARGEM_DO_CANTO
+	var antes: Array = [_heading, _clock_panel, barra_vida, barra_folego, barra_stamina, _house_info_panel, _espera_panel]
+	for item in antes:
+		var controle := item as Control
+		if controle == null or not is_instance_valid(controle) or not controle.is_visible_in_tree():
+			continue
+		var caixa := _retangulo_em_tela(controle)
+		if caixa.end.x > MARGEM_DO_CANTO and caixa.position.x < direita:
+			topo = maxf(topo, caixa.end.y + FOLGA_DA_COLUNA)
+	var delta := topo - _notice_panel.offset_top
+	if absf(delta) > 0.01:
+		_notice_panel.offset_top += delta
+		_notice_panel.offset_bottom += delta
 
 
 func set_notice(value: String, segundos: float = -1.0) -> void:

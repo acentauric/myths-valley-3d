@@ -1230,15 +1230,19 @@ func _executar(escolha: String) -> String:
 		var inicio: Vector3 = jogador.global_position
 		var correr := escolha.begins_with("run_")
 		var rumo := escolha.trim_prefix("run_").trim_prefix("walk_")
-		var teclas := {"forward": KEY_W, "backward": KEY_S, "left": KEY_A, "right": KEY_D}
-		if not teclas.has(rumo):
+		var direcoes := {"forward": Vector3.FORWARD, "backward": Vector3.BACK, "left": Vector3.LEFT, "right": Vector3.RIGHT}
+		if not direcoes.has(rumo):
 			return "action_unavailable"
 		jogador._cancel_walk()
 		if bool(jogador.get("_run_toggled")) != correr:
 			await _tecla(KEY_SHIFT)
-		_pressionar(int(teclas[rumo]), true)
+		# ANDAR RUMO A (#209): o testador não aperta A, D ou S. O lado da câmera vira um ponto no
+		# chão, o corpo vira para ele e só o W é apertado, como em `follow_route`.
+		var visada := Basis(Vector3.UP, float(jogador.get("_yaw"))) * (direcoes[rumo] as Vector3)
+		jogada.virar_para(inicio + visada * 10.0)
+		_pressionar(KEY_W, true)
 		await _esperar(4.0 if correr else 2.0)
-		_pressionar(int(teclas[rumo]), false)
+		_pressionar(KEY_W, false)
 		await process_frame
 		var andou := jogador.global_position.distance_to(inicio)
 		if andou < 0.3:
@@ -1430,14 +1434,16 @@ func _aproximar_guia(pedro: Node3D) -> bool:
 		jogada.virar_para(rumo)
 		if Time.get_ticks_msec() >= verificar:
 			if jogador.global_position.distance_to(anterior) < 0.2:
-				_pressionar(KEY_D, true)
+				# Desentalar sem passo lateral (#209): vira o corpo 60 graus para o lado e segue com o W.
+				var para: Vector3 = rumo - jogador.global_position
+				para.y = 0.0
+				if para.length() > 0.05:
+					jogada.virar_para(jogador.global_position + para.rotated(Vector3.UP, -PI / 3.0))
 				await _esperar(0.5)
-				_pressionar(KEY_D, false)
 			anterior = jogador.global_position
 			verificar = Time.get_ticks_msec() + 500
 		await physics_frame
 	_pressionar(KEY_W, false)
-	_pressionar(KEY_D, false)
 	await physics_frame
 	return jogador.global_position.distance_to(inicio) >= 0.2 or jogador.global_position.distance_to(pedro.global_position) <= 2.6
 

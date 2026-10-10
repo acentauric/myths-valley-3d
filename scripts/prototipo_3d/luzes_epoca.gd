@@ -8,11 +8,17 @@ const COR_OLEO := Color("ffb45a")
 const COR_QUEROSENE := Color("ffc978")
 const COR_FOGO := Color("ff8a3c")
 const COR_VELA := Color("ffcf8a")
+const FasesDaLua = preload("res://scripts/prototipo_3d/fases_da_lua.gd")
 
 var _chamas: Array[Dictionary] = []
 ## A chama e as brasas da fogueira: partículas que seguem a noite como a luz (#86).
 var _particulas: Array[GPUParticles3D] = []
 var _acesas := false
+## As luzes locais ganham força quando a lua é nova (#229, fases_da_lua.gd), e o viajante ganha um
+## brilho de lampião em volta de si nas noites escuras. Na lua cheia os dois são neutros.
+var _fator_lunar := 1.0
+var _energia_do_viajante := 0.0
+var _viajante: OmniLight3D
 var _intensidade := 0.0
 var _tempo := 0.0
 
@@ -173,6 +179,10 @@ func aplicar_hora(_hora: float) -> void:
 	var alvo := 1.0 - smoothstep(0.25, 0.6, Dia.luz_do_dia())
 	_intensidade = alvo
 	_acesas = alvo > 0.02
+	var fase := FasesDaLua.fase_do_dia(Relogio.dia_absoluto())
+	var suaves := FasesDaLua.suaves()
+	_fator_lunar = FasesDaLua.fator_das_luzes_locais(fase, suaves)
+	_energia_do_viajante = FasesDaLua.brilho_do_viajante(fase, suaves) * alvo
 	# A chama da fogueira apaga de dia com a luz (#86): só a luz seguia a noite,
 	# e de manhã a fogueira do terreiro continuava ardendo.
 	for particulas in _particulas:
@@ -184,6 +194,33 @@ func _process(delta: float) -> void:
 	_tempo += delta
 	if _acesas:
 		_atualizar(delta)
+	_seguir_o_viajante()
+
+
+## O brilho do viajante (#229): nas noites sem lua uma luz quente de uns seis metros anda com ele,
+## para a mata fechada não virar breu em volta de quem joga. Na lua cheia, ou de dia, fica apagada
+## (e nem é criada).
+func _seguir_o_viajante() -> void:
+	if _energia_do_viajante <= 0.01:
+		if _viajante != null:
+			_viajante.visible = false
+		return
+	if not is_inside_tree():
+		return
+	var jogador := get_tree().get_first_node_in_group("map_player") as Node3D
+	if jogador == null:
+		return
+	if _viajante == null:
+		_viajante = OmniLight3D.new()
+		_viajante.name = "BrilhoDoViajante"
+		_viajante.light_color = COR_OLEO
+		_viajante.omni_range = FasesDaLua.ALCANCE_DO_VIAJANTE
+		_viajante.omni_attenuation = 1.4
+		_viajante.shadow_enabled = false
+		add_child(_viajante)
+	_viajante.visible = true
+	_viajante.light_energy = _energia_do_viajante
+	_viajante.global_position = jogador.global_position + Vector3(0.0, 1.4, 0.0)
 
 
 func _atualizar(_delta: float) -> void:
@@ -192,7 +229,7 @@ func _atualizar(_delta: float) -> void:
 		var tremor: float = chama.tremor
 		var fase: float = chama.fase
 		var oscilacao := 1.0 + tremor * (sin(_tempo * 9.0 + fase) * 0.6 + sin(_tempo * 23.0 + fase * 1.7) * 0.4)
-		luz.light_energy = float(chama.energia) * _intensidade * oscilacao
+		luz.light_energy = float(chama.energia) * _intensidade * oscilacao * _fator_lunar
 		luz.visible = _acesas
 		var visual = chama.visual
 		if visual != null:

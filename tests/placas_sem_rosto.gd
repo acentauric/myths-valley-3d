@@ -25,8 +25,7 @@ extends SceneTree
 ##   6. A PRAÇA CHEIA: com todos os moradores à mão em cacho, a câmera perto, média e longe e a
 ##      missão apontando o mais longe, nenhuma placa cai sobre uma cabeça e o alvo da missão
 ##      continua com a placa dele.
-##   7. EM CONVERSA: com um morador falando, nenhuma placa fica sob o balão nem sobre uma cabeça, e
-##      há no máximo duas placas.
+##   7. EM CONVERSA: com um morador falando, o balão tem prioridade e nenhuma placa fica na tela (#218).
 ##
 ## A cena do vale é a de `popups_na_tela.gd`: o jogador na praça, o Pedro fora do caminho, os
 ## moradores parados onde o portão os põe (`_quadro`).
@@ -380,7 +379,8 @@ func _em_conversa(livres: Array, aqui: Vector3) -> void:
 	await _esperar(2.5)
 	var do_balao: Rect2 = quem.balao.retangulo()
 	var ligadas := _placas_visiveis()
-	_conferir(ligadas.size() <= placas.MAXIMO_DE_PLACAS - 1, "com um balão no ar há %d placas (no máximo %d)" % [ligadas.size(), placas.MAXIMO_DE_PLACAS - 1])
+	# #218: o balão tem prioridade, e com ele no ar nenhuma placa de nome fica na tela.
+	_conferir(ligadas.is_empty(), "com um balão no ar há %d placas de nome na tela; o balão tem prioridade e nenhuma fica" % ligadas.size())
 	for dona in ligadas:
 		var caixa: Rect2 = (placas._placas[dona] as Control).get_global_rect()
 		_conferir(PopupsDoMundo.cobertura(caixa, do_balao) <= TOLERANCIA_DE_PX2, "a placa de %s (%s) fica sob o balão de %s (%s)" % [dona.name, str(caixa), quem.name, str(do_balao)])

@@ -13,7 +13,10 @@ extends SceneTree
 ##   1. NASCE NO CONVÉS: a partida nova põe o jogador em cima do saveiro
 ##      atracado, de pé no convés, e não na água nem em terra.
 ##   2. O PEDRO ESPERA NA PONTA DA PRANCHA: já saudou, a chegada começou pelo
-##      desembarque, e ele fica ali enquanto o jogador não desce.
+##      desembarque, e ele fica ali enquanto o jogador não desce. E A CÂMERA O
+##      MOSTRA (#119): o Pedro e o píer estão no quadro, sem o viajante nem a vela
+##      e o mastro entre a câmera e ele. `-- --falsificar=sem_ombro` tira o ombro
+##      da câmera, e o portão TEM de reprovar (o Pedro fica atrás do viajante).
 ##   3. A PRANCHA LEVA AO TABUADO: andando para a frente, o corpo desce do convés
 ##      ao píer, sem cair na água e sem empacar na borda — e o E no Pedro, e não
 ##      só chegar perto dele, fecha o desembarque.
@@ -59,6 +62,25 @@ var relogio_jogo: Node
 func _initialize() -> void:
 	_run.call_deferred()
 
+
+
+## A NARRAÇÃO LIVRE (#106): com a caixa longa aberta, nenhum painel do grupo `obstaculos_do_hud`
+## (minimapa, barra de mão, avisos, o painel do testador...) fica visível por cima dela. Cada um que a
+## cobre tem de estar apagado (alfa efetivo, contando os pais); os que não a tocam não importam.
+func _conferir_a_narracao_livre(dialogo: Node) -> void:
+	var caixa: Rect2 = dialogo.retangulo_da_caixa()
+	_conferir(caixa.has_area(), "a caixa da narração aberta não tem retângulo")
+	for no in get_nodes_in_group("obstaculos_do_hud"):
+		var controle := no as Control
+		if controle == null or not controle.is_visible_in_tree():
+			continue
+		var alfa := 1.0
+		var atual: Node = controle
+		while atual is CanvasItem:
+			alfa *= (atual as CanvasItem).modulate.a
+			atual = atual.get_parent()
+		var rect: Rect2 = controle.get_global_transform_with_canvas() * Rect2(Vector2.ZERO, controle.size)
+		_conferir(alfa < 0.05 or not rect.intersects(caixa), "o painel '%s' fica por cima da caixa da narração (alfa %.2f)" % [controle.name, alfa])
 
 func _conferir(ok: bool, rotulo: String) -> void:
 	if not ok:
@@ -127,6 +149,9 @@ func _run() -> void:
 	if tonho_t != null and areia != lugares_t.NENHUM:
 		_conferir(_no_chao(tonho_t.global_position, areia) < 2.5, "na chegada o Tonho está a %.1f da areia (em %s)" % [_no_chao(tonho_t.global_position, areia), str(tonho_t.global_position)])
 		_conferir(_no_chao(tonho_t.global_position, mundo.ancoras["PierPiso"]) > 3.0, "na chegada o Tonho continua no tabuado do píer")
+
+	# --- 2b. A CÂMERA MOSTRA O PEDRO E O PÍER (#119) ------------------------------------
+	await _enquadramento(jogador, pedro, saveiro, mundo)
 
 	# --- 3. A PRANCHA LEVA AO TABUADO -------------------------------------------------
 	var piso: Vector3 = mundo.ancoras["PierPiso"]
@@ -344,6 +369,9 @@ func _run() -> void:
 		var hud_do_vale = vale.hud
 		_conferir(hud_do_vale.destacando() and hud_do_vale._veu_do_destaque != null and hud_do_vale._veu_do_destaque.visible, "a explicação do corpo não escureceu a tela")
 		_conferir(hud_do_vale.barra_destacada() == "", "no respiro já havia uma barra acesa ('%s')" % hud_do_vale.barra_destacada())
+		await process_frame
+		await process_frame
+		_conferir_a_narracao_livre(dialogo)
 		var barras := {"Vida": hud_do_vale.barra_vida, "Folego": hud_do_vale.barra_folego, "Stamina": hud_do_vale.barra_stamina}
 		while dialogo._indice < dialogo._falas.size() - 1:
 			dialogo._indice += 1
@@ -479,6 +507,49 @@ static func _comprimento(pontos: PackedVector3Array) -> float:
 	for i in range(1, pontos.size()):
 		total += Vector2(pontos[i].x - pontos[i - 1].x, pontos[i].z - pontos[i - 1].z).length()
 	return total
+
+
+## A CHEGADA ENQUADRADA (#119): na partida nova a câmera fica atrás do viajante, no convés, e o Pedro espera na
+## mesma linha, na ponta da prancha — escondido por ele, com a vela e o mastro ao lado. O ombro da câmera
+## (`Player.enquadrar_de_ombro`) a desloca para o lado da proa: o Pedro e o píer ficam no quadro (no miolo dele,
+## e não na borda), o corpo do viajante não os tapa, e a vela e o mastro não cortam a linha da câmera ao Pedro.
+const MARGEM_DO_QUADRO := 0.12
+## O quanto o viajante pode chegar perto da linha da câmera ao peito do Pedro (m): o raio do corpo (0,28) e uma folga.
+const FOLGA_DO_CORPO := 0.4
+
+
+func _enquadramento(jogador, pedro, saveiro, mundo) -> void:
+	var pedido := OS.get_environment("MV_FALSIFICAR")
+	for argumento in OS.get_cmdline_user_args():
+		if str(argumento).begins_with("--falsificar="):
+			pedido = str(argumento).trim_prefix("--falsificar=")
+	if pedido == "sem_ombro":
+		jogador.enquadrar_de_ombro(Vector3.ZERO)
+		print("  FALSIFICAÇÃO: sem o ombro da câmera, atrás do viajante: o portão TEM de reprovar")
+	else:
+		_conferir(jogador.ombro_da_camera().length() > 1.0, "a partida nova não pôs o ombro na câmera da chegada (%s)" % str(jogador.ombro_da_camera()))
+	await _quadros(4)
+	var camera: Camera3D = jogador.camera
+	var tela: Vector2 = root.get_visible_rect().size
+	var peito: Vector3 = pedro.global_position + Vector3.UP * 1.0
+	var piso: Vector3 = mundo.ancoras["PierPiso"]
+	for alvo in [["o Pedro", peito], ["o tabuado do píer", piso + Vector3.UP * 0.5]]:
+		var ponto: Vector3 = alvo[1]
+		var no_quadro: bool = not camera.is_position_behind(ponto) and camera.is_position_in_frustum(ponto)
+		var lugar := camera.unproject_position(ponto)
+		var dentro_x: bool = lugar.x >= tela.x * MARGEM_DO_QUADRO and lugar.x <= tela.x * (1.0 - MARGEM_DO_QUADRO)
+		var dentro_y: bool = lugar.y >= tela.y * MARGEM_DO_QUADRO and lugar.y <= tela.y * (1.0 - MARGEM_DO_QUADRO)
+		var no_miolo: bool = dentro_x and dentro_y
+		_conferir(no_quadro and no_miolo, "na chegada %s não está no miolo do quadro (tela %s, %s)" % [alvo[0], str(lugar.snapped(Vector2.ONE)), str(tela)])
+	# O VIAJANTE NÃO TAPA O PEDRO: a linha da câmera ao peito dele passa longe do eixo do corpo.
+	var pes: Vector3 = jogador.global_position
+	var cabeca: Vector3 = pes + Vector3.UP * float(jogador.character_height)
+	var proximos := Geometry3D.get_closest_points_between_segments(camera.global_position, peito, pes, cabeca)
+	var folga: float = proximos[0].distance_to(proximos[1])
+	print("  a linha da câmera ao Pedro passa a %.2f m do eixo do viajante" % folga)
+	_conferir(folga >= FOLGA_DO_CORPO, "o viajante tapa o Pedro: a linha da câmera ao peito dele passa a %.2f m do eixo do corpo (mínimo %.2f)" % [folga, FOLGA_DO_CORPO])
+	# NEM A VELA, NEM O MASTRO.
+	_conferir(not saveiro.vela_entre(camera.global_position, peito), "a vela, o mastro ou a retranca do saveiro estão entre a câmera e o Pedro")
 
 
 func _no_chao(a: Vector3, b: Vector3) -> float:

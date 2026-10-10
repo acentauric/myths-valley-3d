@@ -31,6 +31,29 @@ extends Control
 ##     tremer com a câmera.
 ##
 ##
+## SOBRE QUEM FALA (#224)
+##
+## "O balão do Pedro, que estava no canto esquerdo, aparece no canto direito superior, longe
+## dele, sem ligação visual." O lugar era escolhido por uma soma de multas, e a multa por cobrir
+## uma placa, uma dica ou o jogador (milhares de px²) valia mais que quilômetros de distância: o
+## balão fugia para o canto vazio mais longe da tela só para não roçar numa dica. Agora:
+##
+##   1. O IDEAL É ACIMA DA CABEÇA, com a ponta para ela. `lugares` dá sete pontos de partida em
+##      volta dela (centrado, deslocado de lado, ao lado do corpo), em ordem de preferência.
+##   2. O QUE CAI SOBRE O HUD DESLIZA O MÍNIMO (`deslizar_do_hud`): para o lado, para cima ou
+##      para baixo do painel que cobriria, o que anda menos, e inteiro na tela. Fora da tela (a
+##      cabeça passou da borda) o balão encosta na borda do lado dela, e a ponta indica a direção.
+##   3. A DISTÂNCIA À CABEÇA TEM PREÇO (`PESO_DA_DISTANCIA`, por px além da folga da ponta), e o
+##      ROSTO de quem fala e do jogador pesa mais que o corpo (`PESO_DO_ROSTO`): o balão anda
+##      umas dezenas de px para não cobrir um rosto, e nunca atravessa a tela por causa de uma dica
+##      (a dica de quem fala já tem a folga embaixo, e a de outra coisa o balão sobe acima dela).
+##   4. A ESCOLHA É UMA CONTA PURA, `avaliar`, que o portão `balao_sobre_quem_fala` confere com o
+##      falante perto, longe, na borda e fora da tela.
+##
+## Na fala paginada o pé do balão fica onde estava (a mola segue o canto de baixo), e só o alto
+## cresce ou encolhe com a página.
+##
+##
 ## FALA LONGA EM PÁGINAS
 ##
 ## Uma fala de 30 ou 40 s de leitura (quinze letras por segundo) virava um balão do
@@ -101,6 +124,23 @@ const LINHAS_SEM_PAGINA := 3
 const LINHAS_POR_PAGINA := 2
 ## Largura de cada pontinho do indicador de página.
 const ESPACO_DO_PONTO := 13.0
+## O PREÇO DE CADA LUGAR (#224), em "notas" (menor leva). A área coberta (px²) de um painel do HUD
+## pesa mais que tudo; o rosto de quem fala e o do jogador, bem mais que o corpo; a distância à
+## cabeça, além da folga da ponta, custa por px; e o que o lugar andou para caber na tela ou fugir
+## do HUD também. A fração do corpo que conta como rosto, do chapéu ao queixo, vem do alto.
+const PESO_DO_HUD := 100.0
+const PESO_DO_ROSTO := 14.0
+const PESO_DO_ROSTO_DO_JOGADOR := 9.0
+const PESO_DO_CORPO := 0.6
+const PESO_DO_CORPO_DO_JOGADOR := 0.8
+const PESO_DA_DICA := 0.8
+const PESO_DA_PLACA := 0.3
+## O "?"/"!" de missão sobre as cabeças (#216) fica por baixo de toda interface: o balão o evita.
+const PESO_DO_MARCADOR := 1.0
+const PESO_DA_DISTANCIA := 6.0
+const PESO_DO_DESLOCAMENTO := 4.0
+const PESO_DA_ORDEM := 30.0
+const FRACAO_DO_ROSTO := 0.24
 
 var alvo: Node3D
 var altura := 2.0
@@ -392,28 +432,15 @@ func _posicionar(delta: float) -> void:
 	var hud := PopupsDoMundo.paineis_do_hud(tela, self, PopupsDoMundo.PRIORIDADE_FALA)
 	var placas := PopupsDoMundo.retangulos(self, PopupsDoMundo.GRUPO_PLACAS)
 	var dicas := PopupsDoMundo.retangulos(self, PopupsDoMundo.GRUPO_DICAS)
-	# O "?"/"!" de missão sobre as cabeças (#216) fica por baixo de toda interface: o balão o evita.
+	# Os lugares de partida, já deslizados do HUD e inteiros na tela, e a nota de cada um (#224).
+	# O "?"/"!" de missão sobre as cabeças (#216) também entra na conta.
 	var marcadores := PopupsDoMundo.retangulos_dos_marcadores(self)
-	var candidatos := _candidatos(tamanho, falante)
-	# Cada painel reserva seu retângulo real, inclusive barras e aviso do guia.
-	for obstaculo in hud:
-		candidatos.append(Vector2(obstaculo.position.x - tamanho.x - MARGEM, _cabeca_tela.y - tamanho.y))
-		candidatos.append(Vector2(obstaculo.end.x + MARGEM, _cabeca_tela.y - tamanho.y))
+	var avaliacao := avaliar(_cabeca_tela, tamanho, tela, {
+		"falante": falante, "jogador": jogador, "hud": hud, "dicas": dicas, "placas": placas,
+		"marcadores": marcadores})
+	var caixas: Array = avaliacao["caixas"]
 	var notas: Array[float] = []
-	for indice in range(candidatos.size()):
-		var caixa := _dentro_da_tela(Rect2(candidatos[indice], tamanho), tela)
-		var nota := _cobertura(caixa, falante) * 3.0 + _cobertura(caixa, jogador) * 2.5
-		for painel in hud:
-			nota += _cobertura(caixa, painel) * 100.0
-		for placa in placas:
-			nota += _cobertura(caixa, placa) * 2.0
-		for dica in dicas:
-			nota += _cobertura(caixa, dica) * 2.5
-		for marcador in marcadores:
-			nota += _cobertura(caixa, marcador) * 3.0
-		# Deslocado pela borda da tela, o balão se afasta da cabeça: pesa um pouco.
-		nota += caixa.position.distance_to(candidatos[indice]) * 4.0 + indice * 30.0
-		notas.append(nota)
+	notas.assign(avaliacao["notas"])
 	# A PERMANÊNCIA: o lugar só troca depois de `permanencia` no mesmo (a primeira
 	# escolha é livre), e só se o novo for bem melhor que o atual.
 	if _novo or _escolha >= notas.size():
@@ -427,7 +454,7 @@ func _posicionar(delta: float) -> void:
 			trocas += 1
 	# A mola segue o CANTO DE BAIXO do lugar: a página de menos linhas encolhe o balão
 	# pelo alto, e o pé dele não sai de perto da cabeça.
-	var canto_de_baixo: Vector2 = candidatos[_escolha] + Vector2(0.0, tamanho.y)
+	var canto_de_baixo: Vector2 = (caixas[_escolha] as Rect2).position + Vector2(0.0, tamanho.y)
 	if _novo:
 		_mola_da_caixa.reiniciar(canto_de_baixo)
 		_mola_da_ponta.reiniciar(_cabeca_tela)
@@ -435,16 +462,16 @@ func _posicionar(delta: float) -> void:
 		SuavizadorDeTela.VELOCIDADE_MAXIMA, ZONA_MORTA, CORREIA, SALTO, PUXAO)
 	_alvo_da_ponta = _mola_da_ponta.seguir(_cabeca_tela, delta, TEMPO_DA_PONTA,
 		SuavizadorDeTela.VELOCIDADE_MAXIMA, 1.5, 40.0)
-	var caixa_final := _dentro_da_tela(Rect2(canto - Vector2(0.0, tamanho.y), tamanho), tela)
+	var caixa_final := dentro_da_tela(Rect2(canto - Vector2(0.0, tamanho.y), tamanho), tela)
 	# DEIXA LUGAR PARA A DICA: a de outra coisa que cairia por cima fica por baixo dele.
-	caixa_final = _dentro_da_tela(PopupsDoMundo.afastar_de(caixa_final, dicas, FOLGA_DAS_DICAS), tela)
+	caixa_final = dentro_da_tela(PopupsDoMundo.afastar_de(caixa_final, dicas, FOLGA_DAS_DICAS), tela)
 	# E o marcador de missão: o balão sobe para cima dele em vez de o esconder (#216).
-	caixa_final = _dentro_da_tela(PopupsDoMundo.afastar_de(caixa_final, marcadores, FOLGA_DAS_DICAS), tela)
+	caixa_final = dentro_da_tela(PopupsDoMundo.afastar_de(caixa_final, marcadores, FOLGA_DAS_DICAS), tela)
 	# A mola também pode atravessar o HUD ao trocar de canto. Durante essa
 	# travessia, use o destino livre para manter a fala legível.
 	for obstaculo in hud:
 		if caixa_final.intersects(obstaculo):
-			caixa_final = _dentro_da_tela(Rect2(candidatos[_escolha], tamanho), tela)
+			caixa_final = caixas[_escolha] as Rect2
 			break
 	_painel.position = caixa_final.position.round()
 	_novo = false
@@ -462,27 +489,123 @@ func decidir_canto(notas: Array[float], atual: int, parado_s: float, permanencia
 	return atual
 
 
-## Lugares do balão (canto superior esquerdo) em volta da cabeça, em ordem de preferência.
-func _candidatos(tamanho: Vector2, falante: Rect2) -> Array[Vector2]:
-	var c := _cabeca_tela
-	return [
-		Vector2(c.x - tamanho.x * 0.5, c.y - tamanho.y - FOLGA),
-		Vector2(c.x + 18.0, c.y - tamanho.y - FOLGA),
-		Vector2(c.x - tamanho.x - 18.0, c.y - tamanho.y - FOLGA),
-		Vector2(falante.end.x + FOLGA, c.y - tamanho.y * 0.5),
-		Vector2(falante.position.x - tamanho.x - FOLGA, c.y - tamanho.y * 0.5),
+## Os lugares de partida do balão (canto superior esquerdo de cada um) em volta da cabeça `c`, em ordem
+## de preferência: acima e centrado; acima, deslocado de lado até a cabeça ficar perto da quina; acima
+## com a quina na cabeça; ao lado do corpo `falante`, na altura da cabeça. O pé do balão fica sempre
+## `FOLGA` acima da cabeça, de qualquer altura que ele tenha: a página que encolhe o balão não o desloca.
+static func lugares(c: Vector2, tamanho: Vector2, falante: Rect2) -> Array[Vector2]:
+	var topo := c.y - tamanho.y - FOLGA
+	var largura := tamanho.x
+	var saida: Array[Vector2] = [
+		Vector2(c.x - largura * 0.5, topo),
+		Vector2(c.x - largura * 0.5 + largura * 0.28, topo),
+		Vector2(c.x - largura * 0.5 - largura * 0.28, topo),
+		Vector2(c.x + 18.0, topo),
+		Vector2(c.x - largura - 18.0, topo),
 	]
+	# Sem corpo à vista (cabeça fora da tela, por exemplo), o corpo é a própria cabeça.
+	var corpo := falante if falante.size != Vector2.ZERO else Rect2(c - Vector2(15.0, 0.0), Vector2(30.0, 30.0))
+	saida.append(Vector2(corpo.end.x + FOLGA, c.y - tamanho.y * 0.5))
+	saida.append(Vector2(corpo.position.x - tamanho.x - FOLGA, c.y - tamanho.y * 0.5))
+	return saida
 
 
-func _dentro_da_tela(caixa: Rect2, tela: Vector2) -> Rect2:
-	caixa.position.x = clampf(caixa.position.x, MARGEM, tela.x - caixa.size.x - MARGEM)
-	caixa.position.y = clampf(caixa.position.y, MARGEM, tela.y - caixa.size.y - RODAPE)
+## `caixa` inteira na tela (com a margem e o pé livre do rodapé).
+static func dentro_da_tela(caixa: Rect2, tela: Vector2) -> Rect2:
+	caixa.position.x = clampf(caixa.position.x, MARGEM, maxf(tela.x - caixa.size.x - MARGEM, MARGEM))
+	caixa.position.y = clampf(caixa.position.y, MARGEM, maxf(tela.y - caixa.size.y - RODAPE, MARGEM))
 	return caixa
 
 
-## Área (px²) de `caixa` que cobre `outro`.
-func _cobertura(caixa: Rect2, outro: Rect2) -> float:
-	return PopupsDoMundo.cobertura(caixa, outro)
+## `caixa` fora dos painéis do HUD, deslizando o MÍNIMO: para cada painel que ela cobriria, vai para o lado
+## (esquerda ou direita), para cima ou para baixo dele — a saída que anda menos, e que fica inteira na
+## tela. Pura. Sem saída que livre todos, fica na que cobre menos.
+static func deslizar_do_hud(caixa: Rect2, paineis: Array[Rect2], tela: Vector2, folga: float) -> Rect2:
+	var atual := dentro_da_tela(caixa, tela)
+	for _passe in 4:
+		var cobre := Rect2()
+		for painel in paineis:
+			if painel.size != Vector2.ZERO and atual.grow(-0.5).intersects(painel):
+				cobre = painel
+				break
+		if cobre.size == Vector2.ZERO:
+			return atual
+		var saidas: Array[Rect2] = [
+			Rect2(Vector2(cobre.position.x - folga - atual.size.x, atual.position.y), atual.size),
+			Rect2(Vector2(cobre.end.x + folga, atual.position.y), atual.size),
+			Rect2(Vector2(atual.position.x, cobre.position.y - folga - atual.size.y), atual.size),
+			Rect2(Vector2(atual.position.x, cobre.end.y + folga), atual.size),
+		]
+		var melhor := atual
+		var menor := INF
+		for saida in saidas:
+			var dentro := dentro_da_tela(saida, tela)
+			# Cobrir o painel de novo (a tela é pequena demais) é a pior saída; as outras valem o que andam.
+			var custo := dentro.position.distance_to(atual.position) + _area_coberta(dentro, paineis) * 0.05
+			if custo < menor:
+				menor = custo
+				melhor = dentro
+		atual = melhor
+	return atual
+
+
+static func _area_coberta(caixa: Rect2, outros: Array[Rect2]) -> float:
+	var area := 0.0
+	for outro in outros:
+		area += PopupsDoMundo.cobertura(caixa, outro)
+	return area
+
+
+## A distância (px) de um ponto a um retângulo; zero dentro dele.
+static func distancia_ate(caixa: Rect2, ponto: Vector2) -> float:
+	var dx := maxf(maxf(caixa.position.x - ponto.x, 0.0), ponto.x - caixa.end.x)
+	var dy := maxf(maxf(caixa.position.y - ponto.y, 0.0), ponto.y - caixa.end.y)
+	return Vector2(dx, dy).length()
+
+
+## O rosto dentro do retângulo do corpo: do chapéu ao queixo, sem as beiradas. Vazio sem corpo.
+static func rosto_de(corpo: Rect2) -> Rect2:
+	if corpo.size == Vector2.ZERO:
+		return Rect2()
+	return Rect2(corpo.position.x + corpo.size.x * 0.15, corpo.position.y, corpo.size.x * 0.7, corpo.size.y * FRACAO_DO_ROSTO)
+
+
+## ONDE PÔR O BALÃO (#224), a conta pura: os sete lugares de partida de `lugares`, cada um deslizado do HUD e
+## posto inteiro na tela, e a nota de cada um (menor leva). `contexto`: "falante" e "jogador" (os retângulos
+## dos corpos na tela, vazios se não há), "hud" (os painéis), "dicas" e "placas". Devolve {"caixas", "notas"}
+## com a mesma ordem de `lugares`: a ordem é fixa (o índice é a identidade do lugar para a permanência).
+static func avaliar(c: Vector2, tamanho: Vector2, tela: Vector2, contexto: Dictionary) -> Dictionary:
+	var falante: Rect2 = contexto.get("falante", Rect2())
+	var jogador: Rect2 = contexto.get("jogador", Rect2())
+	var hud: Array[Rect2] = []
+	hud.assign(contexto.get("hud", []))
+	var dicas: Array[Rect2] = []
+	dicas.assign(contexto.get("dicas", []))
+	var placas: Array[Rect2] = []
+	placas.assign(contexto.get("placas", []))
+	var marcadores: Array[Rect2] = []
+	marcadores.assign(contexto.get("marcadores", []))
+	var pontos := lugares(c, tamanho, falante)
+	var caixas: Array[Rect2] = []
+	var notas: Array[float] = []
+	for indice in pontos.size():
+		var ideal := Rect2(pontos[indice], tamanho)
+		var caixa := deslizar_do_hud(ideal, hud, tela, MARGEM)
+		var nota := _area_coberta(caixa, hud) * PESO_DO_HUD
+		nota += PopupsDoMundo.cobertura(caixa, rosto_de(falante)) * PESO_DO_ROSTO
+		nota += PopupsDoMundo.cobertura(caixa, rosto_de(jogador)) * PESO_DO_ROSTO_DO_JOGADOR
+		nota += PopupsDoMundo.cobertura(caixa, falante) * PESO_DO_CORPO
+		nota += PopupsDoMundo.cobertura(caixa, jogador) * PESO_DO_CORPO_DO_JOGADOR
+		nota += _area_coberta(caixa, dicas) * PESO_DA_DICA
+		nota += _area_coberta(caixa, placas) * PESO_DA_PLACA
+		nota += _area_coberta(caixa, marcadores) * PESO_DO_MARCADOR
+		# Quanto o lugar ficou longe da cabeça, além da folga que a ponta pede.
+		nota += maxf(distancia_ate(caixa, c) - FOLGA, 0.0) * PESO_DA_DISTANCIA
+		# O que andou para caber na tela ou sair do HUD, e a ordem de preferência.
+		nota += caixa.position.distance_to(pontos[indice]) * PESO_DO_DESLOCAMENTO + indice * PESO_DA_ORDEM
+		caixas.append(caixa)
+		notas.append(nota)
+	return {"caixas": caixas, "notas": notas}
 
 
 ## Retângulo em tela do corpo de alguém (da cabeça aos pés, largura ~ 45% da altura).

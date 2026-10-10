@@ -135,6 +135,118 @@
   passo pulado) a recebe, e o nome dos itens passa a acompanhar o idioma do jogo (`Catalogo.nome` e
   `Catalogo.resumo`). Os portões `cadeia_das_missoes`, `chegada` e `entregas_da_cadeia` cobram a
   entrega, a porta e o save (#217).
+- **O aceite da missão e o aviso de primeira vez ganham tamanho próprio.** Em AJUSTAR → Cenário →
+  Interface surgem "Aceite da missão" e "Aviso de primeira vez" (34 componentes), de 65% a 150%, com
+  restauração individual e geral como os outros. A caixa de aceite do E no morador e o cartão do primeiro
+  cordel, da primeira árvore e da água funda crescem ou encolhem inteiros (texto, imagem, moldura e botões)
+  em torno do centro e nunca passam da janela. Portão novo `interfaces_de_cartoes` (independência entre os
+  dois, três resoluções, três idiomas, restauração; `--sem-escala` reprova a asserção do aceite). A #140
+  segue aberta: faltam o banner de conquista, a legenda da narração e a revisão das combinações com o
+  texto global ampliado (#140).
+- **Os quatro talentos de produção do quintal passam a valer (#160).** `pastoreio`, `pressa_do_curral`,
+  `rendimento_do_morador` e `pericia_do_morador` estavam declarados na teia e não eram lidos por ninguém
+  (a auditoria estrita os acusava). O galinheiro agora sobe pelo campo `pastoreio` do nó Curral; o Trato do
+  curral adianta a postura (as galinhas botam o ovo de amanhã a partir das 17h, no mesmo ritmo de um por
+  galinha por dia); e o dia de roçado do Cosme, no passo `capataz_manha`, vem pelo rendimento de quem
+  trabalha para o jogador (Palavra de patrão, Empreiteiro, Curimba: 4 mandiocas e 2 lenhas viram 6 e 3) e
+  pela perícia (o Mestre de ofício faz o dia valer por dois, o ofício se aprende em um só e o Cosme traz
+  um quarto a mais). A conta mora em `servico_do_morador.gd` e os dias de prática vão no save com o ninho.
+  Portão `producao_do_quintal` (com falsificadores `--sem-rendimento` e `--sem-pericia`); `quintal`
+  confere o dia de serviço no save.
+- **A narração manda na interface: nada fica por cima da caixa longa.** Com o Pedro (ou qualquer
+  fala da caixa do Dialogo) aberto, o `foco_da_narracao` apagava só os painéis que o HUD nomeava;
+  agora apaga QUALQUER painel do grupo `obstaculos_do_hud` que a cubra, o do testador incluído, e os
+  devolve como estavam ao fechar. A seta da missão passa a tratar a caixa como painel de que o chevron
+  foge, e a matriz de prioridades ganha a narração (120) acima do HUD essencial, em
+  `PopupsDoMundo.PRIORIDADE_NARRACAO` e em `PRIORIDADES_DOS_BALOES.md`. O F8 do testador segue lido por
+  `Input`, então interromper o teste continua valendo com o painel recolhido. Portões `foco_da_narracao`
+  (painel sobre a caixa se apaga e volta, o longe fica), `seta_em_orbita` (o chevron sai de baixo da
+  caixa), `prioridade_dos_avisos` (a ordem da matriz), `testador_sessao` (o painel do testador no grupo e
+  fora de cena com a caixa aberta) e `chegada` (na explicação das barras, nenhum painel visível cobre a
+  caixa). Falta conferir jogando as outras explicações de interface e as escalas individuais (#106).
+- **O objetivo em inglês de "As ferramentas do finado" cabe nas três linhas do HUD.** O resumo do passo
+  `pegar` tinha 63 letras ("Take the hoe, the bucket and the cassava cutting from the chest") e o
+  portão `cadeia_das_missoes` mede 60; agora é "Take the hoe, bucket and cassava cutting from the
+  chest" (55). Foi o último motivo que sobrava para o portão reprovar (#37).
+- **Na chegada, os bichos de casa ficam longe do caminho e só entram aos poucos depois.** O autor viu, perto
+  da Dona Candinha (passo 4/16), três cabras e o bode soltos entre os moradores, com 19 FPS. Até o Pedro entrar com o
+  viajante na casa do tio, as cabras, o bode, os porcos, os cães, os gatos e os bandos de galinhas só entram em
+  cena a 40 u ou mais do jogador e da câmera, no máximo um de cada, e o tempo não os amplia; fora de cena não
+  andam, não animam e não colidem. Terminada a introdução entram dois quadrúpedes e um bando, mais um a cada 12 e
+  20 s, e não o elenco inteiro de uma vez. O portão `apresentacao_do_povoado` cobra as duas fases. A medição de FPS
+  antes e depois fica para a rodada de medição (#155).
+
+- **A árvore de encosta assenta pelo pé do tronco, e o ingazeiro perde o cavaco de terra laranja.** O
+  plantio punha a árvore na altura do chão do ponto de plantio (o meio da caixa do GLB), mas o tronco sai
+  de até um metro e meio dele: na encosta o pé ficava a 0,5 u (aroeira) e 0,7 u (ingazeiro) do chão,
+  flutuando de um lado e enterrado do outro. A mata, a beira do rio, a restinga, o paisagismo e as árvores
+  nomeadas agora medem o pé uma vez por malha e põem a árvore na altura do chão dele (até 1,2 u), e o
+  `ground` do tronco, que a colisão, o corte e o crescimento leem, acompanha. Sob as raízes do ingazeiro
+  sobrava um cavaco de terra laranja de beiras vivas, resto da laje: 39 triângulos (1,6 m²) no GLB
+  principal e 11 (0,65 m²) no leve saíram, pela cor da terra, a planura e o contato com o chão
+  (`tirar_base_de_terra.py --cavaco`), e a altura do ingazeiro leve foi de 7,07 para 7,0 para ele seguir
+  do tamanho que tinha. Os portões `pe_das_arvores_na_encosta` (com `--falsificar`) e `bases_das_arvores`
+  (cavaco, com `--falsificar=cavaco`) medem os dois. A base reta do jatobá e as abas do cedro seguem como
+  estavam (#141).
+
+- **A noite ganha fases da lua: cheia clara, nova escura.** A fase sai do dia do calendário, num ciclo
+  de oito dias de jogo (o dia 1 é quarto crescente, o 3 é lua cheia, o 7 é lua nova), sem nada novo no
+  save. Na cheia a luz da lua passa de 0,26 para 0,33, azul-prateada, e faz sombra definida; na nova cai
+  para 0,06, o ambiente da noite baixa a pouco mais da metade, o disco some do céu e as estrelas
+  aparecem mais. O disco leva a fase (crescente acesa à esquerda, como no hemisfério sul). Lampião,
+  candeeiro e fogueira ganham 40% de energia na nova, e um brilho de lampião de 6,5 m anda com o
+  viajante nas noites sem lua, para a mata não virar breu. Em Ajustes → Cenário, "Noites escuras: Sim /
+  Suaves" encolhe a diferença para quem tem monitor escuro. O portão `fases_da_lua` mede a conta, o
+  ajuste e, no vale, a luz da lua, o ambiente, a sombra, o lampião e o viajante em oito fases das quatro
+  estações, e reprova com `--falsificar` (#229).
+
+- **O aviso do rodapé passa para o canto superior esquerdo.** A fala do Pedro, o que se recebeu e
+  o que se entregou (`set_notice`) saem de cima da barra de mão e vão para a coluna da missão: uma
+  caixa de até 360 px, a largura do quadro da tarefa, logo abaixo dele (e das informações da casa,
+  do relógio quando a janela estreita o faz descer, e do aviso de espera), que quebra a linha e
+  cresce para baixo. O rodapé fica só com o minimapa e a mão. O portão `tarefa_no_hud` mede, em
+  1280×720, 1920×1080 e 1000×700, a missão, o aviso e a espera ao mesmo tempo sem se cobrirem, e o
+  `foco_da_narracao` passa a esperar o aviso de pé quando a caixa da narração abre embaixo (#102).
+
+- **Os cartões de Modelos ficam baixos, e o nome de cada morador cabe inteiro.** Em Modelos, a grade
+  de Moradores e a de Assets passam de cartões altos em fonte 14 (que cortavam "SEU BENEDIT", "DONA
+  CANDI", "SACRISTÃO Z") para cartões de 42 a 64 px em fonte 12, com a capacidade de 6 colunas por
+  5 linhas ou mais e sem rolagem. O nome que não cabe numa linha quebra em duas entre as palavras
+  ("SACRISTÃO / ZACARIAS"), e o tooltip segue trazendo o nome inteiro. O portão `painel_personagens`
+  mede, em cada cartão dos Moradores e dos Assets, que cada linha do nome cabe na largura útil do botão,
+  que o cartão cabe no teto e comporta as linhas, que a grade tem ao menos 6×5 e que a faixa vazia
+  embaixo é menor que uma linha de cartões (#213).
+
+- **Com um balão de fala no ar, nenhuma plaquinha de nome fica na tela.** Antes só a placa de quem
+  falava saía, e a Dona Estefânia aparecia ao lado do balão da Dona Zefa no poço. Agora o balão
+  (conversa, fala solta, o Pedro conduzindo) tem prioridade: as plaquinhas apagam no fade de sempre,
+  inclusive a do alvo da missão e a do dono do E, e só voltam `SILENCIO_APOS_O_BALAO` (0,6 s) depois
+  do último balão, de modo que duas falas seguidas não as fazem piscar. Os portões `placas_e_baloes`
+  (com falsificação `--falsificar`), `matriz_dos_baloes` e `popups_na_tela` medem a ausência de placas
+  com a fala no ar, o vão entre duas falas e a volta (#218).
+
+- **O balão de fala fica sobre quem fala, com a ponta para ele.** O lugar do balão saía de uma soma de
+  multas em que cobrir uma dica ou uma placa valia mais que atravessar a tela: o Pedro no canto
+  esquerdo tinha o balão no canto direito superior. Agora a escolha é uma conta pura (`BalaoFala.avaliar`):
+  sete lugares em volta da cabeça, o ideal acima dela com o pé a 44 px; o que cairia sobre o HUD
+  desliza o mínimo; a distância à cabeça e o rosto de quem fala e do jogador têm preço; com o falante
+  fora da tela o balão encosta na borda do lado dele. A página da fala longa mantém o pé no lugar. O portão
+  novo `balao_sobre_quem_fala` mede o falante perto, longe, na borda, fora da tela e sob o bloco da
+  missão (o caso da captura), e reprova com `--falsificar` (#224).
+
+- **Entrar na casa herdada no passo do baú não derruba mais o jogo a 3 FPS (#185).** A queda vinha
+  do passo, e não da casa. Enquanto o passo pede enxada, balde e maniva, a cadeia do Pedro procura a
+  cada tick de física a fonte de cada item, e a busca por árvore dava uma volta pelo vale inteiro
+  duplicando a ficha da espécie em cada árvore: 54 ms por tick para não achar nada. A física entrava
+  em espiral (5 passos por quadro, 280 ms por quadro). A busca agora escolhe antes as espécies que
+  rendem o item. Medido na GTX 1660 Ti em P0, às 18 h: dentro da casa nesse passo, de 3,5 para
+  100–124 FPS (física de 275 para 2 ms por quadro). A soleira fica em 98–116 FPS. A igreja (61 → 65)
+  e o casarão (89 → 91) também não perdem FPS ao entrar. As hipóteses de render da issue (casca
+  escondida, luzes, sonda, `far`, sombra) foram medidas e nenhuma passa de 0,7 ms. O medidor ganhou
+  os lugares `dentro:`/`porta:`, a travessia da porta e a entrada da chegada. Os números estão no
+  anexo de desempenho.
+
+- **O jogo deixa de cair a 8 FPS ao lado da casa do tio no passo da corda (#226).** A queda que o autor viu no passo 12/16 era o mesmo defeito da casa herdada: enquanto o passo pede um item que árvore nenhuma rende, a cadeia do Pedro varria todas as árvores do vale a cada tick de física, desde 07/10. A correção da busca (#185) vale aqui também; o portão do alcance das peças agora reprova pasta nova do catálogo que ninguém classificou, e o portão da madeira cobra a pergunta pela corda. O censo de malhas e o FPS por lugar ficam para a rodada de medição.
 
 ## Build #10 — 08/10/2026
 
@@ -235,7 +347,16 @@ Fechada em 09/10/2026 com as correções das issues de 08/10, as vozes, o Mixamo
   corpo se alinhar: de lado ou na meia-volta ele gira no lugar um instante e só então
   anda, sem patinar de lado. O olhar para quem chega perto ganha o mesmo teto por
   quadro, e girar no lugar não conta como estar preso. Portão `giro_dos_moradores`;
-  falta o giro da cabeça (opcional), o vídeo antes e depois e as ações do testador (#209).
+  falta o giro da cabeça (opcional) e o vídeo antes e depois (#209).
+
+- **O testador nunca dá passo lateral: vira o corpo e anda para a frente.** As ações `walk_left`,
+  `walk_right`, `walk_backward` e as de corrida deixam de apertar A, D e S: a ação escolhe o lado da
+  câmera, vira o corpo para ele e só aperta o W, como o `follow_route`. O desentalar do guia também
+  deixou de apertar o D: gira o corpo 60° e segue com o W. O `robo.py` chama esses rumos de
+  `RUMOS_VIRADOS` e continua os deixando como último recurso. O portão `testador_sessao` lê o
+  `sessao.gd` e falha se a execução de `walk_`/`run_` ou o desentalar do guia voltar a usar A, D ou
+  S, e o `beata_locomocao` confere que a velocidade do clipe no chão (passada medida vezes
+  `speed_scale`) segue a velocidade real no andar e na corrida, para o pé não deslizar (#209).
 
 - **A árvore barra o corpo no peito e deixa a copa passar, espécie por espécie.** Um
   portão novo monta o vale, acorda o conjunto de cilindros ao lado de um tronco de cada
@@ -265,7 +386,10 @@ Fechada em 09/10/2026 com as correções das issues de 08/10, as vozes, o Mixamo
   incluído), ele desliza pela elipse até sair, ou diminui o raio; com o alvo à vista mas longe,
   o chevron que paira sobre ele se apaga se for cair sobre um painel. A mola, o giro e o fade
   de antes seguem iguais, então a volta para o cone sobre o alvo continua suave. O portão
-  `seta_em_orbita` confere órbita, raio, rumo e desvio de painel (#196).
+  `seta_em_orbita` confere órbita, raio, rumo e desvio de painel (#196). Na revisão de 09/10, a conta
+  dos painéis passa a medir o retângulo com a escala do componente de Ajustes (um painel ampliado a 150%
+  cobria mais do que o `get_global_rect` dizia), e sem nenhum lugar livre na volta inteira o chevron se
+  apaga em vez de cair sobre o painel; o portão confere os dois casos.
 
 - **O relógio do topo vira o controle do tempo, e o bloco do topo se alinha.** A placa do
   relógio ganha duas colunas (o ícone centrado na vertical à esquerda, hora e período à

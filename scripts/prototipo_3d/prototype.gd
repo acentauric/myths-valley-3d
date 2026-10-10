@@ -1010,6 +1010,8 @@ func _chegar_pelo_saveiro(spawn: Vector3) -> void:
 	# De costas para a câmera, olhando o píer: à frente estão o Pedro e o arraial.
 	var rumo: Vector3 = saveiro.rumo_do_pier()
 	player.teleportar(no_conves, atan2(rumo.x, rumo.z))
+	# A câmera espia pelo ombro, do lado da proa: o Pedro e o píer à vista, e não atrás do viajante (#119).
+	player.enquadrar_de_ombro(saveiro.ombro_da_chegada())
 	if pedro != null:
 		pedro.global_position = saveiro.lugar_do_pedro()
 		pedro.velocity = Vector3.ZERO

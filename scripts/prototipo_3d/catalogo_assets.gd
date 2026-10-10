@@ -368,7 +368,7 @@ const PECAS := {
 	"mangueira_leve": {"tripo": "arvores/mangueira_leve_tripo.glb", "altura": 7.2, "tronco": 0.55},
 	"jaqueira_leve": {"tripo": "arvores/jaqueira_leve_tripo.glb", "altura": 8.4, "tronco": 0.4},
 	"castanhola_leve": {"tripo": "arvores/castanhola_leve_tripo.glb", "altura": 6.0, "tronco": 0.45},
-	"ingazeiro_leve": {"tripo": "arvores/ingazeiro_leve_tripo.glb", "altura": 7.07, "tronco": 0.4},
+	"ingazeiro_leve": {"tripo": "arvores/ingazeiro_leve_tripo.glb", "altura": 7.0, "tronco": 0.4},
 	"mangue_leve": {"tripo": "arvores/mangue_leve_tripo.glb", "altura": 5.0, "tronco": 0.6},
 	"coqueiro_leve": {"tripo": "arvores/coqueiro_leve_tripo.glb", "altura": 9.5, "tronco": 0.24},
 	"dendezeiro_leve": {"tripo": "arvores/dendezeiro_leve_tripo.glb", "altura": 6.5, "tronco": 0.4},

@@ -264,5 +264,21 @@
     "ajuda": "A caixa de conversa dos moradores e as dicas do tutorial.",
     "ajuda_en": "The residents' conversation box and the tutorial hints.",
     "ajuda_es": "La caja de conversación de los habitantes y las pistas del tutorial."
+  },
+  "aceite": {
+    "texto": "Aceite da missão",
+    "texto_en": "Quest offer",
+    "texto_es": "Aceptar la misión",
+    "ajuda": "A tela que resume a missão quando você fala com quem a pede, com Aceitar e Agora não.",
+    "ajuda_en": "The screen that sums up a quest when you talk to whoever offers it, with Accept and Not now.",
+    "ajuda_es": "La pantalla que resume la misión cuando hablas con quien la ofrece, con Aceptar y Ahora no."
+  },
+  "aviso": {
+    "texto": "Aviso de primeira vez",
+    "texto_en": "First-time notice",
+    "texto_es": "Aviso de primera vez",
+    "ajuda": "O cartão no meio da tela que explica algo novo, como o primeiro cordel ou a primeira árvore.",
+    "ajuda_en": "The card in the middle of the screen that explains something new, like the first cordel or the first tree.",
+    "ajuda_es": "La tarjeta en medio de la pantalla que explica algo nuevo, como el primer cordel o el primer árbol."
   }
 }

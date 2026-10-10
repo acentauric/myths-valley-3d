@@ -70,6 +70,10 @@ const ESPESSURA_DA_PRANCHA := 0.12
 const PRANCHA_ALEM_DA_BORDA := 1.4
 ## O Pedro espera um passo além da ponta da prancha, já no tabuado.
 const PEDRO_ALEM_DA_PRANCHA := 1.1
+## O OMBRO DA CÂMERA NA CHEGADA (#119): quanto o pivô dela se desloca para o lado da proa (m). Atrás do viajante, na
+## proa, o Pedro espera na mesma linha, escondido por ele, e a vela e o mastro ficam entre a câmera e o píer; 2,5 m
+## para a proa põem o píer, a prancha e o Pedro à vista, e o viajante num canto do quadro (medido em captura, 07/10).
+const OMBRO_DA_CHEGADA := 2.5
 ## O CASCO ATRACADO É OBSTÁCULO NA MALHA DOS MORADORES: a pegada dele cresce desta
 ## folga (m) por todos os lados — a malha ainda come o raio do agente, 0,2, e o corpo
 ## do morador tem 0,28: quem o segura na quina é a colisão, e a colisão é o casco —,
@@ -107,6 +111,9 @@ var _do_pedro := Vector3.INF
 ## A malha do casco no referencial do barco, de três em três vértices, para medir
 ## o convés sem a física — que só enxerga o casco depois do primeiro passo dela.
 var _faces_do_casco := PackedVector3Array()
+## A altura (no barco) do corte da colisão do casco: o que tem vértice acima dela é mastro, retranca e vela.
+## INF sem corte (o bote e o casco procedural não têm vela).
+var _teto_do_casco := INF
 ## O CASCO NA MALHA DOS MORADORES (`navegacao_vale.gd`): a pegada dele no referencial
 ## do barco (planta, em metros do mundo) e a faixa de altura do casco, medidas uma vez
 ## na montagem; mais o corpo do casco e a camada dele, para a malha só enxergar o
@@ -375,6 +382,44 @@ func lugar_do_pedro() -> Vector3:
 	return _do_pedro
 
 
+## Para onde aponta a proa, no chão (unitário): o X do barco, que no saveiro do Tripo é o comprimento com a proa
+## no +X. Zero sem barco. A câmera da chegada espia por este lado (`Prototype._chegar_pelo_saveiro`).
+func rumo_da_proa() -> Vector3:
+	if barco == null:
+		return Vector3.ZERO
+	var proa := barco.global_basis.x
+	proa.y = 0.0
+	return proa.normalized() if proa.length_squared() > 0.0001 else Vector3.ZERO
+
+
+## O deslocamento do pivô da câmera no chão na chegada: `OMBRO_DA_CHEGADA` para a proa. Zero sem barco.
+func ombro_da_chegada() -> Vector3:
+	return rumo_da_proa() * OMBRO_DA_CHEGADA
+
+
+## A vela, o mastro ou a retranca cortam a linha de `desde` até `ate`? São as faces do casco com vértice acima
+## da borda (`_teto_do_casco`); sem elas (o bote, o casco procedural), nada corta. É o que o portão da chegada
+## pergunta da câmera ao Pedro (#119: a vela e o mastro não podem tapar quem espera no píer).
+func vela_entre(desde: Vector3, ate: Vector3) -> bool:
+	if barco == null or not is_finite(_teto_do_casco) or desde.distance_to(ate) < 0.01:
+		return false
+	var para_o_barco := barco.global_transform.affine_inverse()
+	var origem: Vector3 = para_o_barco * desde
+	var alvo: Vector3 = para_o_barco * ate
+	var distancia := origem.distance_to(alvo)
+	var direcao := (alvo - origem) / distancia
+	for i in range(0, _faces_do_casco.size() - 2, 3):
+		var a := _faces_do_casco[i]
+		var b := _faces_do_casco[i + 1]
+		var c := _faces_do_casco[i + 2]
+		if a.y <= _teto_do_casco and b.y <= _teto_do_casco and c.y <= _teto_do_casco:
+			continue
+		var bate = Geometry3D.ray_intersects_triangle(origem, direcao, a, b, c)
+		if bate != null and origem.distance_to(bate as Vector3) < distancia:
+			return true
+	return false
+
+
 func _guardar_as_faces(casco: Node3D, teto: float = INF) -> void:
 	_faces_do_casco = PackedVector3Array()
 	var malhas: Array = casco.find_children("*", "MeshInstance3D", true, false)
@@ -388,6 +433,7 @@ func _guardar_as_faces(casco: Node3D, teto: float = INF) -> void:
 		var transformacao := para_o_barco * malha.global_transform
 		for vertice in malha.mesh.get_faces():
 			_faces_do_casco.append(transformacao * vertice)
+	_teto_do_casco = teto
 	_medir_a_pegada(teto)
 
 

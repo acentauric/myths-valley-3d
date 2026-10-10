@@ -1,9 +1,10 @@
 # Prioridades dos balões
 
-Revisão de 07/10/2026, issues #121, #124, #127 e #132.
+Revisão de 07/10/2026, issues #121, #124, #127 e #132; a narração entra em 10/10 (#106).
 
 | Elemento | Prioridade | Regra |
 | --- | ---: | --- |
+| Narração | 120 | A caixa longa do Dialogo manda em tudo: o que a cobre (HUD, seta da missão, painel do testador) se apaga enquanto ela está aberta, e volta como estava ao fechar (#106). |
 | HUD essencial | 100 | Missão, estado e controles delimitam espaço disponível. |
 | Interação E | 90 | Identifica o alvo sem repetir seu nome em outra placa. |
 | Fala | 80 | Uma fala ativa impede oferecer nova conversa com seu dono. |
