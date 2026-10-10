@@ -65,6 +65,9 @@ const CUSTO_VIGOR_NADO_RAPIDO_POR_SEGUNDO := 10.0
 const FOLEGO_RECUPERACAO_ANDANDO := 2.5
 const FOLEGO_RECUPERACAO_PARADO := 10.0
 const VIGOR_MINIMO_PARA_CORRER := 0.5
+## O OFEGO (#190): com o vigor em zero, parado, o corpo respira ofegante (o clipe `tired_breathing_idle`
+## do Mixamo) até o vigor voltar a esta fração do teto.
+const VIGOR_RECUPERADO_DO_OFEGO := 0.3
 const CUSTO_CORRIDA_POR_SEGUNDO := 5.0
 const CUSTO_PULO_FRACAO := 0.10
 const VIGOR_RECUPERACAO_ANDANDO := 2.5
@@ -254,6 +257,7 @@ var _ran_since_toggle := false
 ## `Energia` compartilhado (#82): o trabalho e a luta gastam dela, e só a comida,
 ## a cama e o desmaio devolvem.
 var _vigor := VIGOR_MAXIMO
+var _ofegando := false
 var _folego := FOLEGO_MAXIMO
 var _timer_dano_sem_folego: Timer
 ## O que está na mão (o machado, o facão, a foice...) e a peça que ela mostra
@@ -305,10 +309,12 @@ func _ready() -> void:
 	add_child(visual)
 	# Confere o rig e os clipes do viajante antes de usá-lo no estilo Tripo.
 	var scene: PackedScene = model_scene
+	var corpo_tripo := false
 	if Estilo.tripo() and CatalogoAssets.tem_tripo("viajante"):
 		var candidato := CatalogoAssets.cena("viajante")
 		if candidato != null and _tem_animacoes(candidato):
 			scene = candidato
+			corpo_tripo = true
 	if Estilo.procedural():
 		var procedural := PersonagemProcedural.novo("viajante", character_height)
 		visual.add_child(procedural)
@@ -330,6 +336,9 @@ func _ready() -> void:
 			animator = load("res://scripts/prototipo_3d/provisional_animator.gd").new()
 			add_child(animator)
 			animator.configure(model)
+		elif corpo_tripo and animator.has_method("carregar_mixamo"):
+			# Os clipes do Mixamo do viajante (#190): pulo, soco, acordar e ofegar.
+			animator.carregar_mixamo("viajante")
 	else:
 		push_error("A cena do personagem não foi configurada.")
 	camera_pivot = Node3D.new()
@@ -686,6 +695,8 @@ func _physics_process(delta: float) -> void:
 	if direction.length_squared() > 0.01:
 		visual.rotation.y += passo_de_giro(visual.rotation.y, atan2(direction.x, direction.z), delta)
 	if animator:
+		if animator.has_method("set_cansado"):
+			animator.set_cansado(_vigor_zerado())
 		animator.update_motion(Vector2(velocity.x, velocity.z).length(), delta)
 	_atualizar_altura_visual_nado()
 	_land_check -= delta
@@ -1076,6 +1087,7 @@ func acordar_parado(papel: String = "idle") -> void:
 	_knockback_remaining = 0.0
 	_uso_restante = 0.0
 	_sacolejo = 0.0
+	_ofegando = false
 	liberar_acao_de_golpe()
 	_definir_nado(false)
 	if animator and animator.has_method("acordar_parado"):
@@ -1583,6 +1595,16 @@ func _atualizar_vigor(delta: float, corrida_ativa: bool) -> void:
 	var taxa := VIGOR_RECUPERACAO_ANDANDO if andando else VIGOR_RECUPERACAO_PARADO
 	_definir_vigor(_vigor + taxa * delta)
 	repor_folego((FOLEGO_RECUPERACAO_ANDANDO if andando else FOLEGO_RECUPERACAO_PARADO) * delta)
+
+
+## O corpo está sem vigor, ofegante? Entra ao zerar e só sai ao recuperar `VIGOR_RECUPERADO_DO_OFEGO`
+## do teto (sem isto o clipe piscaria a cada fração de vigor que volta).
+func _vigor_zerado() -> bool:
+	if _vigor <= 0.0:
+		_ofegando = true
+	elif _vigor >= vigor_maximo() * VIGOR_RECUPERADO_DO_OFEGO:
+		_ofegando = false
+	return _ofegando
 
 
 func _definir_vigor(valor: float) -> void:

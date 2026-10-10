@@ -204,10 +204,11 @@ func _virar_a_noite(motivo: String) -> void:
 			await Dialogo.falar("", _falas_do_desmaio())
 
 
-## O QUE O CORPO FAZ AO ACORDAR, por motivo (#189): hoje é sempre o parado. O
-## gancho para "levantar da cama" é trocar a entrada da cama por um papel novo
-## do animador (um clipe que `MOTION_CLIPS` conheça), sem mexer em mais nada.
-const POSE_DE_ACORDAR := {"cama": "idle", "desmaio": "idle", "queda": "idle"}
+## O QUE O CORPO FAZ AO ACORDAR, por motivo (#189): o parado, ou um clipe do Mixamo do viajante (#190).
+## Na cama ele boceja e se espreguiça; depois de desmaiar ou de cair, acordado em casa, levanta-se do
+## chão, de costas. Um papel que o animador não conhece (o corpo sem a biblioteca do Mixamo) cai no
+## parado, sem mexer em mais nada.
+const POSE_DE_ACORDAR := {"cama": "stretching_yawn", "desmaio": "getting_up", "queda": "getting_up"}
 
 
 ## Tudo o que o corpo fazia fica na noite: acorda em pé, quieto, no clipe do

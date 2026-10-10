@@ -526,7 +526,7 @@ func bater(golpe: String, mao: String) -> void:
 		return
 	Energia.gastar("bater", custo)
 	bateu.emit(golpe)
-	_animar_o_golpe()
+	_animar_o_golpe(2, mao == "")
 	Audio.efeito("machado")
 	await get_tree().create_timer(float(g["impacto"])).timeout
 	if is_inside_tree():
@@ -611,8 +611,11 @@ func _criatura_perto(raio: float):
 ## O BRAÇO. No estilo Tripo, o clipe `chop` do personagem (o gesto 7); no
 ## procedural o gesto 7 é uma reverência, e o golpe vira o corpo jogado para
 ## a frente — o fallback que a #14 aceita até haver clipe dos dois estilos.
-func _animar_o_golpe(repeticoes: int = 2) -> bool:
+func _animar_o_golpe(repeticoes: int = 2, de_mao_vazia: bool = false) -> bool:
 	var animador = _player.animator
+	# De mão vazia o golpe sai como o soco do Mixamo (#190), quando o corpo o tem.
+	if de_mao_vazia and animador != null and animador.has_method("soco") and bool(animador.soco()):
+		return true
 	if animador != null and animador.has_method("play_chop"):
 		if animador.play_chop(repeticoes) != "":
 			return true
