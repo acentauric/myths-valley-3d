@@ -117,11 +117,19 @@ func configurar(world: Node3D, jogador: Node3D, hud, hud_layer: Control) -> void
 		_especies = dados.get("especies", {})
 		_nao_se_corta = dados.get("nao_se_corta", {})
 	var vistos := {}
+	# A ÁRVORE-DESTAQUE DO MEIO DE CADA CLAREIRA não se corta (10/10/2026): é a peça que dá nome ao
+	# lugar aberto da mata. A ficha dela (o E de ler) continua.
+	var destaques: Array[Vector2] = []
+	var regiao = world.get("_region")
+	if regiao != null:
+		for clareira: Dictionary in regiao.get("clareiras_da_mata"):
+			destaques.append(clareira["centro"])
 	for arvore: Dictionary in world.arvores():
 		var especie := String(arvore["especie"])
 		var pos: Vector3 = arvore["pos"]
 		var quadra := Vector2i(floori(pos.x / QUADRA), floori(pos.z / QUADRA))
-		if especie != "":
+		var de_clareira := destaques.any(func(c: Vector2) -> bool: return c.distance_to(Vector2(pos.x, pos.z)) < 2.5)
+		if especie != "" and not de_clareira:
 			if not _cortaveis_por_quadra.has(quadra):
 				_cortaveis_por_quadra[quadra] = []
 			_cortaveis_por_quadra[quadra].append(_cortaveis.size())

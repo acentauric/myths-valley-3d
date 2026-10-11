@@ -115,7 +115,13 @@ func _run() -> void:
 	_conferir(nomeadas > 20, "só %d árvores plantadas têm visual para cortar" % nomeadas)
 	_conferir(troncos > 500, "a região só tem %d troncos: a mata não foi plantada" % troncos)
 	_conferir(com_instancia == troncos, "%d de %d troncos da região sem instância registrada: esses não se cortam" % [troncos - com_instancia, troncos])
-	_conferir(arvores._cortaveis.size() >= nomeadas + troncos, "o corte conhece %d árvores, e o vale tem %d" % [arvores._cortaveis.size(), nomeadas + troncos])
+	# As árvores-destaque do meio das clareiras não se cortam (10/10/2026).
+	var destaques: Array = regiao.get("clareiras_da_mata")
+	_conferir(not destaques.is_empty(), "o vale não tem clareiras-destaque para conferir")
+	_conferir(arvores._cortaveis.size() >= nomeadas + troncos - destaques.size(), "o corte conhece %d árvores, e o vale tem %d" % [arvores._cortaveis.size(), nomeadas + troncos])
+	for clareira: Dictionary in destaques:
+		var c: Vector2 = clareira["centro"]
+		_conferir(not arvores._cortaveis.any(func(a: Dictionary) -> bool: return Vector2(a["pos"].x, a["pos"].z).distance_to(c) < 2.5), "a árvore do meio da clareira em %s se corta" % c)
 	print("  %d árvores plantadas e %d da região, todas com o que o corte precisa" % [nomeadas, com_instancia])
 
 	# --- 2. A MADEIRA BRANCA CAI NO MACHADO DE FERRO -----------------------------
