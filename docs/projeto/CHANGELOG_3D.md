@@ -1,6 +1,6 @@
 # Histórico de mudanças — Myths' Valley 3D
 
-## Em desenvolvimento — 10/10/2026
+## Build #11 — 10/10/2026
 
 - **O vale é só Tripo (#58).** O estilo procedural saiu do jogo: a opção "Estilo visual" de AJUSTAR
   (com a ajuda e as traduções), o personagem procedural (`personagem_procedural.gd`), a flora e as
