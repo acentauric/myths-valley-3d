@@ -386,10 +386,20 @@ func _mais_proxima_cortavel() -> int:
 		for dz in range(-1, 2):
 			for indice: int in _cortaveis_por_quadra.get(centro + Vector2i(dx, dz), []):
 				var distancia := _distancia_da_cortavel(indice)
-				if distancia < menor:
+				if distancia < menor and not e_poleiro(get_tree(), _cortaveis[indice]["pos"]):
 					menor = distancia
 					melhor = indice
 	return melhor
+
+
+## A ÁRVORE ONDE UM BANDO DORME (o poleiro das galinhas e das guinés, `bando_de_chao.gd`) não se
+## corta (10/10/2026): sem ela o bando não tem onde subir de noite.
+static func e_poleiro(arvore: SceneTree, pos: Vector3) -> bool:
+	for bando in arvore.get_nodes_in_group("bandos_de_chao"):
+		var pe = bando.get("arvore")
+		if pe is Vector3 and (pe as Vector3).is_finite() and Vector2(pe.x - pos.x, pe.z - pos.z).length() < 0.5:
+			return true
+	return false
 
 
 func _distancia_da_cortavel(indice: int) -> float:

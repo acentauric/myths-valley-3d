@@ -122,6 +122,14 @@ func _run() -> void:
 	for clareira: Dictionary in destaques:
 		var c: Vector2 = clareira["centro"]
 		_conferir(not arvores._cortaveis.any(func(a: Dictionary) -> bool: return Vector2(a["pos"].x, a["pos"].z).distance_to(c) < 2.5), "a árvore do meio da clareira em %s se corta" % c)
+	# O poleiro de cada bando não se corta (10/10/2026).
+	var poleiros := 0
+	for bando in get_nodes_in_group("bandos_de_chao"):
+		var pe = bando.get("arvore")
+		if pe is Vector3 and (pe as Vector3).is_finite():
+			poleiros += 1
+			_conferir(arvores.e_poleiro(arvore, pe), "o poleiro do bando em %s não é reconhecido" % pe)
+	_conferir(poleiros > 0, "nenhum bando com poleiro no vale para conferir")
 	print("  %d árvores plantadas e %d da região, todas com o que o corte precisa" % [nomeadas, com_instancia])
 
 	# --- 2. A MADEIRA BRANCA CAI NO MACHADO DE FERRO -----------------------------
