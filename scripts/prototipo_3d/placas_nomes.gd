@@ -241,7 +241,10 @@ func _process(delta: float) -> void:
 			no_caminho.append_array(_baloes_com_profundidade(camera))
 			# O "?"/"!" de missão (#216) é do mundo 3D e fica por baixo de toda placa: a placa sobe
 			# para não o cobrir, ou desiste se fosse subir demais, como faz com um rosto.
-			rostos.append_array(PopupsDoMundo.retangulos_dos_marcadores(self))
+			# Com o "!"/"?" dentro da placa (10/10/2026) o sinal solto só existe enquanto a placa está apagada:
+			# contá-lo aqui a faria subir sobre ele, passar do teto e nunca acender (o sinal nunca sairia dali).
+			if not MoradorNPC.marcador_no_nome:
+				rostos.append_array(PopupsDoMundo.retangulos_dos_marcadores(self))
 	# O BALÃO TEM PRIORIDADE (#218): com um no ar, ou nos instantes depois dele, ninguém leva placa.
 	if cala_com_balao and not baloes.is_empty():
 		_silencio = SILENCIO_APOS_O_BALAO
