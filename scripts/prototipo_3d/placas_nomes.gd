@@ -363,6 +363,16 @@ func _process(delta: float) -> void:
 			_alfa_atras[morador] = atras
 		placa.modulate.a = alfa * float(perto.get(morador, 1.0)) * atras
 		placa.visible = alfa > 0.0
+		# O "!"/"?" de missão dentro da placa, à esquerda do nome (10/10/2026).
+		var marca := str(morador.call("marcador_texto")) if morador.has_method("marcador_texto") else ""
+		var rotulo_da_placa := placa.get_child(0) as Label
+		var nome_da_placa := str(rotulo_da_placa.get_meta("nome", rotulo_da_placa.text))
+		rotulo_da_placa.set_meta("nome", nome_da_placa)
+		var com_marca := ("%s  %s" % [marca, nome_da_placa]) if marca != "" and placa.visible else nome_da_placa
+		if rotulo_da_placa.text != com_marca:
+			rotulo_da_placa.text = com_marca
+		if not bool(morador.get_meta("marcador_no_e", false)):
+			morador.set_meta("marcador_no_balao", marca != "" and placa.visible)
 		if placa.visible:
 			placa.reset_size()
 			var onde := mola.seguir(ancoras[morador] - sobe, delta, TEMPO_DE_SEGUIR,
@@ -709,6 +719,8 @@ func _da_missao() -> Node3D:
 ## Apaga a placa NA HORA: o morador saiu de trás da câmera, ou o jogo não está em
 ## cena. Uma placa que ficasse parada no meio da tela, só apagando, estaria no lugar errado.
 func _apagar_ja(morador: Node3D) -> void:
+	if is_instance_valid(morador) and not bool(morador.get_meta("marcador_no_e", false)):
+		morador.set_meta("marcador_no_balao", false)
 	_alfa[morador] = 0.0
 	_vaga.erase(morador)
 	var placa: PanelContainer = _placas[morador]

@@ -120,8 +120,10 @@ const PERMANENCIA_MINIMA := 0.9
 ## A folga entre o balão e a dica do E que ele deixaria coberta.
 const FOLGA_DAS_DICAS := 4.0
 ## Até esta quantidade de linhas a fala cabe de uma vez; acima, páginas de duas.
+## Perto da cabeça, três sem página e duas por página; no canto (10/10/2026) cabe mais: quatro.
 const LINHAS_SEM_PAGINA := 3
 const LINHAS_POR_PAGINA := 2
+const LINHAS_NO_CANTO := 4
 ## Largura de cada pontinho do indicador de página.
 const ESPACO_DO_PONTO := 13.0
 ## O PREÇO DE CADA LUGAR (#224), em "notas" (menor leva). A área coberta (px²) de um painel do HUD
@@ -305,7 +307,7 @@ func ha_mais() -> bool:
 func fracao_da_proxima_pagina() -> float:
 	if not ha_mais():
 		return -1.0
-	return minf((_pagina + 1) * LINHAS_POR_PAGINA / float(_linhas) + 0.002, 0.999)
+	return minf((_pagina + 1) * _por_pagina() / float(_linhas) + 0.002, 0.999)
 
 
 ## O E PASSA A PÁGINA (#220): vai à seguinte e leva o tempo da fala até onde ela começa, na fila ou
@@ -349,7 +351,7 @@ func _process(delta: float) -> void:
 	_lido_s += delta
 	_atualizar_o_indicador()
 	if _paginas > 1:
-		var indice := mini(floori(_fracao_da_fala() * _linhas / float(LINHAS_POR_PAGINA)), _paginas - 1)
+		var indice := mini(floori(_fracao_da_fala() * _linhas / float(_por_pagina())), _paginas - 1)
 		# A página só avança: a fila pode esticar a fala, e a fração, voltar.
 		if indice > _pagina:
 			_aplicar_pagina(indice)
@@ -377,8 +379,8 @@ func _paginar() -> void:
 	_texto.custom_minimum_size.y = 0.0
 	_linhas = maxi(_texto.get_line_count(), 1) if _texto.is_inside_tree() else 1
 	_paginas = 1
-	if _linhas > LINHAS_SEM_PAGINA:
-		_paginas = maxi(floori(_linhas / float(LINHAS_POR_PAGINA)), 2)
+	if _linhas > _sem_pagina():
+		_paginas = maxi(floori(_linhas / float(_por_pagina())), 2)
 	_pagina = 0
 	_pontos.visible = _paginas > 1
 	_aplicar_pagina(0)
@@ -389,8 +391,8 @@ func _aplicar_pagina(indice: int) -> void:
 	_pagina = indice
 	if _paginas <= 1:
 		return
-	var primeira := indice * LINHAS_POR_PAGINA
-	var nesta := (_linhas - primeira) if indice == _paginas - 1 else LINHAS_POR_PAGINA
+	var primeira := indice * _por_pagina()
+	var nesta := (_linhas - primeira) if indice == _paginas - 1 else _por_pagina()
 	# `max_lines_visible` esconde as linhas, mas o Label continua com a altura de todas:
 	# sem cortar, a caixa ficaria do tamanho da fala inteira. A altura é dita a ele.
 	_texto.lines_skipped = primeira
@@ -408,6 +410,14 @@ func _aplicar_pagina(indice: int) -> void:
 ## missão e da largura dele, e sobre a cabeça de quem fala só o sinal "• • •" (desenhado na ponta).
 ## Falso devolve o balão que procura lugar perto da cabeça (portões antigos que medem essa conta).
 static var no_canto := true
+
+
+func _sem_pagina() -> int:
+	return LINHAS_NO_CANTO if no_canto else LINHAS_SEM_PAGINA
+
+
+func _por_pagina() -> int:
+	return LINHAS_NO_CANTO if no_canto else LINHAS_POR_PAGINA
 
 
 func _posicionar_no_canto(camera: Camera3D) -> bool:

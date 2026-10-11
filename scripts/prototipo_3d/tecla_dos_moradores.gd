@@ -137,10 +137,16 @@ func _espera_o_e(morador: Node3D) -> bool:
 func _process(_delta: float) -> void:
 	if _jogador == null or _dica == null:
 		return
+	var antes = _perto
 	_perto = perto()
+	if is_instance_valid(antes) and antes != _perto:
+		antes.set_meta("marcador_no_e", false)
+		antes.set_meta("marcador_no_balao", false)
 	if _perto == null:
 		_dica.visible = false
 		return
+	_perto.set_meta("marcador_no_e", true)
+	_perto.set_meta("marcador_no_balao", true)
 	var camera := get_viewport().get_camera_3d()
 	var altura := float(_perto.get("altura")) if _perto.get("altura") != null else 1.75
 	# A DICA DO E DISPENSA A PLACA DE NOME (10/10/2026): "E Conversar" e "Pedro" eram dois
@@ -250,7 +256,10 @@ func _rotulo(morador: Node3D) -> String:
 ## acima dela); na entrega a dica diz a quem, e a placa redundante some.
 func _dica_de(morador: Node3D, rotulo: String = "") -> String:
 	var molde := tr(rotulo if rotulo != "" else _rotulo(morador))
-	return molde % _nome_de(morador) if molde.contains("%s") else molde
+	var texto := molde % _nome_de(morador) if molde.contains("%s") else molde
+	# O "!"/"?" de missão vai dentro da dica do E (10/10/2026): um balão só sobre a cabeça.
+	var marca := str(morador.call("marcador_texto")) if morador.has_method("marcador_texto") else ""
+	return ("%s  %s" % [marca, texto]) if marca != "" else texto
 
 
 func _nome_de(morador: Node3D) -> String:

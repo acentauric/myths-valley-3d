@@ -87,6 +87,7 @@ func _conferir(ok: bool, rotulo: String) -> void:
 func _run() -> void:
 	# Este portão mede o balão que procura lugar perto da cabeça; o do canto (10/10/2026) tem portão próprio.
 	load("res://scripts/prototipo_3d/balao_fala.gd").no_canto = false
+	load("res://scripts/prototipo_3d/npc.gd").marcador_no_nome = false
 	falsificar = OS.get_environment("MV_FALSIFICAR") == "popups"
 	if falsificar:
 		print("  FALSIFICAÇÃO: sem mola, sem teto de placas e sem permanência do balão (MV_FALSIFICAR=popups)")
@@ -1070,6 +1071,7 @@ func _fechar() -> void:
 	else:
 		print("popups_na_tela: %d falha(s)" % falhas)
 	load("res://scripts/prototipo_3d/balao_fala.gd").no_canto = true
+	load("res://scripts/prototipo_3d/npc.gd").marcador_no_nome = true
 	quit(1 if falhas > 0 else 0)
 
 

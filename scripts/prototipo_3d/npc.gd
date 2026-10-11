@@ -1122,6 +1122,15 @@ func _o_que_as_filas_pedem_aqui() -> String:
 	return pede
 
 
+## Falso devolve o "!"/"?" sempre solto sobre a cabeça (portões antigos que medem essa conta).
+static var marcador_no_nome := true
+
+
+## O "!"/"?" deste morador agora, ou "" (para a placa de nome e a dica do E o levarem dentro).
+func marcador_texto() -> String:
+	return _marcador_texto if marcador_no_nome and not _recolhido and not _cena_tocando() else ""
+
+
 func _atualizar_o_marcador(delta: float) -> void:
 	_marcador_em -= delta
 	if _marcador_em <= 0.0:
@@ -1130,7 +1139,9 @@ func _atualizar_o_marcador(delta: float) -> void:
 	if _marcador == null:
 		return
 	# NO MODO CENA o "?"/"!" some com o resto da interface (#215).
-	var a_vista := _marcador_texto != "" and not _recolhido and not _cena_tocando()
+	# O "!"/"?" VAI DENTRO DO BALÃO DO NOME ou da dica do E quando um deles está aceso (10/10/2026):
+	# um balão só, e não o balão e o sinal soltos. Sem nenhum dos dois, o sinal fica sobre a cabeça.
+	var a_vista := _marcador_texto != "" and not _recolhido and not _cena_tocando() and not (marcador_no_nome and bool(get_meta("marcador_no_balao", false)))
 	if _marcador.visible != a_vista:
 		_marcador.visible = a_vista
 	if not a_vista:
