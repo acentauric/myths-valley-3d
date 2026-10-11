@@ -700,7 +700,10 @@ class JogadorAutomatico:
             elif "enter_home" in actions:
                 return select("enter_home", "Convite aguarda outra manha: voltar pela porta para dormir")
         next_guide_chain = any(c.get("key") == "pedro" and c.get("main") and not c.get("started") and not c.get("completed") and not c.get("locked", False) for c in state.get("mission_chains", []))
-        if not any(m.get("dono") == "pedro" for m in pending_main) and next_guide_chain and not state.get("screen"):
+        # Com uma missão do Pedro já aberta (principal ou não: "As armas do mato"), ela vem antes de
+        # voltar a ele por outra cadeia (10/10/2026: ia e voltava do Pedro com o facão por fazer).
+        ativas_do_pedro = [m for m in state.get("journal", {}).get("ativas", []) if m.get("dono") == "pedro"]
+        if not ativas_do_pedro and next_guide_chain and not state.get("screen"):
             probe = ("next_guide_chain", tuple(c.get("name") for c in state.get("mission_chains", []) if c.get("completed")))
             if self.attempts[probe] < 3:
                 if state.get("interaction_target") in ("Pedro", "MoradorPedro") and "interact" in actions:

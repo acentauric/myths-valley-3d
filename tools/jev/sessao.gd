@@ -73,6 +73,7 @@ var camera_do_teste: Node
 const TECLAS_DO_TESTADOR := [KEY_W, KEY_A, KEY_S, KEY_D, KEY_E, KEY_F, KEY_V, KEY_SHIFT, KEY_SPACE]
 ## A casca de cada construção ao alcance, como o olho a vê, para saber quando o centro do viajante entra
 ## numa malha opaca (#205): nome do lote -> {"corpo", "desde"}; e quando o último achado dela foi.
+const RotaDoGuia = preload("res://tools/jev/rota_do_guia.gd")
 const BotaoCanto = preload("res://scripts/prototipo_3d/botao_canto.gd")
 const AuditoriaDeGeometria = preload("res://scripts/prototipo_3d/auditoria_de_geometria.gd")
 var cascas_auditadas: Dictionary = {}
@@ -1301,6 +1302,7 @@ func _caminhar(alvo, seguir: bool, exato: bool = false, passagem_da_porta: bool 
 	var recalcular := 0
 	var destino := Vector3.INF
 	var trajeto := PackedVector3Array()
+	var desvios := 0
 	while not _cede() and Time.get_ticks_msec() - comeco < (12000 if seguir else 15000):
 		if Input.is_physical_key_pressed(KEY_F8):
 			ultima_acao = "user_stop"
@@ -1358,9 +1360,29 @@ func _caminhar(alvo, seguir: bool, exato: bool = false, passagem_da_porta: bool 
 				trajeto.remove_at(0)
 			if not trajeto.is_empty():
 				rumo = trajeto[0]
+		# Desvia do tronco, da cerca ou da parede que está no rumo, antes de bater.
+		if not exato or jogador.global_position.distance_to(ponto) > 1.5:
+			var excluir: Array = [jogador.get_rid()]
+			if alvo is CollisionObject3D:
+				excluir.append((alvo as CollisionObject3D).get_rid())
+			rumo = RotaDoGuia.desviar(jogador.get_world_3d().direct_space_state, jogador.global_position, rumo, excluir)
 		jogada.virar_para(rumo)
 		_pressionar(KEY_W, true)
 		if Time.get_ticks_msec() - ver_tempo > 2000:
+			if jogador.global_position.distance_to(ver_pos) < 0.3 and desvios < 2:
+				# Preso: contorna para um lado livre por um instante e recalcula a rota, até duas vezes.
+				desvios += 1
+				var para_frente: Vector3 = rumo - jogador.global_position
+				para_frente.y = 0.0
+				var lado_livre: Vector3 = RotaDoGuia.desviar(jogador.get_world_3d().direct_space_state, jogador.global_position,
+					jogador.global_position + para_frente.normalized().rotated(Vector3.UP, (PI / 2.0) * (1 if desvios == 1 else -1)) * 2.0, [jogador.get_rid()])
+				jogada.virar_para(lado_livre)
+				await _esperar(0.7)
+				destino = Vector3.INF
+				recalcular = 0
+				ver_pos = jogador.global_position
+				ver_tempo = Time.get_ticks_msec()
+				continue
 			if jogador.global_position.distance_to(ver_pos) < 0.3:
 				var achado := {"type": "possible_stuck", "position": _vetor(jogador.global_position), "action": ultima_acao}
 				achados.append(achado)
