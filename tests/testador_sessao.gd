@@ -302,7 +302,7 @@ func _modal() -> void:
 	var lancados: Array = []
 	abertura.lancar_testador = func(programa: String, argumentos: PackedStringArray) -> int:
 		lancados.append([programa, argumentos])
-		return 4242
+		return OS.get_process_id()
 	# Como quem joga costuma deixar: Jev e GPT ligados, orçamento no teto e "continuar a última sessão".
 	deteccao["apoios"]["gpt"] = {"disponivel": true, "motivo": "ok"}
 	Apoios.guardar_preferencias(true, true, 0.5, 0, true)
@@ -315,7 +315,8 @@ func _modal() -> void:
 	if lancados.size() == 1:
 		var args := lancados[0][1] as PackedStringArray
 		_conferir(args.has("--apoio-jev") and args.has("--apoio-gpt") and args.has("--continuar") and args.has("--budget"), "INICIAR leva Jev, GPT, orçamento e a continuação (%s)" % str(args))
-	_conferir(abertura.panel.find_child("IniciarTeste", true, false) == null and abertura.estado_testador.visible, "INICIAR volta à Home com o aviso do testador")
+	_conferir(abertura.panel.find_child("IniciarTeste", true, false) == null and not get_nodes_in_group("telas_de_carregamento").is_empty(), "INICIAR abre a tela de carga do teste")
+	abertura._fechar_a_carga_do_testador()
 	# Com a ponte aberta, o menu se fecha quando a sessão grava o aviso de que o vale abriu.
 	var fechou_menu := [false]
 	abertura.fechar_menu_do_testador = func() -> void: fechou_menu[0] = true

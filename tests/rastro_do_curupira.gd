@@ -178,8 +178,15 @@ func _run() -> void:
 	SustosDaMata.definir_ligado(false)
 	await relogio.esperar(1.6)
 	_conferir(not loucura.ativa() and achou.is_empty(), "o mapa enlouqueceu com os Sustos desligados em AJUSTAR")
-	# 4c. Livre e ligado: enlouquece, assobia, anota o sinal.
+	# 4b'. Com missão acompanhada (10/10/2026): não enlouquece — a seta e a bússola guiam a missão.
 	SustosDaMata.definir_ligado(true)
+	var caderno := root.get_node("/root/CadernoDoVale")
+	var guardadas: Array = caderno.ativas.duplicate(true)
+	if caderno.ativas.is_empty():
+		caderno.ativas.append({"id": "teste_do_rastro", "titulo": "Teste", "linha": "Teste"})
+	_conferir(not rastro.pisou(alvo_trilha, onde_pisar) and not loucura.ativa(), "com missão acompanhada o mapa enlouqueceu")
+	caderno.ativas.clear()
+	# 4c. Livre, ligado e sem missão: enlouquece, assobia, anota o sinal.
 	var livre: bool = await relogio.ate(func() -> bool: return SustosDaMata.jogo_livre(jogo), 20.0)
 	_conferir(livre, "o vale não ficou livre para um susto em 20 s de jogo (alguma tela ou fala ficou aberta?)")
 	var enlouqueceu: bool = await relogio.ate(func() -> bool: return loucura.ativa(), 4.0)
@@ -195,6 +202,7 @@ func _run() -> void:
 	# 4d. Pisar de novo, no meio da loucura e depois dela, não recomeça: a mesma conta, o mesmo `achou`.
 	_conferir(rastro.pisou(alvo_trilha, onde_pisar) == false, "pisar de novo recomeçou a loucura")
 	_conferir(achou.size() == 1, "pisar de novo avisou outra vez")
+	caderno.ativas.assign(guardadas)
 
 	# --- 5. A LOUCURA É DE VERDADE ----------------------------------------------
 	var bussola: Control = null

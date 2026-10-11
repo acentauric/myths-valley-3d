@@ -328,7 +328,8 @@ func _ready() -> void:
 	_notice_label = _label(_notice, 16, Identidade.TEXTO)
 	_notice_label.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TEXTO, 600))
 	_notice_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_notice_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	# Centrado: o aviso mora no centro de baixo (10/10/2026).
+	_notice_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_notice_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	coluna_do_aviso.add_child(_notice_label)
 
@@ -875,7 +876,12 @@ func _posicionar_aviso() -> void:
 	# A vaga do aviso de espera fica sempre reservada embaixo dele: o aviso não pula quando ela
 	# aparece ou some.
 	# Ancorado no meio de baixo da tela: acompanha a janela que muda de tamanho sem esperar outro quadro.
-	var do_pe := _root.size.y - _altura_da_coluna_de_baixo() + VAGA_DA_ESPERA
+	# Com aviso de espera pedido, a vaga dele fica reservada embaixo (mesmo escondido sob uma fala):
+	# o aviso de cima não pula quando a espera some e volta.
+	var base_y := _altura_da_coluna_de_baixo() - VAGA_DA_ESPERA
+	if is_instance_valid(_espera_panel) and not _espera_texto_desejado.is_empty():
+		base_y = minf(base_y, _altura_do_aviso_de_espera() - 6.0)
+	var do_pe := _root.size.y - base_y
 	_notice_panel.anchor_left = 0.5
 	_notice_panel.anchor_right = 0.5
 	_notice_panel.anchor_top = 1.0
@@ -986,7 +992,7 @@ func _criar_aviso_de_espera() -> void:
 
 
 ## A altura reservada ao aviso de espera ("Pedro voltou para te buscar"), sob o aviso de baixo.
-const VAGA_DA_ESPERA := 40.0
+const VAGA_DA_ESPERA := 8.0
 
 
 ## O pé da coluna de baixo: acima da barra de mão e do nome do item sobre ela, com um respiro.

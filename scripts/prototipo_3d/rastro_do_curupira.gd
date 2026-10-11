@@ -80,6 +80,11 @@ func _process(delta: float) -> void:
 ## O jogador pisou no rastro `trilha`: o assobio, a loucura do mapa e o sinal no caderno. Devolve se a
 ## loucura começou (não começa se ainda está esfriando da última vez, ou se já está louca).
 func pisou(trilha: Dictionary, onde: Vector3) -> bool:
+	# COM MISSÃO ACOMPANHADA O MAPA NÃO ENLOUQUECE (10/10/2026: "o mapa maluco não deve acontecer
+	# quando você tiver com missão ativa"): a seta e a bússola girando faziam quem ia ao mirante
+	# andar em círculos. O rastro só pega quem passeia sem missão.
+	if not CadernoDoVale.atual().is_empty():
+		return false
 	if _loucura == null or not _loucura.iniciar():
 		return false
 	achou.emit(String(trilha["id"]), onde)

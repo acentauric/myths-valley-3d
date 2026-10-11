@@ -137,6 +137,8 @@ var linha_atualizacao: Button
 var caption: Label
 var estado_testador: Label
 var _coluna_dos_apoios: HBoxContainer
+## A tela de carga que o INICIAR do testador abre, até a sessão abrir a janela dela.
+var _carga_do_testador: ProgressBar
 ## Quem abre a ponte do testador: o `OS.create_process` de verdade; o portão troca por um
 ## que só anota os argumentos, para apertar INICIAR sem abrir uma sessão.
 var lancar_testador: Callable = func(programa: String, argumentos: PackedStringArray) -> int: return OS.create_process(programa, argumentos)
@@ -2140,11 +2142,18 @@ func _iniciar_teste(jev: bool, gpt: bool, orcamento: float, minutos: int, contin
 	_home()
 	if pid <= 0:
 		estado_testador.text = tr("Não foi possível iniciar o testador. Confira a instalação do Python.")
-	else:
-		_testador_pid = pid
-		_testador_desde_ms = maxi(1, Time.get_ticks_msec())
-		estado_testador.text = tr("Abrindo o teste automático. Esta janela se fecha quando a sessão começar; F8 encerra a sessão e volta ao menu.")
-	estado_testador.show()
+		estado_testador.show()
+		return
+	_testador_pid = pid
+	_testador_desde_ms = maxi(1, Time.get_ticks_msec())
+	estado_testador.text = tr("Abrindo o teste automático. Esta janela se fecha quando a sessão começar; F8 encerra a sessão e volta ao menu.")
+	# INICIAR ABRE A TELA DE CARGA (10/10/2026), e não volta à Home como se o modal só tivesse
+	# fechado: ela fica até a sessão abrir (e esta janela fechar), com a barra andando devagar.
+	_carga_do_testador = _show_loading("", "Abrindo o teste automático…")
+	if is_instance_valid(_carga_do_testador):
+		_carga_do_testador.value = 0.05
+		var andar := _carga_do_testador.create_tween()
+		andar.tween_property(_carga_do_testador, "value", 0.9, 60.0).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 
 
 ## O menu fecha quando a sessão do testador abriu o vale (o aviso de pronto). Se o python
@@ -2152,6 +2161,13 @@ func _iniciar_teste(jev: bool, gpt: bool, orcamento: float, minutos: int, contin
 ## que o menu abriu pode não ser o que fica de pé, e o menu ficava aberto com o vale da
 ## sessão já carregado.
 const VIGIA_DO_TESTADOR_MS := 600000
+
+
+func _fechar_a_carga_do_testador() -> void:
+	for tela in get_tree().get_nodes_in_group("telas_de_carregamento"):
+		tela.queue_free()
+	_carga_do_testador = null
+	estado_testador.show()
 
 
 func _vigiar_testador() -> void:
@@ -2170,6 +2186,7 @@ func _vigiar_testador() -> void:
 	elif _testador_pid > 0 and not OS.is_process_running(_testador_pid):
 		print("TESTADOR: o processo da ponte não está mais de pé; o menu segue olhando o aviso")
 		_testador_pid = 0
+		_fechar_a_carga_do_testador()
 		estado_testador.text = tr("O teste automático não abriu a janela da sessão. Esta janela continua aberta; confira a instalação do Python.")
 	elif _testador_pid <= 0 and Time.get_ticks_msec() - _testador_desde_ms > VIGIA_DO_TESTADOR_MS:
 		_testador_desde_ms = 0
