@@ -1124,12 +1124,9 @@ func _home() -> void:
 	jogar.grab_focus()
 	PopoverMenu.ligar(jogar, DICAS_DAS_PLACAS["JOGAR"], camada_do_menu)
 	PopoverMenu.ligar(_placa("EXPLORAR", _explorar), DICAS_DAS_PLACAS["EXPLORAR"], camada_do_menu)
-	var teste := _placa("TESTAR", _teste_automatico)
-	var dica_do_teste: String = DICAS_DAS_PLACAS["TESTAR"]
-	if not TestadorApoios.ponte_instalada():
-		teste.disabled = true
-		dica_do_teste = DICAS_DAS_PLACAS["TESTAR_INDISPONIVEL"]
-	PopoverMenu.ligar(teste, dica_do_teste, camada_do_menu)
+	# Sem a ponte do testador (a build exportada, sem Python), a placa TESTAR nem aparece (11/10/2026).
+	if TestadorApoios.ponte_instalada():
+		PopoverMenu.ligar(_placa("TESTAR", _teste_automatico), DICAS_DAS_PLACAS["TESTAR"], camada_do_menu)
 	PopoverMenu.ligar(_placa("MODELOS", _abrir_personagens), DICAS_DAS_PLACAS["MODELOS"], camada_do_menu)
 	PopoverMenu.ligar(_placa("SOBRE", _credits), DICAS_DAS_PLACAS["SOBRE"], camada_do_menu)
 	PopoverMenu.ligar(_placa("SAIR", _confirm_exit, true), DICAS_DAS_PLACAS["SAIR"], camada_do_menu)
