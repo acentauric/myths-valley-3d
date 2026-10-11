@@ -233,7 +233,7 @@
       "nome": "Levantar o mirante",
       "resumo": "Esteio novo no lugar do podre, tabuado corrido e guarda-corpo de pau roliço. Do alto se enxerga a baía inteira — e é a segunda coisa que muda neste arraial em vinte anos.",
       "abre": { "missao": "mirante_material" },
-      "custo": { "tabua": 20, "pedra": 12, "corda": 6 }
+      "custo": { "tabua": 8, "pedra": 4, "corda": 2 }
     },
 
     "cemiterio_cercado": {

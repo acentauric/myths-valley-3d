@@ -183,7 +183,9 @@ func _repintar() -> void:
 		# Com ícone, o texto é só a quantidade; sem ícone, a inicial faz as
 		# vezes dele — é o que o 2D faz com nó de talento sem arte.
 		if textura != null:
-			conteudo.text = str(quantos) if quantos > 1 or id == "madeira_de_coqueiro" else ""
+			# O que se empilha mostra a conta mesmo com 1 (10/10/2026): o feixe da lenha desenha três
+			# paus, e sem número parecia que eram três lenhas.
+			conteudo.text = str(quantos) if quantos > 1 or bool(Catalogo.ITENS.get(id, {}).get("empilhavel", false)) else ""
 			conteudo.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 			conteudo.vertical_alignment = VERTICAL_ALIGNMENT_TOP
 			conteudo.add_theme_font_size_override("font_size", 14)

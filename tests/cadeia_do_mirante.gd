@@ -159,7 +159,14 @@ func _run() -> void:
 	# --- 6. O MATERIAL: A CONTA DE HOJE, E CADA ITEM CONTA -----------------------
 	await _ate(func() -> bool: return cadeia.espera <= 0.0, SEGUNDOS)
 	var conta: Dictionary = obras.custo("mirante_levantar")
-	_conferir(int(conta.get("tabua", 0)) < 20, "com a prancheta riscada, o mirante ainda pede %d tábuas: o canteiro não abateu" % int(conta.get("tabua", 0)))
+	# O desconto do canteiro (10%) arredonda para cima: com o custo de 1/3 (10/10/2026) ele conta na pedra.
+	var bruto: Dictionary = obras.custo_bruto("mirante_levantar") if obras.has_method("custo_bruto") else {"tabua": 8, "pedra": 4, "corda": 2}
+	var somado := 0
+	var somado_bruto := 0
+	for q in conta:
+		somado += int(conta[q])
+		somado_bruto += int(bruto.get(q, 0))
+	_conferir(somado <= somado_bruto and somado <= 14, "o mirante pede %d peças (1/3 do antigo: até 14)" % somado)
 	var soma := 0
 	for qual in conta:
 		soma += int(conta[qual])
