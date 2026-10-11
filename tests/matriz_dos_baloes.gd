@@ -75,7 +75,10 @@ func _run() -> void:
 	teclas.configurar(jogador, hud, func() -> Array: return [pessoa, vizinha], func() -> bool: return true)
 	await esperar()
 	conferir(teclas._dica.visible, "conversa disponível oferece E")
-	conferir(placas._placas[pessoa].visible, "a dica do E diz só 'Conversar' (#188): o nome de Pedro fica na placa")
+	# 10/10/2026: "E Conversar" sobre o morador dispensa a placa dele (dois balões na mesma cabeça); a
+	# dica leva o nome em `nome_identificado`, e a de outra pessoa permanece.
+	conferir(teclas._dica.get_meta("nome_identificado", null) == pessoa and not placas._placas[pessoa].visible,
+		"com o 'E Conversar' sobre Pedro, a placa de nome dele sai (a dica o identifica)")
 	conferir(placas._placas[vizinha].visible, "nome útil de outra pessoa permanece")
 	pessoa.fala = true
 	await esperar()
