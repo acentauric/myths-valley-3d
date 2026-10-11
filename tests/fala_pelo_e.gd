@@ -25,7 +25,7 @@ const VALE_NOVO := true
 
 const MISSAO := 1
 const FALA_CURTA := "Bom dia, moço."
-const FALA_LONGA := "Escuta com atenção, moço, que o que eu vou te dizer não se diz duas vezes. O saveiro sai de manhã cedo, quando a maré enche, e quem perde a hora espera a outra lua. A ponte do rio grande está caída desde a cheia, e sem lenha, pedra e corda ninguém atravessa. Fale com a Dona Candinha, pegue a chave da casa do seu tio e depois me procure no píer, que eu te conto o resto da história toda."
+const FALA_LONGA := "Escuta com atenção, moço, que o que eu vou te dizer não se diz duas vezes. O saveiro sai de manhã cedo, quando a maré enche, e quem perde a hora espera a outra lua. A ponte do rio grande está caída desde a cheia, e sem lenha, pedra e corda ninguém atravessa. Fale com a Dona Candinha, pegue a chave da casa do seu tio e depois me procure no píer, que eu te conto o resto da história toda. Leve água e pão para o caminho, que a trilha da serra é longa e não tem venda nem poço até o outro lado. Se a noite pegar você no meio da estrada, acenda uma fogueira baixa, durma de lado e não responda a ninguém que chamar o seu nome entre as árvores, porque o povo antigo dessas terras gosta de pregar peça em quem anda sozinho."
 
 var falhas := 0
 var falsificar := false
