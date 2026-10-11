@@ -694,10 +694,12 @@ func _layout_medidores() -> void:
 		return
 	var largura := _root.size.x
 	# Missao termina em 378; atalhos comecam a 78 da borda direita.
-	var esquerda := 18.0 + HEADING_WIDTH * Tela.escala_componente("missao") + 12.0
+	# O RELÓGIO E AS BARRAS COLADOS À MISSÃO, com a mesma margem do HUD (10/10/2026): centrados na
+	# tela, ficavam soltos entre a missão e o painel da direita.
+	var esquerda := MARGEM_DO_CANTO + HEADING_WIDTH * Tela.escala_componente("missao") + MARGEM_DO_CANTO
 	var relogio := LARGURA_DO_RELOGIO * Tela.escala_componente("relogio")
 	var barras := 160.0 * maxf(Tela.escala_componente("vida"), maxf(Tela.escala_componente("folego"), Tela.escala_componente("vigor")))
-	var inicio := maxf(esquerda, (largura - relogio - barras - 8.0) * 0.5)
+	var inicio := esquerda
 	var topo := 18.0
 	if inicio + relogio + barras + 8.0 > largura - 90.0:
 		inicio = 18.0

@@ -113,6 +113,11 @@ func _run() -> void:
 		_conferir(caixa.get_center().y > tela.y * 0.5, "%s: o aviso não fica na metade de baixo (y=%.0f)" % [rotulo, caixa.position.y])
 		_conferir(not caixa.intersects(hud._heading.get_global_rect()), "%s: o aviso cobre a missão" % rotulo)
 		_conferir(not caixa.intersects(hud._clock_panel.get_global_rect()), "%s: o aviso cobre o relógio" % rotulo)
+		# O relógio fica colado à missão, a 18 dela (10/10/2026), quando cabe na mesma linha.
+		var missao: Rect2 = hud._retangulo_em_tela(hud._heading)
+		var do_relogio: Rect2 = hud._clock_panel.get_global_rect()
+		if absf(do_relogio.position.y - missao.position.y) < 1.0:
+			_conferir(absf(do_relogio.position.x - (missao.end.x + hud.MARGEM_DO_CANTO)) <= 1.0, "%s: o relógio não fica a 18 da missão (x=%.0f, missão termina em %.0f)" % [rotulo, do_relogio.position.x, missao.end.x])
 		for barra_do_corpo: Control in [hud.barra_vida, hud.barra_folego, hud.barra_stamina]:
 			_conferir(not caixa.intersects(barra_do_corpo.get_global_rect()), "%s: o aviso cobre uma barra do corpo" % rotulo)
 		_conferir(hud._espera_panel.visible and not caixa.intersects(hud._espera_panel.get_global_rect()), "%s: o aviso e o aviso de espera se cobrem (ou a espera sumiu)" % rotulo)
