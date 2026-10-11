@@ -113,7 +113,11 @@ static func criar(pai: Control, tecla_texto: String, acao: String) -> PanelConta
 	texto.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TITULO, 600, 1))
 	texto.add_theme_font_size_override("font_size", TAMANHO_DO_ALVO)
 	texto.add_theme_color_override("font_color", COR_DO_ALVO)
-	texto.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	# DUAS LINHAS NO MÁXIMO (10/10/2026): o título numa linha e o requisito numa linha, cortados
+	# com reticências; o texto inteiro fica na dica do mouse.
+	texto.autowrap_mode = TextServer.AUTOWRAP_OFF
+	texto.clip_text = true
+	texto.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	textos.add_child(texto)
 	# O requisito é texto de leitura corrido: um RichTextLabel, para a tecla do meio do texto sair em negrito.
 	var requisito := RichTextLabel.new()
@@ -134,7 +138,10 @@ static func criar(pai: Control, tecla_texto: String, acao: String) -> PanelConta
 	requisito.add_theme_font_size_override("normal_font_size", TAMANHO_DO_REQUISITO)
 	requisito.add_theme_font_size_override("bold_font_size", TAMANHO_DO_REQUISITO)
 	requisito.add_theme_color_override("default_color", COR_DO_REQUISITO)
-	requisito.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	requisito.autowrap_mode = TextServer.AUTOWRAP_OFF
+	requisito.clip_contents = true
+	# Sem quebra, o rótulo mediria a frase inteira: a largura é a do título (ou o teto), e o resto corta.
+	requisito.fit_content = false
 	textos.add_child(requisito)
 	# A plaqueta acompanha a altura dos textos, até o teto; a letra cresce com ela.
 	textos.resized.connect(_quadrar_a_tecla.bind(tecla, letra, textos, texto))
@@ -240,6 +247,15 @@ static func _partes(acao: String) -> PackedStringArray:
 	if partes.size() < 2:
 		partes = acao.split("\n", true, 1)
 	if partes.size() < 2:
+		# Uma frase só e longa vira título e subtítulo, quebrada no primeiro ponto natural
+		# ("Madeira de lei dura" e "Pede machado de aço e..."), para caber em duas linhas.
+		for corte in [": ", " — ", " pede ", " precisa ", ", "]:
+			var em := acao.find(corte)
+			if acao.length() > 32 and em > 6:
+				var resto := acao.substr(em + corte.length()) if corte in [": ", " — ", ", "] else acao.substr(em + 1)
+				partes = PackedStringArray([acao.substr(0, em), resto.strip_edges()])
+				break
+	if partes.size() < 2:
 		return PackedStringArray([acao, ""])
 	var requisito := partes[1].strip_edges()
 	if requisito != "":
@@ -268,6 +284,9 @@ static func _preparar_texto(dica: PanelContainer, acao: String) -> void:
 	var limite := minf(LARGURA_MAXIMA, maxf(120.0, dica.get_viewport_rect().size.x * 0.4))
 	alvo.custom_minimum_size.x = minf(largura, limite)
 	requisito.custom_minimum_size.x = minf(largura, limite)
+	# O requisito cortado guarda uma linha; o texto inteiro vai à dica do mouse.
+	requisito.custom_minimum_size.y = requisito.get_theme_font("normal_font").get_height(requisito.get_theme_font_size("normal_font_size")) + 2.0
+	dica.tooltip_text = acao if largura > limite else ""
 
 
 ## As teclas entre colchetes ("[5]", "[E]") viram negrito; o resto do texto entra sem ser lido

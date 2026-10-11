@@ -58,7 +58,8 @@ func _run() -> void:
 			var longa: String = exemplo + " e os materiais necessários para preparar este terreno com segurança"
 			await mostrar(dica, camera, longa)
 			# A largura na tela é a da caixa escalada: a dica nasce em 80% (componente `interacao`, #188).
-			conferir(requisito.get_line_count() > 1 and dica.size.x * dica.scale.x < largura * 0.65, "requisito longo quebra por largura")
+			# 10/10/2026: duas linhas no máximo — o requisito longo fica numa linha cortada, e o inteiro na dica do mouse.
+			conferir(requisito.get_line_count() == 1 and dica.size.x * dica.scale.x < largura * 0.65 and dica.tooltip_text != "", "requisito longo fica numa linha, com o inteiro na dica do mouse")
 			# #188 (reaberta): a plaqueta tem teto de duas linhas de título, por mais linhas que o requisito tenha.
 			var teto: float = 2.0 * texto.get_theme_font("font").get_height(texto.get_theme_font_size("font_size"))
 			conferir(tecla.size.y <= teto + 1.0 and absf(tecla.size.x - tecla.size.y) <= 2.0,
