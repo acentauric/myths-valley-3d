@@ -70,9 +70,10 @@ func _gravar(t: Dictionary) -> void:
 	_preparar_jogador(t)
 	_aplicar_camera(t, 0.0)
 	for i in AQUECIMENTO:
-		_esconder_hud()
 		_aplicar_camera(t, 0.0)
-		await get_tree().process_frame
+		await RenderingServer.frame_pre_draw
+		_esconder_hud()
+		await RenderingServer.frame_post_draw
 	await _acao(t)
 	var pasta := "%s/%s" % [_args["saida"], t["nome"]]
 	DirAccess.make_dir_recursive_absolute(pasta)
@@ -80,9 +81,12 @@ func _gravar(t: Dictionary) -> void:
 	for i in quadros:
 		var p := float(i) / float(max(quadros - 1, 1))
 		_aplicar_camera(t, p)
-		_esconder_hud()
 		if horas_por_quadro != 0.0:
 			Dia.definir_hora(fposmod(Dia.hora + horas_por_quadro, 24.0))
+		# Os moradores religam o marcador no próprio _process: esconder depois
+		# dele, já com o quadro a caminho do desenho.
+		await RenderingServer.frame_pre_draw
+		_esconder_hud()
 		await RenderingServer.frame_post_draw
 		if not _args.has("previa") or i == 0 or i == quadros - 1:
 			get_viewport().get_texture().get_image().save_png("%s/%04d.png" % [pasta, i])
@@ -162,8 +166,8 @@ func _esconder_hud() -> void:
 		var marcador = m.get_node_or_null("MarcadorDeMissao")
 		if marcador != null:
 			marcador.visible = false
-		for rotulo in m.find_children("*", "Label3D", true, false):
-			(rotulo as Label3D).visible = false
+		for marca in m.find_children("*", "Label3D", true, false) + m.find_children("*", "Sprite3D", true, false):
+			(marca as Node3D).visible = false
 
 
 func _suave(p: float) -> float:
