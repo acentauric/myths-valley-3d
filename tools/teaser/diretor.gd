@@ -136,10 +136,11 @@ func _acao(t: Dictionary) -> void:
 			_vale.ler_o_folheto(str(t.get("folheto", "moleque_do_pier")))
 			for i in 20:
 				await get_tree().process_frame
-		"acenar":
-			var m = _vale._achar_morador(str(t.get("morador", "benedito")))
+		"acenar", "apontar":
+			var quem := str(t.get("morador", "pedro"))
+			var m = _vale.pedro if quem == "pedro" else _vale._achar_morador(quem)
 			if m != null:
-				m.gesto("acenar")
+				m.gesto(str(t["acao"]))
 	return
 
 
