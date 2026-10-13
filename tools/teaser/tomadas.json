@@ -1,0 +1,255 @@
+{
+ "descricao": "Tomadas do jogo para o teaser (13/10/2026), na ordem da montagem. Rodar com tools/teaser/diretor.tscn; posições em unidades do mundo relativas ao lugar (base).",
+ "tomadas": [
+  {
+   "nome": "igreja",
+   "base": "igreja",
+   "hora": 16.4,
+   "quadros": 125,
+   "camera": {
+    "tipo": "orbita",
+    "centro": [
+     0,
+     4,
+     0
+    ],
+    "raio": 30,
+    "raio_ate": 24,
+    "altura": 4,
+    "altura_ate": 3,
+    "ang_de": 238,
+    "ang_ate": 256
+   }
+  },
+  {
+   "nome": "sobrevoo",
+   "hora": 8.2,
+   "quadros": 95,
+   "camera": {
+    "tipo": "sobrevoo",
+    "de": 0.365,
+    "ate": 0.4,
+    "suave": false
+   }
+  },
+  {
+   "nome": "pier_pedro",
+   "base": "pier",
+   "hora": 7.4,
+   "quadros": 85,
+   "jogador": {
+    "pos": [
+     0,
+     0,
+     0
+    ],
+    "rumo": 90
+   },
+   "pedro": {
+    "pos": [
+     0.7,
+     0,
+     0.6
+    ],
+    "rumo": 235
+   },
+   "acao": "acenar",
+   "camera": {
+    "tipo": "orbita",
+    "centro": [
+     0.3,
+     1.1,
+     0.3
+    ],
+    "raio": 5.5,
+    "raio_ate": 4.6,
+    "altura": 0.9,
+    "ang_de": 78,
+    "ang_ate": 100
+   }
+  },
+  {
+   "nome": "praca",
+   "base": "praca",
+   "hora": 9.3,
+   "quadros": 95,
+   "camera": {
+    "tipo": "orbita",
+    "centro": [
+     0,
+     1.0,
+     0
+    ],
+    "raio": 8,
+    "raio_ate": 7,
+    "altura": 2.4,
+    "altura_ate": 2.0,
+    "ang_de": 200,
+    "ang_ate": 220
+   }
+  },
+  {
+   "nome": "pesca",
+   "base": "pier",
+   "hora": 16.9,
+   "quadros": 80,
+   "jogador": {
+    "pos": [
+     0,
+     0,
+     0
+    ],
+    "rumo": 270,
+    "mao": "vara_de_pescar"
+   },
+   "acao": "pesca",
+   "camera": {
+    "tipo": "orbita",
+    "centro": [
+     0.8,
+     1.1,
+     0
+    ],
+    "raio": 4.6,
+    "raio_ate": 4.0,
+    "altura": 1.2,
+    "ang_de": 70,
+    "ang_ate": 82,
+    "altura_ate": 1.1
+   }
+  },
+  {
+   "nome": "enxada",
+   "base": "lavoura",
+   "hora": 8.4,
+   "quadros": 95,
+   "jogador": {
+    "pos": [
+     0,
+     0,
+     1.2
+    ],
+    "rumo": 180,
+    "mao": "enxada"
+   },
+   "acao": "enxada",
+   "camera": {
+    "tipo": "orbita",
+    "centro": [
+     0,
+     1.0,
+     1.0
+    ],
+    "raio": 4.4,
+    "raio_ate": 3.8,
+    "altura": 1.5,
+    "ang_de": 55,
+    "ang_ate": 72
+   }
+  },
+  {
+   "nome": "conversa",
+   "base": "praca",
+   "hora": 9.6,
+   "quadros": 75,
+   "jogador": {
+    "pos": [
+     2.2,
+     0,
+     1.0
+    ],
+    "rumo": 270
+   },
+   "pedro": {
+    "pos": [
+     0.9,
+     0,
+     1.0
+    ],
+    "rumo": 90
+   },
+   "acao": "apontar",
+   "camera": {
+    "tipo": "orbita",
+    "centro": [
+     1.55,
+     1.2,
+     1.0
+    ],
+    "raio": 4.2,
+    "raio_ate": 3.7,
+    "altura": 0.7,
+    "ang_de": -10,
+    "ang_ate": 12
+   }
+  },
+  {
+   "nome": "cordel",
+   "base": "praca",
+   "hora": 9,
+   "quadros": 80,
+   "acao": "folheto",
+   "folheto": "moleque_do_pier",
+   "camera": {
+    "tipo": "orbita",
+    "centro": [
+     0,
+     0.6,
+     0
+    ],
+    "raio": 7,
+    "altura": 1.6,
+    "ang_de": 30,
+    "ang_ate": 34
+   }
+  },
+  {
+   "nome": "entardecer",
+   "base": "igreja",
+   "hora": 16.9,
+   "avancar_horas": 2.0,
+   "quadros": 115,
+   "camera": {
+    "tipo": "orbita",
+    "centro": [
+     0,
+     4,
+     0
+    ],
+    "raio": 46,
+    "raio_ate": 42,
+    "altura": 7,
+    "ang_de": 96,
+    "ang_ate": 102
+   }
+  },
+  {
+   "nome": "mata",
+   "base": "terreiro",
+   "hora": 21.0,
+   "quadros": 165,
+   "camera": {
+    "olho_de": [
+     0,
+     1.4,
+     7.5
+    ],
+    "olho_ate": [
+     0,
+     1.5,
+     4.0
+    ],
+    "alvo_de": [
+     0,
+     1.6,
+     -6
+    ],
+    "alvo_ate": [
+     0,
+     2.2,
+     -14
+    ]
+   }
+  }
+ ]
+}

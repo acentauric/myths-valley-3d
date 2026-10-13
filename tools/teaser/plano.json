@@ -1,0 +1,146 @@
+{
+ "descricao": "Teaser do Tripothon (13/10/2026) sobre a narração do Suno: a travessia pintada (LTX da #129) até 'Bom Jesus dos Pobres', o jogo depois. Cortes em segundos da faixa; 'de' é onde a tomada começa na fonte.",
+ "fim": 70.0,
+ "tomadas": [
+  {
+   "fonte": "assets/prototipo_3d/identidade/video/carregamento_sobrevoo.ogv",
+   "corte": 0.0,
+   "de": 7.0
+  },
+  {
+   "fonte": "assets/prototipo_3d/identidade/video/introducao/trecho_03.ogv",
+   "corte": 6.9,
+   "de": 5.0,
+   "transicao": 0.8
+  },
+  {
+   "fonte": "assets/prototipo_3d/identidade/video/introducao/trecho_01.ogv",
+   "corte": 11.7,
+   "de": 0.5,
+   "transicao": 0.6
+  },
+  {
+   "fonte": "assets/prototipo_3d/identidade/video/introducao/trecho_02.ogv",
+   "corte": 15.1,
+   "de": 1.0,
+   "transicao": 0.6
+  },
+  {
+   "fonte": "assets/prototipo_3d/identidade/video/introducao/trecho_08.ogv",
+   "corte": 18.6,
+   "de": 0.5,
+   "transicao": 0.5
+  },
+  {
+   "fonte": "assets/prototipo_3d/identidade/video/introducao/trecho_04.ogv",
+   "corte": 24.6,
+   "de": 0.3,
+   "transicao": 0.04
+  },
+  {
+   "fonte": "assets/prototipo_3d/identidade/video/introducao/trecho_05.ogv",
+   "corte": 28.1,
+   "de": 0.8,
+   "transicao": 0.5
+  },
+  {
+   "fonte": "assets/prototipo_3d/identidade/video/introducao/trecho_06.ogv",
+   "corte": 30.6,
+   "de": 2.0,
+   "transicao": 0.6
+  },
+  {
+   "fonte": "assets/prototipo_3d/identidade/video/introducao/trecho_07.ogv",
+   "corte": 32.0,
+   "de": 1.5,
+   "transicao": 0.8
+  },
+  {
+   "fonte": "assets/prototipo_3d/identidade/video/introducao/trecho_09.ogv",
+   "corte": 35.8,
+   "de": 1.0,
+   "transicao": 0.04
+  },
+  {
+   "fonte": "{quadros}/igreja",
+   "corte": 38.6,
+   "de": 0.6,
+   "transicao": 0.9,
+   "ltx": "{clipes}/igreja.mp4"
+  },
+  {
+   "fonte": "{quadros}/sobrevoo",
+   "corte": 41.2,
+   "de": 0.3,
+   "transicao": 0.04,
+   "ltx": "{clipes}/sobrevoo.mp4"
+  },
+  {
+   "fonte": "{quadros}/pier_pedro",
+   "corte": 43.5,
+   "de": 0.3,
+   "transicao": 0.04,
+   "ltx": "{clipes}/pier_pedro.mp4"
+  },
+  {
+   "fonte": "{quadros}/praca",
+   "corte": 45.6,
+   "de": 0.3,
+   "transicao": 0.04,
+   "ltx": "{clipes}/praca.mp4"
+  },
+  {
+   "fonte": "{quadros}/pesca",
+   "corte": 48.0,
+   "de": 0.2,
+   "transicao": 0.04,
+   "ltx": "{clipes}/pesca.mp4"
+  },
+  {
+   "fonte": "{quadros}/enxada",
+   "corte": 50.0,
+   "de": 0.2,
+   "transicao": 0.04,
+   "ltx": "{clipes}/enxada.mp4"
+  },
+  {
+   "fonte": "{quadros}/conversa",
+   "corte": 52.5,
+   "de": 0.2,
+   "transicao": 0.04,
+   "ltx": "{clipes}/conversa.mp4"
+  },
+  {
+   "fonte": "{quadros}/cordel",
+   "corte": 54.3,
+   "de": 0.3,
+   "transicao": 0.04,
+   "ltx": "{clipes}/cordel.mp4"
+  },
+  {
+   "fonte": "{quadros}/entardecer",
+   "corte": 56.3,
+   "de": 0.3,
+   "transicao": 0.5,
+   "ltx": "{clipes}/entardecer.mp4"
+  },
+  {
+   "cor": "black",
+   "corte": 59.1,
+   "transicao": 0.3
+  },
+  {
+   "fonte": "{quadros}/mata",
+   "corte": 61.25,
+   "de": 0.2,
+   "transicao": 0.04,
+   "ltx": "{clipes}/mata.mp4"
+  },
+  {
+   "fonte": "{cartao}",
+   "corte": 66.2,
+   "transicao": 0.04,
+   "zoom": 0.04
+  }
+ ]
+}

@@ -1,0 +1,56 @@
+{
+  "descricao": "Teaser do Tripothon (13/10/2026): as tomadas do jogo gravadas por tools/teaser/diretor.gd viram clipes image-to-video do LTX, cada uma a partir do primeiro quadro dela (entrada/<nome>.jpg). Mantém o visual 3D do jogo; o LTX só dá vida (gente andando, água, fogo, câmera).",
+  "modelo": "ltx-2-5-pro",
+  "resolucao": "1920x1080",
+  "duracao": 6,
+  "custo_por_segundo_usd": 0.17,
+  "estilo": "Keep the stylized 3D game look exactly as in the image: same colors, same characters, buildings and trees, no new objects, natural gentle motion, smooth steady cinematic camera, no text, no captions, no watermark.",
+  "clipes": [
+    {
+      "nome": "igreja",
+      "camera": "dolly_in",
+      "prompt": "Golden afternoon at the small white-and-yellow colonial church by the sea: palm fronds and flowering trees sway in the breeze, small waves roll onto the beach behind the church, an old man walks slowly past the wooden cross, a few birds cross the sky, the camera glides slowly toward the church."
+    },
+    {
+      "nome": "sobrevoo",
+      "camera": "dolly_in",
+      "prompt": "Morning in the village: villagers walk along the dirt road past the stone well, a child runs ahead, a man in a dark coat strolls with his dog, leaves and palm fronds sway, the camera drifts slowly forward above the road."
+    },
+    {
+      "nome": "pier_pedro",
+      "camera": "dolly_in",
+      "prompt": "Early morning on the wooden pier: a fisherman in a straw hat welcomes the newly arrived traveler and points toward the village, the moored sailing boat rocks gently on the turquoise water, palms sway on the beach, the camera pushes in slowly."
+    },
+    {
+      "nome": "praca",
+      "camera": "dolly_right",
+      "prompt": "The sunny village square: a woman in a yellow dress walks by with a goat, a man tends the fruit stall while his dog wags its tail, people come and go between the white houses, the camera moves slowly sideways."
+    },
+    {
+      "nome": "pesca",
+      "camera": "dolly_in",
+      "prompt": "Late afternoon on the wooden pier: the traveler casts a fishing line into the calm turquoise sea, the float lands with small ripples, the moored sailing boat rocks gently, the camera slowly pushes in."
+    },
+    {
+      "nome": "enxada",
+      "camera": "dolly_right",
+      "prompt": "Morning in the fenced vegetable plot beside a wattle-and-daub house: the farmer swings the hoe and turns the soil, a little dust rises, a boy walks by in the background, palms sway, the camera drifts slowly sideways."
+    },
+    {
+      "nome": "conversa",
+      "camera": "dolly_in",
+      "prompt": "In the village square a fisherman in a straw hat talks with the traveler, gesturing and pointing down the road, a dog sits beside them, villagers carry baskets in the background, the camera pushes in slowly."
+    },
+    {
+      "nome": "entardecer",
+      "camera": "dolly_out",
+      "ultimo_quadro": true,
+      "prompt": "Sunset over the bay and the little church: the sun sinks behind the hills, the sky turns orange and then deep blue, the water darkens, a canoe drifts on the calm sea, the camera pulls back slowly."
+    },
+    {
+      "nome": "mata",
+      "camera": "dolly_in",
+      "prompt": "Night at a clay house at the edge of a dark forest: the campfire crackles and sparks rise, the firelight flickers on the wall and the clay pots, the dark trees sway, something seems to stir between the trunks, the camera pushes in very slowly toward the forest, ominous and quiet."
+    }
+  ]
+}
