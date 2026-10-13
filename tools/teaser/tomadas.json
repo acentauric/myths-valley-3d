@@ -95,18 +95,18 @@
    "quadros": 80,
    "jogador": {
     "pos": [
-     0,
+     2.3,
      0,
      0
     ],
-    "rumo": 270,
+    "rumo": 90,
     "mao": "vara_de_pescar"
    },
    "acao": "pesca",
    "camera": {
     "tipo": "orbita",
     "centro": [
-     0.8,
+     2.9,
      1.1,
      0
     ],
@@ -116,7 +116,8 @@
     "ang_de": 70,
     "ang_ate": 82,
     "altura_ate": 1.1
-   }
+   },
+   "esconder_raio": 8
   },
   {
    "nome": "enxada",
