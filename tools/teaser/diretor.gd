@@ -121,6 +121,14 @@ func _preparar_jogador(t: Dictionary) -> void:
 					break
 		else:
 			Inventario.selecionar(-1)
+	# Quem não deve aparecer: pelo id, ou todo morador a menos de `esconder_raio` do jogador.
+	var raio := float(t.get("esconder_raio", 0.0))
+	for m in _vale.moradores:
+		var id := str(m.dados.get("id", ""))
+		var perto: bool = raio > 0.0 and m.global_position.distance_to(jogador.global_position) < raio
+		m.visible = not (t.get("esconder", []).has(id) or perto)
+		if perto:
+			print("ESCONDIDO %s" % id)
 	var p: Dictionary = t.get("pedro", {})
 	if pedro != null:
 		pedro.visible = not p.is_empty() or t.get("pedro_visivel", false)
@@ -132,7 +140,7 @@ func _preparar_jogador(t: Dictionary) -> void:
 func _acao(t: Dictionary) -> void:
 	match str(t.get("acao", "")):
 		"pesca":
-			_vale.pesca.lancar()
+			print("PESCA lance=%s" % str(_vale.pesca.lancar()))
 		"enxada":
 			var cel: Vector2i = _vale.lavoura.leito_da_vez()
 			_vale.lavoura._gesto_no_leito(cel)
