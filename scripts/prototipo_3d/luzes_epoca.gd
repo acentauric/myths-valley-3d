@@ -120,28 +120,76 @@ func _particulas_fogueira(posicao: Vector3) -> void:
 	_particulas.append(brasas)
 
 
-## Janela iluminada por dentro: um quadrado emissivo quente sem luz projetada.
-func janela(posicao: Vector3) -> void:
+## O VIDRO ACESO de uma janela da fachada (#257): uma textura de vidro quente com moldura e travessas,
+## e não uma cor chapada. Era um quadrado de uma cor só, emissivo a 2,2 (o tonemap o levava ao
+## branco): na igreja, onde não há janela naquele ponto, aparecia como uma ficha branca sobre a porta.
+## Tamanho do quad (m) e da textura (px, na mesma proporção).
+const VIDRO_M := Vector2(0.86, 1.0)
+const VIDRO_PX := Vector2i(48, 56)
+const COR_VIDRO_CENTRO := Color("ffd98f")
+const COR_VIDRO_BORDA := Color("c9772e")
+const COR_MOLDURA := Color("3b2412")
+## Emissão do vidro à noite, antes de multiplicar pela intensidade e pelo tremor da chama: baixa o bastante
+## para o tonemap não queimar o vidro em branco, e alta o bastante para ele ser a luz da casa.
+const EMISSAO_DO_VIDRO := 1.25
+const EMISSAO_DO_GLOBO := 2.2
+## O grupo de todo vidro aceso do mundo.
+const GRUPO_DO_VIDRO := "vidro_aceso"
+
+static var _vidro: ImageTexture
+
+
+## A textura do vidro aceso: o meio mais claro (a vela dentro do cômodo), as bordas mais quentes, a
+## moldura de madeira em volta e uma travessa em cruz. Gerada uma vez e dividida por todas as janelas.
+static func textura_do_vidro() -> ImageTexture:
+	if _vidro != null:
+		return _vidro
+	var imagem := Image.create(VIDRO_PX.x, VIDRO_PX.y, false, Image.FORMAT_RGB8)
+	for y in VIDRO_PX.y:
+		for x in VIDRO_PX.x:
+			var u := (float(x) + 0.5) / float(VIDRO_PX.x)
+			var v := (float(y) + 0.5) / float(VIDRO_PX.y)
+			var distancia := clampf(Vector2(u - 0.5, v - 0.5).length() * 1.9, 0.0, 1.0)
+			var cor := COR_VIDRO_CENTRO.lerp(COR_VIDRO_BORDA, distancia * distancia)
+			var moldura := u < 0.08 or u > 0.92 or v < 0.07 or v > 0.93
+			var travessa := absf(u - 0.5) < 0.035 or absf(v - 0.42) < 0.03
+			imagem.set_pixel(x, y, COR_MOLDURA if moldura or travessa else cor)
+	imagem.generate_mipmaps()
+	_vidro = ImageTexture.create_from_image(imagem)
+	return _vidro
+
+
+## Janela iluminada por dentro: o vidro aceso rente à fachada e um facho quente na parede.
+## `yaw` é o giro da fachada: a frente da casa é o +Z do modelo (`giro = atan2(frente.x, frente.z)`).
+## Sem ele o vidro ficava sempre voltado para o sul do mundo, e só parecia certo na casa que olha
+## para o sul; na igreja, que olha para o oeste, o quad ficava de través, espetado para fora da parede.
+func janela(posicao: Vector3, yaw: float = 0.0) -> void:
 	var quad := QuadMesh.new()
-	quad.size = Vector2(0.86, 1.0)
+	quad.size = VIDRO_M
 	var material := StandardMaterial3D.new()
-	material.albedo_color = COR_VELA
+	var vidro := textura_do_vidro()
+	material.albedo_texture = vidro
 	material.emission_enabled = true
-	material.emission = COR_VELA
-	material.emission_energy_multiplier = 1.6
+	material.emission_texture = vidro
+	material.emission_energy_multiplier = EMISSAO_DO_VIDRO
 	material.cull_mode = BaseMaterial3D.CULL_DISABLED
 	var instance := MeshInstance3D.new()
+	instance.name = "Vidro aceso"
+	# O grupo é como os testes (e quem mais precisar) acham os vidros: o Godot renomeia o segundo nó de mesmo
+	# nome para "@MeshInstance3D@N", e o nome deixa de servir.
+	instance.add_to_group(GRUPO_DO_VIDRO)
 	instance.mesh = quad
 	instance.material_override = material
 	instance.position = posicao
+	instance.rotation.y = yaw
 	add_child(instance)
 	var luz := OmniLight3D.new()
 	luz.light_color = COR_VELA
 	luz.omni_range = 3.5
 	luz.light_energy = 0.0
-	luz.position = posicao + Vector3(0, 0, 0.3)
+	luz.position = posicao + Vector3(0, 0, 0.3).rotated(Vector3.UP, yaw)
 	add_child(luz)
-	_chamas.append({"luz": luz, "energia": 0.9, "tremor": 0.05, "fase": randf() * TAU, "visual": instance})
+	_chamas.append({"luz": luz, "energia": 0.9, "tremor": 0.05, "fase": randf() * TAU, "visual": instance, "emissao": EMISSAO_DO_VIDRO})
 
 
 func _chama(posicao: Vector3, cor: Color, alcance: float, energia: float, tremor: float, modelo: Node3D, deslocamento_no_modelo: Vector3, brasa_raio: float) -> void:
@@ -165,7 +213,7 @@ func _chama(posicao: Vector3, cor: Color, alcance: float, energia: float, tremor
 		material.albedo_color = cor
 		material.emission_enabled = true
 		material.emission = cor
-		material.emission_energy_multiplier = 2.2
+		material.emission_energy_multiplier = EMISSAO_DO_GLOBO
 		visual = MeshInstance3D.new()
 		visual.mesh = esfera
 		visual.material_override = material
@@ -243,4 +291,4 @@ func _atualizar(_delta: float) -> void:
 		if visual != null:
 			visual.visible = _acesas
 			if visual.material_override is StandardMaterial3D:
-				(visual.material_override as StandardMaterial3D).emission_energy_multiplier = 2.2 * _intensidade * oscilacao
+				(visual.material_override as StandardMaterial3D).emission_energy_multiplier = float(chama.get("emissao", EMISSAO_DO_GLOBO)) * _intensidade * oscilacao

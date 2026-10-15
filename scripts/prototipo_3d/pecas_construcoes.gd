@@ -42,7 +42,10 @@ const POR_CASA := {
 		{"id": "Ipê amarelo", "tipo": "arvore", "chave": "ipe_amarelo", "desloc": Vector3(8.5, 0, 9.5), "giro": 1.1},
 		{"id": "Cruzeiro", "tipo": "adereco", "chave": "cruzeiro", "desloc": Vector3(0, 0, 9.0)},
 		{"id": "Lampião", "tipo": "lampiao", "chave": "lampiao_poste", "desloc": Vector3(-6.0, 0, 8.0)},
-		{"id": "Luz da janela", "tipo": "luz_janela", "chave": "", "desloc": Vector3(0, 3.6, 4.6), "no_chao": false},
+		# SEM "luz_janela" (#257): a fachada da igreja não tem janela acima da porta (só a verga
+		# entalhada; o óculo fica no alto do frontão e as janelas azuis, nas laterais), e o vidro
+		# aceso posto ali era uma ficha branca de través sobre a porta. A luz da noite do adro é o
+		# lampião; a de dentro, a do interior. `tests/unidade/test_luz_das_janelas.gd` guarda isto.
 	],
 }
 

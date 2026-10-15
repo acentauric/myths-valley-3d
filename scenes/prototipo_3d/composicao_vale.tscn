@@ -697,13 +697,6 @@ id = "Lampião"
 tipo = "lampiao"
 chave = "lampiao_poste"
 
-[node name="Luz da janela" type="Node3D" parent="Casas/Igreja" unique_id=1333950047]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.017036438, 3.3630772, 4.522682)
-script = ExtResource("4_8bxw0")
-id = "Luz da janela"
-tipo = "luz_janela"
-no_chao = false
-
 [node name="Capela velha" type="Node3D" parent="Casas" unique_id=834725067]
 transform = Transform3D(-0.9688165, 0, 0.24777924, 0, 1, 0, -0.24777924, 0, -0.9688165, -140.21893, 7.9013557, -63.942867)
 script = ExtResource("3_pekll")

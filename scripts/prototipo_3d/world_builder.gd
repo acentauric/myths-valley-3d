@@ -1069,7 +1069,7 @@ func _montar_pecas(tipos: Array) -> void:
 				"lampiao":
 					_luzes.lampiao(pos, _adereco(chave_item if not chave_item.is_empty() else "lampiao_poste", pos, yaw, tamanho))
 				"luz_janela":
-					_luzes.janela(pos)
+					_luzes.janela(pos, yaw)
 
 
 ## OBJETO AVULSO (fora das casas): a posição autoral do grupo Avulsos da composição,
@@ -1182,7 +1182,7 @@ func _luz_avulsa(item: Dictionary, luz_padrao: Vector3 = Vector3.INF) -> void:
 		"fogueira":
 			_luzes.fogueira(pos, _adereco(chave if not chave.is_empty() else "fogueira", pos, float(item["yaw"]), float(item["tamanho"])))
 		"luz_janela":
-			_luzes.janela(pos)
+			_luzes.janela(pos, float(item["yaw"]))
 
 
 func _na_casa(ancora: String, deslocamento: Vector3) -> Vector3:
