@@ -112,6 +112,8 @@ var _camera: Camera3D
 var _camera_do_jogador: Camera3D
 var _tarjas: CanvasLayer
 var _tarjas_quadro: Control
+## A cena que toca pediu as tarjas, e ainda não acabou (`altura_da_tarja`).
+var _com_tarjas := false
 var _assumidos: Array = []
 var _movidos: Array = []
 var _fila: Array = []
@@ -157,6 +159,18 @@ func camera_da_cena() -> Camera3D:
 
 func tarjas_a_vista() -> bool:
 	return _tarjas_quadro != null and _tarjas_quadro.visible
+
+
+## A FAIXA DE CIMA, em pixels do viewport, enquanto a cena a pede (#246): TARJA da altura dele (79 px no canvas
+## de 1280×720, esticado pela janela), de `segura` até o fim da cena (`acabou`), e zero fora dela. O balão do canto (`prototype_hud.canto_da_fala`) a soma à margem
+## do HUD para a primeira linha não ficar sob a tarja. Vale até o fim da cena, e não até a tarja sumir (0,35 s
+## depois do `solta`): a câmera ainda volta ao jogador, o HUD só reaparece no `acabou`, e o balão desce de uma
+## vez só para o canto normal, em vez de subir ao topo e descer de novo.
+func altura_da_tarja() -> float:
+	if not _com_tarjas or _tarjas_quadro == null:
+		return 0.0
+	var janela := _tarjas_quadro.size.y if _tarjas_quadro.size.y > 0.0 else get_viewport().get_visible_rect().size.y
+	return TARJA * janela
 
 
 func _process(delta: float) -> void:
@@ -214,6 +228,7 @@ func tocar(nome: String, cadeia: Node = null) -> void:
 	await get_tree().process_frame
 	if not is_inside_tree() or not is_instance_valid(_vale):
 		_em_cena = false
+		_com_tarjas = false
 		return
 	var passos: Array = (todas()[nome] as Dictionary).get("passos", [])
 	for passo in passos:
@@ -296,6 +311,7 @@ func _soltar() -> void:
 		_vale._soltar_o_jogador()
 	var nome := _nome
 	_em_cena = false
+	_com_tarjas = false
 	_nome = ""
 	_cadeia = null
 	acabou.emit(nome)
@@ -605,6 +621,7 @@ func _tarjas_a_vista_por(sim: bool) -> void:
 		_aviso_de_pular.modulate.a = 0.0
 	var tween := create_tween()
 	if sim:
+		_com_tarjas = true
 		_tarjas_quadro.visible = true
 		tween.tween_property(_tarjas_quadro, "modulate:a", 1.0, SOBE_AS_TARJAS)
 	else:

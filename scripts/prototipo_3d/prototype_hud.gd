@@ -1005,14 +1005,28 @@ func _altura_da_coluna_de_baixo() -> float:
 ## O CANTO DA FALA (10/10/2026): o balão de quem fala fica preso no canto de cima, à esquerda, logo
 ## abaixo do quadro da missão e com a largura dele; sobre a cabeça de quem fala, só o sinal "• • •".
 ## Devolve o retângulo na tela (a altura é a do quadro da missão só para a posição).
+##
+## COM UMA CENA TOCANDO O BALÃO FICA ABAIXO DA FAIXA DE CINEMA (#246): a cena recolhe o quadro da missão, e o
+## canto cairia em y = 18, sob a tarja de cima (11% da altura do viewport: 79 px do canvas de 1280×720, que a janela de
+## 1080p estica) — a primeira linha da fala saía cortada. Nos dois casos o topo não fica acima de `tarja + margem`.
 func canto_da_fala() -> Rect2:
+	var abaixo_da_tarja := _altura_da_tarja() + MARGEM_DO_CANTO
 	if not is_instance_valid(_heading) or not _heading.is_visible_in_tree():
-		return Rect2(Vector2(MARGEM_DO_CANTO, MARGEM_DO_CANTO), Vector2(HEADING_WIDTH, 0.0))
+		return Rect2(Vector2(MARGEM_DO_CANTO, maxf(MARGEM_DO_CANTO, abaixo_da_tarja)), Vector2(HEADING_WIDTH, 0.0))
 	var missao := _retangulo_em_tela(_heading)
 	var topo := missao.end.y + FOLGA_DA_COLUNA
 	if is_instance_valid(_house_info_panel) and _house_info_panel.visible:
 		topo = maxf(topo, _retangulo_em_tela(_house_info_panel).end.y + FOLGA_DA_COLUNA)
-	return Rect2(Vector2(missao.position.x, topo), Vector2(missao.size.x, 0.0))
+	return Rect2(Vector2(missao.position.x, maxf(topo, abaixo_da_tarja)), Vector2(missao.size.x, 0.0))
+
+
+## A faixa de cinema de cima, em pixels, enquanto uma cena dos dados a pede (`CenaVale.altura_da_tarja`); zero
+## sem cena, ou com o HUD sozinho, sem o vale (os portões).
+func _altura_da_tarja() -> float:
+	var cena := get_tree().get_first_node_in_group("cenas_do_vale") if is_inside_tree() else null
+	if cena == null or not cena.has_method("altura_da_tarja"):
+		return 0.0
+	return float(cena.call("altura_da_tarja"))
 
 
 ## O alto do aviso de espera: acima da barra de mão (52 + 18 de margem) e do nome do item que
