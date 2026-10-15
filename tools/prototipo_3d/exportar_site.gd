@@ -956,6 +956,12 @@ func _luta() -> Dictionary:
 	if luta == null:
 		return {}
 	var criatura := _constantes_de("res://scripts/prototipo_3d/criatura_vale.gd")
+	# Desde #109 as espécies moram em data/criaturas_3d.json e o script as expõe em variáveis
+	# estáticas (ESPECIES, CORPO), que não aparecem entre as constantes.
+	var script_criatura = load("res://scripts/prototipo_3d/criatura_vale.gd")
+	if not criatura.has("ESPECIES") and script_criatura != null:
+		criatura["ESPECIES"] = script_criatura.ESPECIES
+		criatura["CORPO"] = script_criatura.CORPO
 	var vale := _constantes_de("res://scripts/prototipo_3d/luta_vale.gd")
 	var bichos: Dictionary = _ler_json("res://data/colecionaveis/bichos.json").get("bichos", {})
 	var textos := _ler_json("res://data/luta.json")
