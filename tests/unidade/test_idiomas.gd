@@ -160,6 +160,9 @@ const TRADUZIDOS := {
 	# Os epitáfios do cemitério (#6): a história de cada cova, o painel, a dica e as broncas do coveiro. Nome e datas
 	# são de gente e não se traduzem, a não ser nas covas que se chamam pelo ofício ou pela idade.
 	"res://data/lapides_3d.json": ["historia", "titulo", "fechar", "dica", "texto"],
+	# Os lotes e o trabalho nas terras compradas (#9): o nome de cada lote e o nome e o resumo de cada ofício, que a aba
+	# Trabalho mostra. As frases da compra (pergunta, sem_divisa...) já saíram nos três idiomas e seguem no portão da posse.
+	"res://data/terras_3d.json": ["nome", "resumo"],
 }
 
 ## Os arquivos que também nascem em chinês (`campo_zh`): o jogo tem quatro idiomas no menu, e o chinês cai no
