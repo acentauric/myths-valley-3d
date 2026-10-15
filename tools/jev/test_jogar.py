@@ -8,7 +8,7 @@ import unittest
 from unittest.mock import patch
 from urllib.error import HTTPError
 
-from jogar import MAX_BODY, MAX_TOKENS, PRICE, ProgressGuard, Session, game_reference, current_task, language_code, make_handler, reopen_menu
+from jogar import MAX_BODY, MAX_TOKENS, PRICE, ProgressGuard, Session, enviar_ao_site, game_reference, current_task, language_code, make_handler, reopen_menu, resumo_para_o_site
 
 
 # Nomes próprios e palavras que são a mesma nas três línguas: a cópia é a tradução certa.
@@ -16,6 +16,46 @@ IGUAIS_NO_IDIOMA = {"nivel_jev_en", "nivel_jev_es", "nivel_gpt_en", "nivel_gpt_e
                     "parar_curto_es", "a_wait_es", "a_dodge_es", "a_run_es", "a_explore_es",
                     "nivel_jev_zh", "nivel_gpt_zh", "cmd_minimizar_es", "cmd_maximizar_es",
                     "cmd_devolver_curto_es", "manual_titulo_en", "manual_titulo_es"}
+
+
+class SiteTests(unittest.TestCase):
+    RESUMO = {"calls": 3, "estimated_usd": 0.01, "outcomes": [{"before": {"observations": [{"text": "v0.12.0-dev · Build #11"}]}}],
+              "actions_used": ["wait"], "stdout.log_errors": [], "escada": {"escalonamentos": [{"nivel": "gpt", "plano": ["x"]}]},
+              "progresso": {"progresso": {"percentual": 19.6, "capitulo": "Chegada", "marcos": [1, 2]}}}
+
+    def test_o_resumo_vai_sem_as_jogadas_com_a_sessao_e_a_build(self):
+        leve = resumo_para_o_site(self.RESUMO, "20261011-151519-4918ff")
+        self.assertNotIn("outcomes", leve)
+        self.assertNotIn("actions_used", leve)
+        self.assertEqual(leve["sessao"], "20261011-151519-4918ff")
+        self.assertEqual(leve["build"], "v0.12.0-dev · Build #11")
+        self.assertEqual(leve["escada"], {"escalonamentos": [{"nivel": "gpt"}]})
+        self.assertEqual(leve["progresso"], {"progresso": {"percentual": 19.6, "capitulo": "Chegada"}})
+
+    def test_sem_token_nada_sai_da_maquina_e_falha_de_rede_nao_derruba(self):
+        def nunca(*_args, **_kwargs):
+            raise AssertionError("não deveria chamar a rede")
+        self.assertEqual(enviar_ao_site({}, {"sessao": "x"}, abrir=nunca), "sem_token")
+
+        enviados = []
+
+        class Resposta:
+            status = 201
+            def __enter__(self):
+                return self
+            def __exit__(self, *_):
+                return False
+
+        def abrir(pedido, timeout):
+            enviados.append((pedido.full_url, pedido.get_header("Authorization"), json.loads(pedido.data), timeout))
+            return Resposta()
+        config = {"MYTHSVALLEY_TOKEN": "mvj_teste", "MYTHSVALLEY_SITE": "http://127.0.0.1:8123/"}
+        self.assertEqual(enviar_ao_site(config, {"sessao": "abc123"}, abrir=abrir), "http_201")
+        self.assertEqual(enviados[0][:3], ("http://127.0.0.1:8123/api/jogo/testes", "Bearer mvj_teste", {"sessao": "abc123"}))
+
+        def sem_rede(*_args, **_kwargs):
+            raise OSError("sem rede")
+        self.assertEqual(enviar_ao_site(config, {"sessao": "abc123"}, abrir=sem_rede), "sem_conexao")
 
 
 class SpendingTests(unittest.TestCase):

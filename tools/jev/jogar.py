@@ -7,6 +7,7 @@ import importlib
 import json
 import os
 from pathlib import Path
+import re
 import secrets
 import socket
 import subprocess
@@ -172,8 +173,9 @@ class ProgressGuard:
 
 
 def configuration() -> dict[str, str]:
-    """Read only the TypeSafe and OpenAI settings, without exposing any credentials in output."""
-    names = {"TYPESAFE_API_KEY", "TYPESAFE_MODEL", "TYPESAFE_API_URL", "OPENAI_API_KEY", "OPENAI_TEXT_MODEL"}
+    """Read only the TypeSafe, OpenAI and site settings, without exposing any credentials in output."""
+    names = {"TYPESAFE_API_KEY", "TYPESAFE_MODEL", "TYPESAFE_API_URL", "OPENAI_API_KEY", "OPENAI_TEXT_MODEL",
+             "MYTHSVALLEY_TOKEN", "MYTHSVALLEY_SITE"}
     values = {name: os.environ[name] for name in names if os.environ.get(name)}
     path = PROJECT / ".env"
     if path.exists():
@@ -184,6 +186,56 @@ def configuration() -> dict[str, str]:
                 if separator and name in names and name not in values:
                     values[name] = value.strip().strip("\"'")
     return values
+
+
+# O painel do admin do site recebe o resumo de cada sessão (POST /api/jogo/testes), com o token
+# de uma conta do site (MYTHSVALLEY_TOKEN no .env). Sem token, nada sai da máquina.
+SITE_PADRAO = "https://mythsvalley.app.br"
+PESADOS_PARA_O_SITE = ("outcomes", "actions_used", "goal", "implemented_story_endpoint",
+                       "stdout.log_errors", "stderr.log_errors")
+BUILD_NA_TELA = re.compile(r"v\d+\.\d+\.\d+[^\s·]*\s*·\s*Build\s*#?\d+[A-Z]?")
+
+
+def build_vista(summary):
+    """A versão que a tela de idioma ou o menu mostraram no começo da sessão."""
+    for jogada in summary.get("outcomes", [])[:40]:
+        for lado in ("before", "after"):
+            for observacao in (jogada.get(lado) or {}).get("observations", []):
+                achado = BUILD_NA_TELA.search(str(observacao.get("text", "")))
+                if achado:
+                    return achado.group(0)
+    return None
+
+
+def resumo_para_o_site(summary, sessao):
+    """O resumo sem as jogadas e os logs, com o nome da sessão e a build vista na tela."""
+    leve = {chave: valor for chave, valor in summary.items() if chave not in PESADOS_PARA_O_SITE}
+    if isinstance(leve.get("escada"), dict):
+        leve["escada"] = {"escalonamentos": [{"nivel": e.get("nivel")} for e in leve["escada"].get("escalonamentos", [])]}
+    if isinstance(leve.get("progresso"), dict):
+        progresso = leve["progresso"].get("progresso", leve["progresso"])
+        leve["progresso"] = {"progresso": {k: progresso.get(k) for k in ("feitos", "total", "percentual", "capitulo") if k in progresso}}
+    leve["sessao"] = sessao
+    leve["build"] = build_vista(summary)
+    return leve
+
+
+def enviar_ao_site(config, resumo, abrir=None):
+    """Manda o resumo ao painel do site; devolve o desfecho e nunca derruba a sessão."""
+    token = config.get("MYTHSVALLEY_TOKEN")
+    if not token:
+        return "sem_token"
+    site = (config.get("MYTHSVALLEY_SITE") or SITE_PADRAO).rstrip("/")
+    pedido = Request(site + "/api/jogo/testes", data=json.dumps(resumo, ensure_ascii=False).encode("utf-8"), method="POST",
+                     headers={"Authorization": "Bearer " + token, "Content-Type": "application/json",
+                              "Accept": "application/json", "User-Agent": "MythsValley-Testes/1"})
+    try:
+        with (abrir or urlopen)(pedido, timeout=15) as resposta:
+            return f"http_{resposta.status}"
+    except HTTPError as erro:
+        return f"http_{erro.code}"
+    except (URLError, OSError, ValueError):
+        return "sem_conexao"
 
 
 class ErroApoio(Exception):
@@ -998,6 +1050,7 @@ class Session:
             summary[name + "_errors"] = [line[:300] for line in text.splitlines()
                                          if any(marker in line for marker in ("SCRIPT ERROR", "Parse Error", "Compile Error"))]
         (self.directory / "resumo.json").write_text(json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8")
+        self.log("site", resultado=enviar_ao_site(self.config, resumo_para_o_site(summary, self.directory.name)))
         self.gravar_ponteiro()
         from relatorio import generate
         generate(self.directory, live=False)

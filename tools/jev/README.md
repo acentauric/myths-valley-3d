@@ -128,6 +128,13 @@ Cada execução cria `tools/temp/jev/<sessao>/` (ignorado pelo Git):
 - `quadro_*.png`: capturas locais periódicas, não enviadas ao Jev;
 - `perfil/`: saves descartáveis dessa sessão.
 
+Com `MYTHSVALLEY_TOKEN` no `.env` (um token criado em **Minha conta → Tokens do jogo** no site),
+o resumo de cada sessão vai também para o **painel do admin** do site (`POST /api/jogo/testes`):
+duração, decisões, chamadas, tokens, custo por nível da escada, progresso e motivo da parada.
+As jogadas, as capturas e os logs ficam só na máquina. Sem token, nada é enviado; uma falha de
+rede só fica registrada em `eventos.jsonl` (`"kind": "site"`) e não interrompe a sessão.
+`MYTHSVALLEY_SITE` troca o endereço (ex.: `http://127.0.0.1:8000` para testar com o site local).
+
 Parado por alguns segundos ao tentar caminhar vira **suspeita** de bloqueio,
 que precisa ser revisada. Apertar E não prova que a interação funcionou: consulte
 o estado antes/depois no relatório. Uma sessão sem suspeitas não aprova o jogo.
