@@ -55,6 +55,14 @@ const MAX_EXTRAIDO := 6 * 1024 * 1024 * 1024
 ## Folga de disco além do que se baixa e se extrai.
 const MARGEM_DE_ESPACO := 512 * 1024 * 1024
 const MAX_ENTRADAS := 16
+## OS EXTRAS DE ZIP QUE PASSAM (#231): só metadados do arquivo (carimbos de tempo e dono), nada que
+## mude o nome ou o destino do que se extrai. Quem grava cada um: o tar.exe do Windows (bsdtar)
+## grava 0x5455 + 0x7875; o 7-Zip e o Info-ZIP, 0x5455 e 0x000a. A Build 11 só deixava passar
+## 0x5455 e 0x000a, e o zip dela mesma, feito pelo tar.exe, trazia o 0x7875: o atualizador dela
+## o recusaria. Continuam recusados o ZIP64 (0x0001), o nome Unicode alternativo (0x7075), o link
+## Unix (0x000d) e qualquer outro. Cada extra aceito ainda tem de ter o tamanho e a forma do
+## formato dele (`_extra_coerente`).
+const EXTRAS_ACEITOS := [0x5455, 0x7875, 0x000a]
 
 enum Estado { PARADO, VERIFICANDO, EM_DIA, DISPONIVEL, BAIXANDO, CONFERINDO, INSTALANDO, PRONTA, FALHOU }
 
@@ -594,16 +602,48 @@ static func _conteudo_permitido(nome: String) -> bool:
 
 static func _extras_seguros(extra: PackedByteArray) -> bool:
 	var i := 0
+	var vistos := {}
 	while i < extra.size():
 		if i + 4 > extra.size():
 			return false
 		var id := extra.decode_u16(i)
 		var tamanho := extra.decode_u16(i + 2)
-		# Só timestamps. Nomes Unicode alternativos e links Unix são recusados.
-		if id not in [0x5455, 0x000a] or i + 4 + tamanho > extra.size():
+		# Só os extras de EXTRAS_ACEITOS, cada um uma vez, inteiros e com o conteúdo que o formato
+		# dele manda. Nome Unicode alternativo, ZIP64 e link Unix ficam de fora da lista.
+		if id not in EXTRAS_ACEITOS or vistos.has(id) or i + 4 + tamanho > extra.size():
 			return false
+		if not _extra_coerente(id, extra.slice(i + 4, i + 4 + tamanho)):
+			return false
+		vistos[id] = true
 		i += 4 + tamanho
 	return true
+
+
+## O conteúdo de um extra aceito tem o tamanho e a forma que o formato dele manda: um extra torto
+## é recusado mesmo com um id conhecido, porque quem o lê (o tar.exe) confia nesses tamanhos.
+static func _extra_coerente(id: int, dados: PackedByteArray) -> bool:
+	match id:
+		0x5455:
+			# Carimbos "UT" (Info-ZIP, tar): um byte que diz quais há (1 modificação, 2 acesso,
+			# 4 criação) e um inteiro de 4 bytes para cada. No índice central vem só o de modificação.
+			return dados.size() >= 1 and dados.size() <= 13 and (dados.size() - 1) % 4 == 0 and (dados[0] & 0xf8) == 0
+		0x7875:
+			# Dono "ux" (Info-ZIP, tar): versão 1, o tamanho e o número do uid, o tamanho e o número
+			# do gid. Alguns zips trazem o campo vazio no índice central.
+			if dados.is_empty():
+				return true
+			if dados.size() < 3 or dados[0] != 1:
+				return false
+			var tamanho_uid := dados[1]
+			if tamanho_uid < 1 or tamanho_uid > 8 or dados.size() < 3 + tamanho_uid:
+				return false
+			var tamanho_gid := dados[2 + tamanho_uid]
+			return tamanho_gid >= 1 and tamanho_gid <= 8 and dados.size() == 3 + tamanho_uid + tamanho_gid
+		0x000a:
+			# NTFS (7-Zip, Windows): 4 bytes reservados e, se houver, o atributo 1, que são os três
+			# carimbos de 8 bytes (modificação, acesso, criação).
+			return dados.size() == 4 or (dados.size() == 32 and dados.decode_u16(4) == 1 and dados.decode_u16(6) == 24)
+	return false
 
 
 ## O executável de mesmo nome dentro do que foi extraído (o zip pode ter uma pasta).
