@@ -32,6 +32,12 @@ extends Node
 ## outubro de 2026 os limites eram de uma build de 360 MB, o jogo passou de 1 GB, e a Build 9
 ## ficou sem ver a 10 sem dizer nada a ninguém.
 ##
+## SEM TETO DE TEMPO NO DOWNLOAD (#231): o prazo do `HTTPRequest` vale para a requisição inteira, e
+## com 300 s o zip de 1,2 GB só chegava a quem tem uns 32 Mbps sustentados. O download não tem prazo
+## total: desiste quando nenhum byte novo chega por `TEMPO_SEM_PROGRESSO` (a conexão caiu), e diz
+## que foi isso, com a saída de tentar de novo. O pedido não usa a linha própria do HTTPRequest
+## (ver `_preparar_download`): lá o cancelamento de uma conexão parada trava o jogo.
+##
 ## NADA DE REDE SEM PEDIDO: a consulta só parte quando a abertura chama
 ## `verificar()`, uma vez por sessão, e só numa build exportada (ou com
 ## `--atualizacao-url=` dado à mão). No editor e na bateria de testes, que abrem
@@ -45,10 +51,13 @@ const PASTA_DOWNLOAD := "user://atualizacao"
 const PASTA_EXTRACAO := ".atualizacao"
 const SUFIXO_ANTIGO := ".old"
 const TEMPO_CONSULTA := 8.0
+## Segundos sem chegar um byte novo para dar o download por parado. Tem de aguentar a conexão que
+## engasga e volta, e ser curto para quem perdeu a rede não esperar à toa.
+const TEMPO_SEM_PROGRESSO := 60.0
 const ORIGEM := "https://mythsvalley.app.br"
 ## OS LIMITES SEGUEM O JOGO, E COM FOLGA. A Build 10 tem 1,14 GB de zip e 1,45 GB de executável
 ## (data/atualizador_builds.json guarda os tamanhos medidos de cada build, e o portão
-## tests/atualizacao.gd cobra 2x os da última). Os 4 GB do zip são também o teto do ZIP sem
+## tests/unidade/test_atualizacao.gd cobra 2x os da última). Os 4 GB do zip são também o teto do ZIP sem
 ## ZIP64, que é o único formato que `conferir_zip` aceita.
 const MAX_ZIP := 4 * 1024 * 1024 * 1024
 const MAX_EXTRAIDO := 6 * 1024 * 1024 * 1024
@@ -75,12 +84,17 @@ var erro := ""
 ## grande demais para os limites, ou sem espaço em disco).
 var so_pelo_site := false
 
-## Só para o portão (tests/atualizacao.gd): finge a feature `tripothon` sem exportar.
+## Só para o portão (tests/unidade/test_atualizacao.gd): finge a feature `tripothon` sem exportar.
 static var forcar_estatica := false
 
 var _http: HTTPRequest
 var _trabalho: Thread
 var _redirecionamentos := 0
+## A vigia do download (`_vigiar_download`): o arquivo que está sendo gravado, o maior total de bytes
+## já visto e há quantos segundos ele não anda.
+var _destino_do_download := ""
+var _baixado_visto := 0
+var _parado_ha := 0.0
 
 
 func _ready() -> void:
@@ -158,20 +172,39 @@ func atualizar() -> void:
 
 
 func _requisitar_download(url: String, destino: String) -> void:
-	_http = HTTPRequest.new()
-	_http.use_threads = true
-	_http.timeout = 300.0
-	_http.max_redirects = 0
-	_http.body_size_limit = int(manifesto["bytes"])
-	_http.download_file = destino
-	_http.download_chunk_size = 1 << 20
+	_http = _preparar_download(destino)
 	add_child(_http)
 	_http.request_completed.connect(_ao_baixar.bind(destino), CONNECT_ONE_SHOT)
 	progresso = 0.0
 	erro = ""
+	_destino_do_download = destino
+	_baixado_visto = 0
+	_parado_ha = 0.0
 	_mudar(Estado.BAIXANDO)
 	if _http.request(url) != OK:
 		_falhar("não foi possível começar o download")
+
+
+## O pedido do download, pronto e ainda sem sair. SEM PRAZO TOTAL (`timeout` 0): o do HTTPRequest vale
+## para a requisição inteira e mataria o download de 1,2 GB de quem tem menos de uns 32 Mbps com a
+## conexão boa. Quem vigia é `_vigiar_download`, pelo tempo sem progresso.
+##
+## SEM LINHA PRÓPRIA (`use_threads` falso), de propósito: na linha própria o Godot lê o corpo em modo
+## bloqueante, um pedaço inteiro (`download_chunk_size`) de cada vez, e uma conexão parada deixa essa
+## leitura esperando. Medido no Godot 4.7.2 contra um servidor que para no meio: `get_downloaded_bytes()`
+## fica em 0 (a vigia não vê os bytes que chegaram) e `cancel_request()` TRAVA o jogo até o servidor fechar
+## a conexão. Sem linha própria a leitura não bloqueia: os bytes contam na hora e o cancelamento volta
+## em milissegundos. Custa um pedaço de 1 MiB por quadro (uns 59 MB/s a 60 quadros, 30 MB/s a 30), muito
+## acima do que a internet de casa entrega.
+func _preparar_download(destino: String) -> HTTPRequest:
+	var pedido := HTTPRequest.new()
+	pedido.use_threads = false
+	pedido.timeout = 0.0
+	pedido.max_redirects = 0
+	pedido.body_size_limit = int(manifesto["bytes"])
+	pedido.download_file = destino
+	pedido.download_chunk_size = 1 << 20
+	return pedido
 
 
 func reiniciar() -> void:
@@ -188,8 +221,10 @@ func pagina_de_download() -> String:
 	return pagina if url_confiavel(pagina) else ORIGEM + "/jogar"
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	if estado != Estado.BAIXANDO or _http == null:
+		return
+	if _vigiar_download(delta, _http.get_downloaded_bytes()):
 		return
 	var total := _http.get_body_size()
 	if total <= 0:
@@ -199,6 +234,29 @@ func _process(_delta: float) -> void:
 		if absf(novo - progresso) >= 0.01:
 			progresso = novo
 			mudou.emit()
+
+
+## Conta os segundos sem byte novo e, passando de TEMPO_SEM_PROGRESSO, desiste do download.
+## `baixado` é o total de bytes que chegaram. true se desistiu.
+func _vigiar_download(delta: float, baixado: int) -> bool:
+	_parado_ha = tempo_parado(baixado, _baixado_visto, _parado_ha, delta)
+	_baixado_visto = maxi(_baixado_visto, baixado)
+	if _parado_ha < TEMPO_SEM_PROGRESSO:
+		return false
+	_desistir_do_download()
+	return true
+
+
+## O download parou de andar: cancela o pedido, apaga o arquivo pela metade e diz o que houve. Não é
+## caso de baixar pelo site (`so_pelo_site` fica falso): a conexão voltando, tentar de novo resolve.
+func _desistir_do_download() -> void:
+	if _http != null:
+		_http.cancel_request()
+	_soltar_http()
+	if not _destino_do_download.is_empty():
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(_destino_do_download))
+	_falhar(tr("O download da Build %d parou: nenhum dado chegou em %d segundos. Confira a conexão e tente de novo.") \
+		% [build_nova(), int(TEMPO_SEM_PROGRESSO)])
 
 
 func _ao_receber_manifesto(resultado: int, codigo: int, _cabecalhos: PackedStringArray, corpo: PackedByteArray) -> void:
@@ -356,7 +414,12 @@ static func _instalavel() -> bool:
 
 
 # ---------------------------------------------------------------------------
-# A lógica pura, sem rede nem estado — é o que o portão (tests/atualizacao.gd) cobra.
+# A lógica pura, sem rede nem estado — é o que o portão (tests/unidade/test_atualizacao.gd) cobra.
+
+## Segundos sem byte novo: volta a zero quando chegou algo além do que já se tinha visto; senão soma `delta`.
+static func tempo_parado(baixado: int, visto: int, parado: float, delta: float) -> float:
+	return 0.0 if baixado > visto else parado + delta
+
 
 ## O manifesto tem o que a instalação precisa, e de onde se espera. Os tamanhos não são
 ## julgados aqui: manifesto de build gigante é um manifesto certo, e quem o recusa precisa

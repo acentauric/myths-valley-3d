@@ -552,6 +552,7 @@ const EN := {
 	"na pasta de dados do jogo": "in the game's data folder",
 	"na pasta do jogo": "in the game's folder",
 	"Edição Tripothon · atualização desativada": "Tripothon Edition · updates turned off",
+	"O download da Build %d parou: nenhum dado chegou em %d segundos. Confira a conexão e tente de novo.": "The download of Build %d stalled: no data arrived for %d seconds. Check your connection and try again.",
 }
 
 const ES := {
@@ -1079,6 +1080,7 @@ const ES := {
 	"na pasta de dados do jogo": "en la carpeta de datos del juego",
 	"na pasta do jogo": "en la carpeta del juego",
 	"Edição Tripothon · atualização desativada": "Edición Tripothon · actualización desactivada",
+	"O download da Build %d parou: nenhum dado chegou em %d segundos. Confira a conexão e tente de novo.": "La descarga de la Build %d se detuvo: no llegó ningún dato en %d segundos. Revisa tu conexión e inténtalo de nuevo.",
 }
 
 ## Uma tradução fica registrada só enquanto o menu está no idioma dela: registrada,
