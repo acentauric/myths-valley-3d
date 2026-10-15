@@ -70,8 +70,8 @@
       "texto": "E a de baixo é o vigor, o fôlego curto: correr, pular e bater gastam, e ele volta sozinho, parado ou andando. Quando ele acaba, a corrida para, e é só andar um pouco que ele volta."
     },
     "assets/audio/vozes/pedro_corpo_nado.mp3": {
-      "hash": "b1c6b88def",
-      "texto": "A azul, a do meio, é o fôlego: o ar de quem nada. Nadando, o corpo gasta primeiro o vigor; quando ele acaba, é o fôlego que vai, e sem fôlego a água tira da vida. Parou de nadar, ou achou chão, ele volta sozinho."
+      "hash": "d3663e5232",
+      "texto": "A azul, a do meio, é o ar de quem nada. Nadando, o corpo gasta primeiro o vigor; quando ele acaba, é o ar que vai, e sem ar a água tira da vida. Parou de nadar, ou achou chão, ele volta sozinho."
     },
     "assets/audio/vozes/pedro_anoitecer.mp3": {
       "hash": "b5bbe0a45b",
@@ -110,8 +110,8 @@
       "texto": "Se cansar, descansa. Ninguém aqui corre atrás do sol, que ele volta todo dia do mesmo jeito."
     },
     "assets/audio/vozes/benedito_fala_1.mp3": {
-      "hash": "d2db04085e",
-      "texto": "Ah, o moço da capital. Pode me chamar de Benedito, que aqui todo mundo chama assim."
+      "hash": "5c6c9408e8",
+      "texto": "Ô, moço da capital! Já tá com cara de daqui."
     },
     "assets/audio/vozes/benedito_fala_2.mp3": {
       "hash": "87351e16cf",
@@ -122,8 +122,8 @@
       "texto": "Meu avô cortava pau do outro lado do rio. Um dia parou de ir. Nunca disse por quê."
     },
     "assets/audio/vozes/zefa_fala_1.mp3": {
-      "hash": "a3057cccdf",
-      "texto": "Chegou o da capital, né? O arraial todo já sabe. Se a febre pegar, é só vir aqui."
+      "hash": "68156eee7e",
+      "texto": "Febre, quebranto, dor de dente: é só vir aqui, meu filho."
     },
     "assets/audio/vozes/zefa_fala_2.mp3": {
       "hash": "3fdd12309f",
@@ -134,8 +134,8 @@
       "texto": "Arruda, alecrim e um pouco de fé. O resto, meu filho, quem cura é Deus."
     },
     "assets/audio/vozes/cosme_fala_1.mp3": {
-      "hash": "fd197b12f1",
-      "texto": "Opa! Sou neto da Dona Zefa. Precisando de braço, é só chamar."
+      "hash": "60d0bb2530",
+      "texto": "Opa! Precisando de braço, é só chamar."
     },
     "assets/audio/vozes/cosme_fala_2.mp3": {
       "hash": "348fbeb5ba",
@@ -146,12 +146,12 @@
       "texto": "Pego na enxada desde menino. Mão calejada não mente, não."
     },
     "assets/audio/vozes/tonho_fala_1.mp3": {
-      "hash": "222854e441",
-      "texto": "Opa, tudo certo? Passa aqui de tarde, que a gente conversa com a rede no colo."
+      "hash": "f74b589d3e",
+      "texto": "Opa, tudo certo? Passa aqui de tarde, que a gente conversa com a linha na mão."
     },
     "assets/audio/vozes/tonho_fala_2.mp3": {
-      "hash": "688b806137",
-      "texto": "Tô devendo no armazém, todo mundo sabe. Mas mãe ficou boa, e isso não tem preço."
+      "hash": "548b071d76",
+      "texto": "Mãe ficou boa daquela febre, e isso não tem preço. O resto a gente paga com peixe."
     },
     "assets/audio/vozes/tonho_fala_3.mp3": {
       "hash": "eed7584ba2",
@@ -162,32 +162,32 @@
       "texto": "Chega mais, meu filho. Daqui da porta eu vejo quem vem e quem vai pela estrada."
     },
     "assets/audio/vozes/filo_fala_2.mp3": {
-      "hash": "037c879980",
-      "texto": "O Tonho acha que a dívida valeu a pena. Eu acho que não. A gente briga por isso toda semana."
+      "hash": "6e0ca0379d",
+      "texto": "O Tonho acha que tudo se paga com peixe. Eu acho que não. A gente briga por isso toda semana."
     },
     "assets/audio/vozes/filo_fala_3.mp3": {
       "hash": "59ae1f8fbb",
       "texto": "Na minha idade a gente não corre mais atrás de nada. Espera, que a estrada traz."
     },
     "assets/audio/vozes/candinha_fala_1.mp3": {
-      "hash": "05c0699755",
-      "texto": "Garapa geladinha, moço? Vendo nessa praça desde antes de o senhor nascer."
+      "hash": "f8424781ab",
+      "texto": "Garapa fresquinha, moço? Vendo nessa praça desde antes de o senhor nascer."
     },
     "assets/audio/vozes/candinha_fala_2.mp3": {
       "hash": "871cb4ae5f",
       "texto": "Quer saber das coisas do arraial? Senta aqui, que tudo passa por esta praça."
     },
     "assets/audio/vozes/candinha_fala_3.mp3": {
-      "hash": "0a06d57c3b",
-      "texto": "Dizem que chegou convite da fazenda do outro lado do rio. Sem assinatura... sei não."
+      "hash": "5a5101c881",
+      "texto": "Dizem que naquela fazenda do outro lado do rio ninguém nunca viu o dono. Sem dono... sei não."
     },
     "assets/audio/vozes/damiao_fala_1.mp3": {
       "hash": "59476a510b",
       "texto": "Sou o zelador daqui. Quem sobe o morro, sobe por alguém. Fique à vontade."
     },
     "assets/audio/vozes/damiao_fala_2.mp3": {
-      "hash": "c255426028",
-      "texto": "O intendente me deu um papel com meu nome e mais nada. Nem foice, nem enxada."
+      "hash": "94d9dd87c4",
+      "texto": "O intendente me deu um papel com meu nome e mais nada. Zelador aqui se arruma com o que tem."
     },
     "assets/audio/vozes/damiao_fala_3.mp3": {
       "hash": "ed10c218a0",
@@ -206,8 +206,8 @@
       "texto": "Entre sem pressa, a casa é de todos."
     },
     "assets/audio/vozes/padre_saudacao_4.mp3": {
-      "hash": "af7c10c358",
-      "texto": "Que bom ver gente nova no arraial."
+      "hash": "612531c392",
+      "texto": "Que bom ver o senhor por aqui."
     },
     "assets/audio/vozes/padre_fala_1.mp3": {
       "hash": "757ffe2573",
@@ -234,8 +234,8 @@
       "texto": "Batizei muita criança e enterrei muito velho nesta freguesia. A gente aprende a falar baixo e ouvir muito."
     },
     "assets/audio/vozes/padre_fala_7.mp3": {
-      "hash": "6e8546e8cf",
-      "texto": "Convite sem assinatura eu não respondo. Quem convida de verdade assina, meu filho, e dá a cara."
+      "hash": "8911ccd468",
+      "texto": "Papel sem assinatura eu não respondo. Quem pede de verdade assina, meu filho, e dá a cara."
     },
     "assets/audio/vozes/padre_fala_8.mp3": {
       "hash": "7e1936b0bf",
@@ -278,8 +278,8 @@
       "texto": "O sino tem uma rachadura fina, mas ainda dá o recado. Quem escuta direito sabe se é missa ou é morte."
     },
     "assets/audio/vozes/sacristao_fala_4.mp3": {
-      "hash": "48c095ede2",
-      "texto": "À tarde vou capinar o cemitério. O Damião capina também, só que sem foice. O mato ganha de nós dois."
+      "hash": "8f60c4131f",
+      "texto": "À tarde ajudo o Damião no cemitério. Mato de cemitério nasce de novo toda semana, e a gente arranca de novo."
     },
     "assets/audio/vozes/sacristao_fala_5.mp3": {
       "hash": "92c5e40e04",
@@ -374,8 +374,8 @@
       "texto": "Fiado eu dou, mas anoto no caderno. Caderno não tem memória ruim, e eu também não."
     },
     "assets/audio/vozes/mercador_fala_2.mp3": {
-      "hash": "3dee0849f1",
-      "texto": "Fiado de pescador é como maré: vai embora, mas volta. O Tonho que o diga."
+      "hash": "f5fe40bdcb",
+      "texto": "Fiado de pescador é como maré: vai embora, mas volta. Pescador sabe disso melhor que eu."
     },
     "assets/audio/vozes/mercador_fala_3.mp3": {
       "hash": "a9600f143f",
@@ -442,8 +442,8 @@
       "texto": "Gente de madrugada na rua sem candeeiro eu paro e pergunto. Não é pra proibir, é pra saber quem vai se perder."
     },
     "assets/audio/vozes/guarda_fala_4.mp3": {
-      "hash": "6c623b78a1",
-      "texto": "O convite da fazenda do outro lado do rio não traz nome de quem convida. Em trinta anos de guarda, nunca vi coisa boa sem assinatura."
+      "hash": "055a03e1b3",
+      "texto": "Em trinta anos de guarda, nunca vi coisa boa vir sem assinatura. Do outro lado do rio, então, nem se fala."
     },
     "assets/audio/vozes/guarda_fala_5.mp3": {
       "hash": "a70a79c18b",
@@ -502,8 +502,8 @@
       "texto": "Maré de lua cheia puxa o peixe pra beira. Mas lua cheia clareia a água, e peixe esperto vê o anzol."
     },
     "assets/audio/vozes/pescador_fala_4.mp3": {
-      "hash": "efab1b3d4d",
-      "texto": "O Tonho puxa rede no pontal, o Pedro joga vara no píer. Peixe grande sabe de quem desviar."
+      "hash": "14505aec41",
+      "texto": "O Tonho pesca no pontal, o Pedro joga vara no píer. Peixe grande sabe de quem desviar."
     },
     "assets/audio/vozes/pescador_fala_5.mp3": {
       "hash": "0b4738ac98",
@@ -610,8 +610,8 @@
       "texto": "Bato roupa na pedra e o vento traz a conversa de todo mundo. Eu não conto, mas escuto de graça."
     },
     "assets/audio/vozes/lavadeira_fala_7.mp3": {
-      "hash": "d0f992c2b3",
-      "texto": "De tarde, no poço, a gente troca novidade. O poço anda cansado, moço: a corda gasta, o balde pesa. Um mutirão resolvia."
+      "hash": "39ea04aabd",
+      "texto": "No poço a gente troca novidade. Desde o mutirão a corda é nova e o balde sobe leve — a gente agradece ao senhor."
     },
     "assets/audio/vozes/lavadeira_fala_8.mp3": {
       "hash": "145fd01f09",
@@ -694,8 +694,8 @@
       "texto": "Vendo na praça de manhã e na porta da igreja depois do meio-dia. A fome não escolhe santo, e o freguês nem pergunta o meu."
     },
     "assets/audio/vozes/quituteira_fala_4.mp3": {
-      "hash": "8c6adfd33a",
-      "texto": "A Candinha vende garapa gelada, eu vendo comida quente. Brigamos pela esquina da praça, mas é ela que me guarda o tabuleiro."
+      "hash": "cccb88b8d6",
+      "texto": "A Candinha vende garapa, eu vendo comida quente. Brigamos pela esquina da praça, mas é ela que me guarda o tabuleiro."
     },
     "assets/audio/vozes/quituteira_fala_5.mp3": {
       "hash": "5bec6fa277",
@@ -818,8 +818,8 @@
       "texto": "Mainha faz o acarajé mais gostoso do mundo!"
     },
     "assets/audio/vozes/menina_saudacao_4.mp3": {
-      "hash": "cd77b920a4",
-      "texto": "Eu sou Mariinha, e você é o moço novo!"
+      "hash": "a799e39868",
+      "texto": "Eu sou Mariinha! Lembra de mim?"
     },
     "assets/audio/vozes/menina_fala_1.mp3": {
       "hash": "476bb55108",
@@ -916,6 +916,358 @@
     "assets/audio/vozes/damiao_bronca_3.mp3": {
       "hash": "3169420ff1",
       "texto": "Chega! Falei duas vezes! Desce daí agora!"
+    },
+    "assets/audio/vozes/pedro_armas_armas_bote.mp3": {
+      "hash": "c79f4b799c",
+      "texto": "Caititu avisa antes de morder: para, baixa a cabeça, e o corpo clareia. É nessa hora que se sai da frente — e depois se bate. Três pancadas de facão derrubam um. Tem bando na mata do dendê e no pé da pedreira."
+    },
+    "assets/audio/vozes/pedro_armas_armas_facao.mp3": {
+      "hash": "e8e2172bdf",
+      "texto": "Bicho do mato não espera você estar pronto. Machado é pra árvore; pra caititu, é facão. Na bancada da oficina, duas lenhas de cabo e uma pedra de amolar viram um — encosta e aperta E. Se já tiver o seu, melhor ainda."
+    },
+    "assets/audio/vozes/pedro_armas_armas_forte.mp3": {
+      "hash": "9a873a55e3",
+      "texto": "Pancada ligeira cansa o bicho; a de peso derruba. Segura o E, deixa o braço juntar força e solta em cima dele. Três dessas, e o braço aprendeu."
+    },
+    "assets/audio/vozes/pedro_armas_arremate.mp3": {
+      "hash": "a83de02ebe",
+      "texto": "Agora você anda na mata como quem é daqui. Bicho que avisa, a gente respeita; bicho que morde, a gente derruba."
+    },
+    "assets/audio/vozes/pedro_arraial_arremate.mp3": {
+      "hash": "5189bab5e8",
+      "texto": "Olha isso. Eu nunca tinha subido aqui — nasci embaixo desse morro e nunca tinha subido aqui. Daqui de cima o arraial cabe todo numa olhada: a praça, a capela, o casario descendo até a areia, o píer onde você desembarcou no dia em que não conhecia ninguém. E toma: o povo juntou. Foi a Dona Candinha que passou o chapéu na praça, moeda por moeda. Eu botei um pirão junto, porque dinheiro do povo é do povo, mas o pirão é meu."
+    },
+    "assets/audio/vozes/pedro_arraial_canteiro_material.mp3": {
+      "hash": "62658ddd52",
+      "texto": "Lembra da outra mesa do seu terreno? Aquela do lado da bancada da oficina. Você serrou tábua a semana inteira e nunca chegou perto dela — eu reparei. Não é culpa sua: elas parecem a mesma coisa e não são. A bancada é serrote: entra lenha, sai tábua. A do lado é prumo: ali não sai nada, ali você risca. E obra riscada antes sai mais barata que obra improvisada; meu avô dizia que quem mede duas vezes corta uma. Junte oito tábuas e doze lenhas. É pouco, e o que ela te devolve não é pouco."
+    },
+    "assets/audio/vozes/pedro_arraial_canteiro_obra.mp3": {
+      "hash": "0eba05609a",
+      "texto": "Isso. Agora vai lá e risca. Chegue no canteiro e aperte E: abre a aba de obras daquela mesa. Escolha a prancheta, a régua e o prumo, e toque a obra. Daqui em diante toda obra do mapa te sai mais barata — dez por cento, que numa obra de quarenta tábuas é quatro tábuas que você não precisa derrubar."
+    },
+    "assets/audio/vozes/pedro_arraial_mirante_obra.mp3": {
+      "hash": "49b93aac7b",
+      "texto": "Tudo aí. Agora é botar de pé. Chegue ao pé do mirante e aperte E — ou abra o J, na aba de obras: o conserto está na lista. Eu subo com você. Essa eu não perco."
+    },
+    "assets/audio/vozes/pedro_arraial_mirante_ver.mp3": {
+      "hash": "16691ec0e5",
+      "texto": "Agora que você sabe riscar obra, tem outra coisa que eu quero te mostrar, e é subindo. Saia da praça pelo poente e pegue a estrada que serpenteia até o alto. Lá em cima tem um mirante: dali se vê a baía inteira, e no dia limpo dá pra ver saveiro chegando antes de ele chegar. Era assim que a gente sabia quem vinha. Vá ver como ele está."
+    },
+    "assets/audio/vozes/pedro_arraial_povo_conhecer.mp3": {
+      "hash": "e062f6fcb5",
+      "texto": "Você falou com gente daqui. Reparou que ela lembra de você? Aqui todo mundo lembra: quem apareceu, quem trouxe o quê, quem passou reto. Aperte P — a letra de povo. Abre a lista de quem mora aqui, com a cara de cada um e o quanto já confia em você."
+    },
+    "assets/audio/vozes/pedro_atencao_1.mp3": {
+      "hash": "3347925f2e",
+      "texto": "Opa! Tá me procurando?"
+    },
+    "assets/audio/vozes/pedro_atencao_2.mp3": {
+      "hash": "f734db04a9",
+      "texto": "Diga, moço."
+    },
+    "assets/audio/vozes/pedro_atencao_3.mp3": {
+      "hash": "0692055edd",
+      "texto": "Ô, chegou! Pode falar."
+    },
+    "assets/audio/vozes/pedro_atencao_4.mp3": {
+      "hash": "3a78f714b6",
+      "texto": "Hum? Fala comigo."
+    },
+    "assets/audio/vozes/pedro_atencao_5.mp3": {
+      "hash": "d596bcd127",
+      "texto": "Já tava indo pra casa… mas diga."
+    },
+    "assets/audio/vozes/pedro_atencao_6.mp3": {
+      "hash": "5196e578ae",
+      "texto": "E aí, viu o que eu falei?"
+    },
+    "assets/audio/vozes/pedro_chapada_chapada.mp3": {
+      "hash": "afbd408025",
+      "texto": "Agora que você já tirou coisa do chão com a própria mão, tem uma que eu quero te mostrar. É só pra olhar — não é sua, que fique claro. Saindo da sua casa pro poente, depois da terra da Dona Zefa, vem a chapada do Seu Benedito, de frente pro rio grande. Ele tá velho e os filhos foram tudo pra Salvador; anda dizendo que vende, se aparecer quem queira. Vá lá medir com os olhos — sonhar não custa —, e depois volte pra me contar."
+    },
+    "assets/audio/vozes/pedro_chapada_chapada_volta.mp3": {
+      "hash": "5c50fa10ce",
+      "texto": "Viu a chapada? Volte aqui, que eu conto o que cabe nela."
+    },
+    "assets/audio/vozes/pedro_chapada_chapada_volta_resposta.mp3": {
+      "hash": "b7cfaace4c",
+      "texto": "Viu a água lá embaixo? O rio grande corre o ano todo — nem na seca de setenta e sete ele parou. Cabe muita coisa numa terra dessas: casa de farinha, curral, roda d'água, moradia pra quem vier. Mas isso é pra quem tiver dinheiro, e dinheiro aqui chega devagar. E outra: o Seu Benedito tem a roça dele ali faz quarenta e duas safras, e não larga nem vendendo. Quem comprar aquela terra herda o vizinho. Não que isso seja ruim: velho que plantou quarenta e duas safras sabe dessa terra o que você não vai saber em dez anos."
+    },
+    "assets/audio/vozes/pedro_fazenda_fazenda_chamado.mp3": {
+      "hash": "fbf76caeb9",
+      "texto": "Senta aí comigo. Ninguém come antes de alguém falar — e alguém vai falar."
+    },
+    "assets/audio/vozes/pedro_fazenda_fazenda_chegada.mp3": {
+      "hash": "9fee681756",
+      "texto": "Tá todo mundo lá dentro, no descampado em frente à escadaria. Anda, que a gente já perdeu a metade. Vem por esse caminho de terra batida, que é onde a gente entra."
+    },
+    "assets/audio/vozes/pedro_fazenda_fazenda_ida.mp3": {
+      "hash": "37402814cb",
+      "texto": "Vem comigo: a fazenda é do outro lado do rio grande."
+    },
+    "assets/audio/vozes/pedro_fazenda_fazenda_porta_estreita.mp3": {
+      "hash": "0d661b1f67",
+      "texto": "Somos seis, comigo — sete, com você. Elas vão na frente, pela escadaria. Me chama quando estiver pronto, que a gente sobe junto."
+    },
+    "assets/audio/vozes/pedro_fazenda_fazenda_porta_estreita_resposta.mp3": {
+      "hash": "3de28529cb",
+      "texto": "Então vamos. Lá dentro, fica perto de mim."
+    },
+    "assets/audio/vozes/pedro_fe_fe_contar.mp3": {
+      "hash": "4705864df0",
+      "texto": "Volte à Dona Zefa: ela quer saber qual foi."
+    },
+    "assets/audio/vozes/pedro_fe_fe_escolher.mp3": {
+      "hash": "4170af2e72",
+      "texto": "É com os pés, não é com a boca, ela disse. Volte no lugar que te chamou — o cruzeiro, o terreiro ou a gameleira —, chegue de frente e aceite ali."
+    },
+    "assets/audio/vozes/pedro_fe_fe_marcos.mp3": {
+      "hash": "180b1bf504",
+      "texto": "Ela quer que você veja os três com os seus olhos. O cruzeiro, diante da igreja — esse você já passou por ele cem vezes sem olhar. O terreiro: sobe a rua do mirante e, antes da curva grande, sai uma vereda pro poente que entra na mata e some. Você não acha de longe, e é de propósito: em ano de hoje, terreiro que se vê da estrada é terreiro que a polícia fecha. E a gameleira do sambaqui, na ponta da praia, perto das pedras: aquele monte branco embaixo dela é concha. Vá nos três. Chegue perto e olhe. Não tem o que fazer ainda — só olhar."
+    },
+    "assets/audio/vozes/pedro_fe_fe_voltar.mp3": {
+      "hash": "4b195f3ff8",
+      "texto": "Andou os três? Então volte à Dona Zefa e conte o que viu. Ela não sai de casa para isso: quem foi mandado ver, volta para contar."
+    },
+    "assets/audio/vozes/pedro_fe_fe_zefa.mp3": {
+      "hash": "10ccfbf574",
+      "texto": "A Dona Zefa mandou te chamar. Ela é benzedeira: quando alguém aqui adoece, vai nela antes de ir no padre — e o padre sabe, e não diz nada. De manhã e de noite ela fica na casa dela, ao lado da sua; de tarde, no poço. Vá lá."
+    },
+    "assets/audio/vozes/pedro_guia_bom_dia.mp3": {
+      "hash": "b67ba33d87",
+      "texto": "Agora vem comigo, que eu te apresento a quem tá no píer. Aquele de linha na mão desde a madrugada é o Tonho, pescador como eu. Aqui quem chega cumprimenta — chega perto dele e aperta E: pescador lembra de quem passou reto."
+    },
+    "assets/audio/vozes/pedro_guia_caderneta.mp3": {
+      "hash": "037626dcfe",
+      "texto": "Antes da roça, uma coisa: o J abre a lista de tudo que tá aberto — o que cada um pediu, o que falta, quem paga. Aperta e dá uma olhada; depois fecha e segue."
+    },
+    "assets/audio/vozes/pedro_guia_casa.mp3": {
+      "hash": "80826381b0",
+      "texto": "Chegamos. Daqui da cerca pra dentro é seu. A chave tá com você: abre a porta e entra. Eu fico aqui fora, que dentro é seu."
+    },
+    "assets/audio/vozes/pedro_guia_chave.mp3": {
+      "hash": "d7b13816e5",
+      "texto": "Agora a casa do seu tio. A chave eu não sei com quem ficou: depois do enterro, cada um levou uma coisa. Vem comigo até a praça, que eu vou na frente. Quem sabe de tudo é a Dona Candinha, a da garapa — tudo o que acontece no arraial passa por ela."
+    },
+    "assets/audio/vozes/pedro_guia_chave_zefa.mp3": {
+      "hash": "51522d468b",
+      "texto": "A Dona Zefa mora colada na casa do seu tio, lá em cima. Vem que eu te levo. É benzedeira: o povo vai nela antes de ir no padre, e o padre sabe e não diz nada. Fala com jeito, que ela repara em tudo."
+    },
+    "assets/audio/vozes/pedro_guia_convite.mp3": {
+      "hash": "de8ce6224f",
+      "texto": "Bom dia! O mungunzá foi minha avó que mandou de madrugada. E isto chegou de manhã cedo, preso em cada porta do arraial — esse estava na sua. Lê você, que estudou na capital: eu leio devagar demais e o povo ri. Na mochila, F em cima do papel."
+    },
+    "assets/audio/vozes/pedro_guia_corda.mp3": {
+      "hash": "5921df7963",
+      "texto": "Agora a corda. A bancada do seu tio fica na beira do roçado: é ali que lenha vira tábua e vira corda. Encosta nela e aperta E pra torcer uma — três lenhas dão uma corda."
+    },
+    "assets/audio/vozes/pedro_guia_correr.mp3": {
+      "hash": "98afbbc6a3",
+      "texto": "Se precisar de pressa, toca o Shift: o corpo corre, e outro toque volta ao passo. Corre até ali, onde a seta aponta, pra ver. Mas repara: correr cansa, e cansado o corpo não obedece."
+    },
+    "assets/audio/vozes/pedro_guia_desembarque.mp3": {
+      "hash": "c63e383bd9",
+      "texto": "Desce do saveiro e vem pra terra firme, que a perna ainda tá do mar. Anda com W, A, S e D — ou as setas, se preferir. Chega perto de mim e aperta E: é assim que se conversa aqui, e é assim que se dá conta do que cada um pede."
+    },
+    "assets/audio/vozes/pedro_guia_desembarque_resposta.mp3": {
+      "hash": "c1f02a535f",
+      "texto": "Isso: o corpo respondeu, e depois de uma noite inteira em pé num saveiro já é alguma coisa. O mestre Quirino larga amanhã cedo; você fica. Bem-vindo a Bom Jesus dos Pobres."
+    },
+    "assets/audio/vozes/pedro_guia_dormir.mp3": {
+      "hash": "75850a2959",
+      "texto": "Agora come, e depois deita: o I abre a mochila, e o F come o que estiver marcado. A cama do seu tio é a de dentro, ao pé da parede. Amanhã cedo eu passo aqui — e o arraial inteiro já vai saber que tem gente na casa do finado."
+    },
+    "assets/audio/vozes/pedro_guia_janta.mp3": {
+      "hash": "d3aaa4aa29",
+      "texto": "Poço consertado: amanhã a roça tem água perto. Agora a janta, que o peixe do Tonho tá esperando. A fogueira do terreiro é o fogão da casa por enquanto: encosta, aperta E e asse — peixe na brasa pede uma lenha."
+    },
+    "assets/audio/vozes/pedro_guia_lenha.mp3": {
+      "hash": "a3f2bbf58f",
+      "texto": "A Dona Zefa tem razão: casa fechada junta frio. Fogo de casa não pede machado: galho seco se quebra na mão. Tem galhada caída aqui no terreiro, e a mata larga mais a cada vento — encosta e aperta E. Junta um tanto a mais, que lenha também vira corda na bancada."
+    },
+    "assets/audio/vozes/pedro_guia_mutirao_poco.mp3": {
+      "hash": "2c8d098e2c",
+      "texto": "Pedra e corda na mão: é mutirão. Aqui obra de todo mundo se faz junto — a Dona Zefa já chamou o neto. Chega no poço e aperta E, que abre as obras dele (o J na aba de obras também serve), e conserta a boca."
+    },
+    "assets/audio/vozes/pedro_guia_pedra_do_poco.mp3": {
+      "hash": "8e6f884666",
+      "texto": "O beiju é da minha avó, que soube que você chegou. Agora o poço: a corda partiu, e a boca tá esfarelando — balde que cai leva pedra junto. Toma a picareta, que também era do seu tio. Tem pedra solta no chão, ali do lado do poço: com a picareta ela sai ligeiro. Lajedo grande, não — esse pede picareta de aço e braço treinado."
+    },
+    "assets/audio/vozes/pedro_guia_pegar.mp3": {
+      "hash": "1c80e7ef0c",
+      "texto": "Cama, baú e o fogo lá fora: é o que tem, e basta pra começar. No baú ficou o que o seu tio usava na roça — a enxada, o balde e um punhado de maniva —, e minha avó deixou dois beijus. Chega no baú e aperta E. O resto da casa vai entrando conforme você levantar: perto dela, o J abre as obras."
+    },
+    "assets/audio/vozes/pedro_guia_roca.mp3": {
+      "hash": "0603a517ca",
+      "texto": "Agora a terra, que terra parada é terra que some. O Cosme, neto da Dona Zefa, capinava a roça do seu tio e não parou. Põe a enxada na mão e abre uma leira; a maniva na mão planta, e o balde molha — na ordem que quiser."
+    },
+    "assets/audio/vozes/pedro_lombada_cabra.mp3": {
+      "hash": "d81bc0f4e8",
+      "texto": "Ouviu? Tem bicho lá em cima. É uma cabra do Seu Benedito: subiu antes de a lapa descer e ficou presa. Sobe a rampa e chega perto dela. Não precisa pegar no pelo: bicho preso desce sozinho quando vê que dá. Ela vai estranhar você — chega devagar e fica de pé ali um instante, que é o bastante."
+    },
+    "assets/audio/vozes/pedro_lombada_cabra_volta.mp3": {
+      "hash": "7e2143ba9b",
+      "texto": "A cabra desceu? Volte aqui, que eu conto de quem é aquele alto."
+    },
+    "assets/audio/vozes/pedro_lombada_cabra_volta_resposta.mp3": {
+      "hash": "2c7926a247",
+      "texto": "Desceu, né? Vai direto pro cercado do Seu Benedito, que é onde ela mora: bicho sabe o caminho de casa melhor que gente. E a placa lá em cima, você leu? Aquele alto inteiro é da Santa Casa de Misericórdia. É a irmandade que cuida do cemitério e do hospital da vila — terra de irmandade não tem herdeiro, então ela vende quando aparece dinheiro. É outra conversa das suas, essa: você chegou com uma terra e já tá medindo as outras com os olhos. Mas guarde: a Santa Casa não pede favor e não faz amizade. Com ela é réis. Os vizinhos de porta, esses você conquista."
+    },
+    "assets/audio/vozes/pedro_lombada_picareta.mp3": {
+      "hash": "3fa095c34f",
+      "texto": "Olha lá, pro poente, depois da chapada: aquela lombada de pedra, com a rampa do lado de cá. Choveu forte na semana antes de você chegar; a ladeira amoleceu e uma lapa desceu rolando — parou bem atravessada no pé da rampa. Pedra atravessada num caminho vira pedra atravessada pra sempre, se ninguém encostar nela. Pegue aquela picareta do poço: machado é pra pau, picareta é pra pedra; na coisa errada você só bate e cansa. E a lapa não é só estorvo, é material: dá oito pedras certinhas, que é o calço da varanda da sua casa. Fique de frente pra ela, aperte E e bata até rachar."
+    },
+    "assets/audio/vozes/pedro_metas_meta_caititu.mp3": {
+      "hash": "39dcd4101c",
+      "texto": "Dez caititus? O arraial inteiro já sabe. Vem cá, que eu guardo uma coisa do meu pai pra quem fizesse isso."
+    },
+    "assets/audio/vozes/pedro_metas_meta_caititu_resposta.mp3": {
+      "hash": "50881b4e2a",
+      "texto": "Era do meu pai: couro de caititu, curtido na casca de angico. Bicho nenhum morde através dele. Agora é seu."
+    },
+    "assets/audio/vozes/pedro_oficio_arremate.mp3": {
+      "hash": "16042991cd",
+      "texto": "Vara na mão e um caminho na teia: já tem ofício. O resto o vale ensina, um dia de cada vez."
+    },
+    "assets/audio/vozes/pedro_oficio_pesca.mp3": {
+      "hash": "a66ae5e39b",
+      "texto": "Essa vara era do meu pai; com você ela pesca mais do que comigo. Água na frente — o píer, a praia, a beira do rio —, e o E lança a linha. Quando a bóia afunda e acende, E de novo, ligeiro, que peixe não espera. No mar sai robalo; no rio, traíra."
+    },
+    "assets/audio/vozes/pedro_oficio_talentos.mp3": {
+      "hash": "d9581e07b3",
+      "texto": "Quem trabalha aprende, e o corpo guarda. Cada tanto de lida vira um ponto, e o ponto se gasta na teia — o K abre. Escolhe um caminho: o braço do machado, a mão da pedra, a lida da roça. Olhar não basta: tem que destravar um."
+    },
+    "assets/audio/vozes/pedro_ponte_buscar_machado.mp3": {
+      "hash": "92e09e7dae",
+      "texto": "Vem comigo. A casa é pra lá da igreja — eu vou na frente."
+    },
+    "assets/audio/vozes/pedro_ponte_ponte.mp3": {
+      "hash": "34148ef0ca",
+      "texto": "Material pronto. Agora é carregar até o rio. Chegue à cabeceira da ponte com tudo nas costas e aperte E — ou abra o J, na aba de obras: o conserto está lá. Esteio novo no meio, o tabuado amarrado, e a cerca vai pro chão."
+    },
+    "assets/audio/vozes/pedro_ponte_ponte_caida.mp3": {
+      "hash": "7936b065bd",
+      "texto": "A fazenda do convite fica do outro lado do rio grande, pro norte. Siga a estrada, para lá da sua casa, até o rio. Eu quero que você veja uma coisa com os próprios olhos — depois volte aqui e me diga o que viu."
+    },
+    "assets/audio/vozes/pedro_ponte_ponte_contar.mp3": {
+      "hash": "86a7fca9c8",
+      "texto": "Viu a ponte? Então volte aqui, que eu conto o resto."
+    },
+    "assets/audio/vozes/pedro_ponte_ponte_contar_resposta.mp3": {
+      "hash": "53f091cbbc",
+      "texto": "Cercada, né? Fui eu e o Seu Benedito que pregamos a cerca, depois da cheia de fevereiro. A água comeu os esteios do meio, e o tabuado ficou pendurado no que sobrou: de longe parece inteira, e não aguenta um cabrito. Pra lá do rio não se passa: a água dá nado, e o barranco do outro lado não tem por onde subir; carroça, muito menos. Ninguém consertou. Aqui nada muda, eu já disse — a gente espera cair, depois espera alguém. Dessa vez o alguém somos nós. Vou em casa buscar os machados do meu avô."
+    },
+    "assets/audio/vozes/pedro_ponte_ponte_de_pe.mp3": {
+      "hash": "8cbb2950ed",
+      "texto": "Eu vi a cerca no chão daqui. Venha cá."
+    },
+    "assets/audio/vozes/pedro_ponte_ponte_de_pe_resposta.mp3": {
+      "hash": "0e2ec62d46",
+      "texto": "De pé. Primeira coisa que muda aqui em vinte anos, e fomos nós. Meus avós dizem que caminho de fazenda velha se abre assim: um ajudando o outro."
+    },
+    "assets/audio/vozes/pedro_ponte_ponte_lenha.mp3": {
+      "hash": "090d7a47af",
+      "texto": "Toma. Esse tem mais idade que nós dois somados; meu avô diz que corta melhor por isso. Ponte se faz de tábua, e tábua se faz de lenha. Muita lenha: doze tábuas e quatro cordas são trinta e seis paus. Derrube pau na mata com o machado na mão — encoste no tronco e aperte E, que não sai no primeiro golpe. O que você já tiver serrado em tábua ou torcido em corda conta junto. E ferramenta certa pra cada coisa: machado é pra pau, picareta é pra pedra; na coisa errada você só bate e cansa."
+    },
+    "assets/audio/vozes/pedro_ponte_tabuas.mp3": {
+      "hash": "6d4a6e41d1",
+      "texto": "Chega de lenha. Agora é serrar. Na bancada da oficina, encoste e aperte E: ali a lenha vira tábua e vira corda. A ponte pede doze tábuas e quatro cordas. Serre até ter tudo."
+    },
+    "assets/audio/vozes/pedro_quintal_arremate.mp3": {
+      "hash": "681bbcb28f",
+      "texto": "Agora tem gente trabalhando enquanto você tá longe. É assim que fazenda vira fazenda."
+    },
+    "assets/audio/vozes/pedro_quintal_capataz.mp3": {
+      "hash": "2a84403157",
+      "texto": "Viu? Fruteira é pra daqui a muito, bicho é pra amanhã. Fazenda boa tem os dois: um paga o dia de hoje e o outro paga o ano que vem. Última coisa, e essa é a mais difícil de aceitar pra quem veio de baixo. Uma hora a terra é mais do que o seu braço dá conta. Aí você para de trabalhar mais e começa a trabalhar melhor: braço de outro. Vai lá na casa da Dona Zefa e fala com o Cosme, o neto dela — braço novo, e precisando de serviço. Combina com ele um dia de roçado. Só não peça serviço de lombo a quem já passou dos setenta: o Seu Benedito e a Dona Zefa fazem muita coisa, mas não capinam mais."
+    },
+    "assets/audio/vozes/pedro_quintal_capataz_manha.mp3": {
+      "hash": "e6136ab119",
+      "texto": "Combinado está. Agora dorme, que quem trabalha pra você trabalha enquanto você tá longe — amanhã de manhã o que o Cosme fez tá na sua mochila. E guarde uma coisa: quem trabalha pra você tem nome. Use."
+    },
+    "assets/audio/vozes/pedro_quintal_curral.mp3": {
+      "hash": "60cb42b691",
+      "texto": "Olha lá o galinheiro de pé e as três dentro. Ponto de ofício gasto é ponto que vira coisa no chão — é assim que essa lista funciona, ela não é enfeite. Agora vai lá ver o que elas deixaram. Galinha bota todo dia: chegue perto do galinheiro e aperte E, o ovo tá ali. Não adianta ficar em cima do bicho apertando. Ele deu, acabou; volte amanhã."
+    },
+    "assets/audio/vozes/pedro_quintal_curral_aprender.mp3": {
+      "hash": "b679aabc2b",
+      "texto": "Pronto: daqui a muitos dias você passa pelo roçado e tem fruta onde não tinha nada. Agora o contrário do pé de fruta — uma coisa que rende amanhã. Só que bicho não é semente. Semente qualquer um enfia no chão; bicho você tem que SABER: de quanto em quanto tempo bota, o que come, onde dorme, o que faz quando adoece. Seu quintal tá vazio e vai continuar vazio até você aprender isso. Não adianta eu soltar galinha aí e te desejar sorte. Abre a lista de ofícios, no K. Tem uma raiz chamada Pastoreio, e o primeiro galho dela é o Curral. Gasta um ponto ali. Quando gastar, nós dois levantamos o galinheiro e eu te trago as primeiras três."
+    },
+    "assets/audio/vozes/pedro_quintal_pomar.mp3": {
+      "hash": "81e9915f73",
+      "texto": "Você já colheu o bastante pra eu te falar de uma coisa que eu não falei no começo. Mandioca é comida de agora: você planta, espera, arranca, e o pé vai junto; todo ciclo é do zero. Pé de fruta não. Pé de fruta você planta UMA vez, cuida, e ele fica — dá fruta, descansa, dá de novo, enquanto você tiver vivo e ele também. Tome estas mudas: duas de banana, que é a que menos faz esperar, e uma de manga, que é a que mais. Plante como você planta mandioca: are, molhe, ponha a muda. Só que não conte os dias, que dá agonia. Meu avô dizia que quem planta manga não come manga — planta pro neto. Ele estava errado, mas não por muito."
+    },
+    "assets/audio/vozes/pedro_revoar_revoar_abrigo.mp3": {
+      "hash": "27984d0946",
+      "texto": "Pras ruínas do palacete, atrás do monte, pra oeste! Lá a coruja não enxerga. Todo mundo junto — agora!"
+    },
+    "assets/audio/vozes/pedro_revoar_revoar_armas.mp3": {
+      "hash": "d731feeac1",
+      "texto": "Fui eu que acordei essa coisa, querendo ganhar alguma coisa naquela casa. Então sou eu que desfaço. A anciã falou da torre da capela, nos fundos: foi lá em cima que o senhor da fazenda lutou. Sobe pela rampa de pedra e procura, entre os destroços, o que brilha. O que achar, pega."
+    },
+    "assets/audio/vozes/pedro_revoar_revoar_chamado.mp3": {
+      "hash": "29289587e3",
+      "texto": "Azul e ouro, com safiras do tamanho de um olho. Agora é chamar. Põe a lança na mão, veste o escudo nas Mãos pela mochila, e lá no alto bate uma no outro. Ela vai ouvir de onde estiver. Quando vier, desce — no chão, com o senhor do teu lado, é que se luta."
+    },
+    "assets/audio/vozes/pedro_revoar_revoar_embate.mp3": {
+      "hash": "491fbc90c6",
+      "texto": "Olha a luz! Azul — é a cor do senhor da fazenda, o espírito dele tá contigo. Lança nela quando ela abaixar a cabeça pra morder; o escudo segura o bico. E quando ele avançar, é o sinal: bate com tudo."
+    },
+    "assets/audio/vozes/pedro_revoar_revoar_libertacao.mp3": {
+      "hash": "a98e730db9",
+      "texto": "Acabou... Ela virou pedra em cima dele, e ele embaixo dela, do jeito que a anciã contou. Ela quer te falar — vai até a estátua."
+    },
+    "assets/audio/vozes/pedro_revoar_revoar_mao.mp3": {
+      "hash": "305300ae40",
+      "texto": "Ela tá estendendo a mão pra mim... É só tocar. Só tocar, e o fedor some, e a moça... Segura em mim. Me puxa — eu não tô conseguindo sozinho."
+    },
+    "assets/audio/vozes/pedro_revoar_revoar_mao_resposta.mp3": {
+      "hash": "815e62000c",
+      "texto": "Matinta Pereira... Era isso que a minha avó contava: a velha das trocas, que leva a vida de quem dá a mão. Ela já entendeu que eu não vou. Corre — pelos corredores, agora!"
+    },
+    "assets/audio/vozes/pedro_revoar_revoar_quarto.mp3": {
+      "hash": "a2f01ace42",
+      "texto": "É só uma porta. Vem comigo, fica perto — e não toca em nada que eu não tocar."
+    },
+    "assets/audio/vozes/pedro_situacao_chegada_candinha.mp3": {
+      "hash": "0e408c6643",
+      "texto": "É aqui. Fala com jeito, que a Dona Candinha gosta de respeito."
+    },
+    "assets/audio/vozes/pedro_situacao_ficou_atras.mp3": {
+      "hash": "4b41626434",
+      "texto": "Ô, moço, vem cá! O arraial é por aqui."
+    },
+    "assets/audio/vozes/pedro_situacao_lado_errado.mp3": {
+      "hash": "02942147c2",
+      "texto": "Esse caminho vai dar no mangue. O nosso é pro outro lado."
+    },
+    "assets/audio/vozes/pedro_situacao_nadou.mp3": {
+      "hash": "1dfc16ca5a",
+      "texto": "Cuidado com a maré, que ela puxa mais do que parece."
+    },
+    "assets/audio/vozes/pedro_situacao_outro_morador.mp3": {
+      "hash": "7c40bf35bd",
+      "texto": "Conversa à vontade, eu espero ali na frente."
+    },
+    "assets/audio/vozes/pedro_situacao_parado.mp3": {
+      "hash": "31b8f2ff88",
+      "texto": "Pode olhar à vontade, moço, mas o dia não espera por ninguém."
+    },
+    "assets/audio/vozes/pedro_situacao_passagem.mp3": {
+      "hash": "88f5f0ad25",
+      "texto": "Com licença, deixa eu passar que eu mostro."
+    },
+    "assets/audio/vozes/pedro_situacao_primeiro_peixe.mp3": {
+      "hash": "346d420a9a",
+      "texto": "Isso aí guarda bem, peixe fresco não dura."
+    },
+    "assets/audio/vozes/pedro_situacao_tempo_virou.mp3": {
+      "hash": "6bb71d9b07",
+      "texto": "Vixe, o tempo passou ligeiro. Bora apressar o passo."
+    },
+    "assets/audio/vozes/pedro_situacao_vigor_zerado.mp3": {
+      "hash": "a0d35368aa",
+      "texto": "Devagar, que o corpo da capital ainda não pegou o ritmo daqui."
     }
   }
 }
