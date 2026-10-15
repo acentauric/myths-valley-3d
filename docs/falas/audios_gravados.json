@@ -1268,6 +1268,570 @@
     "assets/audio/vozes/pedro_situacao_vigor_zerado.mp3": {
       "hash": "a0d35368aa",
       "texto": "Devagar, que o corpo da capital ainda não pegou o ritmo daqui."
+    },
+    "assets/audio/vozes/beata_beata_beata_cha.mp3": {
+      "hash": "33c8f9871c",
+      "texto": "Eu rezo às seis, chova ou faça sol, e a tosse reza junto. Faça um chá de folha no seu fogão e traga, meu filho — e eu rezo um terço pelo seu tio, que passava sem falar e tirava o chapéu."
+    },
+    "assets/audio/vozes/beata_beata_beata_cha_resposta.mp3": {
+      "hash": "3e0846d587",
+      "texto": "Chá de folha, quente ainda. Deus lhe pague. Agora sente e me ouça: a Dona Candinha tem conta com o Nicolau, e o guarda dorme na porta. Eu só conto pra quem reza comigo — e trazer chá é quase rezar."
+    },
+    "assets/audio/vozes/beata_beata_promessa_promessa_contada.mp3": {
+      "hash": "b83969c32a",
+      "texto": "Eu fiz uma promessa há trinta anos, e cumpro até hoje: nunca mais pisar na areia. Foi lá que o mar levou o meu marido. Mas ele gostava de ostra, e todo ano eu mandava uma pra beira d'água por alguém. Este ano não tem ninguém. Leve uma por mim, meu filho — deixe na areia, onde a onda chega. Não precisa rezar. Eu rezo daqui."
+    },
+    "assets/audio/vozes/beata_beata_promessa_promessa_ostra.mp3": {
+      "hash": "c2aecc6e1f",
+      "texto": "Uma ostra na areia, onde a onda chega. Em meu nome."
+    },
+    "assets/audio/vozes/beata_beata_promessa_promessa_rezada.mp3": {
+      "hash": "b2450eff30",
+      "texto": "Venha me dizer se a ostra foi."
+    },
+    "assets/audio/vozes/beata_beata_promessa_promessa_rezada_resposta.mp3": {
+      "hash": "e23565817e",
+      "texto": "A onda levou? Na terceira? Era assim que ele contava as ondas pra entrar no mar. Deus lhe pague, meu filho. Hoje eu rezei o terço de costas pro mar, como sempre — mas pela primeira vez em trinta anos eu olhei por cima do ombro."
+    },
+    "assets/audio/vozes/benedito_carroca_arremate.mp3": {
+      "hash": "2938ad3744",
+      "texto": "Olha ela de pé. Amanhã a colheita desce numa viagem só. Quarenta e duas safras, e é a primeira vez que o arraial sobe aqui sem ser pra comprar. Seu tio ia gostar de ver."
+    },
+    "assets/audio/vozes/benedito_carroca_carroca_corda.mp3": {
+      "hash": "fbbf9874e7",
+      "texto": "Tábua boa. Agora corda pra amarrar o cocho e pedra pra calçar a roda enquanto o eixo entra: quatro de cada. Pedra solta tem pelo vale, fora da rua — na beira do roçado, no meio do mato; o lajedo, esse só cede à picareta de aço e a braço treinado."
+    },
+    "assets/audio/vozes/benedito_carroca_carroca_mutirao.mp3": {
+      "hash": "fdedd166f2",
+      "texto": "Pronto: o resto vem do arraial. Chamei o Cosme, que tem braço, e o Tonho, que tem corda — cada um traz o que tem, que mutirão é assim. Quando chegarem, abre o J aqui no terreiro, na aba de obras, e a gente bota a carroça de pé."
+    },
+    "assets/audio/vozes/benedito_carroca_carroca_tabua.mp3": {
+      "hash": "7c7f9de326",
+      "texto": "Essa carroça era do meu avô, e a roda foi o avô dele que fez. A cheia de fevereiro comeu o barranco da estrada, e o eixo partiu na volta. Quarenta e duas safras eu desci nela; esta desci no ombro, três viagens por saco. O estrado apodreceu de esperar. Me arranja oito tábuas serradas, da bancada do roçado, que o resto a gente vê."
+    },
+    "assets/audio/vozes/benedito_saveiro_saveiro_conversa.mp3": {
+      "hash": "ae69fe5c59",
+      "texto": "Você já viu o saveiro do mestre Quirino? Encosta no píer uma vez por estação, no dia catorze, de manhã até a tarde, e leva pra Salvador o que o arraial produziu no mês: farinha, milho, peixe — e piaçava acima de tudo, que lá vira vassoura, corda de navio e cobertura de casa. Paga melhor que a venda, que a venda revende pra ele. Quarenta e duas safras eu vendo pro saveiro, meu filho. Vai até o píer e olha onde ele atraca; e toma o meu facão velho, que piaçava se tira no fio."
+    },
+    "assets/audio/vozes/benedito_saveiro_saveiro_piacava.mp3": {
+      "hash": "dca133302f",
+      "texto": "A piaçabeira é a palmeira de folha comprida e fibra pendurada que cresce na restinga, na beira da praia, entre os coqueiros. Com o facão na mão, chega perto e tira a fibra da bainha da folha — dois feixes por palmeira, e sem derrubar: ela dá de novo na estação que vem. Junta dez feixes."
+    },
+    "assets/audio/vozes/benedito_saveiro_saveiro_vender.mp3": {
+      "hash": "b6a83116f1",
+      "texto": "Agora é esperar o dia catorze. O mestre chega de manhã e larga à tarde — quem perde a hora espera a estação que vem. Leva os dez feixes pra ele no píer."
+    },
+    "assets/audio/vozes/candinha_candinha_candinha_cana.mp3": {
+      "hash": "1421742fa8",
+      "texto": "Ô meu filho, chega aqui. Você planta cana naquele seu pedaço, não planta? Eu vi o verde de longe. Meu fornecedor é o engenho do outro lado da vila, e o homem de lá anda cobrando o que a cana não vale. Corte seis canas da sua — e se não tiver foice, leve a minha, que de mão não se corta cana. Não precisa ser hoje."
+    },
+    "assets/audio/vozes/candinha_candinha_candinha_garapa.mp3": {
+      "hash": "ee2817e031",
+      "texto": "Seis. Traga aqui no meio da praça que eu moo na hora, e o que sair é seu e meu, meio a meio."
+    },
+    "assets/audio/vozes/candinha_candinha_candinha_garapa_resposta.mp3": {
+      "hash": "41fc121a1e",
+      "texto": "Olha o caldo. Tá vendo a cor? Cana de terra boa dá essa cor. O engenho vende garapa de cana velha, que fica parada no carro de boi três dias — a sua veio do pé pra minha mão. De agora em diante você bebe de graça aqui. E quando quiser saber quem chegou, quem saiu e quem tá devendo, é só perguntar."
+    },
+    "assets/audio/vozes/candinha_guia_chave_resposta.mp3": {
+      "hash": "cfbfeb8a27",
+      "texto": "A chave? Ficou com a Dona Zefa, que lavou o corpo e fechou a porta. Mas senta aqui primeiro: ninguém sobe aquela ladeira de goela seca no meu tempo. A garapa hoje é por conta da casa."
+    },
+    "assets/audio/vozes/carpinteiro_carpinteiro_canoa_canoa_madeira.mp3": {
+      "hash": "2cfaaa08e0",
+      "texto": "Ele não impede. Então eu conserto. Bancos novos de coqueiro e amarra nova: duas madeiras e duas cordas, e eu faço o resto de graça — o Tonho não vai saber que foi de graça."
+    },
+    "assets/audio/vozes/carpinteiro_carpinteiro_canoa_canoa_madeira_resposta.mp3": {
+      "hash": "22a29dd865",
+      "texto": "Madeira e corda. Bati três vezes no casco antes de mexer, e ele respondeu oco — mas inteiro. Em dois dias ela está de pé. Vá dizer ao Tonho. Diga que foi você que pagou."
+    },
+    "assets/audio/vozes/carpinteiro_carpinteiro_canoa_canoa_pergunta.mp3": {
+      "hash": "0cae56da2d",
+      "texto": "A canoa do Tonho fui eu que fiz, há dez anos, de um pau só. Está virada atrás da casa dele, apodrecendo. Pergunte a ele por quê — a mim ele não diz."
+    },
+    "assets/audio/vozes/carpinteiro_carpinteiro_canoa_canoa_tonho.mp3": {
+      "hash": "e5a912d3a9",
+      "texto": "A canoa está consertada. Vá dizer ao Tonho."
+    },
+    "assets/audio/vozes/carpinteiro_carpinteiro_carpinteiro_madeira.mp3": {
+      "hash": "034220e4ba",
+      "texto": "Eu faço canoa, remo, porta e caixão, nessa ordem. A canoa da vez pede corda pra amarrar o molde e madeira de coqueiro pros bancos. Duas madeiras e uma corda — e eu lhe pago em tábua, que você vai precisar."
+    },
+    "assets/audio/vozes/carpinteiro_carpinteiro_carpinteiro_madeira_resposta.mp3": {
+      "hash": "b121eddd0a",
+      "texto": "Madeira boa. Antes de cortar você bateu três vezes no tronco? Não? Da próxima bata. Toma as tábuas. A canoa do Tonho fui eu que fiz, há dez anos — pergunte a ele por que não usa."
+    },
+    "assets/audio/vozes/cosme_capoeira_capoeira_ginga.mp3": {
+      "hash": "120589a570",
+      "texto": "Capoeira não briga com o bicho: sai da frente dele. Quando o caititu baixar a cabeça e clarear, ginga — o V — e o bote morde o ar. Três vezes, e o corpo aprende."
+    },
+    "assets/audio/vozes/cosme_capoeira_capoeira_ginga_volta.mp3": {
+      "hash": "ec3a48bdd7",
+      "texto": "Volta aqui quando tiver gingado as três, que eu quero ver na sua cara."
+    },
+    "assets/audio/vozes/cosme_capoeira_capoeira_ginga_volta_resposta.mp3": {
+      "hash": "c1bd3d8902",
+      "texto": "Viu? O bicho morde onde você estava. Isso é a ginga: não é fugir, é não estar lá."
+    },
+    "assets/audio/vozes/cosme_capoeira_capoeira_meia_lua.mp3": {
+      "hash": "156a4b966f",
+      "texto": "Agora a perna. De mão vazia, o E vira meia-lua: o pé gira e acerta de lado. Quatro em bicho do mato, e o pé aprende o caminho sozinho."
+    },
+    "assets/audio/vozes/cosme_capoeira_capoeira_meia_lua_volta.mp3": {
+      "hash": "16d0a9b039",
+      "texto": "Quando o pé já souber, vem mostrar."
+    },
+    "assets/audio/vozes/cosme_capoeira_capoeira_meia_lua_volta_resposta.mp3": {
+      "hash": "3711019595",
+      "texto": "Pé de capoeirista é pé que volta pro chão antes do bicho entender. Falta a última."
+    },
+    "assets/audio/vozes/cosme_capoeira_capoeira_rasteira.mp3": {
+      "hash": "2214b00e4b",
+      "texto": "A rasteira não machuca: derruba o juízo. Segura o E de mão vazia e solta rente ao chão — o bicho fica tonto, e quem decide o resto é você. Dois."
+    },
+    "assets/audio/vozes/cosme_capoeira_capoeira_rasteira_volta.mp3": {
+      "hash": "0c2081a48c",
+      "texto": "Volta, que tem roda no terreiro e você já pode entrar."
+    },
+    "assets/audio/vozes/cosme_capoeira_capoeira_rasteira_volta_resposta.mp3": {
+      "hash": "6c541adf21",
+      "texto": "Ginga, meia-lua e rasteira. O resto a roda ensina — e a roda não tem fim."
+    },
+    "assets/audio/vozes/cosme_quintal_capataz_resposta.mp3": {
+      "hash": "a3de7988bc",
+      "texto": "Um dia de roçado? Fechado. Amanhã, antes do sol, eu passo no teu roçado e deixo a enxada falar. O que eu tirar da terra eu deixo na tua porta — e você me paga com um prato, que pra isso serve vizinho."
+    },
+    "assets/audio/vozes/cosme_roca_colher.mp3": {
+      "hash": "7dd04d348c",
+      "texto": "Mandioca pede um gole por dia, e paciência. Rega toda manhã e dorme: com quatro dias de chão molhado a rama amarela e a raiz tá no ponto. Aí é de mão livre — guarda a ferramenta e arranca com as duas mãos."
+    },
+    "assets/audio/vozes/cosme_roca_comer.mp3": {
+      "hash": "84fde62751",
+      "texto": "Pirão da Dona Filó não se guarda: se come quente. O I abre a mochila, e o F em cima do pirão come. Barriga cheia é fôlego de volta."
+    },
+    "assets/audio/vozes/cosme_roca_cozinhar.mp3": {
+      "hash": "76d3953429",
+      "texto": "Mandioca crua não é comida, é raiz. Rala, prensa e torra: duas raízes e uma lenha dão uma farinha. O fogo do terreiro dá conta — encosta na fogueira e aperta E."
+    },
+    "assets/audio/vozes/cosme_roca_pirao.mp3": {
+      "hash": "bd9183caac",
+      "texto": "A primeira farinha de uma roça nova vai pra quem não pode mais plantar — é costume, e é o certo. A Dona Filó, mãe do Tonho, mora na casa da estrada. Leva uma cuia pra ela."
+    },
+    "assets/audio/vozes/cosme_zefa_zefa_cosme_resposta.mp3": {
+      "hash": "0b5ce83c3b",
+      "texto": "Ela te mandou falar comigo, né. Eu sabia. Tem um primo meu em Salvador que arrumou lugar pra mim numa casa de secos e molhados. Eu tenho vinte e dois anos e nunca vi rua calçada. Mas ela me criou desde os sete, e aquele chão ali não se planta sozinho. Então eu disse que não — faz uma semana que eu disse que não, e faz uma semana que eu não durmo. Não conta pra ela."
+    },
+    "assets/audio/vozes/damiao_coveiro_arremate.mp3": {
+      "hash": "53b8f13add",
+      "texto": "Cercado, limpo e com as lajes no prumo. O senhor fez em dias o que eu não ia fazer nunca. A Santa Casa mandou esses réis, que cemitério cercado é obrigação dela, e quem fez foi o senhor. E daqui pra frente o mato é comigo — foice na mão e cercado de pé, é comigo."
+    },
+    "assets/audio/vozes/damiao_coveiro_coveiro_cabo.mp3": {
+      "hash": "9aa577afd9",
+      "texto": "Eu tenho a lâmina da foice do meu sogro, enferrujada mas inteira. O que eu não tenho é cabo. Me traga duas achas de madeira boa — cabo de foice racha se for de pau mole, e racha sempre na hora errada. Põe o machado na mão, que de mão vazia não sai acha."
+    },
+    "assets/audio/vozes/damiao_coveiro_coveiro_cercado.mp3": {
+      "hash": "e97efc5f27",
+      "texto": "Falta uma coisa, e é a que segura as outras. Cabrito pasta em cima de cova, e porco fuça — porco solto já fuçou duas. Um cercado de pau roliço em volta, amarrado de corda, com a entrada do lado da rua: seis lenhas e duas cordas. E corda também é lenha, três por corda — junte doze lenhas, que seis viram corda na oficina. A obra se toca aqui mesmo no cemitério: o E, ou o J na aba de obras."
+    },
+    "assets/audio/vozes/damiao_coveiro_coveiro_limpar.mp3": {
+      "hash": "e7b7b6fb5f",
+      "texto": "Pronto. Essa é a minha, e essa aqui é a sua, se você ainda não tem foice — duas achas dão dois cabos, e eu não ia fazer uma só e ficar com ela. Agora desce comigo aquele capim. Corta rente: capim cortado pela metade volta em três semanas, e volta mais forte."
+    },
+    "assets/audio/vozes/damiao_coveiro_coveiro_mato.mp3": {
+      "hash": "52ac3b5363",
+      "texto": "Agora dá pra ver o resto do estrago. Capim é o de menos: olha aquelas embaúbas nascendo no meio das covas — embaúba pega em qualquer fresta, e raiz de embaúba levanta laje. E os troncos que a trovoada de janeiro derrubou por cima dos mortos. Machado o senhor tem. Dizem que lenha de cemitério ninguém queima em casa; pra serviço de cemitério, serve."
+    },
+    "assets/audio/vozes/damiao_coveiro_coveiro_reparo.mp3": {
+      "hash": "b1f1121303",
+      "texto": "Dá pra ler os nomes. Faz dois anos que não dava pra ler os nomes. Mas olha aquelas três lajes: a raiz levantou, e laje torta é cova aberta pra bicho. Preciso de quatro pedras pro calço e de duas tábuas, pras cruzes que apodreceram. Pedra solta tem aí pelo outeiro, é só catar; tábua sai da oficina, da lenha que o senhor tirou daqui."
+    },
+    "assets/audio/vozes/damiao_coveiro_coveiro_reparo_resposta.mp3": {
+      "hash": "dc60a12054",
+      "texto": "Isso. Pedra no pé da laje, bem socada, e cruz nova onde a velha caiu. Pronto — agora nenhuma cova olha torto pra gente."
+    },
+    "assets/audio/vozes/damiao_coveiro_coveiro_ver.mp3": {
+      "hash": "7f5f0969bd",
+      "texto": "O senhor subiu. Pouca gente sobe. Olha em volta: capim de dois anos por cima de gente que teve nome. Eu arranco uns três pés por manhã, e o capim faz trinta na mesma manhã. Não é falta de vontade, moço. É falta de ferro."
+    },
+    "assets/audio/vozes/damiao_mercador_fiado_fiado_tonho_resposta.mp3": {
+      "hash": "29b45f5da9",
+      "texto": "Você pagou o Nicolau por mim? Sem me perguntar? ... Moço, eu passo o dia cuidando do nome de quem já foi, e fazia tempo que ninguém cuidava do meu. Agora eu devo ao senhor, e isso eu pago, nem que seja devagar. Não discuta."
+    },
+    "assets/audio/vozes/filo_filo_filo_pedido.mp3": {
+      "hash": "79c636e5ef",
+      "texto": "Meu filho, você que anda pra tudo quanto é canto. Me faz um favor? Fiz pirão de manhã e o Tonho saiu antes, como sempre. Ele desce pro pontal com o dia escuro e só volta quando a maré vira."
+    },
+    "assets/audio/vozes/filo_filo_filo_pirao.mp3": {
+      "hash": "48ec71800e",
+      "texto": "Eu já não desço aquela ladeira — minhas pernas param na terceira pedra. Leve pra ele. Eu fico olhando a estrada daqui, como sempre, e hoje pelo menos vou saber que ele comeu."
+    },
+    "assets/audio/vozes/filo_roca_pirao_resposta.mp3": {
+      "hash": "59de75c1be",
+      "texto": "Farinha da roça do finado... Ele também me trazia a primeira, todo ano. Deus te pague, meu filho. E aprende o pirão, que farinha sozinha não sustenta: cozinha o peixe, engrossa o caldo na farinha e mexe até pegar ponto. Toma esse, que eu fiz pro Tonho e ele nem desceu."
+    },
+    "assets/audio/vozes/guarda_guarda_guarda_peixe.mp3": {
+      "hash": "035d9ae06d",
+      "texto": "Eu dou três voltas na praça de noite e durmo na porta da venda — escutando, não dormindo. Ronda de barriga vazia é ronda curta. Um peixe assado do seu fogão, moço, e hoje eu escuto o adro inteiro."
+    },
+    "assets/audio/vozes/guarda_guarda_guarda_peixe_resposta.mp3": {
+      "hash": "6e2cbe1a60",
+      "texto": "Peixe assado! Isso é pra guarda de verdade. Hoje a ronda vai ser mais atenta. E se eu ouvir o passo no adro de novo, você vai ser o primeiro a saber."
+    },
+    "assets/audio/vozes/guarda_guarda_ronda_ronda_convite.mp3": {
+      "hash": "b7e8c62212",
+      "texto": "Hoje você ronda comigo. Três voltas: a praça, o adro da igreja e a porta da venda, depois das oito. Não é pra pegar ninguém — aqui ninguém rouba. É pra escutar. Duas vezes eu ouvi passo no adro sem ninguém no adro. Quero outra orelha."
+    },
+    "assets/audio/vozes/guarda_guarda_ronda_ronda_passo_no_adro.mp3": {
+      "hash": "1996f60c98",
+      "texto": "Acabou a ronda. Me diga o que ouviu."
+    },
+    "assets/audio/vozes/guarda_guarda_ronda_ronda_passo_no_adro_resposta.mp3": {
+      "hash": "c7f97c05fe",
+      "texto": "Você ouviu também. Então não sou eu. Meu pai dizia que o adro guarda quem foi enterrado antes de haver cemitério — e que passo de defunto não se prende. Eu não grito pra defunto. Mas agora rondo acompanhado."
+    },
+    "assets/audio/vozes/guarda_guarda_ronda_ronda_tres_voltas.mp3": {
+      "hash": "ad89786577",
+      "texto": "Depois das oito: a praça, o adro da igreja, a porta da venda. Devagar, e de ouvido."
+    },
+    "assets/audio/vozes/lavadeira_lavadeira_lavadeira_lenha.mp3": {
+      "hash": "cf05020853",
+      "texto": "Eu lavo a roupa do padre e da venda na beira do riacho, e roupa de branco só sai branca fervida. Lenha seca, três braçadas, e a sua roupa eu lavo de graça mais uma semana — a primeira já foi."
+    },
+    "assets/audio/vozes/lavadeira_lavadeira_lavadeira_lenha_resposta.mp3": {
+      "hash": "5c0a07925d",
+      "texto": "Lenha boa, seca. Agora a água ferve e a roupa conta a vida de quem veste. A sua ainda conta pouco. Isso muda."
+    },
+    "assets/audio/vozes/lavadeira_lavadeira_rio_rio_agua_pesada.mp3": {
+      "hash": "f5079839b2",
+      "texto": "O rio grande, lá pro norte, eu não lavo. A água é bonita de longe, mas a roupa sai pesada, com cheiro de ferrugem, e o branco fica cor de barro velho. Tem coisa naquela água que não é terra. Vá até a ponte e olhe de cima, quando o sol bater. Depois me diga que cor você viu."
+    },
+    "assets/audio/vozes/lavadeira_lavadeira_rio_rio_de_volta.mp3": {
+      "hash": "32dbd93fa6",
+      "texto": "Venha me contar a cor da água."
+    },
+    "assets/audio/vozes/lavadeira_lavadeira_rio_rio_de_volta_resposta.mp3": {
+      "hash": "f9efa471a4",
+      "texto": "Viu? Pode ser o sol, pode ser o barro — eu vejo vermelho de ferrugem, e a roupa não mente. Vem da fazenda, do outro lado. Minha avó dizia que o engenho lavava mais que açúcar naquela água, e que o rio não esqueceu. Por isso eu lavo no riacho, que é de Oxum e não guarda rancor. A sua roupa, eu continuo lavando aqui."
+    },
+    "assets/audio/vozes/lavadeira_lavadeira_rio_rio_ponte.mp3": {
+      "hash": "fe60df0ab5",
+      "texto": "Da ponte do rio grande, olhe a água de cima."
+    },
+    "assets/audio/vozes/marisqueira_marisqueira_mare_carta_ao_padre.mp3": {
+      "hash": "16e407257c",
+      "texto": "Leve ao padre. E que leia duas vezes, que eu pedi."
+    },
+    "assets/audio/vozes/marisqueira_marisqueira_mare_carta_de_volta.mp3": {
+      "hash": "13ea4823dc",
+      "texto": "Me diga o que o padre leu na segunda vez."
+    },
+    "assets/audio/vozes/marisqueira_marisqueira_mare_carta_de_volta_resposta.mp3": {
+      "hash": "1394dabbd5",
+      "texto": "Não escreveu do domingo. Então não tem domingo. Casa de família não dá folga, e ela não quer que eu saiba. Obrigada, meu filho. Na próxima maré, as ostras são suas — e a carta de resposta, você escreve."
+    },
+    "assets/audio/vozes/marisqueira_marisqueira_mare_mare_carta.mp3": {
+      "hash": "2a1a29d340",
+      "texto": "Você aprendeu. Agora um favor que não é de lama: chegou carta da minha filha, de Salvador. Eu não leio. Leve ao padre e peça que leia duas vezes — e volte me dizer a segunda."
+    },
+    "assets/audio/vozes/marisqueira_marisqueira_mare_mare_das_cinco.mp3": {
+      "hash": "4c0f2fe82f",
+      "texto": "Venha às cinco, com um balde e sem sapato. A maré baixa mostra o que a cheia esconde. Nas pedras da ponta da praia, antes de o sol esquentar."
+    },
+    "assets/audio/vozes/marisqueira_marisqueira_mare_mare_ostras.mp3": {
+      "hash": "e29b28ad37",
+      "texto": "Agora tire. Com licença, que o mangue é cozinha de Iemanjá. Quatro ostras, e você já sabe o que tem por baixo delas."
+    },
+    "assets/audio/vozes/marisqueira_marisqueira_marisqueira_farinha.mp3": {
+      "hash": "fb89264a08",
+      "texto": "Eu tiro ostra e sururu da lama, de manhã cedo. Sururu sem farinha é lama com gosto. Me traga duas cuias de farinha da sua casa e eu lhe dou três ostras da maré de hoje — e, um dia, lhe ensino o que tem por baixo delas."
+    },
+    "assets/audio/vozes/marisqueira_marisqueira_marisqueira_farinha_resposta.mp3": {
+      "hash": "3c3745c799",
+      "texto": "Farinha pra misturar com o sururu de hoje. Obrigada, meu filho. Toma três ostras, tiradas com licença — o mangue é a cozinha de Iemanjá, e a gente entra pedindo."
+    },
+    "assets/audio/vozes/marisqueira_menina_roda_roda_com_rosa_resposta.mp3": {
+      "hash": "7ee494e4e8",
+      "texto": "Você bateu palma certo e entrou torto, como todo mundo na primeira vez. A roda é de Iemanjá antes de ser nossa. Volte na próxima — a Mariinha disse que você quase acertou o passo."
+    },
+    "assets/audio/vozes/menina_menina_menina_milho.mp3": {
+      "hash": "cd6e02dd8d",
+      "texto": "Eu já sei fazer cocada, mas a mãe não deixa eu mexer no dendê. Cocada de milho verde não leva dendê! Me traz duas espigas do seu roçado e eu faço uma pra você — e você me conta se em Salvador tem bonde de verdade."
+    },
+    "assets/audio/vozes/menina_menina_menina_milho_resposta.mp3": {
+      "hash": "d29e23ce29",
+      "texto": "Milho! Agora espera que eu ralo e faço. Pronto — tá torta, mas é cocada. Se você quiser aprender a roda, tem que bater palma primeiro."
+    },
+    "assets/audio/vozes/menina_menina_roda_roda_com_rosa.mp3": {
+      "hash": "c6e14d967b",
+      "texto": "A Dona Rosa puxou o canto. Vá agradecer a ela."
+    },
+    "assets/audio/vozes/menina_menina_roda_roda_na_praia.mp3": {
+      "hash": "c0761226a2",
+      "texto": "A roda é na areia, depois que escurece e antes da meia-noite."
+    },
+    "assets/audio/vozes/menina_menina_roda_roda_palmas.mp3": {
+      "hash": "98bc430be2",
+      "texto": "Você quer aprender a roda? Então escuta: é na praia, de noite, antes da meia-noite. A Dona Rosa puxa o canto. Quem não bate palma não entra — e quem chega de dia não acha ninguém."
+    },
+    "assets/audio/vozes/menino_menino_caminho_caminho_comeco.mp3": {
+      "hash": "84aa5044cb",
+      "texto": "Tá bom, você é amigo. O caminho começa atrás da casa do meu pai, na pedra com musgo, e sobe pela lombada até a pedra grande com desenho — a pedra pintada. Eu não vou junto. Quem leva gente lá fica com dívida, meu pai disse. Mas quem só CONTA, não. Acho."
+    },
+    "assets/audio/vozes/menino_menino_caminho_caminho_divida.mp3": {
+      "hash": "4946c40dc0",
+      "texto": "Deu certo? Então a dívida existe mesmo, e é minha, porque eu contei. Paga por mim: me traz um cordel. Eu quero aprender a ler neles, e minha mãe diz que cordel é coisa de gente grande."
+    },
+    "assets/audio/vozes/menino_menino_caminho_caminho_divida_resposta.mp3": {
+      "hash": "4499de1fb5",
+      "texto": "Um cordel! Com desenho na capa! Dívida paga — a minha e a sua. Não conta pra minha mãe. Nem pro meu pai. Nem pro Caipora, de noite."
+    },
+    "assets/audio/vozes/menino_menino_caminho_caminho_lapa.mp3": {
+      "hash": "f81298e389",
+      "texto": "Pela lombada, até a pedra grande com desenho."
+    },
+    "assets/audio/vozes/menino_menino_menino_cocada.mp3": {
+      "hash": "44cd42c9a1",
+      "texto": "Psiu. Você é o do saveiro, que quase caiu da prancha. Minha mãe não deixa, mas se você me trouxer uma cocada eu te conto do caminho na mata que ninguém conhece. Não conta pra ela que eu tô na praça."
+    },
+    "assets/audio/vozes/menino_menino_menino_cocada_resposta.mp3": {
+      "hash": "d4059ec666",
+      "texto": "Cocada! Você é o melhor adulto do arraial. O caminho eu não levo ninguém — meu pai disse que quem leva fica com dívida. Mas eu posso dizer por onde começa. Depois. Amanhã eu te mostro o lagarto."
+    },
+    "assets/audio/vozes/mercador_mercador_fiado_fiado_livro.mp3": {
+      "hash": "f6e8477cdf",
+      "texto": "Olhe o livro. Este nome aqui, três linhas: o Damião, do cemitério. Deve desde março — farinha, sal e querosene, que zelador de cemitério ganha papel com o nome e mais nada. Eu não cobro quem não tem de onde tirar. Mas a conta não some. Três peixes bons e eu risco o nome. Se você quiser pagar por ele, é problema seu e do Damião."
+    },
+    "assets/audio/vozes/mercador_mercador_fiado_fiado_peixes.mp3": {
+      "hash": "b72611b263",
+      "texto": "Três peixes bons, e o nome do Damião sai do livro."
+    },
+    "assets/audio/vozes/mercador_mercador_fiado_fiado_peixes_resposta.mp3": {
+      "hash": "14fa4a2036",
+      "texto": "Três peixes. Risco o nome. Pronto — o Damião não deve mais nada a mim. Deve a você, mas isso o livro não escreve. Vá contar a ele antes que a Sá Joaquina conte."
+    },
+    "assets/audio/vozes/mercador_mercador_fiado_fiado_tonho.mp3": {
+      "hash": "b317519285",
+      "texto": "Conte ao Damião que o nome dele saiu do meu livro."
+    },
+    "assets/audio/vozes/mercador_mercador_mercador_tabuas.mp3": {
+      "hash": "3e3a24df29",
+      "texto": "Eu não peço favor, eu cobro. Mas hoje peço: a prateleira do fundo cedeu com o peso do sal, e tábua boa só sai da sua bancada. Duas tábuas e eu abato na conta — e lhe dou um lampião, que a Estefânia vive pedindo e nunca compra."
+    },
+    "assets/audio/vozes/mercador_mercador_mercador_tabuas_resposta.mp3": {
+      "hash": "c9974fcc30",
+      "texto": "Tábua! Tava precisando pra prateleira. Toma o lampião, e isso abate na conta — na do seu tio, que está paga, e na sua, que ainda não começou."
+    },
+    "assets/audio/vozes/mestre_saveiro_mestre_saveiro_ladislau_corda.mp3": {
+      "hash": "5042ba955f",
+      "texto": "Ladislau, tripulação do Quirino. Saveiro come corda como gente come farinha: a escota do traquete está no último fio. Três cordas da sua bancada e eu lhe pago com peixe da baía — e, se o vento deixar, com uma história de luz na água."
+    },
+    "assets/audio/vozes/mestre_saveiro_mestre_saveiro_ladislau_corda_resposta.mp3": {
+      "hash": "ab6da859b0",
+      "texto": "Corda nova. Agora o traquete segura até Maragogipe. Toma o peixe. A luz na água fica pra quando o vento virar a favor — e ele vira, moço, ele vira."
+    },
+    "assets/audio/vozes/mestre_saveiro_mestre_saveiro_luz_luz_com_quirino.mp3": {
+      "hash": "3d73b3863a",
+      "texto": "O Quirino só vem com o saveiro. Quando ele atracar, pergunte da luz."
+    },
+    "assets/audio/vozes/mestre_saveiro_mestre_saveiro_luz_luz_contada.mp3": {
+      "hash": "23a2f3b2c9",
+      "texto": "O vento virou a favor. Então ouça. Uma noite, voltando de Maragogipe, vi luz na água perto da foz do rio grande. Não era barco: andava contra o vento, baixa, e parou onde o rio encontra o mar. O Quirino diz que foi cachaça. O Quirino não bebe — e também viu. Vá até a ponte do rio grande de noite e olhe a água. Depois pergunte a ele."
+    },
+    "assets/audio/vozes/mestre_saveiro_mestre_saveiro_luz_luz_na_foz.mp3": {
+      "hash": "2b1658be1c",
+      "texto": "Da ponte do rio grande se vê a foz. Olhe a água."
+    },
+    "assets/audio/vozes/padre_marisqueira_mare_carta_ao_padre_resposta.mp3": {
+      "hash": "ea767628f8",
+      "texto": "A carta da Rosa. Deixe ver. 'Minha mãe, estou bem. A casa é boa, a família é boa, a comida não falta.' E de novo, mais devagar: 'estou bem'... 'não falta'. Ela não fala do domingo, meu filho. Nem do bonde, que ela adorava. Diga à Rosa que a filha está bem — e que não escreveu sobre o domingo."
+    },
+    "assets/audio/vozes/padre_padre_padre_beiju.mp3": {
+      "hash": "eee2a9ee99",
+      "texto": "Anselmo, da freguesia. A mesa da sacristia recebe quem chega com fome depois da missa, e hoje está vazia. Dois beijus do seu fogão, meu filho, e o Bom Jesus escuta — de perto do altar, como o seu tio dizia, até demais."
+    },
+    "assets/audio/vozes/padre_padre_padre_beiju_resposta.mp3": {
+      "hash": "06d47c06e3",
+      "texto": "Deus lhe pague. Isto vai pra mesa da sacristia, e de lá pra quem precisa. Seu tio sentava no último banco; o lugar continua vago, se quiser."
+    },
+    "assets/audio/vozes/padre_padre_sino_sino_contado.mp3": {
+      "hash": "a1dfc92e0c",
+      "texto": "Me conte a sua madrugada, meu filho."
+    },
+    "assets/audio/vozes/padre_padre_sino_sino_contado_resposta.mp3": {
+      "hash": "cf36b23a36",
+      "texto": "Não tocou? Então foi comigo que ele quis falar, e não com você. Ou tocou, e você teve o bom senso de não dizer. De qualquer jeito, hoje eu durmo. Deus tem ouvido maior que o meu, meu filho — e alguma coisa cuida disto aqui. Eu só tomo conta da minha parte."
+    },
+    "assets/audio/vozes/padre_padre_sino_sino_insonia.mp3": {
+      "hash": "7c756fabfb",
+      "texto": "Tem noite em que o sino toca sozinho, meu filho. Eu vou ver, e não tem ninguém. Rezo, fecho a porta, e no outro dia o arraial acorda igual. Eu não durmo mais. Vele a igreja por mim uma madrugada, entre a meia-noite e as cinco — e me diga o que vir, ou o que não vir."
+    },
+    "assets/audio/vozes/padre_padre_sino_sino_madrugada.mp3": {
+      "hash": "6878fc636e",
+      "texto": "Na igreja, entre a meia-noite e as cinco. Escute."
+    },
+    "assets/audio/vozes/padre_pescador_madeira_madeira_ao_padre_resposta.mp3": {
+      "hash": "8b4c8a22e8",
+      "texto": "Deixe ver. É letra de igreja, e não é desta. 'Senhora da Boa Viagem' — era o barco do engenho, meu filho, o que levava o açúcar à cidade. Afundou na foz do rio grande, no ano em que o dono sumiu. Este brasão apagado é o do engenho. Repare: é o que falta no selo do seu convite."
+    },
+    "assets/audio/vozes/pescador_pescador_madeira_madeira_ao_padre.mp3": {
+      "hash": "ca95fc4310",
+      "texto": "Falta metade. Letra de igreja quem lê é o padre."
+    },
+    "assets/audio/vozes/pescador_pescador_madeira_madeira_do_telhado.mp3": {
+      "hash": "422a005ebd",
+      "texto": "Espere aí que eu subo. Esta. A linha prendeu nela numa quarta de maré baixa, e quando puxei veio isto: madeira lavrada, com letra funda, comida de sal. Guardei no telhado pra não molhar mais. Você lê; eu não. Leve e me diga o que diz — ou não diga, se for coisa de defunto."
+    },
+    "assets/audio/vozes/pescador_pescador_madeira_madeira_lida.mp3": {
+      "hash": "71b93e56f1",
+      "texto": "Leia a madeira com calma, à luz do dia."
+    },
+    "assets/audio/vozes/pescador_pescador_pescador_corda.mp3": {
+      "hash": "e217775502",
+      "texto": "Eu pesco de linha, da pedra, e linha boa nasce de corda boa. A minha arrebentou num robalo — na quinta, que de sexta eu não pesco. Torça duas cordas na sua bancada e traga. Pago em peixe, que é a moeda que eu tenho."
+    },
+    "assets/audio/vozes/pescador_pescador_pescador_corda_resposta.mp3": {
+      "hash": "d010dbe9bd",
+      "texto": "Corda! Linha boa nasce de corda boa. Toma um robalo, do fim da tarde de ontem. E quando você souber ler o que a linha puxou do fundo, eu lhe mostro."
+    },
+    "assets/audio/vozes/quituteira_quituteira_quituteira_tabuleiro.mp3": {
+      "hash": "5ac164b73f",
+      "texto": "Eu vendo acarajé, beiju e cocada no tabuleiro da praça, e o tabuleiro come antes de vender: milho pra bolo e ovo pra massa. Três espigas e dois ovos, e a cocada é sua — a segunda do dia, que a primeira é de Iansã."
+    },
+    "assets/audio/vozes/quituteira_quituteira_quituteira_tabuleiro_resposta.mp3": {
+      "hash": "10e408e1a3",
+      "texto": "Milho e ovo! Mão de fogo é boa pra cozinha. Toma duas cocadas e um beiju, e se a Mariinha lhe pedir cocada, diga que a mãe disse não."
+    },
+    "assets/audio/vozes/rendeira_rendeira_rendeira_lampiao.mp3": {
+      "hash": "31b123ec2f",
+      "texto": "Moço, chegue na janela. A renda é tempo, e o meu tempo acaba com a luz: quando o sol vai embora, o bilro para. Na venda do Nicolau tem lampião, mas renda não paga lampião. Se me trouxer um, eu rendo até de noite — e a toalha do seu tio sai da gaveta."
+    },
+    "assets/audio/vozes/rendeira_rendeira_rendeira_lampiao_resposta.mp3": {
+      "hash": "dac04d8d04",
+      "texto": "Lampião! Agora eu rendo até de noite. Deus lhe dê olhos bons, meu filho — e volte quando a gente se conhecer melhor, que tem uma coisa dobrada aqui com o nome do seu tio na borda."
+    },
+    "assets/audio/vozes/rendeira_rendeira_toalha_toalha_na_janela.mp3": {
+      "hash": "9cd149fc85",
+      "texto": "Chegue, que eu lhe mostro. Esta aqui. Seu tio me encomendou e nunca buscou — está dobrada desde então. Pediu branca de todo, com o nome dele na borda, em ponto cheio. Disse que era pra mesa de alguém que ia chegar. Leve. Ela é sua, e a mesa também."
+    },
+    "assets/audio/vozes/rendeira_rendeira_toalha_toalha_na_mesa.mp3": {
+      "hash": "6072403a01",
+      "texto": "Em casa, abra a toalha na mesa. É o que ele queria."
+    },
+    "assets/audio/vozes/sacristao_sacristao_pedra_papel_da_pedra.mp3": {
+      "hash": "05cbc6e1e5",
+      "texto": "Olhe pros lados. Ninguém? Então toma. Estava dentro da pedra solta atrás do altar, enrolado, desde antes de eu ser sacristão. Eu não li — não sei ler direito, e não quero. Mas o nome do seu tio está lá, isso eu vi. Leia em casa, longe do adro, e não me conte."
+    },
+    "assets/audio/vozes/sacristao_sacristao_pedra_papel_de_volta.mp3": {
+      "hash": "2649029e9a",
+      "texto": "Leu? Não me conte. Só me diga uma coisa: tem o seu nome?"
+    },
+    "assets/audio/vozes/sacristao_sacristao_pedra_papel_de_volta_resposta.mp3": {
+      "hash": "d77fe6e8f6",
+      "texto": "Não? Então ainda dá tempo. Guarde o papel. E se alguém perguntar pela pedra, ela nunca esteve solta."
+    },
+    "assets/audio/vozes/sacristao_sacristao_pedra_papel_lido.mp3": {
+      "hash": "0fe613f8bb",
+      "texto": "Em casa, com a porta fechada, leia o papel."
+    },
+    "assets/audio/vozes/sacristao_sacristao_sacristao_garapa.mp3": {
+      "hash": "66fb2ca192",
+      "texto": "Eu toco o sino às seis e às dezoito, e entre um e outro varro, apago vela e escuto a praça. Garganta de sacristão seca, moço. Duas garapas — da Dona Candinha ou do seu fogão — e eu lhe toco o sino certo. E lhe conto uma coisa que o padre não sabe."
+    },
+    "assets/audio/vozes/sacristao_sacristao_sacristao_garapa_resposta.mp3": {
+      "hash": "43c0131d97",
+      "texto": "Garapa! O padre diz que eu bebo pelos dois. Bebo mesmo, e toco melhor. Da pedra atrás do altar a gente fala outro dia, quando não tiver ninguém no adro."
+    },
+    "assets/audio/vozes/tonho_carpinteiro_canoa_canoa_pergunta_resposta.mp3": {
+      "hash": "7b931ecc8e",
+      "texto": "A canoa? Foi do meu pai antes de ser minha. Numa noite de março ela voltou sozinha, sem ele e sem a rede — a rede ficou do outro lado do rio, eu já contei. Desde então eu pesco da pedra. Canoa que volta sem gente não se põe na água de novo. Mas se o Epifânio quiser consertar, eu não impeço."
+    },
+    "assets/audio/vozes/tonho_carpinteiro_canoa_canoa_tonho_resposta.mp3": {
+      "hash": "180a6d8dd0",
+      "texto": "Consertou? Com bancos de coqueiro, o Epifânio... Olha, eu ia dizer obrigado e ficar quieto, que é o meu jeito. Não prometo pôr na água. Mas um dia, se a maré estiver certa e você estiver junto, a gente vê. Obrigado."
+    },
+    "assets/audio/vozes/tonho_filo_filo_pirao_resposta.mp3": {
+      "hash": "c5a37058fb",
+      "texto": "Ela mandou? Ela mandou. Toda manhã ela faz e toda manhã eu saio antes; a gente briga por isso desde que meu pai não voltou. Ela acha que se eu comer direito o mar não me leva, e eu não digo que não é assim. Diga a ela que eu comi — não invente que estava bom, ela sabe que estava. Diga só que eu comi."
+    },
+    "assets/audio/vozes/tonho_guia_bom_dia_resposta.mp3": {
+      "hash": "d6ff096919",
+      "texto": "Bom dia, moço. Então é você o sobrinho do finado? Ele me pagava o peixe em farinha e nunca atrasou um dia. Toma esse aqui: é o primeiro da casa nova. Asse no fogo de noite."
+    },
+    "assets/audio/vozes/tonho_tonho_pescador_rede.mp3": {
+      "hash": "7ac56b48f9",
+      "texto": "Agora eu vou te pedir uma coisa, e não é peixe — peixe eu pego. Minha rede ficou do outro lado do rio numa noite de março, e desde então eu pesco de linha, um por um: dá pra comer, não dá pra pagar o armazém. Rede não se compra aqui, se faz. Você tem a bancada na beira do roçado: torce cinco cordas lá e traz. Traz três tábuas também, que a bancada onde eu amarrava apodreceu."
+    },
+    "assets/audio/vozes/tonho_tonho_pescador_rede_resposta.mp3": {
+      "hash": "17e378680d",
+      "texto": "Pronto. Deixa aí no chão mesmo. Olha — eu ia dizer obrigado e ficar quieto, que é o meu jeito, mas você merece a conta certa: com rede eu tiro em uma manhã o que a linha me dá em cinco, e isso paga o armazém antes do inverno. Agora vai, que eu tenho malha pra amarrar e o joelho não espera."
+    },
+    "assets/audio/vozes/tonho_tonho_pescador_ver.mp3": {
+      "hash": "656f2bb03d",
+      "texto": "Senta aí. Olha a água e não fala nada por um minuto. Viu? Ali na curva ela corre mais escura — é fundo, e peixe grande dorme no fundo de dia. Quando a maré está enchendo o peixe entra com ela; quando está vazando, ele encosta na pedra e espera. Meu pai me ensinou a ler maré aos nove: é a única herança que não deu pra penhorar."
+    },
+    "assets/audio/vozes/tonho_tonho_tonho_divida.mp3": {
+      "hash": "e8f5963867",
+      "texto": "Uma coisa, antes de você ir — e eu falo porque você merece ouvir de mim, não do armazém. Mil e novecentos. É o que eu devo lá, e eu sei de cabeça: acordo sabendo. Com a rede eu pago. Vai levar umas semanas, mas pago, e eu prefiro assim."
+    },
+    "assets/audio/vozes/tonho_tonho_tonho_livro.mp3": {
+      "hash": "45766d569c",
+      "texto": "Se você quiser apressar, a conta fica no livro do Seu Nicolau, no baú do armazém, e ele aceita réis de qualquer mão. Não precisa me pedir licença. Mil e novecentos, e o nome sai da página."
+    },
+    "assets/audio/vozes/tonho_tonho_tonho_terra.mp3": {
+      "hash": "4e6da58fad",
+      "texto": "Zerou. O Seu Nicolau virou o livro pra eu ver — dois anos naquela página, e agora é só papel velho. Eu sei que foi você. Volte ao pontal, que eu quero te entregar uma coisa na mão."
+    },
+    "assets/audio/vozes/tonho_tonho_tonho_terra_resposta.mp3": {
+      "hash": "219af5febc",
+      "texto": "Senta aqui um minuto. Hoje de manhã a rede nova saiu pela primeira vez, e o primeiro peixe dela é seu: aqui o primeiro lanço é de quem fez a rede, e quem torceu aquelas cordas foi você. Não é gratidão, e eu não quero que você entenda como gratidão: é que eu disse que pagava, e quem pagou foi você. Isso eu te devolvo em peixe, uma maré de cada vez. Minha mãe ainda senta na porta olhando a curva da estrada — mas agora, quando ela pergunta como estão as contas, eu respondo sem mudar de assunto."
+    },
+    "assets/audio/vozes/zefa_fe_fe_contar_resposta.mp3": {
+      "hash": "03839d16c1",
+      "texto": "Pronto. Agora você é de alguma coisa. Aperte K e depois Tab: a teia da fé é outra teia, com pontos que são só dela. E toda vez que você parar num marco seu, você junta um tanto — uma vez por semana em cada um, que graça não é de todo dia, senão não era graça. Uma última coisa, e guarde: fé aqui nunca foi só o que a gente acredita. Foi o que sobrou depois que tiraram tudo o mais."
+    },
+    "assets/audio/vozes/zefa_fe_fe_voltar_resposta.mp3": {
+      "hash": "4b8417590d",
+      "texto": "Andou os três. Então agora escuta, que é a parte que importa. Você vai ser de uma — não de três, de uma. Aqui muita gente vai na missa de manhã e no terreiro de noite, e eu sou uma delas, mas por dentro cada um sabe de qual é. O que você aprender numa, aprende nela; o que juntar nela, junta nela. Se um dia você mudar, o que você era fica guardado, inteirinho, do jeito que você deixou — só que parar de valer, para. E se quiser levar junto o que juntou, aí custa quase tudo: de cada dez, chega um e meio. Vá no que te chamar e aceite lá. Não precisa ser hoje."
+    },
+    "assets/audio/vozes/zefa_fe_fe_zefa_resposta.mp3": {
+      "hash": "3fe8c88dde",
+      "texto": "Senta, meu filho. Eu já ia te chamar de qualquer jeito. Você levantou o mirante de novo; isso é braço, e braço todo mundo tem. Agora eu vou te falar da outra coisa, a que não é braço — e das três, porque as três existem aqui, e quem te disser que é uma só tá te escondendo o arraial. Não vou escolher por você: vou te mostrar os três lugares. Depois você vai sozinho no que te chamar."
+    },
+    "assets/audio/vozes/zefa_guia_chave_zefa_resposta.mp3": {
+      "hash": "f25fd904fc",
+      "texto": "Tá aqui a chave. Fechei aquela porta e fiquei rezando pra ela abrir pra alguém do sangue dele. Abre a casa, areja, e acende o fogo antes da noite: casa fechada junta frio. E passa no poço, que eu vou precisar de braço moço."
+    },
+    "assets/audio/vozes/zefa_metas_onca_meta_onca.mp3": {
+      "hash": "5d17d321cc",
+      "texto": "Duas onças, menino? O penedo nunca ficou tanto tempo quieto. Me traz um couro, que eu costuro o teu patuá — com oração dentro, do jeito que a minha mãe costurava."
+    },
+    "assets/audio/vozes/zefa_metas_onca_meta_onca_resposta.mp3": {
+      "hash": "d5c0d9aec4",
+      "texto": "Couro de onça de verdade, de roseta. Vem cá que eu fecho a costura: pendura no pescoço e não tira nem para dormir. Bicho nenhum chega perto de quem derruba duas — e agora tem a oração também."
+    },
+    "assets/audio/vozes/zefa_zefa_zefa_conversa.mp3": {
+      "hash": "7b5dfdbe49",
+      "texto": "Agora volte aqui. A conversa que eu te prometi é esta, e é melhor sentado."
+    },
+    "assets/audio/vozes/zefa_zefa_zefa_conversa_resposta.mp3": {
+      "hash": "a10c4160a3",
+      "texto": "Senta. Eu sei do emprego — sei desde o dia que a carta chegou, porque quem lê carta pra ele nesta casa sou eu. Ele acha que tá me escondendo; deixa ele achar mais um pouco. Eu não vou segurar o menino. Minha mãe segurou o meu irmão e ele morreu aqui mesmo, com sessenta e dois anos, achando que a vida ia começar depois. Eu vou dizer a ele que sei, e que a escolha é dele. No dia catorze o mestre Quirino encosta o saveiro: vá ao píer nesse dia e veja o que o menino escolheu."
+    },
+    "assets/audio/vozes/zefa_zefa_zefa_cosme.mp3": {
+      "hash": "f50099411d",
+      "texto": "Fala com o meu neto antes de mais nada. Ele tem uma coisa pra te contar e tá enrolando faz uma semana."
+    },
+    "assets/audio/vozes/zefa_zefa_zefa_ervas.mp3": {
+      "hash": "a88448169b",
+      "texto": "Eu tenho um pedido, e é coisa de serra. Alecrim-do-campo, arruda brava, folha de mamona — não nasce aqui embaixo: precisa de ar seco e de sol de manhã, e isso só tem lá em cima, na serra. Sobe pela picada do mirante e procura onde a mata abre, que é na clareira que o sol bate. Na grota da nascente não adianta, que lá é sombra e água, e não se mete no fundo, que lá é do caititu. Cinco maços, e não arranque pela raiz: corte no meio do pé, que o que se arranca não volta e eu vou precisar no ano que vem também. Tem foice? Se não tiver, leve a minha, e vá com calma que eu não vou a lugar nenhum."
+    },
+    "assets/audio/vozes/zefa_zefa_zefa_ervas_resposta.mp3": {
+      "hash": "5e94347b7e",
+      "texto": "Deixa aqui na mesa. Olha o cheiro — sentiu? Isso é alecrim que pegou sol de manhã. Vinte anos eu subia aquela serra de madrugada e descia antes do sol firmar; agora eu chego na metade da picada e o joelho manda eu voltar. Pronto: agora eu tenho remédio pro inverno inteiro. E eu te devo uma conversa — mas hoje não, hoje eu quero pilar isso enquanto está verde. Fala com o meu neto antes: ele tem uma coisa pra te contar e tá enrolando faz uma semana."
+    },
+    "assets/audio/vozes/zefa_zefa_zefa_saveiro.mp3": {
+      "hash": "5b5d44953d",
+      "texto": "No dia catorze o mestre Quirino encosta o saveiro no píer. Vá lá nesse dia e fale com ele — saveiro não espera ninguém."
     }
   }
 }

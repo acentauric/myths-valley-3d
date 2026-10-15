@@ -19,7 +19,7 @@
       "resumo_es": "Lleva dos tablas al Señor Nicolau",
       "lugar": "bar",
       "raio": 6,
-      "audio": "",
+      "audio": "mercador_mercador_mercador_tabuas",
       "texto": "Eu não peço favor, eu cobro. Mas hoje peço: a prateleira do fundo cedeu com o peso do sal, e tábua boa só sai da sua bancada. Duas tábuas e eu abato na conta — e lhe dou um lampião, que a Estefânia vive pedindo e nunca compra.",
       "texto_en": "I don't ask favors, I collect. But today I'm asking: the back shelf gave way under the weight of the salt, and good planks only come off your workbench. Two planks and I'll knock it off your account — and give you a lamp, the one Estefânia keeps asking for and never buys.",
       "texto_es": "Yo no pido favores, cobro. Pero hoy pido: el estante del fondo cedió con el peso de la sal, y tabla buena solo sale de tu banco. Dos tablas y te lo descuento de la cuenta — y te doy un farol, el que Estefânia vive pidiendo y nunca compra.",
@@ -33,6 +33,7 @@
         "quantos": 2,
         "a_quem": "mercador",
         "raio": 3.4,
+        "audio_resposta": "mercador_mercador_mercador_tabuas_resposta",
         "resposta": "Tábua! Tava precisando pra prateleira. Toma o lampião, e isso abate na conta — na do seu tio, que está paga, e na sua, que ainda não começou.",
         "resposta_en": "Planks! Just what the shelf needed. Take the lamp, and this comes off the account — your uncle's, which is settled, and yours, which hasn't started yet.",
         "resposta_es": "¡Tablas! Me hacían falta para el estante. Toma el farol, y esto se descuenta de la cuenta — de la de tu tío, que está pagada, y de la tuya, que todavía no empezó."

@@ -71,6 +71,7 @@
         "tipo": "falar",
         "a_quem": "tonho",
         "raio": 3.4,
+        "audio_resposta": "tonho_guia_bom_dia_resposta",
         "resposta": "Bom dia, moço. Então é você o sobrinho do finado? Ele me pagava o peixe em farinha e nunca atrasou um dia. Toma esse aqui: é o primeiro da casa nova. Asse no fogo de noite.",
         "resposta_en": "Morning, young man. So you're the late man's nephew? He paid me for fish in flour and was never a day late. Take this one: it's the first for the new house. Roast it on the fire tonight.",
         "resposta_es": "Buenos días, muchacho. ¿Así que tú eres el sobrino del difunto? Me pagaba el pescado con harina y nunca se atrasó un día. Toma este: es el primero de la casa nueva. Ásalo al fuego por la noche."
@@ -100,6 +101,7 @@
         "tipo": "falar",
         "a_quem": "candinha",
         "raio": 3.4,
+        "audio_resposta": "candinha_guia_chave_resposta",
         "resposta": "A chave? Ficou com a Dona Zefa, que lavou o corpo e fechou a porta. Mas senta aqui primeiro: ninguém sobe aquela ladeira de goela seca no meu tempo. A garapa hoje é por conta da casa.",
         "resposta_en": "The key? Dona Zefa kept it — she washed the body and closed the door. But sit here first: nobody climbs that slope with a dry throat on my watch. Today the sugarcane juice is on the house.",
         "resposta_es": "¿La llave? Se la quedó doña Zefa, que lavó el cuerpo y cerró la puerta. Pero siéntate aquí primero: nadie sube esa cuesta con la garganta seca mientras yo esté. Hoy el jugo de caña corre por cuenta de la casa."
@@ -130,6 +132,7 @@
         "tipo": "falar",
         "a_quem": "zefa",
         "raio": 3.4,
+        "audio_resposta": "zefa_guia_chave_zefa_resposta",
         "resposta": "Tá aqui a chave. Fechei aquela porta e fiquei rezando pra ela abrir pra alguém do sangue dele. Abre a casa, areja, e acende o fogo antes da noite: casa fechada junta frio. E passa no poço, que eu vou precisar de braço moço.",
         "resposta_en": "Here's the key. I closed that door and kept praying it would open for someone of his blood. Open the house, let the air in, and light the fire before nightfall: a closed house gathers cold. And come by the well — I'll need a young arm.",
         "resposta_es": "Aquí está la llave. Cerré esa puerta y me quedé rezando para que se abriera para alguien de su sangre. Abre la casa, airéala, y enciende el fuego antes de la noche: casa cerrada junta frío. Y pasa por el pozo, que voy a necesitar un brazo joven."

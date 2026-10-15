@@ -19,7 +19,7 @@
       "resumo_es": "Lleva tres leñas a Sá Rita",
       "lugar": "casa_da_lavadeira",
       "raio": 6,
-      "audio": "",
+      "audio": "lavadeira_lavadeira_lavadeira_lenha",
       "texto": "Eu lavo a roupa do padre e da venda na beira do riacho, e roupa de branco só sai branca fervida. Lenha seca, três braçadas, e a sua roupa eu lavo de graça mais uma semana — a primeira já foi.",
       "texto_en": "I wash the priest's and the shop's clothes by the creek, and whites only come out white when boiled. Dry firewood, three armfuls, and I'll wash your clothes for free one more week — the first one's already gone.",
       "texto_es": "Yo lavo la ropa del cura y de la venta a la orilla del arroyo, y la ropa blanca solo sale blanca hervida. Leña seca, tres brazadas, y tu ropa la lavo gratis una semana más — la primera ya pasó.",
@@ -32,6 +32,7 @@
         "quantos": 3,
         "a_quem": "lavadeira",
         "raio": 3.4,
+        "audio_resposta": "lavadeira_lavadeira_lavadeira_lenha_resposta",
         "resposta": "Lenha boa, seca. Agora a água ferve e a roupa conta a vida de quem veste. A sua ainda conta pouco. Isso muda.",
         "resposta_en": "Good dry firewood. Now the water boils and the clothes tell the life of whoever wears them. Yours still tell little. That changes.",
         "resposta_es": "Leña buena, seca. Ahora el agua hierve y la ropa cuenta la vida de quien la viste. La tuya todavía cuenta poco. Eso cambia."

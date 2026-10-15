@@ -19,7 +19,7 @@
       "resumo_es": "Lleva dos mazorcas de maíz a Mariinha",
       "lugar": "casa_da_quituteira",
       "raio": 6,
-      "audio": "",
+      "audio": "menina_menina_menina_milho",
       "texto": "Eu já sei fazer cocada, mas a mãe não deixa eu mexer no dendê. Cocada de milho verde não leva dendê! Me traz duas espigas do seu roçado e eu faço uma pra você — e você me conta se em Salvador tem bonde de verdade.",
       "texto_en": "I already know how to make cocada, but Mother won't let me touch the palm oil. Green-corn cocada doesn't need palm oil! Bring me two ears from your field and I'll make one for you — and you tell me if Salvador really has streetcars.",
       "texto_es": "Yo ya sé hacer cocada, pero mi madre no me deja tocar el dendê. ¡La cocada de maíz tierno no lleva dendê! Tráeme dos mazorcas de tu roza y te hago una — y tú me cuentas si en Salvador hay tranvías de verdad.",
@@ -33,6 +33,7 @@
         "quantos": 2,
         "a_quem": "menina",
         "raio": 3.4,
+        "audio_resposta": "menina_menina_menina_milho_resposta",
         "resposta": "Milho! Agora espera que eu ralo e faço. Pronto — tá torta, mas é cocada. Se você quiser aprender a roda, tem que bater palma primeiro.",
         "resposta_en": "Corn! Now wait while I grate it and make it. There — it's crooked, but it's cocada. If you want to learn the circle dance, you have to clap first.",
         "resposta_es": "¡Maíz! Ahora espera que lo rallo y la hago. Listo — está torcida, pero es cocada. Si quieres aprender la rueda, tienes que aplaudir primero."

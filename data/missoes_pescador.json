@@ -19,7 +19,7 @@
       "resumo_es": "Lleva dos cuerdas al Señor Jerônimo",
       "lugar": "casa_do_pescador",
       "raio": 6,
-      "audio": "",
+      "audio": "pescador_pescador_pescador_corda",
       "texto": "Eu pesco de linha, da pedra, e linha boa nasce de corda boa. A minha arrebentou num robalo — na quinta, que de sexta eu não pesco. Torça duas cordas na sua bancada e traga. Pago em peixe, que é a moeda que eu tenho.",
       "texto_en": "I fish with a line, from the rock, and a good line is born of good rope. Mine snapped on a sea bass — on Thursday, since I don't fish on Fridays. Twist two ropes on your workbench and bring them. I pay in fish, the only coin I've got.",
       "texto_es": "Yo pesco con sedal, desde la piedra, y un buen sedal nace de una buena cuerda. La mía se rompió con un róbalo — el jueves, que los viernes no pesco. Tuerce dos cuerdas en tu banco y tráelas. Pago en pescado, que es la moneda que tengo.",
@@ -33,6 +33,7 @@
         "quantos": 2,
         "a_quem": "pescador",
         "raio": 3.4,
+        "audio_resposta": "pescador_pescador_pescador_corda_resposta",
         "resposta": "Corda! Linha boa nasce de corda boa. Toma um robalo, do fim da tarde de ontem. E quando você souber ler o que a linha puxou do fundo, eu lhe mostro.",
         "resposta_en": "Rope! A good line is born of good rope. Take a sea bass, from yesterday's late afternoon. And when you can read what the line pulled from the bottom, I'll show it to you.",
         "resposta_es": "¡Cuerda! Un buen sedal nace de una buena cuerda. Toma un róbalo, del final de la tarde de ayer. Y cuando sepas leer lo que el sedal sacó del fondo, te lo muestro."

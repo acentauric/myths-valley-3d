@@ -19,7 +19,7 @@
       "resumo_es": "Lleva dos beijus al Padre Anselmo",
       "lugar": "casa_do_padre",
       "raio": 6,
-      "audio": "",
+      "audio": "padre_padre_padre_beiju",
       "texto": "Anselmo, da freguesia. A mesa da sacristia recebe quem chega com fome depois da missa, e hoje está vazia. Dois beijus do seu fogão, meu filho, e o Bom Jesus escuta — de perto do altar, como o seu tio dizia, até demais.",
       "texto_en": "Anselmo, of the parish. The sacristy table feeds whoever arrives hungry after Mass, and today it's bare. Two beijus from your stove, my son, and the Good Jesus listens — from close to the altar, as your uncle used to say, too well.",
       "texto_es": "Anselmo, de la parroquia. La mesa de la sacristía recibe a quien llega con hambre después de la misa, y hoy está vacía. Dos beijus de tu fogón, hijo mío, y el Buen Jesús escucha — desde cerca del altar, como decía tu tío, hasta demasiado.",
@@ -32,6 +32,7 @@
         "quantos": 2,
         "a_quem": "padre",
         "raio": 3.4,
+        "audio_resposta": "padre_padre_padre_beiju_resposta",
         "resposta": "Deus lhe pague. Isto vai pra mesa da sacristia, e de lá pra quem precisa. Seu tio sentava no último banco; o lugar continua vago, se quiser.",
         "resposta_en": "God repay you. This goes to the sacristy table, and from there to whoever needs it. Your uncle sat in the last pew; the seat is still free, if you want it.",
         "resposta_es": "Dios te lo pague. Esto va a la mesa de la sacristía, y de allí a quien lo necesita. Tu tío se sentaba en el último banco; el lugar sigue libre, si quieres."

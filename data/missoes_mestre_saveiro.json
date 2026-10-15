@@ -19,7 +19,7 @@
       "resumo_es": "Lleva tres cuerdas al Señor Ladislau",
       "lugar": "beira_do_rio",
       "raio": 6,
-      "audio": "",
+      "audio": "mestre_saveiro_mestre_saveiro_ladislau_corda",
       "texto": "Ladislau, tripulação do Quirino. Saveiro come corda como gente come farinha: a escota do traquete está no último fio. Três cordas da sua bancada e eu lhe pago com peixe da baía — e, se o vento deixar, com uma história de luz na água.",
       "texto_en": "Ladislau, Quirino's crew. A sloop eats rope the way people eat flour: the foresail sheet is down to its last strand. Three ropes from your workbench and I'll pay you with fish from the bay — and, if the wind allows, with a story about a light on the water.",
       "texto_es": "Ladislau, tripulación de Quirino. El saveiro come cuerda como la gente come harina: la escota del trinquete está en su último hilo. Tres cuerdas de tu banco y te pago con pescado de la bahía — y, si el viento lo permite, con una historia de una luz en el agua.",
@@ -33,6 +33,7 @@
         "quantos": 3,
         "a_quem": "mestre_saveiro",
         "raio": 3.4,
+        "audio_resposta": "mestre_saveiro_mestre_saveiro_ladislau_corda_resposta",
         "resposta": "Corda nova. Agora o traquete segura até Maragogipe. Toma o peixe. A luz na água fica pra quando o vento virar a favor — e ele vira, moço, ele vira.",
         "resposta_en": "New rope. Now the foresail will hold all the way to Maragogipe. Take the fish. The light on the water waits for when the wind turns in our favor — and it turns, young man, it turns.",
         "resposta_es": "Cuerda nueva. Ahora el trinquete aguanta hasta Maragogipe. Toma el pescado. La luz en el agua queda para cuando el viento cambie a favor — y cambia, muchacho, cambia."

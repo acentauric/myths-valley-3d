@@ -7,9 +7,14 @@ extends "res://tests/unidade/base.gd"
 ## O jogo não toca o que não está escrito: a voz de uma fala mora num campo de áudio ao lado do texto dela
 ## (`audio` e `texto`, `audio_resposta` e `resposta`, `trancada_audio` e `trancada`, `audio_oferta` e `oferta`,
 ## `audio_pergunta` e `pergunta`), com o nome de assets/audio/vozes/<nome>.mp3. Voz que não está num campo é
-## arquivo que ninguém toca; campo que aponta para arquivo que não existe é fala muda, e nada avisa. Três
-## perguntas, que valem para o lote de 15/10/2026 (#248, #59 e #210) e para todo lote que vier:
+## arquivo que ninguém toca; campo que aponta para arquivo que não existe é fala muda, e nada avisa; fala sem
+## campo é fala muda também. Quatro perguntas, que valem para o lote de 15/10/2026 (#248, #59 e #210) e para
+## todo lote que vier:
 ##
+##   0. TODA FALA FALADA TEM VOZ (#248): cada conversa, cada anúncio de passo, resposta, arremate, aviso de fila
+##      trancada, socorro e fala de cena de morador ou de missão tem o campo de áudio preenchido. O que ainda não
+##      tem está declarado em `VOZ_PENDENTE`, com a razão; a lista só encolhe. A narração do mundo (a voz sem nome,
+##      em `NARRACAO_SEM_VOZ`) e as notas de fim (`narra: false`) não são faladas por quem quer que seja.
 ##   1. TODO CAMPO DE ÁUDIO APONTA PARA UM MP3 QUE EXISTE: o arquivo, o `.import` (que se commita junto, com o uid) e
 ##      o recurso que o Godot carrega.
 ##   2. NENHUM MP3 FICA SEM USO. Um mp3 gerado e não ligado é crédito gasto para nada. As sobras que já existiam estão
@@ -47,6 +52,28 @@ const SEM_USO_DECLARADO := {
 	"pedro_arraial_mirante_material": "diz 'vinte tábuas, doze pedras e seis cordas', e a obra pede 8, 4 e 2 desde 10/10 (0241ea3): o texto do passo foi corrigido e o passo ficou sem voz até uma tomada nova; quando ela chegar, o `audio` volta ao passo mirante_material",
 }
 
+## A narração do mundo, que não tem quem a diga: a voz sem nome, com o escuro, na tela (`narracao_do_vale.gd`).
+## Por arquivo de missão, os blocos de cena que são narração e não fala de ninguém. Qualquer outro bloco de
+## fala dessas cenas é de um personagem, e tem voz.
+const NARRACAO_SEM_VOZ := {
+	"fazenda": ["silencio", "de_pe", "subida", "cerco", "porta", "narracao"],
+	"revoar": ["quarto", "aceite", "chao", "recusa", "miragens", "fuga", "revoar", "noite", "senhor", "chamado",
+		"pedra", "amanhecer", "amanhecer_levado"],
+}
+
+## As falas faladas que ainda não têm voz, e por quê. A chave é uma CATEGORIA (todas as falas dela) ou uma fala
+## ("arraial:mirante_material"). Só encolhe: a que ganhou voz sai daqui (o teste reprova a pendência cumprida).
+const VOZ_PENDENTE := {
+	"arraial:mirante_material": "o passo diz 'oito tábuas, quatro pedras e duas cordas' desde que a obra baixou o custo (0241ea3), e a voz gerada ainda diz vinte, doze e seis: o passo fica sem voz até uma tomada com o texto certo",
+	"trancada": "o aviso de fila trancada do morador ainda não toca a voz (trancada_audio)",
+	"socorro": "o socorro da mungunzá ainda não toca a voz",
+	"cena": "as falas de cena da fazenda e do revoar ainda não tocam a voz",
+	"pergunta": "as perguntas de cena ainda não tocam a voz",
+	"fe": "as vozes da fé ainda não tocam a voz",
+	"oferenda": "a resposta da oferenda é aviso do HUD e ainda não toca a voz",
+	"quirino": "o mestre Quirino ainda não tem voz",
+}
+
 var _campos: Array = []
 
 
@@ -55,7 +82,17 @@ func before_all() -> void:
 	_campos = _campos_de_audio()
 
 
-# --- as três perguntas ---------------------------------------------------------------------------------
+# --- as quatro perguntas -------------------------------------------------------------------------------
+
+func test_toda_fala_falada_tem_voz() -> void:
+	var falas := _falas_faladas()
+	# Moradores (229) e missões (perto de 500): abaixo de 450 a varredura não está pegando.
+	conferir(falas.size() >= 450, "só %d fala(s) falada(s) nos dados: a varredura não está pegando" % falas.size())
+	var sem_voz := _sem_voz(falas, VOZ_PENDENTE)
+	conferir(sem_voz.is_empty(), "%d fala(s) falada(s) sem voz (gere a voz e ligue no campo de áudio, ou declare em VOZ_PENDENTE): %s" % [sem_voz.size(), "; ".join(sem_voz.slice(0, 6))])
+	var cumpridas := _pendencias_cumpridas(falas, VOZ_PENDENTE)
+	conferir(cumpridas.is_empty(), "pendência de voz que já foi cumprida (tire de VOZ_PENDENTE): %s" % ", ".join(cumpridas))
+
 
 func test_todo_audio_declarado_aponta_para_um_arquivo_que_existe() -> void:
 	# Com o lote todo passam de 600; abaixo de 300 a varredura não está pegando os dados.
@@ -87,6 +124,12 @@ func test_a_voz_diz_o_texto_que_o_jogador_le() -> void:
 
 ## FALSIFICAÇÃO: os três detectores sobre dados estragados de propósito.
 func test_os_detectores_reprovam_o_que_devem() -> void:
+	# 0. uma fala falada sem voz, fora da lista de pendências; e uma pendência que já foi cumprida.
+	var faladas := _falas_faladas()
+	var sem_voz_hoje := _sem_voz(faladas, VOZ_PENDENTE).size()
+	faladas.append({"onde": "falsa", "chave": "falsa:fala", "categoria": "anuncio", "audio": ""})
+	conferir(_sem_voz(faladas, VOZ_PENDENTE).size() == sem_voz_hoje + 1, "o detector de fala sem voz não achou a fala que não tem")
+	conferir(_pendencias_cumpridas(faladas, VOZ_PENDENTE.merged({"conversa": "razão"})) == ["conversa"], "o detector de pendência cumprida não achou a categoria que já tem voz")
 	# 1. um campo que aponta para um mp3 que não existe.
 	var falso: Array = _campos.duplicate()
 	falso.append({"onde": "falso.audio", "arquivo": "falso", "audio": "nao_existe_mesmo", "texto": "x"})
@@ -171,6 +214,114 @@ func _registro() -> Dictionary:
 	if lido is Dictionary and (lido as Dictionary).get("audios") is Dictionary:
 		return (lido as Dictionary)["audios"]
 	return {}
+
+
+## As falas faladas sem voz que ninguém declarou: ["arquivo:passo (categoria)"].
+func _sem_voz(faladas: Array, pendente: Dictionary) -> Array:
+	var ruins: Array = []
+	for fala in faladas:
+		if str(fala["audio"]) == "" and not pendente.has(fala["categoria"]) and not pendente.has(fala["chave"]):
+			ruins.append("%s (%s)" % [fala["chave"], fala["categoria"]])
+	return ruins
+
+
+## As pendências declaradas que não têm mais fala sem voz.
+func _pendencias_cumpridas(faladas: Array, pendente: Dictionary) -> Array:
+	var cumpridas: Array = []
+	for chave in pendente:
+		var sem_voz := false
+		for fala in faladas:
+			if (fala["categoria"] == chave or fala["chave"] == chave) and str(fala["audio"]) == "":
+				sem_voz = true
+				break
+		if not sem_voz:
+			cumpridas.append(chave)
+	return cumpridas
+
+
+# --- as falas faladas ----------------------------------------------------------------------------------
+
+## Cada fala que o jogo diz em voz: {onde, chave, categoria, audio}. Dos moradores: todo objeto com `texto` de quem
+## fala (o Pedro e os 22 moradores). Das missões: o anúncio de cada passo, a resposta, o arremate que se narra, o aviso
+## de fila trancada, o socorro, as falas de cena dos personagens e as perguntas de cena.
+func _falas_faladas() -> Array:
+	var saida: Array = []
+	var npcs = _ler("res://data/npcs_3d.json")
+	for pessoa in [npcs["guia"]] + (npcs["moradores"] as Array):
+		if bool(pessoa.get("mudo", false)):
+			continue
+		var id := str(pessoa.get("id", "?"))
+		_textos_de_quem_fala(pessoa, "npcs_3d:" + id, "quirino" if id == "quirino" else "conversa", saida)
+	for arquivo in _arquivos_de_missoes():
+		_falas_da_missao(arquivo.get_file().trim_prefix("missoes_").trim_suffix(".json"), _ler(arquivo), saida)
+	return saida
+
+
+func _textos_de_quem_fala(no, onde: String, categoria: String, saida: Array) -> void:
+	if no is Dictionary:
+		if no.get("texto") is String and str(no["texto"]) != "":
+			saida.append(_fala(onde, categoria, str(no.get("audio", ""))))
+		for chave in no:
+			_textos_de_quem_fala(no[chave], "%s.%s" % [onde, chave], categoria, saida)
+	elif no is Array:
+		for i in no.size():
+			_textos_de_quem_fala(no[i], "%s[%d]" % [onde, i], categoria, saida)
+
+
+func _falas_da_missao(nome: String, d: Dictionary, saida: Array) -> void:
+	var da_fe := nome.begins_with("fe_")
+	for passo in d.get("passos", []):
+		var id := str(passo.get("id", "?"))
+		var meta: Dictionary = passo.get("meta", {})
+		if str(passo.get("texto", "")) != "":
+			saida.append(_fala("%s:%s" % [nome, id], "fe" if da_fe else "anuncio", str(passo.get("audio", ""))))
+		if str(meta.get("resposta", "")) != "":
+			var categoria := "resposta"
+			if da_fe:
+				categoria = "fe"
+			elif str(meta.get("tipo", "")) == "oferendar":
+				categoria = "oferenda"
+			elif str(meta.get("a_quem", "")) == "quirino":
+				categoria = "quirino"
+			saida.append(_fala("%s:%s.resposta" % [nome, id], categoria, str(meta.get("audio_resposta", ""))))
+	var arremate: Dictionary = d.get("arremate", {})
+	if str(arremate.get("texto", "")) != "" and bool(arremate.get("narra", true)):
+		saida.append(_fala("%s:arremate" % nome, "fe" if da_fe else "arremate", str(arremate.get("audio", ""))))
+	if str(d.get("trancada", "")) != "":
+		saida.append(_fala("%s:trancada" % nome, "trancada", str(d.get("trancada_audio", ""))))
+	var narracao: Array = NARRACAO_SEM_VOZ.get(nome, [])
+	for chave in d:
+		var valor = d[chave]
+		if chave == "passos" or narracao.has(chave) or not (valor is Array):
+			continue
+		var categoria := "socorro" if chave == "socorro" else ("conversa" if chave == "corpo" else "cena")
+		for i in valor.size():
+			if valor[i] is Dictionary and str(valor[i].get("texto", "")) != "":
+				saida.append(_fala("%s:%s[%d]" % [nome, chave, i], categoria, str(valor[i].get("audio", ""))))
+	var trocas: Array = d.get("trocas", [])
+	for i in trocas.size():
+		saida.append(_fala("%s:trocas[%d].oferta" % [nome, i], "cena", str(trocas[i].get("audio_oferta", ""))))
+		saida.append(_fala("%s:trocas[%d].pergunta" % [nome, i], "pergunta", str(trocas[i].get("audio_pergunta", ""))))
+	var escudo = d.get("pergunta_escudo")
+	if escudo is Dictionary and str(escudo.get("texto", "")) != "":
+		saida.append(_fala("%s:pergunta_escudo" % nome, "pergunta", str(escudo.get("audio", ""))))
+
+
+func _fala(chave: String, categoria: String, audio: String) -> Dictionary:
+	return {"onde": chave, "chave": chave, "categoria": categoria, "audio": audio}
+
+
+func _arquivos_de_missoes() -> PackedStringArray:
+	var achados := PackedStringArray()
+	for arquivo in DirAccess.get_files_at(DADOS):
+		if arquivo.begins_with("missoes_") and arquivo.ends_with(".json"):
+			achados.append(DADOS.path_join(arquivo))
+	achados.sort()
+	return achados
+
+
+func _ler(caminho: String):
+	return JSON.parse_string(FileAccess.get_file_as_string(caminho))
 
 
 # --- a varredura dos dados ----------------------------------------------------------------------------

@@ -19,7 +19,7 @@
       "resumo_es": "Junta 8 tablas para la plataforma",
       "lugar": "oficina",
       "raio": 6.0,
-      "audio": "",
+      "audio": "benedito_carroca_carroca_tabua",
       "texto": "Essa carroça era do meu avô, e a roda foi o avô dele que fez. A cheia de fevereiro comeu o barranco da estrada, e o eixo partiu na volta. Quarenta e duas safras eu desci nela; esta desci no ombro, três viagens por saco. O estrado apodreceu de esperar. Me arranja oito tábuas serradas, da bancada do roçado, que o resto a gente vê.",
       "texto_en": "This cart was my grandfather's, and his grandfather made the wheel. February's flood ate the bank along the road, and the axle snapped on the way back. Forty-two harvests I brought down in it; this one I carried on my shoulder, three trips a sack. The bed rotted from waiting. Get me eight sawn planks from the workbench by the field, and we'll see to the rest.",
       "texto_es": "Esta carreta era de mi abuelo, y la rueda la hizo su abuelo. La crecida de febrero se comió el barranco del camino y el eje se partió a la vuelta. Cuarenta y dos cosechas bajé en ella; esta la bajé al hombro, tres viajes por saco. La plataforma se pudrió de esperar. Consígueme ocho tablas aserradas, del banco del sembrado, y lo demás lo vemos.",
@@ -35,7 +35,7 @@
       "resumo_es": "Junta 4 cuerdas y 4 piedras",
       "lugar": "oficina",
       "raio": 6.0,
-      "audio": "",
+      "audio": "benedito_carroca_carroca_corda",
       "texto": "Tábua boa. Agora corda pra amarrar o cocho e pedra pra calçar a roda enquanto o eixo entra: quatro de cada. Pedra solta tem pelo vale, fora da rua — na beira do roçado, no meio do mato; o lajedo, esse só cede à picareta de aço e a braço treinado.",
       "texto_en": "Good planks. Now rope to lash the trough and stone to wedge the wheel while the axle goes in: four of each. There's loose stone all over the valley, off the road — at the edge of the field, out in the scrub; the rock slab only gives way to a steel pickaxe and a trained arm.",
       "texto_es": "Buenas tablas. Ahora cuerda para amarrar el cajón y piedra para calzar la rueda mientras entra el eje: cuatro de cada una. Piedra suelta hay por todo el valle, fuera del camino: a la orilla del sembrado, en medio del monte; la laja solo cede al pico de acero y a un brazo entrenado.",
@@ -51,7 +51,7 @@
       "resumo_es": "Repara la carreta: [E] o [J] › Obras, con los vecinos",
       "lugar": "casa_carro_quebrado",
       "raio": 8.0,
-      "audio": "",
+      "audio": "benedito_carroca_carroca_mutirao",
       "texto": "Pronto: o resto vem do arraial. Chamei o Cosme, que tem braço, e o Tonho, que tem corda — cada um traz o que tem, que mutirão é assim. Quando chegarem, abre o J aqui no terreiro, na aba de obras, e a gente bota a carroça de pé.",
       "texto_en": "There: the rest comes from the village. I called Cosme, who has the arms, and Tonho, who has the rope — each brings what he has; that's how a work party goes. When they get here, open J here in the yard, on the works tab, and we'll get the cart back on its wheels.",
       "texto_es": "Listo: lo demás viene del pueblo. Llamé a Cosme, que tiene brazo, y a Tonho, que tiene cuerda: cada uno trae lo que tiene, que el trabajo en común es así. Cuando lleguen, abre la J aquí en el patio, en la pestaña de obras, y ponemos la carreta de pie.",
@@ -63,6 +63,7 @@
     }
   ],
   "arremate": {
+    "audio": "benedito_carroca_arremate",
     "texto": "Olha ela de pé. Amanhã a colheita desce numa viagem só. Quarenta e duas safras, e é a primeira vez que o arraial sobe aqui sem ser pra comprar. Seu tio ia gostar de ver.",
     "texto_en": "Look at her, back on her wheels. Tomorrow the harvest goes down in a single trip. Forty-two harvests, and this is the first time the village came up here for something other than buying. Your uncle would have liked to see it.",
     "texto_es": "Mírala de pie. Mañana la cosecha baja en un solo viaje. Cuarenta y dos cosechas, y es la primera vez que el pueblo sube aquí para algo que no sea comprar. A tu tío le habría gustado verlo."
