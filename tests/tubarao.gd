@@ -12,6 +12,10 @@ extends "res://tests/suite/caso.gd"
 ## ligada no jogo. No fim, com a maré ligada, ele está à mostra na preamar, SOME na baixa-mar (a lâmina no
 ## centro do pesqueiro cai uns 0,6 u, e a regra de antes só o tirava abaixo de 1,3 u: ele ficava), volta
 ## com a cheia, e o pesqueiro é o mesmo em qualquer maré (a escolha mede a água da preamar).
+##
+## E A PERSEGUIÇÃO TEM TRILHA (#261): enquanto ele persegue, a música de tensão entra por cima da do dia e cresce com a
+## proximidade (o `perigo()` do tubarão é o que o `Audio` segue); quando ele alcança, ou o jogador foge para o
+## raso, a tensão sai em 4 a 6 s e a trilha do dia, que só tinha abaixado, está no volume cheio e é a mesma de antes.
 
 
 var relogio: Node
@@ -33,6 +37,9 @@ func _run() -> void:
 	var player: CharacterBody3D = vale.player
 	var tubarao = vale.get_node_or_null("Tubarao")
 	_assert(tubarao != null, "tubarão criado")
+	var audio = root.get_node("/root/Audio")
+	var fases_da_perseguicao: Array[bool] = []
+	tubarao.perseguicao_mudou.connect(func(ativa: bool) -> void: fases_da_perseguicao.append(ativa))
 	_assert(tubarao.get("_ativo") == true, "tubarão ativo (achou água funda)")
 	_assert(tubarao.get("_modelo_tripo") != null, "modelo Tripo do tubarão em uso")
 	_assert((tubarao.get("_ossos_cauda") as Array).size() == 2, "rig da cauda em uso")
@@ -100,19 +107,45 @@ func _run() -> void:
 	var distancia_inicial := _plano(tubarao.global_position - player.global_position).length()
 	var ritmo_maximo := 0.0
 	var alcancado := false
+	var musica_do_dia: String = audio.musica_atual()
+	var primeiro_perigo := -1.0
+	var ultimo_perigo := 0.0
+	var tensao_diferente_do_perigo := 0.0
+	var tensao_tocou := false
 	for frame in 1500:
 		await physics_frame
 		player.global_position += rumo_da_fuga * (nado_de_corrida / float(Engine.physics_ticks_per_second))
 		player.velocity = Vector3.ZERO
 		ritmo_maximo = maxf(ritmo_maximo, float(tubarao.get("_ritmo")))
+		# A música de tensão segue o perigo do tubarão, quadro a quadro, e ele cresce com a proximidade.
+		var perigo: float = tubarao.perigo()
+		if perigo > 0.0:
+			if primeiro_perigo < 0.0:
+				primeiro_perigo = perigo
+			ultimo_perigo = perigo
+			tensao_diferente_do_perigo = maxf(tensao_diferente_do_perigo, absf(float(audio.tensao_atual()) - perigo))
+			tensao_tocou = tensao_tocou or audio.tensao_tocando()
 		if tubarao.get("_atacando") == true:
 			alcancado = true
 			print("TUBARAO: alcançou quem fugia a %.1f u/s depois de %.1f s (%.0f u de distância no começo)" % [nado_de_corrida, frame / 60.0, distancia_inicial])
 			break
 	_assert(alcancado, "o tubarão não alcançou quem fugia a nado de corrida (%.1f u/s) em 25 s" % nado_de_corrida)
 	_assert(ritmo_maximo > 1.5, "a cauda não bateu mais depressa na perseguição (ritmo %.2f)" % ritmo_maximo)
+	_assert(primeiro_perigo > 0.0, "o tubarão perseguiu e não fez perigo nenhum: a música de tensão não tem o que seguir")
+	_assert(ultimo_perigo > primeiro_perigo + 0.05, "o perigo não cresceu com a proximidade (%.2f no começo, %.2f na mordida)" % [primeiro_perigo, ultimo_perigo])
+	_assert(tensao_diferente_do_perigo < 0.001, "o Audio não segue o perigo do tubarão (diferença de %.3f)" % tensao_diferente_do_perigo)
+	_assert(tensao_tocou, "a camada de tensão não tocou durante a perseguição")
+	_assert(audio.musica_atual() == musica_do_dia, "a perseguição trocou a trilha do dia (%s para %s)" % [musica_do_dia.get_file(), audio.musica_atual().get_file()])
 	await create_timer(2.5).timeout
 	_assert(tubarao.get("_atacando") == false and not player.is_swimming(), "depois do ataque o jogador devia estar em terra firme")
+	# Passou o perigo: a tensão sai em 4 a 6 s (já vão 2,5 s do ataque), e a trilha do dia volta inteira e a mesma.
+	_assert(audio.tensao_atual() == 0.0, "mordido e devolvido à terra, o tubarão ainda faz perigo (%.2f)" % audio.tensao_atual())
+	await create_timer(audio.SAIDA_DA_TENSAO).timeout
+	_assert(not audio.tensao_tocando(), "a camada de tensão seguiu tocando %.1f s depois do perigo" % (audio.SAIDA_DA_TENSAO + 2.5))
+	_assert(is_equal_approx(float(audio._abafo_da_tensao), 1.0), "a trilha do dia não voltou ao volume cheio (%.2f)" % float(audio._abafo_da_tensao))
+	_assert(audio.musica_atual() == musica_do_dia, "a trilha do dia não é a mesma de antes da perseguição")
+	_assert(fases_da_perseguicao.size() >= 2 and fases_da_perseguicao[0] == true and fases_da_perseguicao[fases_da_perseguicao.size() - 1] == false,
+		"o sinal perseguicao_mudou não contou a perseguição (%s)" % str(fases_da_perseguicao))
 	# Outra rodada: o susto passou, o cooldown do ataque é do jogo e o portão o zera.
 	tubarao.set("_proximo_ataque", 0.0)
 	player.global_position = Vector3(ponto.x, world.water_level() - 1.2, ponto.z)
@@ -170,6 +203,7 @@ func _run() -> void:
 	await relogio.esperar(2.0)
 	_assert(tubarao.get("_submerso") == false and tubarao.visible, "com a cheia de volta o tubarão não voltou")
 	mare.modo = 0
+	_calar_a_tensao(audio)
 	print("TUBARAO_OK")
 	quit()
 
@@ -179,6 +213,15 @@ func _assert(condition: bool, label: String) -> void:
 		push_error("TUBARAO_FALHOU: " + label)
 		quit(1)
 		assert(false, label)
+
+
+## O caso devolve o que mexe: a camada da tensão é um nó filho do autoload `Audio`, e o anfitrião só devolve variáveis.
+func _calar_a_tensao(audio) -> void:
+	audio.tensao_do_tubarao(0.0)
+	if audio._tensao_transicao != null and audio._tensao_transicao.is_valid():
+		audio._tensao_transicao.kill()
+	audio._tensao_envelope = 0.0
+	audio._tensao.stop()
 
 
 ## A rota de fuga: o rumo (plano) que se afasta do tubarão e segue por água funda

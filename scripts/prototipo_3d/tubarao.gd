@@ -51,6 +51,12 @@ const DURACAO_CACA := 10.0
 const RAIO_BOTE_PEIXE := 1.0
 ## O corpo do Tripo: a ponta da barbatana fica este tanto acima da água.
 const BARBATANA_FORA := 0.12
+## O perigo mínimo de quem está sendo perseguido: na beira do alcance (`RAIO_PERCEPCAO`) a conta de distância
+## daria zero, e a perseguição já começou.
+const PERIGO_MINIMO := 0.08
+## A perseguição começou (true) ou acabou (false): o jogador entrou no alcance do tubarão e nadou de volta ao raso,
+## foi mordido ou saiu do mar. Quem quiser reagir (a música de tensão já reage, pelo `Audio`) liga aqui.
+signal perseguicao_mudou(ativa: bool)
 
 var _world	# world_builder.gd (water_level, water_depth_at, ancoras)
 var _player	# player_controller.gd (is_swimming, _back_to_land)
@@ -89,6 +95,10 @@ var _rng := RandomNumberGenerator.new()
 var _flash: ColorRect
 var _vinheta: TextureRect
 var _preto: ColorRect
+## O quanto o tubarão ameaça o jogador neste quadro, de 0 (nada) a 1 (a boca em cima): é o que a música de tensão
+## segue (`Audio.tensao_do_tubarao`). `_com_perigo` guarda se o último valor era acima de zero.
+var _perigo := 0.0
+var _com_perigo := false
 
 
 ## `aviso` recebe o texto do susto para o HUD (hud.set_notice).
@@ -116,9 +126,45 @@ func configurar(world, player, aviso: Callable) -> void:
 
 func _physics_process(delta: float) -> void:
 	_tempo += delta
-	if not _ativo or _atacando:
+	if not _ativo:
+		return
+	if _atacando:
+		_publicar_o_perigo(0.0)
 		return
 	_animar_cauda(delta)
+	_publicar_o_perigo(_passo_da_patrulha(delta))
+
+
+func _exit_tree() -> void:
+	# Saindo do vale com o tubarão na cola, a música de tensão não pode ficar presa.
+	_publicar_o_perigo(0.0)
+
+
+## O quanto o tubarão ameaça o jogador agora, de 0 a 1 (ver `_perigo`).
+func perigo() -> float:
+	return _perigo
+
+
+## Guarda o perigo do quadro, avisa quando a perseguição começa ou acaba e passa o número à música de tensão.
+func _publicar_o_perigo(valor: float) -> void:
+	_perigo = clampf(valor, 0.0, 1.0)
+	var ativa := _perigo > 0.0
+	if ativa != _com_perigo:
+		_com_perigo = ativa
+		perseguicao_mudou.emit(ativa)
+	var audio := get_node_or_null("/root/Audio")
+	if audio != null and audio.has_method("tensao_do_tubarao"):
+		audio.tensao_do_tubarao(_perigo)
+
+
+## O perigo de quem o tubarão persegue a `distancia` (u): maior quanto mais perto.
+static func perigo_a(distancia: float) -> float:
+	return clampf(1.0 - distancia / RAIO_PERCEPCAO, PERIGO_MINIMO, 1.0)
+
+
+## Um quadro de vida do tubarão: patrulha, caça aos cardumes ou perseguição. Devolve o perigo que ele faz ao
+## jogador (0 sem perseguição).
+func _passo_da_patrulha(delta: float) -> float:
 	var agora := _tempo
 	_checagem_mare -= delta
 	if _checagem_mare <= 0.0:
@@ -134,7 +180,7 @@ func _physics_process(delta: float) -> void:
 	if _submerso:
 		if _espuma:
 			_espuma.emitting = false
-		return
+		return 0.0
 	# A barbatana acompanha a superfície (a maré pode mexer no nível).
 	global_position.y = _nivel()
 	var pos := global_position
@@ -161,7 +207,7 @@ func _physics_process(delta: float) -> void:
 	var dist := dif.length()
 	if perseguindo and dist < RAIO_ATAQUE:
 		_atacar()
-		return
+		return 0.0
 	if cacando and dist < RAIO_BOTE_PEIXE:
 		_comer(agora)
 	if dist > 0.005:
@@ -179,6 +225,7 @@ func _physics_process(delta: float) -> void:
 	_ritmo = clampf(velocidade / VELOCIDADE_PATRULHA, 1.0, 3.0)
 	if _nado != null:
 		_nado.speed_scale = velocidade / VELOCIDADE_PATRULHA
+	return perigo_a(dist) if perseguindo else 0.0
 
 
 ## Posição do jogador se ele é caçável agora; Vector3.INF caso contrário.

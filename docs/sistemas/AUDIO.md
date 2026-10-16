@@ -24,6 +24,21 @@ menu: com o vale aberto ela só é guardada. Até a Build 9B eram três trilhas 
 `tests/musica_do_dia.gd` anda o relógio pelo dia inteiro no vale de verdade, e carrega partida em
 cada período.
 
+## Tensão do tubarão
+
+Quando o tubarão persegue (ou, no mar aberto, ronda e dá o bote: ver `mar_aberto.gd`), uma **camada de
+tensão** entra por cima da música do dia. O fluxo da trilha do dia não é trocado, só abaixa (até 30% do
+volume, `ABAFO_DA_MUSICA_NA_TENSAO`), e por isso ela volta de onde estava quando o perigo passa. O
+tubarão fala com o `Audio` por um número só por quadro, `Audio.tensao_do_tubarao(perigo)`, de 0 a 1, tirado
+da distância (`Tubarao.perigo()`): longe é só um grave baixo (`GANHO_LONGE`), perto é a trilha inteira. A
+camada entra em 1,5 s e sai em 5 s, toca no barramento Geral sob o volume e o mudo de Música, e no volume de
+fábrica fica 16 dB abaixo das vozes e 11 dB abaixo da narração (`VOLUME_DA_TENSAO`), para fala e narração
+continuarem por cima; ela segue também o `_abafo_musica`, e qualquer ducking geral da música a alcança. A trilha própria,
+`musica_tubarao.mp3`, é geração paga (`tools/elevenlabs/gerar-musicas-periodos.ps1` tem a linha pronta);
+enquanto ela não existe vale a da mata fechada, e sem nenhuma das duas o jogo segue calado.
+`tests/unidade/test_tensao_do_tubarao.gd` cobre o Audio, e `tests/tubarao.gd` e `tests/musica_do_dia.gd`
+cobrem a perseguição de verdade e a convivência com o dia e com a mata.
+
 ## Efeitos de trabalho, de interface e dos sustos
 
 Todo nome em `Audio.efeito("...")` precisa de arquivo em `assets/audio/efeitos/`, e todo arquivo de

@@ -107,8 +107,7 @@ var sons_agua_opcao: int = 1
 var _ganho_musica: float = 1.0:
 	set(valor):
 		_ganho_musica = valor
-		if is_instance_valid(_musica):
-			_musica.volume_db = _volume_db(VOLUME_MUSICA, _ef("musica", volume_musica) * _ganho_musica * _abafo_musica)
+		_aplicar_volume_da_musica()
 ## Fator da música por baixo da narração da travessia (1 fora dela).
 var _abafo_musica: float = 1.0:
 	set(valor):
@@ -130,6 +129,7 @@ func _ready() -> void:
 	_interface = _criar_tocador("Interface", VOLUME_EFEITO)
 	_mar = _criar_tocador("Mare", VOLUME_AMBIENTE)
 	_aves = _criar_tocador("Aves", VOLUME_AMBIENTE)
+	_tensao = _criar_tocador("Tensao", VOLUME_DA_TENSAO)
 	_timer_previa = Timer.new()
 	_timer_previa.one_shot = true
 	_timer_previa.wait_time = 6.0
@@ -299,6 +299,134 @@ func tocar_musica_mata(ligar: bool) -> void:
 ## com a música parada. É o que os portões e a depuração perguntam.
 func musica_atual() -> String:
 	return _caminho_musica
+
+
+## --- A TENSÃO DO TUBARÃO (#261) --------------------------------------------------------------------------
+##
+## Quando o tubarão persegue, uma trilha de tensão entra POR CIMA da música do dia, e a do dia só abaixa: o
+## fluxo dela não é trocado, e por isso ela "volta de onde estava" quando o perigo passa. É uma camada
+## própria (`_tensao`, em loop, no barramento Geral e sob o volume de Música), e quem a comanda é o
+## tubarão, com UM número por quadro — `tensao_do_tubarao(nivel)`, de 0 (sem perigo) a 1 (a boca em cima),
+## que ele tira da distância. Longe, a tensão é só um sussurro grave (`GANHO_LONGE`); perto, a trilha
+## inteira. Ela entra em `ENTRADA_DA_TENSAO` s e sai em `SAIDA_DA_TENSAO` s, e a trilha do dia desce até
+## `ABAFO_DA_MUSICA_NA_TENSAO` enquanto ela soa. Fica sempre bem abaixo da voz e da narração, que sobem por
+## cima (`VOLUME_DA_TENSAO`; tests/unidade/test_tensao_do_tubarao.gd confere a margem).
+##
+## A trilha própria (`musica_tubarao.mp3`) é geração paga e ainda não existe: sem ela vale a da mata
+## fechada (`musica_mata.mp3`), e sem nenhuma das duas o jogo segue em silêncio, sem erro.
+const MUSICA_TUBARAO := "res://assets/audio/musica/musica_tubarao.mp3"
+const VOLUME_DA_TENSAO := -12.0
+const ENTRADA_DA_TENSAO := 1.5
+const SAIDA_DA_TENSAO := 5.0
+const GANHO_LONGE := 0.2
+const ABAFO_DA_MUSICA_NA_TENSAO := 0.3
+
+var _tensao: AudioStreamPlayer
+## O que o tubarão pediu por último (0..1) e se há perigo (nível acima de zero).
+var _tensao_nivel := 0.0
+var _tensao_ligada := false
+## O quanto a camada já entrou (0..1): sobe em ENTRADA_DA_TENSAO e desce em SAIDA_DA_TENSAO.
+var _tensao_envelope := 0.0:
+	set(valor):
+		_tensao_envelope = valor
+		_aplicar_a_tensao()
+## Fator da música do dia enquanto a tensão soa (1 fora dela).
+var _abafo_da_tensao := 1.0
+var _tensao_transicao: Tween
+
+
+## O perigo do tubarão neste quadro, de 0 a 1; zero apaga a tensão (em `SAIDA_DA_TENSAO` s).
+func tensao_do_tubarao(nivel: float) -> void:
+	nivel = clampf(nivel, 0.0, 1.0) if is_finite(nivel) else 0.0
+	var ligada := nivel > 0.0
+	if ligada == _tensao_ligada:
+		if ligada and not is_equal_approx(nivel, _tensao_nivel):
+			_tensao_nivel = nivel
+			_aplicar_a_tensao()
+		return
+	_tensao_ligada = ligada
+	if ligada:
+		_tensao_nivel = nivel
+		_entrar_na_tensao()
+	else:
+		_mover_a_tensao(0.0, SAIDA_DA_TENSAO * _tensao_envelope, true)
+
+
+## O perigo que vale agora (0 sem perseguição).
+func tensao_atual() -> float:
+	return _tensao_nivel if _tensao_ligada else 0.0
+
+
+## A camada de tensão está soando?
+func tensao_tocando() -> bool:
+	return is_instance_valid(_tensao) and _tensao.playing
+
+
+## A trilha que a tensão toca: a própria, ou a da mata fechada enquanto a própria não existe; "" sem nenhuma.
+func faixa_da_tensao() -> String:
+	return faixa_da_tensao_entre(ResourceLoader.exists(MUSICA_TUBARAO), ResourceLoader.exists(MUSICA_MATA))
+
+
+static func faixa_da_tensao_entre(tem_tubarao: bool, tem_mata: bool) -> String:
+	if tem_tubarao:
+		return MUSICA_TUBARAO
+	return MUSICA_MATA if tem_mata else ""
+
+
+## O ganho (linear) da camada para um perigo: zero sem perigo, `GANHO_LONGE` no mais longe e 1 com a boca em cima.
+static func ganho_da_tensao(nivel: float) -> float:
+	if not is_finite(nivel) or nivel <= 0.0:
+		return 0.0
+	return lerpf(GANHO_LONGE, 1.0, minf(nivel, 1.0))
+
+
+func _entrar_na_tensao() -> void:
+	var caminho := faixa_da_tensao()
+	var fluxo := _carregar(caminho) if caminho != "" else null
+	# A trilha da mata já no ar como a música (a onça caça) é a tensão que já se ouve: não se dobra.
+	if fluxo == null or caminho == _caminho_musica or not is_instance_valid(_tensao):
+		return
+	_configurar_loop(fluxo)
+	if _tensao.stream != fluxo or not _tensao.playing:
+		_tensao.stream = fluxo
+		_tensao.play()
+	_mover_a_tensao(1.0, ENTRADA_DA_TENSAO * (1.0 - _tensao_envelope), false)
+
+
+## Leva o envelope da camada a `alvo` em `segundos`; ao sair, a camada para quando a descida acaba.
+func _mover_a_tensao(alvo: float, segundos: float, parar_no_fim: bool) -> void:
+	if _tensao_transicao and _tensao_transicao.is_valid():
+		_tensao_transicao.kill()
+	if segundos <= 0.001 or is_equal_approx(_tensao_envelope, alvo):
+		_tensao_envelope = alvo
+		if parar_no_fim:
+			_parar_a_camada_da_tensao()
+		return
+	_tensao_transicao = create_tween()
+	_tensao_transicao.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_tensao_transicao.tween_property(self, "_tensao_envelope", alvo, segundos)
+	if parar_no_fim:
+		_tensao_transicao.tween_callback(_parar_a_camada_da_tensao)
+
+
+func _parar_a_camada_da_tensao() -> void:
+	if not _tensao_ligada and is_instance_valid(_tensao):
+		_tensao.stop()
+
+
+## O perigo ou o envelope mudou: a música do dia desce na medida em que a tensão sobe, e os dois volumes se refazem.
+func _aplicar_a_tensao() -> void:
+	_abafo_da_tensao = 1.0 - (1.0 - ABAFO_DA_MUSICA_NA_TENSAO) * ganho_da_tensao(_tensao_nivel) * _tensao_envelope
+	_aplicar_volume_da_musica()
+
+
+## O volume do que toca como música: a trilha do dia (ganho da fusão, abafo da narração e da tensão) e a camada
+## de tensão, que seguem juntos o volume de Música (e o mudo dela).
+func _aplicar_volume_da_musica() -> void:
+	if is_instance_valid(_musica):
+		_musica.volume_db = _volume_db(VOLUME_MUSICA, _ef("musica", volume_musica) * _ganho_musica * _abafo_musica * _abafo_da_tensao)
+	if is_instance_valid(_tensao):
+		_tensao.volume_db = _volume_db(VOLUME_DA_TENSAO, _ef("musica", volume_musica) * _abafo_musica * ganho_da_tensao(_tensao_nivel) * _tensao_envelope)
 
 
 ## Trilha do período atual; sem o arquivo dele vale a do período vizinho e, sem nenhuma, a

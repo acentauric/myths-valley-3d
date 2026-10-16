@@ -30,6 +30,9 @@ extends "res://tests/suite/caso.gd"
 ##      passando não a tira) e devolve a do período CERTO ao sair.
 ##   5. A TRILHA DA MATA PRESA de uma partida que acabou caçada não vira a música de uma
 ##      partida nova: o `AmbienteVale` que nasce desliga a tensão que não é dele.
+##   6. A TENSÃO DO TUBARÃO (#261) é uma camada por cima: não troca nem para a trilha do dia, que só abaixa; o
+##      relógio vira com ela ligada; ao fim do perigo ela sai e a do dia volta ao cheio; e a trilha da mata, se for a
+##      música no ar, não é dobrada por ela.
 ##
 ## FALSIFICAÇÃO: com `MV_FALSIFICAR=musica` o `Audio` deixa de ouvir o relógio (o sinal
 ## `hora_mudou` é desligado dele): as perguntas 2 e 3 têm de FALHAR (o portão sai vermelho).
@@ -120,6 +123,9 @@ func _run() -> void:
 
 	# 5. A MATA PRESA de uma partida anterior.
 	await _mata_presa_nao_contamina()
+
+	# 6. A TENSÃO DO TUBARÃO convive com o dia e com a mata (#261).
+	await _tensao_do_tubarao_convive()
 
 	print("MUSICA_DO_DIA: trilha final %s" % audio.musica_atual().get_file())
 	if falhas == 0:
@@ -257,6 +263,52 @@ func _mata_presa_nao_contamina() -> void:
 	var voltou := await _esperar_trilha(audio.MUSICAS_PERIODO["manha"], "o vale novo depois da mata presa")
 	_conferir(voltou, "o vale novo herdou a trilha da mata presa (%s)" % audio.musica_atual().get_file())
 	ambiente.queue_free()
+
+
+## A TENSÃO DO TUBARÃO é uma camada por cima: não troca nem para a trilha do dia (que só abaixa), o relógio vira com
+## ela ligada e a trilha do período novo entra por baixo, e ao fim do perigo a camada sai e a do dia volta ao cheio.
+## Com a onça caçando (a trilha da mata como A música) a camada não dobra a mesma faixa.
+func _tensao_do_tubarao_convive() -> void:
+	# O tubarão do vale é quem comanda a tensão (publica o perigo dele a cada quadro, zero inclusive): para o caso falar
+	# no lugar dele, o tubarão se cala, e volta ao fim.
+	var tubarao = vale.get_node_or_null("Tubarao")
+	if tubarao != null:
+		tubarao.set_physics_process(false)
+	dia.definir_hora(8.0)
+	await _esperar_trilha(audio.MUSICAS_PERIODO["manha"], "antes da tensão do tubarão")
+	var fluxo_da_manha: AudioStream = audio._musica.stream
+	var volume_do_dia: float = audio._musica.volume_db
+	audio.tensao_do_tubarao(0.9)
+	await relogio.esperar(audio.ENTRADA_DA_TENSAO + 0.5)
+	_conferir(audio.tensao_tocando(), "a tensão do tubarão não tocou")
+	_conferir(audio.musica_atual() == audio.MUSICAS_PERIODO["manha"] and audio._musica.stream == fluxo_da_manha and audio._musica.playing,
+		"a tensão do tubarão trocou ou parou a trilha do dia (%s)" % audio.musica_atual().get_file())
+	_conferir(audio._musica.volume_db < volume_do_dia - 3.0, "a trilha do dia não abaixou sob a tensão (%.1f dB contra %.1f)" % [audio._musica.volume_db, volume_do_dia])
+	# A manhã vira tarde com o tubarão na cola: a trilha nova entra por baixo, e a tensão segue.
+	dia.definir_hora(14.0)
+	var virou := await _esperar_trilha(audio.MUSICAS_PERIODO["tarde"], "a hora virou com o tubarão na cola")
+	_conferir(virou, "com a tensão do tubarão ligada o relógio não levou a música à tarde (%s)" % audio.musica_atual().get_file())
+	_conferir(audio.tensao_tocando(), "a hora virando tirou a tensão do tubarão")
+	# O perigo passa: a camada sai em 4 a 6 s e a trilha do dia volta ao volume cheio.
+	audio.tensao_do_tubarao(0.0)
+	await relogio.esperar(audio.SAIDA_DA_TENSAO + 0.5)
+	_conferir(not audio.tensao_tocando(), "a tensão do tubarão não saiu depois do perigo")
+	_conferir(is_equal_approx(audio._abafo_da_tensao, 1.0), "a trilha do dia não voltou ao volume cheio (%.2f)" % audio._abafo_da_tensao)
+	_conferir(audio.musica_atual() == audio.MUSICAS_PERIODO["tarde"], "ao fim do perigo a música não é a da tarde (%s)" % audio.musica_atual().get_file())
+	_conferir_audivel("depois da tensão do tubarão")
+	# A mata no ar (a onça caça) e o tubarão ao mesmo tempo: a faixa da mata não toca duas vezes.
+	if audio.faixa_da_tensao() == audio.MUSICA_MATA:
+		audio.tocar_musica_mata(true)
+		await _esperar_trilha(audio.MUSICA_MATA, "a mata com o tubarão")
+		audio.tensao_do_tubarao(0.8)
+		await relogio.esperar(audio.ENTRADA_DA_TENSAO + 0.5)
+		_conferir(not audio.tensao_tocando(), "a camada dobrou a trilha da mata que já é a música")
+		audio.tensao_do_tubarao(0.0)
+		audio.tocar_musica_mata(false)
+		var saiu := await _esperar_trilha(audio.MUSICAS_PERIODO["tarde"], "saindo da mata com o tubarão")
+		_conferir(saiu, "ao sair da mata a música não voltou à da tarde (%s)" % audio.musica_atual().get_file())
+	if tubarao != null:
+		tubarao.set_physics_process(true)
 
 
 ## Espera a trilha `caminho` ficar ESCUTÁVEL: é a do autoload, o fluxo é o dela, está tocando e o ganho
