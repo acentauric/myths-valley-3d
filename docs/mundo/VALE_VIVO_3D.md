@@ -72,6 +72,27 @@ escolheu "Sem maré" continua sem. Sem tela (`--headless`, os portões) o padrã
 portões da água medem contra um nível fixo; `MV_MARE_MODO=1` força a maré nos portões, e
 `tests/mare_ligada.gd` prova o padrão, a migração, a curva e o vale seguindo.
 
+## O mar aberto é o limite do mundo
+
+O mundo jogável é o quadro 16:9 do mapa (`get_map_frame()`, 903,6 x 508,3 u), com parede invisível nas quatro
+bordas; a foto do minimapa cobre exatamente esse quadro, e fora dela a vista é o fundo escuro. A regra do autor
+(#260): **a borda do mapa não pode aparecer no minimapa com o jogador vivo no mar**. A conta está em
+`mar_aberto.gd` (pura, sem o vale): o círculo do minimapa tem raio 27,5 u (`Minimapa.VISTA` é o LADO do quadrado
+da vista, 55 u), e com o mapa doido a foto escorrega até 38 u, então a borda entra na vista a até 65,5 u.
+
+Por isso o `tubarao.gd` guarda o fim do mundo. Medindo a distância à borda mais perto: **a menos de 110 u** a
+barbatana passa a rondar o jogador a ~26 u, o HUD avisa ("Uma barbatana ronda por perto…") e a música de tensão
+entra; **a menos de 70 u** (a linha fatal) ela dá o bote, sem cooldown nem alcance de percepção, e o susto de
+sempre devolve o jogador à terra firme em no máximo 5 s (mais 1 s de tela escurecendo), com o texto "o mar aberto
+não deixa ninguém passar". Setenta é o raio da vista mais o que o jogador ainda anda nesse tempo, no pior ritmo
+que ele tem na água (6,5 u/s, a vau e com os talentos todos). A regra olha a **posição** do jogador (água acima do
+joelho, 0,4 u, e fora da terra), e não se ele nada: vale a vau, na baixa-mar (a baía vira planície de joelho, e o
+tubarão do pesqueiro some, mas o do mar aberto não liga para a maré), de barco e no testador. Rio, ponte, praia
+molhada e terra não contam como mar (na terra vale a parede invisível, e as ostras e a gameleira do canto sudoeste
+ficam em terra). Quem recua da faixa de aviso não é mordido: a barbatana afunda e volta ao pesqueiro.
+`tests/unidade/test_mar_aberto.gd` fixa a geometria e `tests/tubarao_borda.gd` leva o jogador, mar adentro, até a
+borda em cada lado que tem mar, nadando, no pior ritmo e a vau na baixa-mar.
+
 ## Som do lugar
 
 `ambiente_vale.gd` mantém dois loops de mata (dia: aves e insetos; noite:

@@ -105,6 +105,11 @@ func _run() -> void:
 	espaco = world.get_world_3d().direct_space_state
 	consulta_dentro.collision_mask = 1 << 13
 	_falsificar()
+	# O portão é da câmera, e não da fauna: a água funda que ele acha (a do pesqueiro) fica encostada no fim do quadro, onde o
+	# tubarão do mar aberto morde quem nada (#260, `mar_aberto.gd`), e o susto levaria o jogador à terra no meio da medida.
+	var tubarao = vale.get_node_or_null("Tubarao")
+	if tubarao != null:
+		tubarao.set_physics_process(false)
 	print("física: ", ProjectSettings.get_setting("physics/3d/physics_engine", "DEFAULT"), " (DEFAULT é o do Godot, sem Jolt)")
 	var pedro = vale.get("pedro")
 	if pedro != null:
@@ -407,6 +412,9 @@ func _medir_a_agua(pior: Dictionary) -> void:
 
 func _fechar() -> void:
 	_soltar()
+	var tubarao = vale.get_node_or_null("Tubarao") if vale != null else null
+	if tubarao != null:
+		tubarao.set_physics_process(true)
 	print("")
 	if falhas == 0:
 		print("CAMERA_RESILIENTE_OK (%s): em todos os cômodos, entrando e saindo e de qualquer lado, a câmera nunca chega a %.2f m do pivô nem a %.2f m do corpo; na orla, no raso, nadando parado e em movimento, girando e na baixa-mar, ela fica sempre %.2f m acima da água de agora" % [_estilo_do_portao(), BRACO_MINIMO, CORPO_MINIMO, AGUA_MINIMA])

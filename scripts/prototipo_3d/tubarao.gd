@@ -42,6 +42,7 @@ const SOM_ATAQUE := "res://assets/audio/efeitos/tubarao_ataque.mp3"
 const TEXTOS := "res://data/fauna_do_mar.json"
 const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
 const Cardume = preload("res://scripts/prototipo_3d/cardume.gd")
+const MarAberto = preload("res://scripts/prototipo_3d/mar_aberto.gd")
 ## A caça aos cardumes: de quanto em quanto tempo (s), até onde ele procura, a
 ## arrancada (u/s) e quanto dura no máximo, e a distância do bote no peixe.
 const INTERVALO_CACA := Vector2(45.0, 90.0)
@@ -54,9 +55,43 @@ const BARBATANA_FORA := 0.12
 ## O perigo mínimo de quem está sendo perseguido: na beira do alcance (`RAIO_PERCEPCAO`) a conta de distância
 ## daria zero, e a perseguição já começou.
 const PERIGO_MINIMO := 0.08
+## A sequência do susto (s): o flash, a vinheta fechando e a cortina, até a tela preta, quando o jogador volta à terra.
+## A linha fatal do mar aberto conta com este tempo (`MarAberto.DO_ATAQUE_AO_PRETO`).
+const FLASH_S := 0.1
+const VINHETA_S := 0.5
+const CORTINA_S := 0.4
+const ATE_O_PRETO := FLASH_S + VINHETA_S + CORTINA_S
+
+## O MAR ABERTO (#260), em unidades e segundos: a ronda da barbatana, o bote, e como ele sobe e desce.
+const VELOCIDADE_RONDA := 5.0
+const VELOCIDADE_BOTE := 10.0
+## O bote acelera enquanto dura (u/s a cada segundo): quem foge para a borda não tem como fugir dele.
+const ACELERACAO_DO_BOTE := 2.5
+## A que distância do jogador a barbatana rodeia, e a que distância o bote morde.
+const RAIO_DA_RONDA := 26.0
+const RAIO_ATAQUE_BOTE := 1.6
+## A lâmina mínima por onde a barbatana rodeia e por onde ela dá o bote (no bote ela chega mais raso: a vau). A da ronda
+## é a do mar (`MarAberto.LAMINA_DO_MAR`) com uma folga: a baía rasa do nordeste, que o jogador vadeia até a borda, tem 0,5 a 0,7 u.
+const LAMINA_MINIMA_RONDA := 0.45
+const LAMINA_MINIMA_BOTE := 0.35
+## Quanto ele afunda para sumir (u), e quanto leva para afundar ou subir (s).
+const FUNDO_DO_MERGULHO := 1.3
+const DURACAO_DA_EMERSAO := 0.9
+## Mais longe que isto do ponto onde vai rodear, ele afunda e reaparece lá em vez de atravessar o mar à vista.
+const LONGE_PARA_SURGIR := 45.0
+## O perigo da ronda (a tensão da música já soa), o intervalo entre dois avisos no HUD (s), quanto tempo fora da zona
+## faz a barbatana desistir (s) e a margem do quadro por onde ele não passa (u).
+const PERIGO_DA_RONDA := 0.3
+const INTERVALO_DO_AVISO := 90.0
+const DEMORA_PARA_DESISTIR := 3.0
+const MARGEM_DO_QUADRO := 6.0
+
 ## A perseguição começou (true) ou acabou (false): o jogador entrou no alcance do tubarão e nadou de volta ao raso,
 ## foi mordido ou saiu do mar. Quem quiser reagir (a música de tensão já reage, pelo `Audio`) liga aqui.
 signal perseguicao_mudou(ativa: bool)
+## A barbatana apareceu para rondar quem nada rumo à borda do mapa (uma vez por entrada, com intervalo): o aviso do HUD
+## sai junto. É o gancho para a fala do viajante.
+signal avisou_no_mar_aberto
 
 var _world	# world_builder.gd (water_level, water_depth_at, ancoras)
 var _player	# player_controller.gd (is_swimming, _back_to_land)
@@ -99,6 +134,29 @@ var _preto: ColorRect
 ## segue (`Audio.tensao_do_tubarao`). `_com_perigo` guarda se o último valor era acima de zero.
 var _perigo := 0.0
 var _com_perigo := false
+## O MAR ABERTO (#260). O quadro do mapa (e o que sobra dele depois da margem), a linha fatal (uma variável, e não só a
+## constante, para o caso do vale poder falsificá-la), a zona em que o jogador está, e se o tubarão foi chamado (deixou
+## o pesqueiro para rondar ou dar o bote).
+var _quadro := Rect2()
+var _quadro_util := Rect2()
+var _linha_fatal := MarAberto.LINHA_FATAL
+var _zona: int = MarAberto.Zona.NENHUMA
+var _chamado := false
+## O jogador está dentro d'água agora (e não só na zona, que ainda vale por alguns segundos depois de ele sair).
+var _jogador_na_agua := false
+var _fora_desde := -1.0
+var _bote_desde := 0.0
+## Quanto do corpo está acima da água, de 0 (afundado) a 1, e para quanto vai.
+var _emersao := 1.0
+var _emersao_alvo := 1.0
+## Onde reaparecer, depois de afundar (INF: sem mudança de lugar), e o ângulo da ronda em volta do jogador.
+var _surgir_em := Vector3.INF
+var _angulo_da_ronda := 0.0
+var _ultimo_aviso := -1000000.0
+var _loucura_no: Node
+## A mordida que vem é a do mar aberto (o texto do susto é outro), e quantas houve (para o caso do vale).
+var _mordida_no_mar_aberto := false
+var mordidas_no_mar_aberto := 0
 
 
 ## `aviso` recebe o texto do susto para o HUD (hud.set_notice).
@@ -116,6 +174,9 @@ func configurar(world, player, aviso: Callable) -> void:
 	_montar_visual()
 	_montar_espuma()
 	_montar_tela()
+	if _world.has_method("get_map_frame"):
+		_quadro = _world.get_map_frame()
+		_quadro_util = _quadro.grow(-MARGEM_DO_QUADRO)
 	global_position = _ponto_elipse(_angulo)
 	_rumo = rotation.y
 	_ativo = true
@@ -132,7 +193,8 @@ func _physics_process(delta: float) -> void:
 		_publicar_o_perigo(0.0)
 		return
 	_animar_cauda(delta)
-	_publicar_o_perigo(_passo_da_patrulha(delta))
+	_vigiar_o_mar_aberto()
+	_publicar_o_perigo(_agir_no_mar_aberto(delta) if _chamado else _passo_da_patrulha(delta))
 
 
 func _exit_tree() -> void:
@@ -315,10 +377,10 @@ func _atacar() -> void:
 	_preto.modulate.a = 0.0
 	# Flash branco → vinheta vermelha fechando → preto → reset → abre do preto.
 	var sequencia := create_tween()
-	sequencia.tween_property(_flash, "modulate:a", 0.0, 0.1)
-	sequencia.tween_property(_vinheta, "modulate:a", 1.0, 0.5)
-	sequencia.parallel().tween_property(_vinheta, "scale", Vector2.ONE, 0.5)
-	sequencia.tween_property(_preto, "modulate:a", 1.0, 0.4)
+	sequencia.tween_property(_flash, "modulate:a", 0.0, FLASH_S)
+	sequencia.tween_property(_vinheta, "modulate:a", 1.0, VINHETA_S)
+	sequencia.parallel().tween_property(_vinheta, "scale", Vector2.ONE, VINHETA_S)
+	sequencia.tween_property(_preto, "modulate:a", 1.0, CORTINA_S)
 	sequencia.tween_callback(_resgatar)
 	sequencia.tween_property(_preto, "modulate:a", 0.0, 0.6)
 	sequencia.parallel().tween_property(_vinheta, "modulate:a", 0.0, 0.3)
@@ -330,29 +392,283 @@ func _resgatar() -> void:
 	if _player != null and _player.has_method("_back_to_land"):
 		_player._back_to_land()
 	if _aviso.is_valid():
-		_aviso.call(_texto_do_susto())
+		_aviso.call(_texto("susto_borda" if _mordida_no_mar_aberto else "susto"))
+	if _mordida_no_mar_aberto:
+		mordidas_no_mar_aberto += 1
+		_mordida_no_mar_aberto = false
 	# Recomeça a patrulha do lado oposto da elipse, longe do jogador.
 	if _player != null:
 		var rel: Vector3 = _player.global_position - _centro
 		_angulo = fposmod(atan2(rel.dot(_eixo_b), rel.dot(_eixo_a)) + PI, TAU)
 	global_position = _ponto_elipse(_angulo)
+	_encerrar_o_chamado()
 
 
 ## O aviso do susto, no idioma do jogador (data/fauna_do_mar.json).
 func _texto_do_susto() -> String:
+	return _texto("susto")
+
+
+## Um texto do bloco do tubarão em data/fauna_do_mar.json (`susto`, `aviso`, `susto_borda`), no idioma do jogador.
+func _texto(chave: String) -> String:
 	var arquivo := FileAccess.open(TEXTOS, FileAccess.READ)
 	if arquivo == null:
 		return ""
 	var dados = JSON.parse_string(arquivo.get_as_text())
 	if not dados is Dictionary:
 		return ""
-	return str(IdiomaMenu.campo(dados.get("tubarao", {}), "susto", ""))
+	return str(IdiomaMenu.campo(dados.get("tubarao", {}), chave, ""))
 
 
 func _encerrar_ataque() -> void:
 	_tela.visible = false
 	_atacando = false
 	_proximo_ataque = _tempo + COOLDOWN_ATAQUE
+
+
+## --- O MAR ABERTO (#260) ----------------------------------------------------------------------------------
+##
+## O mar aberto é o limite do mundo: quem nada ou vadeia para o fim dele não pode ver a borda do mapa no minimapa (a conta
+## está em `mar_aberto.gd`). A ~110 u da borda a barbatana passa a rondar o jogador; a menos de 70 u ela dá o bote — sem
+## cooldown, sem alcance de percepção, acelerando —, e o susto de sempre devolve o jogador à terra, no máximo
+## `PRAZO_DO_BOTE` s depois de ele cruzar a linha. Para isso o tubarão deixa o pesqueiro ("é chamado de onde estiver"):
+## se está longe, afunda, reaparece a ~26 u do jogador (entre ele e o fim do mundo, se a água deixa) e sobe; quando o
+## jogador volta, afunda de novo e retoma a patrulha. A regra olha a POSIÇÃO do jogador (água acima do joelho, fora da
+## terra), e não se ele nada: vale a vau, na baixa-mar, de barco e no testador.
+
+
+## Um quadro de zona: onde o jogador está, quando o tubarão é chamado e quando desiste.
+func _vigiar_o_mar_aberto() -> void:
+	var nova := _zona_do_jogador()
+	if nova != MarAberto.Zona.NENHUMA:
+		_fora_desde = -1.0
+	elif _zona != MarAberto.Zona.NENHUMA:
+		# Quem beira a praia entra e sai da água: a barbatana só desiste depois de um tempo fora da zona.
+		if _fora_desde < 0.0:
+			_fora_desde = _tempo
+		if _tempo - _fora_desde < DEMORA_PARA_DESISTIR:
+			nova = _zona
+	if nova == _zona:
+		return
+	_zona = nova
+	if nova == MarAberto.Zona.FATAL:
+		_bote_desde = _tempo
+	if nova != MarAberto.Zona.NENHUMA and not _chamado:
+		_chamar()
+
+
+## A zona do mar aberto em que o jogador está agora (a folga de quem beira a linha vem da zona de antes).
+func _zona_do_jogador() -> int:
+	_jogador_na_agua = false
+	if _player == null or not _quadro.has_area():
+		return MarAberto.Zona.NENHUMA
+	var ppos: Vector3 = _player.global_position
+	var cru := MarAberto.distancia_a_borda(ppos, _quadro)
+	# Longe das bordas nem se pergunta ao mundo: a conta de água e de terra custa, e quase todo quadro cai aqui.
+	if cru >= MarAberto.FAIXA_DE_AVISO + MarAberto.HISTERESE + MarAberto.deriva_maxima_do_mapa():
+		return MarAberto.Zona.NENHUMA
+	_jogador_na_agua = MarAberto.no_mar(_lamina(ppos), _world.is_on_land(ppos))
+	if not _jogador_na_agua:
+		return MarAberto.Zona.NENHUMA
+	# O mapa doido adianta a borda na vista, e as linhas andam junto.
+	return MarAberto.zona(cru - _deriva_do_mapa(), _zona, _linha_fatal)
+
+
+## Quanto o mapa doido desloca a foto do minimapa agora (u); zero fora dele.
+func _deriva_do_mapa() -> float:
+	if not is_instance_valid(_loucura_no):
+		_loucura_no = get_tree().get_first_node_in_group(&"loucura_do_mapa") if is_inside_tree() else null
+	if _loucura_no == null:
+		return 0.0
+	return (_loucura_no.deriva_do_mapa() as Vector2).length()
+
+
+## O jogador entrou na zona de aviso ou na fatal: o tubarão deixa a patrulha para rondá-lo ou dar o bote.
+func _chamar() -> void:
+	_chamado = true
+	var ppos: Vector3 = _player.global_position
+	if _submerso:
+		# Na baixa-mar ele estava escondido no pesqueiro; o mar aberto não liga para a maré.
+		_emersao = 0.0
+	_emersao_alvo = 1.0
+	var onde := _ponto_de_surgimento(ppos)
+	var longe := false
+	if onde.is_finite():
+		longe = Vector2(global_position.x - onde.x, global_position.z - onde.z).length() > LONGE_PARA_SURGIR
+	_surgir_em = onde if onde.is_finite() and (_submerso or longe) else Vector3.INF
+	_angulo_da_ronda = atan2(global_position.z - ppos.z, global_position.x - ppos.x)
+	if _tempo - _ultimo_aviso >= INTERVALO_DO_AVISO:
+		_ultimo_aviso = _tempo
+		if _aviso.is_valid():
+			_aviso.call(_texto("aviso"))
+		avisou_no_mar_aberto.emit()
+
+
+## Um quadro do tubarão chamado: afunda e volta, reaparece, ronda ou dá o bote. Devolve o perigo que ele faz.
+func _agir_no_mar_aberto(delta: float) -> float:
+	var ppos: Vector3 = _player.global_position
+	_emersao = move_toward(_emersao, _emersao_alvo, delta / DURACAO_DA_EMERSAO)
+	_aplicar_a_emersao()
+	if _zona == MarAberto.Zona.NENHUMA:
+		# O jogador saiu da zona: a barbatana afunda e volta ao pesqueiro.
+		_emersao_alvo = 0.0
+		_surgir_em = Vector3.INF
+		if _emersao <= 0.02:
+			_voltar_para_a_patrulha()
+		return 0.0
+	if _surgir_em.is_finite():
+		# Longe demais para chegar à vista de todos: afunda, reaparece no lugar da ronda e sobe.
+		_emersao_alvo = 0.0
+		if _emersao <= 0.02:
+			_reposicionar(_surgir_em, ppos)
+			_surgir_em = Vector3.INF
+			_emersao_alvo = 1.0
+		return PERIGO_DA_RONDA
+	_emersao_alvo = 1.0
+	var dist := Vector2(ppos.x - global_position.x, ppos.z - global_position.z).length()
+	if _zona == MarAberto.Zona.AVISO:
+		var ponto := _ponto_da_ronda(ppos, delta)
+		# Atrasado em relação ao ponto da ronda (o jogador anda), ele apressa o nado.
+		var atraso := Vector2(ponto.x - global_position.x, ponto.z - global_position.z).length()
+		_nadar_para(ponto, VELOCIDADE_RONDA * (1.0 + clampf(atraso / 10.0, 0.0, 2.0)), delta, LAMINA_MINIMA_RONDA)
+		return maxf(PERIGO_DA_RONDA, 1.0 - dist / RAIO_PERCEPCAO)
+	# FATAL: o bote. Morde quando chega, ou quando o prazo vence com o caminho fechado: o mar não espera.
+	var decorrido := _tempo - _bote_desde
+	if _jogador_na_agua and (dist <= RAIO_ATAQUE_BOTE or decorrido >= MarAberto.PRAZO_DO_BOTE):
+		if dist > RAIO_ATAQUE_BOTE:
+			_reposicionar_junto_de(ppos)
+		_mordida_no_mar_aberto = true
+		_atacar()
+		return 0.0
+	_nadar_para(ppos, minf(VELOCIDADE_BOTE + ACELERACAO_DO_BOTE * decorrido, 4.0 * VELOCIDADE_BOTE), delta, LAMINA_MINIMA_BOTE)
+	return maxf(0.5, 1.0 - dist / RAIO_PERCEPCAO)
+
+
+## A afundada e o reaparecer: a altura da barbatana, se ela está à vista e se deixa espuma.
+func _aplicar_a_emersao() -> void:
+	global_position.y = _nivel() - (1.0 - _emersao) * FUNDO_DO_MERGULHO
+	visible = _emersao > 0.02
+	if _espuma:
+		_espuma.emitting = _emersao > 0.6
+		_espuma.amount_ratio = 1.0 if _zona == MarAberto.Zona.FATAL else 0.5
+
+
+## Um passo rumo a `destino` (no plano), sem entrar onde a lâmina é menor que `minima`: o raso ele contorna ladeando.
+func _nadar_para(destino: Vector3, velocidade: float, delta: float, minima: float) -> void:
+	var pos := global_position
+	var dif := Vector3(destino.x - pos.x, 0.0, destino.z - pos.z)
+	var dist := dif.length()
+	if dist > 0.005:
+		var direcao := dif / dist
+		var passo := minf(velocidade * delta, dist)
+		for giro in [0.0, 25.0, -25.0, 50.0, -50.0, 80.0, -80.0]:
+			var lado := direcao.rotated(Vector3.UP, deg_to_rad(float(giro)))
+			var proxima := pos + lado * passo
+			if _pode_nadar_em(proxima, minima):
+				global_position = Vector3(proxima.x, global_position.y, proxima.z)
+				_rumo = lerp_angle(_rumo, atan2(-lado.x, -lado.z), 1.0 - exp(-4.0 * delta))
+				rotation.y = _rumo
+				break
+	_ritmo = clampf(velocidade / VELOCIDADE_PATRULHA, 1.0, 3.0)
+	if _nado != null:
+		_nado.speed_scale = velocidade / VELOCIDADE_PATRULHA
+
+
+## Água por onde ele passa: fora da terra e com a lâmina de `minima` para cima. (O quadro não entra: a elipse do pesqueiro
+## passa do fim do mapa, e quem nada de lá para o jogador não pode ficar preso do lado de fora.)
+func _pode_nadar_em(ponto: Vector3, minima: float) -> bool:
+	return not _world.is_on_land(ponto) and _lamina(ponto) >= minima
+
+
+## O ponto está dentro do quadro do mapa, a `MARGEM_DO_QUADRO` da borda? É onde a barbatana aparece e ronda: nunca do outro
+## lado da parede invisível.
+func _no_quadro(ponto: Vector3) -> bool:
+	return _quadro_util.has_point(Vector2(ponto.x, ponto.z))
+
+
+## Da barbatana ao jogador em linha reta, de 3 em 3 u, a água dá passagem?
+func _caminho_livre(de: Vector3, ate: Vector3, minima: float) -> bool:
+	var comprimento := Vector2(ate.x - de.x, ate.z - de.z).length()
+	var passos := maxi(1, ceili(comprimento / 3.0))
+	for i in range(1, passos + 1):
+		if not _pode_nadar_em(de.lerp(ate, float(i) / float(passos)), minima):
+			return false
+	return true
+
+
+## Onde a barbatana aparece para rondar: a ~26 u do jogador, de preferência entre ele e o fim do mundo, em água por onde
+## ela chegue até ele. INF se não há (o prazo do bote cuida do resto).
+func _ponto_de_surgimento(ppos: Vector3) -> Vector3:
+	var para_a_borda := MarAberto.rumo_da_borda(ppos, _quadro)
+	for raio in [RAIO_DA_RONDA, 16.0, 9.0]:
+		var melhor := Vector3.INF
+		var melhor_nota := -INF
+		for k in 12:
+			var direcao := Vector3(cos(TAU * float(k) / 12.0), 0.0, sin(TAU * float(k) / 12.0))
+			var ponto := ppos + direcao * float(raio)
+			if not _no_quadro(ponto) or not _pode_nadar_em(ponto, LAMINA_MINIMA_RONDA) or not _caminho_livre(ponto, ppos, LAMINA_MINIMA_BOTE):
+				continue
+			var nota := direcao.dot(para_a_borda)
+			if nota > melhor_nota:
+				melhor_nota = nota
+				melhor = ponto
+		if melhor.is_finite():
+			return melhor
+	return Vector3.INF
+
+
+## O ponto da roda em volta do jogador para onde a barbatana nada agora; o raio encolhe e o ângulo desvia onde a água não deixa.
+func _ponto_da_ronda(ppos: Vector3, delta: float) -> Vector3:
+	_angulo_da_ronda = fposmod(_angulo_da_ronda + VELOCIDADE_RONDA / RAIO_DA_RONDA * delta, TAU)
+	# Primeiro a água de rondar; sem ela (a planície rasa), a mesma por onde o bote chega.
+	for minima in [LAMINA_MINIMA_RONDA, LAMINA_MINIMA_BOTE]:
+		for fracao in [1.0, 0.7, 0.45]:
+			for giro in [0.0, 0.5, -0.5, 1.0, -1.0]:
+				var angulo := _angulo_da_ronda + float(giro)
+				var ponto := ppos + Vector3(cos(angulo), 0.0, sin(angulo)) * (RAIO_DA_RONDA * float(fracao))
+				if _no_quadro(ponto) and _pode_nadar_em(ponto, float(minima)):
+					return ponto
+	return ppos
+
+
+## Põe o tubarão (afundado) em `ponto`, de frente para o jogador.
+func _reposicionar(ponto: Vector3, ppos: Vector3) -> void:
+	global_position = Vector3(ponto.x, global_position.y, ponto.z)
+	_rumo = atan2(-(ppos.x - ponto.x), -(ppos.z - ponto.z))
+	rotation.y = _rumo
+	_angulo_da_ronda = atan2(ponto.z - ppos.z, ponto.x - ppos.x)
+
+
+## O prazo do bote venceu e ele não chegou: aparece colado no jogador (o flash do susto cobre a chegada).
+func _reposicionar_junto_de(ppos: Vector3) -> void:
+	var rumo := MarAberto.rumo_da_borda(ppos, _quadro)
+	var onde := ppos + rumo * 2.5
+	if not _pode_nadar_em(onde, LAMINA_MINIMA_BOTE):
+		onde = ppos - rumo * 2.5
+	if not _pode_nadar_em(onde, LAMINA_MINIMA_BOTE):
+		onde = ppos
+	_reposicionar(onde, ppos)
+	_emersao = 1.0
+	_emersao_alvo = 1.0
+	_aplicar_a_emersao()
+
+
+## A barbatana larga o jogador: volta ao pesqueiro (de onde ninguém a vê) e retoma a patrulha.
+func _voltar_para_a_patrulha() -> void:
+	global_position = _ponto_elipse(_angulo)
+	_encerrar_o_chamado()
+
+
+## Acaba o chamado do mar aberto (o jogador saiu, ou foi mordido): tudo volta à patrulha e à maré de sempre.
+func _encerrar_o_chamado() -> void:
+	_chamado = false
+	_zona = MarAberto.Zona.NENHUMA
+	_fora_desde = -1.0
+	_surgir_em = Vector3.INF
+	_emersao = 1.0
+	_emersao_alvo = 1.0
+	visible = not _submerso
+	_checagem_mare = 0.0
 
 
 ## Primeiro ponto bem fundo varrendo do píer mar adentro, abrindo em leque. A planície

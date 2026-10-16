@@ -1,8 +1,14 @@
 {
-	"_sobre": "O que o jogador lê da fauna do mar (fauna_vale.gd, tubarao.gd): o aviso de quando o tubarão alcança quem nada no fundo e o jogador volta à terra firme.",
+	"_sobre": "O que o jogador lê da fauna do mar (fauna_vale.gd, tubarao.gd): o aviso de quando o tubarão alcança quem nada no fundo e o jogador volta à terra firme (`susto`); o aviso de quando a barbatana passa a rondar quem nada rumo à borda do mapa (`aviso`, mar_aberto.gd); e o susto do bote do mar aberto, que diz que a maré devolveu o jogador à praia (`susto_borda`). Nos três idiomas.",
 	"tubarao": {
 		"susto": "Um tubarão! Por pouco…",
 		"susto_en": "A shark! That was close…",
-		"susto_es": "¡Un tiburón! Por poco…"
+		"susto_es": "¡Un tiburón! Por poco…",
+		"aviso": "Uma barbatana ronda por perto… melhor voltar pra terra.",
+		"aviso_en": "A fin is circling nearby… better head back to shore.",
+		"aviso_es": "Una aleta ronda cerca… mejor volver a tierra.",
+		"susto_borda": "O mar aberto não deixa ninguém passar: a maré te devolveu à praia.",
+		"susto_borda_en": "The open sea lets no one through: the tide carried you back to shore.",
+		"susto_borda_es": "El mar abierto no deja pasar a nadie: la marea te devolvió a la orilla."
 	}
 }
