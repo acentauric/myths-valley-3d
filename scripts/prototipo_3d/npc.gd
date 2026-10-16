@@ -71,6 +71,10 @@ const PAUSA_DESISTIU := 4.0
 ## A entrada vale até a hora da seguinte, e depois da meia-noite vale a última do dia
 ## anterior. Ele SAI ANTES, para chegar na hora (`_entrada_agora`).
 const PREFIXO_AGENDA := "agenda:"
+## O POSTO DE TRABALHO (#9): o morador que o jogador pôs para trabalhar numa terra sua (aba Trabalho) vai,
+## de manhã e de tarde, ao posto do ofício dele no lote (`Terrenos.posto_de_trabalho`), faz o gesto do ofício
+## e, fora dessas horas, volta à rotina que tinha (postos do dia ou agenda). O posto é "trabalho:<ofício>".
+const PREFIXO_TRABALHO := "trabalho:"
 ## Mais longe que isto (u), a troca de posto é um caminho longo: fora da vista, o
 ## morador é posto no destino na hora marcada (`_encurtar_o_caminho`).
 const CAMINHO_LONGO := 40.0
@@ -1837,9 +1841,22 @@ func _posto_de_agora() -> String:
 			and Afinidade.fe_de(str(dados.get("id", ""))) == festa \
 			and Lugares.resolve(Fe.marco_maior(festa)):
 		return POSTO_DA_FESTA
+	var no_trabalho := _posto_do_trabalho()
+	if no_trabalho != "":
+		return no_trabalho
 	if not _agenda.is_empty():
 		return PREFIXO_AGENDA + str(_entrada_agora())
 	return _posto_para(Dia.periodo())
+
+
+## O posto do trabalho que o jogador deu a este morador, se é hora dele e o lote diz onde: "trabalho:<ofício>".
+func _posto_do_trabalho() -> String:
+	var id := String(dados.get("id", ""))
+	if not Terrenos.trabalho.has(id) or not Terrenos.em_horario_de_trabalho():
+		return ""
+	if Terrenos.posto_de_trabalho(id).is_empty():
+		return ""
+	return PREFIXO_TRABALHO + Terrenos.trabalho_de(id)
 
 
 ## O LUGAR DO MORADOR NA RODA da festa: a roda em volta do marco, repartida por
@@ -1998,6 +2015,11 @@ func _posicao_do_posto(periodo: String) -> Vector3:
 		return _lugar_na_festa()
 	if periodo.begins_with(PREFIXO_AGENDA):
 		return _lugar_da_entrada(int(periodo.substr(PREFIXO_AGENDA.length())))
+	if periodo.begins_with(PREFIXO_TRABALHO):
+		var do_trabalho: Array = Terrenos.posto_de_trabalho(String(dados.get("id", "")))
+		if do_trabalho.is_empty():
+			return global_position
+		return _ponto_da_ancora(String(do_trabalho[0]), do_trabalho[1] if do_trabalho.size() > 1 and do_trabalho[1] is Array else [])
 	var postos: Dictionary = dados.get("postos", {})
 	if periodo == "" or not postos.has(periodo):
 		return global_position
@@ -2151,6 +2173,8 @@ func _aplicar_entrada() -> void:
 func _acao_do_posto() -> String:
 	if _posto == POSTO_DA_FESTA:
 		return POSTO_DA_FESTA
+	if _posto.begins_with(PREFIXO_TRABALHO):
+		return Terrenos.acao_do_oficio(_posto.trim_prefix(PREFIXO_TRABALHO))
 	if _agenda.is_empty() and _posto != "":
 		return MixamoUso.POSTO + _posto
 	return ""
@@ -2221,7 +2245,7 @@ func _trabalhando() -> bool:
 ## é hora de se recolher, entra em casa. Saiu do posto, larga o trabalho. O que se leva
 ## só para andar ("mao_andando", "cabeca_andando") some quando ele chega.
 func _atualizar_trabalho() -> void:
-	if _agenda.is_empty() and not _vive_de_postos_com_clipe():
+	if _agenda.is_empty() and not _vive_de_postos_com_clipe() and not _posto.begins_with(PREFIXO_TRABALHO):
 		return
 	var chegou := Vector2(_alvo.x - global_position.x, _alvo.z - global_position.z).length() < 0.8
 	if chegou and _acao == "recolhido" and bool(dados.get("recolhe", false)):
