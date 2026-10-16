@@ -107,6 +107,11 @@ o Tonho tem rede, um barril e mais nada, que é o que cabe em quem deve.
 
 ## Terra comprada, morador que fica
 
+> **No vale 3D** (Build 12): a regra mora em `scripts/compartilhado/terrenos.gd`, que pergunta ao
+> `Terras` de quem é cada lote. `Terrenos.IDOSOS`, os ofícios e quem mora em cada lote saíram para
+> `data/terras_3d.json` (`idosos`, `oficios`, `moradores`), com os textos nos idiomas do jogo. A aba
+> **Trabalho** do painel ainda não tem tela no vale.
+
 Comprar não despeja. O morador continua na casa dele e passa a trabalhar para a
 casa — e o que ele pode fazer depende de quem ele é:
 
@@ -138,6 +143,10 @@ Tonho está no mar em vez de na terra dele — que é justamente o problema dele
 
 
 ## O que ele rende, e por que dois Cosmes não rendem igual
+
+> **No vale 3D**: a conta é `Povoado.renderia_exata`, em `scripts/compartilhado/povoado.gd`, com os
+> degraus, a amizade e as obras do arraial em `data/povoado_3d.json`. Quem entrega ao amanhecer é o
+> `Terrenos`, e o que não cabe na mochila espera no paiol até haver espaço.
 
 Mandar trabalhar era decisão de uma vez só: dois de mandioca por dia, no
 primeiro dia e no centésimo. Agora três coisas multiplicam o que um morador

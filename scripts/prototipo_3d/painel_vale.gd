@@ -20,8 +20,8 @@ extends CanvasLayer
 ## - O RELÓGIO QUE PARA é o `Dia` (no 2D, o `Relogio`): no vale é ele quem
 ##   manda na hora. O mundo não para — o bicho, porém, não caça quem está com
 ##   o painel aberto (ver criatura_vale.gd), e a peçonha não corre em quem lê.
-## - A ABA DE TRABALHO NÃO EXISTE AINDA: ela é do `Terrenos` e do `Povoado`,
-##   que não atravessaram (#9, #13).
+## - A ABA DE TRABALHO AINDA NÃO TEM TELA: a regra dela já mora no `Terrenos` e
+##   no `Povoado` (scripts/compartilhado/, #9), e a tela vem a seguir.
 ## - A ABA "JOGO" permite trocar a vaga com uma segunda confirmacao (#70). E a porta dela é o botão JOGO do canto do painel, e não o Esc — no
 ##   vale o Esc é da câmera. Continua fora do giro das setas, pela razão do 2D:
 ##   quem lê a checklist não pode encostar no botão de fechar o jogo.

@@ -159,8 +159,12 @@ const O_QUE_GUARDAR := {
 	"Equipamento": ["vestido"],
 	"Talentos": ["nivel", "xp", "pontos", "destravados"],
 	"Obras": ["feitas"],
+	# DE QUEM É O CHÃO, e o que cada morador faz nele (#9). A posse mora só no `Terras`; o `Terrenos`
+	# guarda o ofício de cada um e o que rendeu e não coube na mochila, e o `Povoado` a perícia e a
+	# sobra fracionária. A dívida do Tonho NÃO está aqui: no vale ela é do livro de fiado
+	# (`fiado_tonho.gd`), que viaja com o mundo.
 	"Terras": ["posses"],
-	"Terrenos": ["trabalho", "divida_do_tonho", "tonho_com_rede"],
+	"Terrenos": ["trabalho", "no_paiol"],
 	"Povoado": ["pericia", "sobra"],
 	"Colecao": ["achados"],
 	"Efeitos": ["ativos"],
@@ -189,7 +193,6 @@ const O_QUE_GUARDAR := {
 ## legitimamente não entram (espelho, estado de tela), com a razão no teste.
 const SALVOS_A_MAO := {
 	"Fe": ["ativa", "_estados"],
-	"Terrenos": ["_meus"],
 	"Afinidade": ["pontos", "_falou_no_dia", "_deu_no_dia"],
 	"Cartas": ["pacto", "sabidas", "_usadas", "_pacto_desde", "_pago_hoje"],
 }
@@ -199,7 +202,6 @@ const SALVOS_A_MAO := {
 ##
 ##   Fe        o estado das três fés mora num privado, e restaurar precisa
 ##             espelhar para os campos que a tela lê.
-##   Terrenos  a terra comprada mora num privado.
 ##   o mundo   não é autoload: quem entrega o estado dele é a cena, quando
 ##             existe. Ver `Mundo.estado_para_salvar`.
 var _mundo: Node = null
@@ -755,8 +757,15 @@ func _limpar_receitas() -> void:
 		ultimo_relato.append("Saíram receitas que o jogo não tem mais: %s." % ", ".join(perdidas))
 
 
-## Ofício que saiu da lista vira "nada" em vez de sumir: o morador continua na
-## terra, e é o jogador quem decide o que ele faz agora.
+## O serviço que o jogo não sabe mais dar vira "nada" em vez de sumir: o morador
+## continua na terra, e é o jogador quem decide o que ele faz agora.
+##
+## São três jeitos de o combinado deixar de valer entre uma versão e outra: o ofício
+## saiu da lista, a idade do morador passou a não permitir o serviço (o idoso no
+## roçado), ou ele deixou de morar em lote algum.
+##
+## O que rendeu e não coube na mochila (`no_paiol`) também passa pelo catálogo: item que o jogo
+## não tem mais não pode ficar esperando espaço para sempre.
 func _limpar_trabalho() -> void:
 	var terrenos := get_node_or_null("/root/Terrenos")
 	if terrenos == null:
@@ -764,13 +773,23 @@ func _limpar_trabalho() -> void:
 	var perdidos: Array = []
 	for morador in terrenos.trabalho.keys():
 		var oficio := str(terrenos.trabalho[morador])
-		if terrenos.TRABALHOS.has(oficio):
+		if oficio == terrenos.NADA:
+			continue
+		var ainda_vale: bool = terrenos.existe(oficio) and terrenos.terreno_de(str(morador)) != ""
+		if ainda_vale and not (terrenos.e_idoso(str(morador)) and terrenos.e_bracal(oficio)):
 			continue
 		perdidos.append("%s (%s)" % [str(morador), oficio])
-		terrenos.trabalho[morador] = "nada"
+		terrenos.trabalho[morador] = terrenos.NADA
 	if not perdidos.is_empty():
-		ultimo_relato.append("Ficaram sem serviço, porque o ofício saiu do jogo: %s."
+		ultimo_relato.append("Ficaram sem serviço, porque o combinado não vale mais nesta versão: %s."
 			% ", ".join(perdidos))
+	var sumidos: Array = []
+	for item in terrenos.no_paiol.keys():
+		if not Catalogo.ITENS.has(str(item)):
+			sumidos.append(str(item))
+			terrenos.no_paiol.erase(item)
+	if not sumidos.is_empty():
+		ultimo_relato.append("Saíram do paiol itens que o jogo não tem mais: %s." % ", ".join(sumidos))
 
 
 ## OS NÚMEROS QUE SAÍRAM DE FAIXA, que é a outra metade do estrago.
@@ -825,9 +844,6 @@ func _guardar_especiais(tudo: Dictionary) -> void:
 	var fe := get_node_or_null("/root/Fe")
 	if fe != null:
 		tudo["Fe"] = {"ativa": fe.ativa, "estados": fe.get("_estados")}
-	var terrenos := get_node_or_null("/root/Terrenos")
-	if terrenos != null:
-		tudo["TerrenosMeus"] = terrenos.get("_meus")
 	var afinidade := get_node_or_null("/root/Afinidade")
 	if afinidade != null:
 		tudo["Afinidade"] = afinidade.estado()
@@ -849,11 +865,6 @@ func _restaurar_especiais(tudo: Dictionary) -> void:
 		# teia carrega vazia mesmo com a fé cheia.
 		if fe.has_method("_espelhar"):
 			fe.call("_espelhar")
-	var terrenos := get_node_or_null("/root/Terrenos")
-	if terrenos != null and tudo.has("TerrenosMeus"):
-		terrenos.set("_meus", (tudo["TerrenosMeus"] as Dictionary).duplicate(true))
-		if terrenos.has_signal("mudou"):
-			terrenos.mudou.emit()
 	var afinidade := get_node_or_null("/root/Afinidade")
 	if afinidade != null and tudo.has("Afinidade"):
 		afinidade.restaurar(tudo["Afinidade"])
@@ -867,7 +878,7 @@ func _restaurar_especiais(tudo: Dictionary) -> void:
 	# posto, e não durante: a HUD lendo a mochila nova com a Progressao velha
 	# mostraria fôlego acima do teto por um quadro.
 	for nome in ["Inventario", "Missoes", "Talentos", "Obras", "Efeitos",
-			"Equipamento", "Progressao", "Colecao", "Energia"]:
+			"Equipamento", "Progressao", "Colecao", "Energia", "Terras", "Terrenos", "Povoado"]:
 		var sistema := get_node_or_null("/root/" + nome)
 		if sistema != null and sistema.has_signal("mudou"):
 			sistema.mudou.emit()

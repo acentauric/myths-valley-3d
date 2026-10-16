@@ -20,7 +20,7 @@ sem reinstalar autoloads ou cenas do 2D apenas para o teste passar.
 | divida | `fiado_tonho`, `livro_no_armazem` | Provedor 3D da #68 substitui Terrenos: pagamento limitado, rede diária, leitura, quitação e persistência. |
 | escolha | `escolha` | Migrado na #21, incluindo proteção contra E repetido. |
 | folheto | `folheto` | Migrado na #21: dez títulos, geometria, teclas e coleção. |
-| fracoes | `regras_fracoes` | XP/fé/energia e JSON portados. Produção/sobras/perícia dos trabalhadores pendentes de Povoado/Terrenos 3D; este portão não aprova essa parte. |
+| fracoes | `regras_fracoes`, `test_povoado` | XP/fé/energia e JSON portados em `regras_fracoes`. Produção, sobras e perícia dos trabalhadores portadas com o `Povoado` e o `Terrenos` 3D (#9): `test_povoado` cobre os degraus, a amizade, as obras do arraial, os dois talentos, o idoso, a sobra fracionária e o save. |
 | missoes | `missoes`, `missoes_elos`, `cadeia_das_missoes` | Alvos Vector3 já migrados; comparar foco por ID, herança da linha, equivalência dos materiais e ritmo das filas. |
 | povo | `teia_social`, `afinidade_interacao_3d` | P, estados diários e confirmação já existem; os retratos e roteamento não usam ArraialTela/Controles do 2D. |
 | receitas | `regras_receitas`, `painel_ingredientes` | Porta por missão lê os arquivos `data/missoes_*.json`, incluindo portas com alternativas. O balcão usa o painel 3D real. |

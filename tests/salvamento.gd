@@ -14,7 +14,9 @@ extends "res://tests/suite/caso.gd"
 ##   3. FECHAR E REABRIR DEVOLVE O ESSENCIAL: a mochila, a vida, o dia, a HORA
 ##      (que no vale é do `Dia`, e não do `Relogio`), onde o jogador estava, o
 ##      passo do Pedro, e o bicho que caiu e ainda não voltou.
-##   4. A QUEDA SALVA, como o dormir do 2D: a vaga guarda o dia novo.
+##   4. A QUEDA SALVA, como o dormir do 2D: a vaga guarda o dia novo. E guarda a MANHÃ dele:
+##      o morador posto para trabalhar entrega na mochila ao virar o dia (#9), e o save da virada
+##      já leva a perícia e o ofício, porque a queda salva DEPOIS de o dia virar.
 ##   5. O VALE QUE SAI DA ÁRVORE SAI DO SAVE: o `Salvamento` não fica
 ##      segurando a referência a um mundo liberado. Hoje isso não quebra —
 ##      o Godot compara o objeto morto igual a null —, e o portão existe para
@@ -285,6 +287,12 @@ func _run() -> void:
 	var queda = vale.get_node_or_null("Queda")
 	var acordou := [false]
 	queda.acordou.connect(func(): acordou[0] = true)
+	# O Cosme vai para a roça da Dona Zefa (terra já do jogador) antes de a noite virar.
+	var terras = root.get_node("/root/Terras")
+	var terrenos = root.get_node("/root/Terrenos")
+	var mandioca_antes: int = inventario.quantidade("mandioca")
+	terras.posses["terreno_zefa"] = true
+	_conferir(terrenos.mandar_trabalhar("cosme", "roca"), "o Cosme não pôde ir para a roça da Dona Zefa")
 	vida.ferir(9999.0)
 	# Teto pelo relógio de parede: o cartão do amanhecer (#21) é tempo de tela.
 	var ate := Time.get_ticks_msec() + 15000
@@ -292,6 +300,15 @@ func _run() -> void:
 		await process_frame
 	_conferir(int(salvamento.resumo(1).get("dia", 0)) == dia_salvo + 1,
 		"depois da queda a vaga diz dia %s, e o dia novo é %d" % [str(salvamento.resumo(1).get("dia")), dia_salvo + 1])
+	# A manhã do dia novo: a roça rendeu 2 de mandioca na mochila, e o save da virada já a leva
+	# (o dia de serviço na perícia do Cosme, o ofício dele, e a mandioca na mochila).
+	_conferir(inventario.quantidade("mandioca") == mandioca_antes + 2,
+		"a manhã depois da queda não trouxe a mandioca do Cosme: tinha %d e tem %d" % [mandioca_antes, inventario.quantidade("mandioca")])
+	var da_manha: Dictionary = salvamento.ler(1)
+	_conferir(int(da_manha.get("Povoado", {}).get("pericia", {}).get("cosme", {}).get("roca", 0)) == 1,
+		"o save da virada não levou o dia de serviço do Cosme na perícia: %s" % str(da_manha.get("Povoado", "sem seção")))
+	_conferir(str(da_manha.get("Terrenos", {}).get("trabalho", {}).get("cosme", "")) == "roca",
+		"o save da virada não levou o ofício do Cosme: %s" % str(da_manha.get("Terrenos", "sem seção")))
 
 	# --- 5. O VALE QUE SAI DA ÁRVORE SAI DO SAVE -------------------------------
 	var vazio := PackedScene.new()

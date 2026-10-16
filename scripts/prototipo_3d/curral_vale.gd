@@ -22,10 +22,10 @@ extends Node3D
 ## ovo de amanhã ao cair da tarde de hoje (`HORA_DA_POSTURA_ADIANTADA`), e o ritmo de um ovo por
 ## galinha por dia não muda — o ninho só enche meio dia antes.
 ##
-## O que vai no save: os ovos no ninho e o dia da última postura (`estado_para_salvar`), e os
-## dias de serviço dos moradores (`servico_do_morador.gd`, o dia de roçado do Cosme), que viajam
-## aqui por não terem casa própria no vale. O galinheiro em si não vai: ele é o talento, e o
-## talento vai.
+## O que vai no save: os ovos no ninho e o dia da última postura (`estado_para_salvar`). Os dias de
+## serviço dos moradores já viajaram aqui (`servico`); hoje são a perícia do `Povoado` (#9) e a vaga
+## antiga é migrada ao carregar (`servico_do_morador.gd`). O galinheiro em si não vai: ele é o
+## talento, e o talento vai.
 const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
 const DicaTecla = preload("res://scripts/prototipo_3d/dica_tecla.gd")
 const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
@@ -81,7 +81,6 @@ func configurar(mundo, vale, jogador: Node3D, hud) -> void:
 	var lido = JSON.parse_string(FileAccess.get_file_as_string(TEXTOS))
 	_textos = lido if lido is Dictionary else {}
 	add_to_group("curral")
-	ServicoDoMorador.limpar()
 	_escolher_o_lugar()
 	if hud != null and hud.has_method("map_layer"):
 		_dica = DicaTecla.criar(hud.map_layer(), Atalhos.letra("interagir"), "")
@@ -348,13 +347,14 @@ func _avisar(chave: String, quanto: int = 0) -> void:
 
 
 func estado_para_salvar() -> Dictionary:
-	return {"ovos": ovos, "dia_da_postura": dia_da_postura, "servico": ServicoDoMorador.estado_para_salvar()}
+	return {"ovos": ovos, "dia_da_postura": dia_da_postura}
 
 
 func restaurar(estado: Dictionary) -> void:
 	ovos = int(estado.get("ovos", ovos))
 	dia_da_postura = int(estado.get("dia_da_postura", dia_da_postura))
 	var servico = estado.get("servico", {})
-	ServicoDoMorador.restaurar(servico if servico is Dictionary else {})
+	if servico is Dictionary and not (servico as Dictionary).is_empty():
+		ServicoDoMorador.migrar(servico, Povoado)
 	acertar()
 	_postura()

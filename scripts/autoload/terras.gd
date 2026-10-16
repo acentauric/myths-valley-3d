@@ -1,5 +1,7 @@
 extends Node
 ## #9: posse de lotes 3D. Compra não remove moradores nem concede obras/colheitas.
+## O que os moradores fazem nas terras compradas é do `Terrenos` (ofício), e quanto rendem, do
+## `Povoado`: os dois perguntam a este arquivo de quem é cada lote e nunca guardam posse.
 signal comprado(id: String)
 signal mudou
 const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
