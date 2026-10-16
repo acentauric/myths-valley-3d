@@ -191,6 +191,15 @@ static func marcar_atalho(botao: Button, tecla: String) -> Label:
 	return marca
 
 
+## Troca a letra de uma plaqueta que já está na tela (a tecla foi remapeada, #254) e a põe de novo no lugar: "M" e "I" não
+## têm a mesma largura, e a posição depende dela.
+static func definir_atalho(marca: Label, tecla: String) -> void:
+	if marca.text == tecla:
+		return
+	marca.text = tecla
+	_posicionar_tecla(marca, escala())
+
+
 ## A plaqueta fica à DIREITA do botão, centrada na vertical e colada à borda da placa
 ## (a dica abre à esquerda e não disputa o lugar). Em coordenadas do botão, que fica
 ## `folga` para dentro da placa. Como a coluna está a MARGEM da borda da tela, a

@@ -50,3 +50,17 @@ func pendurar(no: Node) -> Node:
 	root.add_child(no)
 	autofree(no)
 	return no
+
+
+## OS TESTES QUE GRAVAM NO user:// (atalhos, idioma, preferências) SÓ RODAM NO PERFIL DESCARTÁVEL (#254).
+##
+## O `testar.ps1` dá a cada Godot um perfil novo, e o que o teste grava morre com ele. Rodado por fora do runner (o painel do
+## GUT no editor, um Godot à mão), o `user://` é o de quem joga: o teste de atalhos punha o mapa no I e só devolvia o arquivo
+## no fim, e um teste interrompido no meio deixava o `controles.cfg` trocado — a plaqueta do mapa passava a dizer "I". Aqui o
+## teste se recusa (fica pendente, com a razão) em vez de gravar no perfil de verdade. `tests/unidade/test_perfil_descartavel.gd`
+## confere que todo teste de unidade que mexe nos atalhos chama isto.
+func exige_perfil_descartavel() -> bool:
+	if Estado.perfil_descartavel():
+		return true
+	pending("só roda no perfil descartável do testar.ps1: o user:// de verdade (%s) tem as teclas e o idioma de quem joga" % OS.get_user_data_dir())
+	return false

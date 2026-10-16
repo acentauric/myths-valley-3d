@@ -1,6 +1,6 @@
 extends Control
 ## Ícones vetoriais dos botões de canto do HUD, no mesmo traço do som e do relógio:
-## "casa" (HOME), "ajustes" (engrenagem), "restaurar" (seta circular), "restaurar_todos" (a seta com uma pilha dentro), "mapa", "ajuda" (?), "tela_cheia" (cantos para fora em janela, para dentro em tela cheia), "fechar" (×), "minimizar" (—) e "maximizar" (□) do painel do mapa, "expandir" (setas para os cantos: a fala inteira em MODELOS), "salvar" (disquete), "tocar" (play), "pausar", "concluir" (✓), "externo" (link que sai do jogo), "camera" (anel dourado quando travada), "velocidade" (setas conforme
+## "casa" (HOME), "ajustes" (engrenagem), "restaurar" (seta circular), "restaurar_todos" (a seta com uma pilha dentro), "mapa", "ajuda" (?), "tela_cheia" (cantos para fora em janela, para dentro em tela cheia), "fechar" (×), "minimizar" (—) e "maximizar" (□) do painel do mapa, "expandir" (setas para os cantos: a fala inteira em MODELOS), "salvar" (disquete), "tocar" (play), "pausar", "concluir" (✓), "externo" (link que sai do jogo), "camera" (anel dourado quando travada), "mochila" (alça, aba e bolso; dourada com a mochila aberta), "velocidade" (setas conforme
 ## a Passagem do tempo, 0–3), "fala" (balão com três pontos em ouro que acendem um a um: o selo do viajante falando,
 ## `selo_do_viajante.gd`, com o `nivel` de 0 a 3 dizendo quantas ondas estão acesas) e "som", "cenario", "interface", "teclado" e "esforco" (as abas de Ajustes, com o "ajustes" na Geral), "estilo" (cubo para Tripo, chaves para Procedural), "editar" (lápis, um só:
 ## o do nome da vaga e o do painel MODELOS) e "apagar" (lixeira, vermelha pedindo a confirmação) dos
@@ -131,6 +131,13 @@ func _draw() -> void:
 				var ponta: Vector2 = Vector2(12, 12) + canto * (4.0 if ativo else 8.0)
 				var dentro := 1.0 if ativo else -1.0
 				draw_polyline(PackedVector2Array([ponta + Vector2(canto.x * dentro * 4.5, 0), ponta, ponta + Vector2(0, canto.y * dentro * 4.5)]), cor_tela, 1.8, true)
+		"mochila":
+			# Mochila: a alça no alto, o corpo de ombros arredondados, a aba e o bolso da frente (#254).
+			var cor_mochila := ouro if ativo else tinta
+			draw_arc(Vector2(12, 6.2), 2.6, PI, TAU, 10, cor_mochila, 1.6, true)
+			draw_polyline(PackedVector2Array([Vector2(5.5, 20.5), Vector2(5.5, 10.5), Vector2(7.5, 6.8), Vector2(16.5, 6.8), Vector2(18.5, 10.5), Vector2(18.5, 20.5), Vector2(5.5, 20.5)]), cor_mochila, 1.8, true)
+			draw_line(Vector2(5.5, 11.5), Vector2(18.5, 11.5), cor_mochila, 1.4, true)
+			draw_rect(Rect2(8.5, 14.5, 7, 4.2), cor_mochila, false, 1.5, true)
 		"missoes":
 			var cor_missoes := ouro if ativo else tinta
 			draw_rect(Rect2(5, 4, 15, 17), cor_missoes, false, 1.7, true)

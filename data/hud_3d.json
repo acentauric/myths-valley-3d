@@ -24,6 +24,11 @@
     "rotulo_en": "Quests and objectives",
     "rotulo_es": "Misiones y objetivos"
   },
+  "botao_mochila": {
+    "rotulo": "Mochila",
+    "rotulo_en": "Backpack",
+    "rotulo_es": "Mochila"
+  },
   "mare": {
     "enchente": "maré enchendo",
     "enchente_en": "tide rising",

@@ -32,7 +32,8 @@ func _run() -> void:
    hud.avisar_embaixo("Precisa de Foice.")
    hud.avisar_embaixo("Precisa de Foice.")
    for _i in 2: await process_frame
-   var embaixo: Array = hud._avisos_de_tarefa.filter(func(a) -> bool: return is_instance_valid(a) and a.text == "Precisa de Foice.")
+   # `is_visible_in_tree`: desde 10/10 o recado era criado e medido, mas nunca entrava no HUD, e ninguém o via (#249).
+   var embaixo: Array = hud._avisos_de_tarefa.filter(func(a) -> bool: return is_instance_valid(a) and a.text == "Precisa de Foice." and a.is_visible_in_tree())
    conferir(embaixo.size() == 1, "a recusa aparece uma vez embaixo (%d)" % embaixo.size())
    if embaixo.size() == 1:
     var r: Rect2 = (embaixo[0] as Control).get_global_rect()

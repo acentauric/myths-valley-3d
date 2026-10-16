@@ -70,13 +70,18 @@ func _run() -> void:
 	quit(1 if falhas > 0 else 0)
 
 
-## O BOTÃO FICA NA TELA, NO ALTO DO CANTO DIREITO, EM QUALQUER TAMANHO DO HUD.
+## O BOTÃO FICA NA TELA, NA COLUNA DO CANTO DIREITO, EM QUALQUER TAMANHO DO HUD.
 ##
-## Ele é o único botão que sobrou no canto do vale, e nasce pelo `BotaoCanto`,
-## que desde o "Tamanho do HUD" do AJUSTAR recebe a posição na coluna, e não os
-## pixels do topo. Quando as duas mudanças se encontraram na mesma branch, o
-## botão ainda passava 32.0: lido como posição, ia parar 1.600 px abaixo, fora
-## da janela. Este portão passava, porque só perguntava se o botão existia.
+## Ele nasce pelo `BotaoCanto`, que desde o "Tamanho do HUD" do AJUSTAR recebe a
+## posição na coluna, e não os pixels do topo. Quando as duas mudanças se
+## encontraram na mesma branch, o botão ainda passava 32.0: lido como posição, ia
+## parar 1.600 px abaixo, fora da janela. Este portão passava, porque só perguntava
+## se o botão existia.
+##
+## Ele já foi "o único botão que sobrou no canto" (o resto morava no menu do Esc), no
+## alto da coluna; com a coluna de volta ele era criado à parte, POR CIMA DO HOME, e
+## havia outro, com o cubo, na vaga 7 (#254). Hoje é UM botão da coluna, com o número
+## dentro, na mesma borda direita dos outros e sem cobrir nenhum.
 ##
 ## O perfil é o isolado do runner: trocar o tamanho grava a preferência, e ela
 ## volta ao que era no fim.
@@ -95,8 +100,16 @@ func _o_botao_fica_no_canto(hud: Node, botao: Button, numero: Label) -> void:
 		var quadro := botao.get_global_rect()
 		_conferir(janela.encloses(quadro),
 			"no HUD %s o botão de FPS fica fora da janela: %s numa tela de %s" % [nome, str(quadro), str(janela.size)])
-		_conferir(quadro.position.y < janela.size.y * 0.25 and quadro.end.x > janela.size.x * 0.75,
-			"no HUD %s o botão de FPS não está no alto do canto direito: %s" % [nome, str(quadro)])
+		_conferir(quadro.end.x > janela.size.x * 0.75 and quadro.position.y >= 0.0,
+			"no HUD %s o botão de FPS não está no canto direito: %s" % [nome, str(quadro)])
+		# Está na coluna: a mesma borda direita dos outros botões, e nenhum deles fica por baixo dele.
+		for canto in get_nodes_in_group("botoes_canto"):
+			var placa: Rect2 = (canto as Control).get_global_rect()
+			_conferir(absf(placa.end.x - botao.get_parent().get_global_rect().end.x) <= 1.0,
+				"no HUD %s o botão de FPS não está na coluna do canto (a borda direita dele é %.0f e a de outro botão, %.0f)" % [nome, botao.get_parent().get_global_rect().end.x, placa.end.x])
+			if canto != botao.get_parent():
+				_conferir(not placa.intersects(botao.get_parent().get_global_rect()),
+					"no HUD %s o botão de FPS cobre outro botão da coluna (%s e %s)" % [nome, str(placa), str(botao.get_parent().get_global_rect())])
 		if numero == null:
 			continue
 		# O número usa o botão todo, e não o quadrado do ícone: "144" tem de caber.

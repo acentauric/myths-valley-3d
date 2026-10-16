@@ -420,7 +420,17 @@ func _por_pagina() -> int:
 	return LINHAS_NO_CANTO if no_canto else LINHAS_POR_PAGINA
 
 
-func _posicionar_no_canto(camera: Camera3D) -> bool:
+## O CANTO DESLIZA, EM VEZ DE PULAR (#246). Ele muda de lugar sem o jogador mexer em nada: a tarja de cinema que
+## desce (o balão sai de baixo dela), o quadro da missão que volta no fim da cena (o balão desce para abaixo
+## dele), uma tarefa que cresce o quadro. Cada mudança era um salto de dezenas de pixels; agora a caixa vai
+## ao canto novo numa mola de `TEMPO_DO_CANTO`, sem zona morta (ela assenta exatamente no canto) e sem correia
+## (o canto muda de uma vez, e isso não é tremor de câmera). A fala que NASCE vai direto ao canto.
+const TEMPO_DO_CANTO := 0.25
+const CORREIA_DO_CANTO := 1500.0
+var _mola_do_canto := SuavizadorDeTela.new()
+
+
+func _posicionar_no_canto(camera: Camera3D, delta: float = 0.0) -> bool:
 	var hud := get_tree().get_first_node_in_group("hud_do_vale") if is_inside_tree() else null
 	if not no_canto or hud == null or not hud.has_method("canto_da_fala"):
 		return false
@@ -442,7 +452,10 @@ func _posicionar_no_canto(camera: Camera3D) -> bool:
 		_paginar()
 	_painel.custom_minimum_size.x = largura
 	_painel.reset_size()
-	_painel.position = canto.position.round()
+	if _novo:
+		_mola_do_canto.reiniciar(canto.position)
+	_painel.position = _mola_do_canto.seguir(canto.position, delta, TEMPO_DO_CANTO,
+		SuavizadorDeTela.VELOCIDADE_MAXIMA, 0.0, CORREIA_DO_CANTO, SALTO, PUXAO).round()
 	_novo = false
 	_ponta.queue_redraw()
 	return true
@@ -452,7 +465,7 @@ func _posicionar(delta: float) -> void:
 	var camera := get_viewport().get_camera_3d()
 	if camera == null or alvo == null:
 		return
-	if _posicionar_no_canto(camera):
+	if _posicionar_no_canto(camera, delta):
 		return
 	var cabeca := alvo.global_position + Vector3(0, altura, 0)
 	var longe := camera.global_position.distance_to(cabeca) > ALCANCE

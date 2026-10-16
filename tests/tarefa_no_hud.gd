@@ -96,7 +96,9 @@ func _run() -> void:
 	hud.set_aviso_de_espera("Volte para perto do Pedro.")
 	for tamanho_da_janela: Vector2i in [Vector2i(1280, 720), Vector2i(1920, 1080), Vector2i(1000, 700)]:
 		root.size = tamanho_da_janela
-		var tela: Vector2 = Vector2(tamanho_da_janela)
+		# A tela do HUD é o viewport (o canvas esticado: `stretch/mode = canvas_items`, base 1280×720), e não os pixels da
+		# janela: o minimapa, a barra de mão e o aviso moram nele, e a janela de 1080p só os amplia.
+		var tela: Vector2 = root.get_visible_rect().size
 		minimapa_rodape.position = Vector2(14.0, tela.y - 190.0)
 		minimapa_rodape.size = Vector2(176.0, 176.0)
 		hud.set_notice("")

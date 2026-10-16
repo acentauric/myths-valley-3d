@@ -67,6 +67,11 @@ const ACOES_INPUT := {
 ## Cache das teclas lidas do arquivo (evita reler o disco a cada evento de tecla).
 static var _cache: Dictionary = {}
 
+## A VERSÃO DA TABELA (#254): sobe a cada `definir`. Quem escreve a letra de uma ação na tela de uma vez só — as plaquetas
+## da coluna do HUD — confere a versão e refaz o texto quando ela anda: remapear no AJUSTAR ou na tela de Controles muda a
+## plaqueta do botão certo na hora, e não só depois de recarregar o vale.
+static var versao := 0
+
 
 ## Keycode (KEY_A–KEY_Z) da ação; qualquer valor estranho no arquivo volta ao padrão.
 static func tecla(acao: String) -> int:
@@ -133,6 +138,7 @@ static func definir(acao: String, keycode: int) -> bool:
 	if preferencias.save(ARQUIVO) != OK:
 		push_warning("Não foi possível salvar os atalhos de teclado.")
 	_cache.clear()
+	versao += 1
 	return true
 
 
