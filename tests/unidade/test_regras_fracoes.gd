@@ -106,8 +106,8 @@ func test_fracoes_de_xp_fe_e_save() -> void:
 		"Fe.total devia ser o inteiro de %.2f e deu %d" % [total_da_fe, fe.total("catolica")])
 	conferir(typeof(fe.xp) == TYPE_FLOAT, "Fe.xp não é float")
 
-	# A producao fracionaria de trabalhadores aguarda Povoado/Terrenos no 3D.
-	# Contratos pendentes enumerados em PORTOES_2D_3D.md; nao sao aprovados aqui.
+	# A producao fracionaria dos trabalhadores (sobra, perícia, amizade) é do `Povoado` e do
+	# `Terrenos` (#9), e quem a segura é tests/unidade/test_povoado.gd.
 
 	# --- 6. a fração atravessa o carregamento --------------------------------
 	#
