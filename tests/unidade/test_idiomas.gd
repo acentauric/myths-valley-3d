@@ -163,6 +163,8 @@ const TRADUZIDOS := {
 	# Os lotes e o trabalho nas terras compradas (#9): o nome de cada lote e o nome e o resumo de cada ofício, que a aba
 	# Trabalho mostra. As frases da compra (pergunta, sem_divisa...) já saíram nos três idiomas e seguem no portão da posse.
 	"res://data/terras_3d.json": ["nome", "resumo"],
+	# O nome de cada degrau de perícia dos moradores que trabalham (#9), que a aba Trabalho mostra.
+	"res://data/povoado_3d.json": ["nome"],
 }
 
 ## Os arquivos que também nascem em chinês (`campo_zh`): o jogo tem quatro idiomas no menu, e o chinês cai no
@@ -312,6 +314,9 @@ func _varrer(no, campos: Array, onde: String) -> int:
 ## Exceções estreitas: "Tronco caído" tem a mesma grafia em português e espanhol, e seis nomes de árvore não mudam de língua.
 ## Não libera cópias de outros campos, recursos ou idiomas.
 func _cognato_revisado(onde: String, quem: String, campo: String, sufixo: String, base: String) -> bool:
+	# O degrau mais baixo da perícia é "aprendiz" em português e em espanhol (os dois vêm do mesmo latim).
+	if onde == "povoado_3d.json" and campo == "nome" and sufixo == "_es" and base == "aprendiz":
+		return true
 	# Árvore que as três línguas chamam pelo nome tupi ou pelo nome da terra: o jatobá, o jequitibá e o resto.
 	if onde == "arvores_3d.json" and campo == "nome":
 		return base in ["Jatobá", "Jequitibá", "Massaranduba", "Angico", "Aroeira"] or (sufixo == "_es" and base == "Gameleira")

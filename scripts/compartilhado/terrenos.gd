@@ -40,6 +40,9 @@ extends Node
 ## criacao, nada) são os do 2D, porque vão para o save.
 
 signal mudou
+## Amanheceu e os moradores entregaram: o que rendeu hoje (item -> quantidade), já com perícia,
+## amizade e obras. É o que a HUD diz de manhã.
+signal renderam(colhido: Dictionary)
 
 const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
 ## O ofício de quem não foi posto para trabalhar. Todo morador de lote seu começa nele.
@@ -47,6 +50,18 @@ const NADA := "nada"
 
 ## morador -> id do ofício. Quem não está aqui está em "nada". Vai no save.
 var trabalho: Dictionary = {}
+
+## O que rendeu de manhã e NÃO COUBE NA MOCHILA: item -> quantidade. Vai no save.
+##
+## O que um morador colhe é do jogador, e mochila cheia não pode comer a colheita em silêncio: o
+## `Inventario.adicionar` recusa o que não cabe, e quem entrega sem olhar para a resposta perde o
+## trabalho de um dia sem que ninguém saiba. Fica aqui, no paiol, e entra quando abre espaço (na
+## próxima manhã, ou quando a tela pedir `esvaziar_o_paiol`).
+var no_paiol: Dictionary = {}
+
+
+func _ready() -> void:
+	Relogio.dia_comecou.connect(_ao_comecar_dia)
 
 
 # --- os ofícios ------------------------------------------------------------------------
@@ -191,3 +206,49 @@ func trabalhando() -> Dictionary:
 			continue
 		quem[str(morador)] = id
 	return quem
+
+
+# --- o amanhecer -----------------------------------------------------------------------
+
+func _ao_comecar_dia(_dia: int, _estacao: int, _ano: int) -> void:
+	_render_o_dia()
+
+
+## Amanheceu: cada morador posto para trabalhar entrega o que fez ontem.
+##
+## Vai direto para a mochila, sem o jogador ter de ir buscar. Obrigar a ronda diária de coleta seria
+## transformar a automação em mais trabalho, que é o contrário do que ela existe para fazer.
+##
+## QUEM FAZ A CONTA É O `Povoado`, e não aqui. A conta cresceu: já não é a tabela do ofício vezes o
+## ritmo do idoso, entram a perícia de quem trabalha, o quanto ele gosta do jogador e as obras do
+## arraial. E ela precisa ser feita DUAS vezes: aqui, para entregar, e na tela do morador, para o
+## jogador ver quanto vai render antes de decidir. Uma só, no `Povoado.renderia_exata`, e o que a
+## tela promete é por construção o que a mochila recebe.
+##
+## `entregar_o_dia` e não `producao_do_dia`: esta é a única chamada do dia que FECHA a conta e guarda
+## a fração que sobrou para amanhã. A outra é a consulta que a tela faz, e consulta não pode mexer
+## na sobra. E o dia de serviço só entra na perícia DEPOIS da entrega (ver `Povoado.contar_o_dia`).
+func _render_o_dia() -> void:
+	var total: Dictionary = Povoado.entregar_o_dia()
+	for item in total:
+		no_paiol[item] = int(no_paiol.get(item, 0)) + int(total[item])
+	esvaziar_o_paiol()
+	Povoado.contar_o_dia()
+	if not total.is_empty():
+		renderam.emit(total)
+
+
+## Passa para a mochila o que está no paiol, o que couber. O resto fica, para a próxima.
+func esvaziar_o_paiol() -> void:
+	var mexeu := false
+	for item in no_paiol.keys():
+		var quanto := int(no_paiol[item])
+		# Item que o jogo não tem mais não pode ficar esperando espaço para sempre.
+		if quanto <= 0 or not Catalogo.existe(str(item)):
+			no_paiol.erase(item)
+			mexeu = true
+		elif Inventario.adicionar(str(item), quanto):
+			no_paiol.erase(item)
+			mexeu = true
+	if mexeu:
+		mudou.emit()

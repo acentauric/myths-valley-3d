@@ -1,0 +1,17 @@
+{
+  "observacao": "O ARRAIAL COMO COISA QUE CRESCE (#9; scripts/compartilhado/povoado.gd). Três coisas mexem no que um morador posto para trabalhar rende, e elas se MULTIPLICAM: a perícia dele naquele ofício (degraus), o quanto ele gosta do jogador (por_grau_de_afinidade, um número por grau de Afinidade) e as obras comunitárias do arraial (obras_do_arraial, que somam entre si). Um mestre querido num arraial bem montado rende umas três vezes o que rende um estranho recém-chegado fazendo o mesmo serviço, e é essa distância que dá ao meio do jogo para onde ir. Os números são os do 2D (o autoload Povoado de lá). DEGRAUS: 'de' são os dias de serviço naquele ofício (28 dias é uma estação inteira; chegar a mestre custa mais de duas), 'rende' é o multiplicador, e o nome é o que a aba Trabalho mostra, nos idiomas do jogo. POR_GRAU_DE_AFINIDADE não zera para estranho: um estranho pago trabalha, só não se esforça. OBRAS_DO_ARRAIAL: a chave é a obra de data/construcoes/obras.json, 'construcao' é a peça do mapa em que ela se pendura (Obras.ja_feita(construcao, obra)), 'oficios' diz a quais ofícios ela serve e LISTA VAZIA QUER DIZER TODOS (o trapiche: o que ele melhora é ter para quem vender), e 'rende' é o quanto ela soma ao multiplicador do ofício. Nenhuma peça é nova: as cinco consertam o que já estava de pé no mapa.",
+  "degraus": [
+    {"de": 0, "nome": "aprendiz", "nome_en": "apprentice", "nome_es": "aprendiz", "rende": 1.0},
+    {"de": 12, "nome": "jeitoso", "nome_en": "handy", "nome_es": "habilidoso", "rende": 1.35},
+    {"de": 30, "nome": "bom de serviço", "nome_en": "skilled", "nome_es": "buen trabajador", "rende": 1.8},
+    {"de": 70, "nome": "mestre", "nome_en": "master", "nome_es": "maestro", "rende": 2.4}
+  ],
+  "por_grau_de_afinidade": [1.0, 1.05, 1.15, 1.3, 1.5],
+  "obras_do_arraial": {
+    "arraial_poco": {"construcao": "poco", "oficios": ["roca", "criacao"], "rende": 0.35},
+    "arraial_forno": {"construcao": "forno_barro", "oficios": ["farinha"], "rende": 0.5},
+    "arraial_monjolo": {"construcao": "monjolo", "oficios": ["farinha", "roca"], "rende": 0.35},
+    "arraial_carroca": {"construcao": "carroca", "oficios": ["lenha", "artesanato"], "rende": 0.4},
+    "arraial_trapiche": {"construcao": "trapiche", "oficios": [], "rende": 0.25}
+  }
+}

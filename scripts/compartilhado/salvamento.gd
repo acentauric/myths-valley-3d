@@ -160,10 +160,11 @@ const O_QUE_GUARDAR := {
 	"Talentos": ["nivel", "xp", "pontos", "destravados"],
 	"Obras": ["feitas"],
 	# DE QUEM É O CHÃO, e o que cada morador faz nele (#9). A posse mora só no `Terras`; o `Terrenos`
-	# guarda o ofício de cada um, e o `Povoado` a perícia e a sobra fracionária. A dívida do Tonho
-	# NÃO está aqui: no vale ela é do livro de fiado (`fiado_tonho.gd`), que viaja com o mundo.
+	# guarda o ofício de cada um e o que rendeu e não coube na mochila, e o `Povoado` a perícia e a
+	# sobra fracionária. A dívida do Tonho NÃO está aqui: no vale ela é do livro de fiado
+	# (`fiado_tonho.gd`), que viaja com o mundo.
 	"Terras": ["posses"],
-	"Terrenos": ["trabalho"],
+	"Terrenos": ["trabalho", "no_paiol"],
 	"Povoado": ["pericia", "sobra"],
 	"Colecao": ["achados"],
 	"Efeitos": ["ativos"],
@@ -762,6 +763,9 @@ func _limpar_receitas() -> void:
 ## São três jeitos de o combinado deixar de valer entre uma versão e outra: o ofício
 ## saiu da lista, a idade do morador passou a não permitir o serviço (o idoso no
 ## roçado), ou ele deixou de morar em lote algum.
+##
+## O que rendeu e não coube na mochila (`no_paiol`) também passa pelo catálogo: item que o jogo
+## não tem mais não pode ficar esperando espaço para sempre.
 func _limpar_trabalho() -> void:
 	var terrenos := get_node_or_null("/root/Terrenos")
 	if terrenos == null:
@@ -779,6 +783,13 @@ func _limpar_trabalho() -> void:
 	if not perdidos.is_empty():
 		ultimo_relato.append("Ficaram sem serviço, porque o combinado não vale mais nesta versão: %s."
 			% ", ".join(perdidos))
+	var sumidos: Array = []
+	for item in terrenos.no_paiol.keys():
+		if not Catalogo.ITENS.has(str(item)):
+			sumidos.append(str(item))
+			terrenos.no_paiol.erase(item)
+	if not sumidos.is_empty():
+		ultimo_relato.append("Saíram do paiol itens que o jogo não tem mais: %s." % ", ".join(sumidos))
 
 
 ## OS NÚMEROS QUE SAÍRAM DE FAIXA, que é a outra metade do estrago.
