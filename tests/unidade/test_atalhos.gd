@@ -21,12 +21,15 @@ extends "res://tests/unidade/base.gd"
 ##      andam e as declaradas abaixo, com a razão. É a pergunta que teria pegado
 ##      o I da mochila e, antes dele, o L do almanaque.
 ##
-## O `controles.cfg` de verdade vai para uma reserva e volta no fim.
+## O TESTE GRAVA NO `controles.cfg` (põe o mapa no I, grava letra reservada à mão), e por isso SÓ RODA NO PERFIL DESCARTÁVEL
+## do `testar.ps1` (#254): por fora do runner ele fica pendente, em vez de mexer nas teclas de quem joga. Antes ele guardava
+## o arquivo de verdade numa reserva e o devolvia no fim — um teste interrompido no meio deixava o `controles.cfg` com o
+## mapa no I e a mochila no M, e a plaqueta do mapa no HUD passava a dizer "I". Agora a limpeza mora no `after_each`, que
+## roda também quando o teste estoura.
 
 const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
 const TeclasMovimento = preload("res://scripts/prototipo_3d/teclas_movimento.gd")
 
-const RESERVA := "user://reserva_do_teste_de_atalhos.cfg"
 const PASTA_DO_VALE := "res://scripts/prototipo_3d/"
 
 const TELAS := {
@@ -51,9 +54,22 @@ const LETRA_FIXA_PERMITIDA := {
 }
 
 
+func before_each() -> void:
+	super()
+	Atalhos._cache.clear()
+
+
+## Roda também quando o teste estoura no meio: o perfil descartável volta sem o `controles.cfg`, e o InputMap, às letras de fábrica.
+func after_each() -> void:
+	if Estado.perfil_descartavel():
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(Atalhos.ARQUIVO))
+		Atalhos._cache.clear()
+		Atalhos.aplicar()
+
+
 func test_tabela_de_atalhos() -> void:
-	_devolver_reserva_esquecida()
-	_guardar_as_preferencias_de_verdade()
+	if not exige_perfil_descartavel():
+		return
 
 	# --- 1. AS CINCO TELAS ESTÃO NA TABELA ------------------------------------
 	for acao in TELAS:
@@ -144,8 +160,6 @@ func test_tabela_de_atalhos() -> void:
 			_conferir(escritas.has("%s:%d" % [arquivo_nome, int(codigo)]),
 				"%s não escreve mais o %s à mão: tire a linha da permissão" % [arquivo_nome, OS.get_keycode_string(int(codigo))])
 
-	_devolver_as_preferencias()
-
 
 ## A ação do InputMap responde a esta tecla física?
 func _responde(acao: String, codigo: int) -> bool:
@@ -177,30 +191,3 @@ func _letras_escritas_no_vale() -> Dictionary:
 					continue
 				achadas["%s:%d" % [nome, codigo]] = "linha %d" % (n + 1)
 	return achadas
-
-
-func _guardar_as_preferencias_de_verdade() -> void:
-	var de_verdade := ProjectSettings.globalize_path(Atalhos.ARQUIVO)
-	if FileAccess.file_exists(Atalhos.ARQUIVO):
-		DirAccess.copy_absolute(de_verdade, ProjectSettings.globalize_path(RESERVA))
-		DirAccess.remove_absolute(de_verdade)
-	Atalhos._cache.clear()
-
-
-## Um teste que caiu no meio deixou a reserva: ela é o arquivo de verdade.
-func _devolver_reserva_esquecida() -> void:
-	if FileAccess.file_exists(RESERVA):
-		var reserva := ProjectSettings.globalize_path(RESERVA)
-		DirAccess.copy_absolute(reserva, ProjectSettings.globalize_path(Atalhos.ARQUIVO))
-		DirAccess.remove_absolute(reserva)
-
-
-func _devolver_as_preferencias() -> void:
-	var de_verdade := ProjectSettings.globalize_path(Atalhos.ARQUIVO)
-	if FileAccess.file_exists(Atalhos.ARQUIVO):
-		DirAccess.remove_absolute(de_verdade)
-	if FileAccess.file_exists(RESERVA):
-		var reserva := ProjectSettings.globalize_path(RESERVA)
-		DirAccess.copy_absolute(reserva, de_verdade)
-		DirAccess.remove_absolute(reserva)
-	Atalhos._cache.clear()
