@@ -218,9 +218,10 @@ func _run() -> void:
 	_conferir(hud != null, "não achei o HUD")
 	if hud != null:
 		var atalhos = load("res://scripts/prototipo_3d/atalhos.gd")
-		# O relógio saiu da coluna (#177): o controle do tempo é o relógio central.
-		var teclas_da_coluna := {3: "mapa", 5: "camera", 9: "painel"}
-		_conferir(hud._corner_nodes.size() == 20, "faltam atalhos ou dicas na coluna do HUD")
+		# O relógio saiu da coluna (#177): o controle do tempo é o relógio central. A mochila entrou na última vaga e
+		# o FPS é UM botão da coluna, na vaga 7 (#254): onze botões, e cada um com a sua dica.
+		var teclas_da_coluna := {3: "mapa", 5: "camera", 9: "painel", 10: "mochila"}
+		_conferir(hud._corner_nodes.size() == 22, "faltam atalhos ou dicas na coluna do HUD (%d nós, e são onze botões com a dica)" % hud._corner_nodes.size())
 		for i in range(0, hud._corner_nodes.size() - 1, 2):
 			var canto: Control = hud._corner_nodes[i]
 			var dica: Control = hud._corner_nodes[i + 1]

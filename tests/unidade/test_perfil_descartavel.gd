@@ -52,6 +52,6 @@ func test_todo_teste_que_grava_os_atalhos_chama_o_guarda() -> void:
 			gravam.append(nome)
 			_conferir(texto.contains("exige_perfil_descartavel()"),
 				"%s mexe nos atalhos (grava o controles.cfg) e não chama exige_perfil_descartavel(): rodado por fora do runner, grava nas teclas de quem joga" % nome)
-	# O que a pergunta enxerga hoje: os testes de atalhos e do rodapé da mochila.
-	for esperado in ["test_atalhos.gd", "test_mochila_rodape.gd"]:
+	# O que a pergunta enxerga hoje: os testes de atalhos, do rodapé da mochila e das plaquetas do HUD.
+	for esperado in ["test_atalhos.gd", "test_mochila_rodape.gd", "test_plaquetas_do_hud.gd"]:
 		_conferir(gravam.has(esperado), "o varredor não viu %s entre os testes que gravam os atalhos (%s)" % [esperado, str(gravam)])

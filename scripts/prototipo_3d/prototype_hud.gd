@@ -51,6 +51,8 @@ signal menu_cancelled
 ## Botão de mapa do canto: abre ou fecha o mapa do vale.
 signal map_requested
 signal quests_requested
+## Botão de mochila do canto (#254): abre ou fecha a mochila, como a tecla dela.
+signal mochila_requested
 ## Engrenagem do canto: pede os ajustes; `settings_closed` quando o modal fecha.
 signal settings_requested
 signal settings_closed
@@ -134,7 +136,10 @@ var _ajustes	# painel_ajustes.gd
 ## Painéis escondidos enquanto o mapa está aberto (a coluna do canto continua).
 var _hidden_for_map: Array[Control] = []
 var _corner_nodes: Array[Node] = []
+## As plaquetas de tecla da coluna do canto, por atalho ("mapa", "camera", "painel", "mochila"), e a versão da tabela de atalhos
+## que elas mostram (`Atalhos.versao`): remapeada a tecla, a plaqueta se refaz (`_atualizar_as_plaquetas`).
 var _shortcut_badges: Dictionary = {}
+var _versao_dos_atalhos := 0
 var mapa_aberto := false
 
 
@@ -187,20 +192,15 @@ func _ready() -> void:
 	for control: Control in [_heading, _region_label, _mission_step, _objective_label, _quest_label]:
 		control.z_index = 100
 
-	# A COLUNA DE ÍCONES DO CANTO SAIU.
+	# A COLUNA DE ÍCONES DO CANTO.
 	#
-	# Eram nove botões redondos empilhados na borda esquerda, por cima do vale,
-	# o tempo todo: HOME, ajustes, som, relógio, mapa, câmera, velocidade,
-	# estilo e controles. "Os ícones na esquerda do HUD podem ser todos dentro do
-	# menu ESC" — e estão, em linhas com o estado escrito (`menu_pausa.gd`).
-	#
-	# `_create_corner_buttons` continua aqui, sem ser chamada, porque ela é a
-	# receita dos ícones e do que cada um fazia — inclusive o das missões, que
-	# abre a mesma aba do diário que o J abre. O FPS fica sozinho no canto, com
-	# o número escrito nele.
+	# Em 30/09 ela saiu do vale para dentro do menu do Esc (`menu_pausa.gd`, "os ícones na esquerda do HUD podem
+	# ser todos dentro do menu ESC") e o FPS ficou sozinho no canto, com o número escrito nele. A coluna voltou
+	# (8413ae7) — HOME, ajustes, som, mapa, tela cheia, câmera, velocidade, FPS, controles, missões e a mochila — e
+	# o botão de FPS sozinho continuou sendo criado à parte, por cima do HOME (#254). Agora ele é UM botão da coluna,
+	# na vaga que era a do cubo, e nada mais é criado à parte.
 	_create_performance_panel()
 	_create_corner_buttons()
-	_create_performance_button()
 
 	_house_info_panel = _panel(Color(0.055, 0.085, 0.075, 0.92))
 	_root.add_child(_house_info_panel)
@@ -728,12 +728,27 @@ func _atualizar_vigor(_valor: float = 0.0) -> void:
 
 
 func _process(delta: float) -> void:
+	if Atalhos.versao != _versao_dos_atalhos:
+		_atualizar_as_plaquetas()
 	_sincronizar_prioridade_dos_avisos()
 	_refresh_time += delta
 	if _refresh_time >= 0.35:
 		_refresh_time = 0.0
 		_update_telemetry()
 		_update_clock_state()
+
+
+## AS PLAQUETAS ACOMPANHAM O REMAPEAMENTO (#254). Elas só eram lidas ao montar a coluna: trocar uma tecla no AJUSTAR ou na
+## tela de Controles deixava a letra antiga no botão até o vale recarregar. Agora cada plaqueta refaz o texto quando a
+## tabela de atalhos muda (`Atalhos.versao`), no botão do próprio atalho, e as frases do HUD que citam a letra (a dica da
+## câmera, a lista de controles) a seguem.
+func _atualizar_as_plaquetas() -> void:
+	_versao_dos_atalhos = Atalhos.versao
+	for acao: String in _shortcut_badges:
+		var marca := _shortcut_badges[acao] as Label
+		if is_instance_valid(marca):
+			BotaoCanto.definir_atalho(marca, Atalhos.letra(acao))
+	set_camera_locked(_camera_locked)
 
 
 ## O ESTADO DO RELÓGIO ao lado da hora (#100): a pausa do jogador, ou o motivo
@@ -1533,15 +1548,10 @@ func _create_corner_buttons() -> void:
 		Dia.definir_velocidade(Dia.proxima_velocidade())
 		_update_telemetry())
 
+	# O FPS TEM UM BOTÃO SÓ (#254), com o número escrito nele: o cubo do "estilo", que ocupava esta vaga, saiu —
+	# parecia o botão da mochila, e era um segundo botão de FPS, porque o primeiro nascia à parte, por cima do HOME.
 	top += 1
-	var style_icon = HudIcon.new().configurar("estilo")
-	style_icon.definir(true)
-	var style: Array = BotaoCanto.criar(_root, top, style_icon)
-	(style[1] as Label).text = "FPS"
-	_performance_button = style[0]
-	_corner_setup(_performance_button, func() -> void:
-		_performance_open = not _performance_open
-		_sync_performance_panel())
+	_create_performance_button(top)
 
 	top += 1
 	_help_icon = HudIcon.new().configurar("ajuda")
@@ -1557,6 +1567,16 @@ func _create_corner_buttons() -> void:
 	(quests[1] as Label).text = str(IdiomaMenu.campo(quest_texts.get("botao_missoes", {}), "rotulo", "Missões e objetivos"))
 	_shortcut_badges["painel"] = BotaoCanto.marcar_atalho(quests[0], Atalhos.letra("painel"))
 	_corner_setup(quests[0], func() -> void: quests_requested.emit())
+
+	# A MOCHILA (#254): "a plaquinha deveria estar na Mochila". O botão do "ícone de caixa" que o autor tomava por ela era o
+	# cubo do FPS; a mochila de verdade não tinha botão. A plaqueta lê o atalho dela, e abre e fecha como a tecla.
+	top += 1
+	var mochila_icone: Control = HudIcon.new().configurar("mochila")
+	var mochila: Array = BotaoCanto.criar(_root, top, mochila_icone)
+	(mochila[1] as Label).text = str(IdiomaMenu.campo(quest_texts.get("botao_mochila", {}), "rotulo", "Mochila"))
+	_shortcut_badges["mochila"] = BotaoCanto.marcar_atalho(mochila[0], Atalhos.letra("mochila"))
+	_corner_setup(mochila[0], func() -> void: mochila_requested.emit())
+	_versao_dos_atalhos = Atalhos.versao
 	set_camera_locked(_camera_locked)
 	for index in range(first_child, _root.get_child_count()):
 		_corner_nodes.append(_root.get_child(index))
@@ -1570,7 +1590,7 @@ func _create_corner_buttons() -> void:
 ## indicador: "o indicador de FPS não tá mostrando o FPS, está travado com {}".
 ## Agora o número vive no botão, refeito com o resto das medições
 ## (`_update_telemetry`); o clique continua abrindo o painel com o detalhe.
-func _create_performance_button() -> void:
+func _create_performance_button(posicao: int) -> void:
 	_fps_label = Label.new()
 	_fps_label.name = "FPS"
 	_fps_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -1592,7 +1612,7 @@ func _create_performance_button() -> void:
 	# botão todo, para "144" caber sem cortar. Por isso o ícone do canto é um
 	# nó vazio, e o número é filho do botão, ancorado nele inteiro: acompanha a
 	# placa em qualquer tamanho do HUD.
-	var dados: Array = BotaoCanto.criar(_root, 0, Control.new())
+	var dados: Array = BotaoCanto.criar(_root, posicao, Control.new())
 	(dados[1] as Label).text = "FPS"
 	_performance_button = dados[0]
 	_performance_button.add_child(_fps_label)

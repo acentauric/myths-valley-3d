@@ -10,7 +10,7 @@ extends "res://tests/suite/caso.gd"
 ## pergunta é o que o VALE tem de fazer para ela funcionar em cima do 3D:
 ##
 ##   1. O I ABRE E FECHA, pelo dono das telas, e o vale para atrás dela. O Esc
-##      também fecha.
+##      também fecha, e o botão da mochila da coluna do canto (#254) faz o mesmo que o I.
 ##   2. ELA FICA POR CIMA DO HUD e no tamanho de gente. Desenhada para os
 ##      640×360 do 2D, no vale de 1280×720 ela abria com metade do tamanho e
 ##      por baixo do HUD, que ficava com os cliques. Grade à esquerda, o que se
@@ -75,6 +75,19 @@ func _run() -> void:
 	await _tecla(KEY_I)
 	await _tecla(KEY_ESCAPE)
 	_conferir(not mochila.aberta, "o Esc não fechou a mochila")
+	# O BOTÃO DA MOCHILA da coluna do canto (#254) faz o mesmo que a tecla, pelo mesmo dono das telas: abre com o vale
+	# parado atrás dela e, apertado de novo, fecha e devolve o vale.
+	var botao_da_mochila := _botao_da_mochila()
+	_conferir(botao_da_mochila != null, "a coluna do canto não tem o botão da mochila")
+	if botao_da_mochila != null:
+		botao_da_mochila.pressed.emit()
+		await _frames(3)
+		_conferir(mochila.aberta, "o botão da mochila do canto não abriu a mochila")
+		_conferir(paused, "o botão do canto abriu a mochila com o vale andando atrás dela")
+		botao_da_mochila.pressed.emit()
+		await _frames(3)
+		_conferir(not mochila.aberta, "o botão da mochila do canto não fechou a mochila")
+		_conferir(not paused, "o botão do canto fechou a mochila e deixou o vale parado")
 
 	# --- 2. POR CIMA DO HUD, NO TAMANHO DE GENTE -----------------------------
 	_conferir(mochila.layer > vale.hud.layer,
@@ -227,6 +240,15 @@ func _responde(acao: String, codigo: int, com_alt := false) -> bool:
 	evento.alt_pressed = com_alt
 	evento.pressed = true
 	return InputMap.has_action(acao) and InputMap.event_is_action(evento, acao, true)
+
+
+## O botão da mochila na coluna do canto do HUD (o do ícone "mochila"), ou nulo.
+func _botao_da_mochila() -> Button:
+	for canto in get_nodes_in_group("botoes_canto"):
+		var icone: Control = canto.get_meta("icone")
+		if icone.get("tipo") == "mochila":
+			return canto.get_meta("botao") as Button
+	return null
 
 
 func _fechar() -> void:

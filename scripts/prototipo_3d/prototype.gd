@@ -392,6 +392,8 @@ func _ready() -> void:
 	apoios.fechou.connect(func() -> void: telas.fechou_por_conta("apoios"))
 	apoios.usou.connect(func(texto: String) -> void: hud.set_notice(texto))
 	hud.controls_requested.connect(func() -> void: telas.abrir("controles"))
+	# O botão de mochila do canto (#254) abre e fecha como a tecla dela: pela mesma tela registrada logo abaixo.
+	hud.mochila_requested.connect(func() -> void: telas.abrir("mochila"))
 	telas.registrar("mochila",
 		func(e: InputEvent) -> bool: return e.is_action_pressed("mv_mochila"),
 		func() -> bool: return Mochila.aberta,
