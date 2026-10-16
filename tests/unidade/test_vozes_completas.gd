@@ -65,16 +65,17 @@ const NARRACAO_SEM_VOZ := {
 ## ("arraial:mirante_material"). Só encolhe: a que ganhou voz sai daqui (o teste reprova a pendência cumprida).
 const VOZ_PENDENTE := {
 	"arraial:mirante_material": "o passo diz 'oito tábuas, quatro pedras e duas cordas' desde que a obra baixou o custo (0241ea3), e a voz gerada ainda diz vinte, doze e seis: o passo fica sem voz até uma tomada com o texto certo",
-	"fe": "as vozes da fé ainda não tocam a voz",
-	"oferenda": "a resposta da oferenda é aviso do HUD e ainda não toca a voz",
-	"quirino": "o mestre Quirino ainda não tem voz",
 }
 
 ## Quem fala fora do npcs_3d.json declara a voz no arquivo em que fala: um bloco `voz` ({id, nome, modelo}) no objeto
-## dele (a anfitriã, a moça, a mulher da cama, a anciã). O Pedro fala com a voz do guia, que mora no npcs_3d.json.
+## dele (a anfitriã, a moça, a mulher da cama, a anciã) ou no alto do arquivo, quando o arquivo é a voz (o "" de cada
+## fé: a Voz do Cruzeiro, a do Terreiro, a da Gameleira). O Pedro fala com a voz do guia, que mora no npcs_3d.json.
 const VOZES_DE_FORA := {
 	"res://data/missoes_fazenda.json": ["anfitria", "moca"],
 	"res://data/missoes_revoar.json": ["velha", "moca", "ancia"],
+	"res://data/missoes_fe_catolica.json": [""],
+	"res://data/missoes_fe_candomble.json": [""],
+	"res://data/missoes_fe_caboclo.json": [""],
 }
 
 var _campos: Array = []
@@ -160,11 +161,34 @@ func test_quem_fala_fora_do_npcs_declara_a_voz() -> void:
 	for arquivo in VOZES_DE_FORA:
 		var dados: Dictionary = _ler(arquivo)
 		for quem in VOZES_DE_FORA[arquivo]:
-			var bloco = dados.get(quem)
+			var bloco = dados if quem == "" else dados.get(quem)
 			var voz = (bloco as Dictionary).get("voz") if bloco is Dictionary else null
-			conferir(_voz_valida(voz), "%s: '%s' fala e não declara a voz ({id, nome, modelo: eleven_v3}): %s" % [arquivo.get_file(), quem, str(voz)])
+			conferir(_voz_valida(voz), "%s: '%s' fala e não declara a voz ({id, nome, modelo: eleven_v3}): %s" % [arquivo.get_file(), quem if quem != "" else "o arquivo", str(voz)])
 	conferir(not _voz_valida({"id": "curto", "nome": "X", "modelo": "eleven_v3"}) and not _voz_valida({"id": "pqHfZKP75CvOlQylNhV4", "nome": "", "modelo": "eleven_v3"})
 		and not _voz_valida({"id": "pqHfZKP75CvOlQylNhV4", "nome": "Bill", "modelo": "outro"}) and not _voz_valida(null), "o detector de voz declarada aceitou uma voz sem id, sem nome, de outro modelo ou nenhuma")
+
+
+## Todo morador que fala tem a sua voz no npcs_3d.json, e cada um a sua. O Mestre Quirino, que só falava no balão, tem a
+## dele desde 15/10/2026: Bill, do ElevenLabs, no modelo eleven_v3.
+func test_todo_morador_que_fala_tem_a_sua_voz() -> void:
+	var npcs = _ler("res://data/npcs_3d.json")
+	var vistas := {}
+	var falantes := 0
+	for pessoa in [npcs["guia"]] + (npcs["moradores"] as Array):
+		if bool(pessoa.get("mudo", false)):
+			continue
+		falantes += 1
+		var id := str(pessoa.get("id", "?"))
+		var voz = pessoa.get("voz")
+		conferir(_voz_valida(voz), "'%s' fala e não tem a voz ({id, nome, modelo: eleven_v3})" % id)
+		if voz is Dictionary:
+			var voz_id := str(voz.get("id", ""))
+			conferir(not vistas.has(voz_id), "'%s' tem a mesma voz de '%s': cada um tem a sua" % [id, str(vistas.get(voz_id, ""))])
+			vistas[voz_id] = id
+		if id == "quirino":
+			conferir(voz is Dictionary and str(voz.get("id", "")) == "pqHfZKP75CvOlQylNhV4" and str(voz.get("modelo", "")) == "eleven_v3",
+				"o Mestre Quirino devia ter a voz Bill (pqHfZKP75CvOlQylNhV4, eleven_v3): %s" % str(voz))
+	conferir(falantes >= 20 and vistas.has("pqHfZKP75CvOlQylNhV4"), "só %d falante(s) no npcs_3d.json, ou o Quirino não está entre eles: a varredura não está pegando" % falantes)
 
 
 ## O Dialogo junta a voz de cada fala do dado na lista que `falar` pede, na ordem (#248).

@@ -343,6 +343,36 @@ de 06/10/2026: quem ainda espera áudio declara `voz_pendente` no `npcs_3d.json`
 gate reprova a marca que sobra depois do último áudio. Os gates são `tests/falas_dos_moradores.gd`
 (`-- --falsificar-falas`) e `tests/vozes_dos_moradores.gd` (`-- --falsificar-vozes`): os dois têm de reprovar.
 
+### A voz das missões e das cenas (15/10/2026)
+
+Até 15/10 só as conversas e os cumprimentos dos moradores, e os passos do Pedro, falavam em voz: o anúncio do
+passo de um morador, a resposta de quem recebe a entrega, o aviso de fila trancada e as cenas dos capítulos 6 e 7
+só apareciam no balão (#59, #248). Agora **toda fala falada tem voz**, em português, no campo de áudio ao lado do
+texto dela (o nome do mp3 em `assets/audio/vozes/`, sem a extensão):
+
+| A fala | O campo | Quem a toca |
+|---|---|---|
+| anúncio do passo | `audio` no passo | o dono da fila (`CadeiaDeMissoes.anunciar` → `narrar`), na vez dele |
+| resposta de quem recebe | `meta.audio_resposta` | quem recebe (`_encontrar`); a da oferenda é aviso do HUD, e a voz toca solta (`_dizer_a_resposta`) |
+| arremate | `arremate.audio` | o dono da fila; as notas de fim (`narra: false`) não se dizem |
+| aviso de fila trancada | `trancada_audio`, ao lado de `trancada` | o morador, no lugar da conversa (`npc.conversar`) |
+| socorro do Pedro | `socorro[].audio` | a caixa de fala (`_conferir_o_socorro`) |
+| fala de cena (fazenda, revoar) | `audio` em cada linha; `audio_oferta` e `audio_pergunta` nas trocas | a caixa de fala: `Dialogo.falar(nome, falas, vozes)` |
+| pergunta de cena | `audio_pergunta`; `pergunta_escudo.audio` | `Dialogo.perguntar(nome, pergunta, voz)` |
+| as vozes da fé | `audio` do passo e do arremate dos `missoes_fe_*.json` | o marco, na caixa (`voz_do_marco.gd`) |
+
+Quem fala fora do `npcs_3d.json` — as três vozes da fé e as mulheres da fazenda e do revoar — declara a voz num
+bloco `voz` ({id, nome, modelo}) no arquivo em que fala; o Mestre Quirino ganhou a dele no próprio `npcs_3d.json`
+(Bill). A narração do mundo (o escuro e a frase, `narracao_do_vale.gd`) e as notas de fim seguem sem voz, de
+propósito. A resposta e o aviso esperam a vez na fila de falas como qualquer outro, e a voz segura a vez pelo
+tempo dela (algumas passam de 40 s): o E, como em toda fala, passa a página e, na última, a fecha.
+
+O portão é o teste de unidade `tests/unidade/test_vozes_completas.gd`: todo campo de áudio dos dados aponta para um
+mp3 que existe, tem `.import` e o Godot carrega; nenhum mp3 fica sem uso; toda fala falada tem voz (o que ainda
+falta está declarado em `VOZ_PENDENTE`, com a razão); e a voz diz o texto que o jogador lê
+(`docs/falas/audios_gravados.json` guarda o texto de cada voz no dia em que foi gerada: mudou o texto, é preciso
+gerar a voz de novo). Ele se falsifica sozinho.
+
 **Como se escreve uma fala nova:** português do Recôncavo de 1887, sem caricatura ("meu filho",
 "moço", "eita"; criança fala como criança, "painho", "mainha"); nada de mecânica, de nome do
 jogador nem de coisa que dependa do estado da partida, porque as falas rodam ao acaso; e pistas que

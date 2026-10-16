@@ -52,6 +52,7 @@
         "quantos": 1,
         "lugar": "areia",
         "raio": 8,
+        "audio_resposta": "beata_beata_promessa_promessa_ostra_resposta",
         "resposta": "A ostra fica na areia molhada. A onda seguinte a cobre e descobre. A terceira a leva.",
         "resposta_en": "The oyster stays on the wet sand. The next wave covers and uncovers it. The third takes it.",
         "resposta_es": "La ostra queda en la arena mojada. La ola siguiente la cubre y la descubre. La tercera se la lleva."

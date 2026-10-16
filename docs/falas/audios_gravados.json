@@ -2204,6 +2204,62 @@
     "assets/audio/vozes/revoar_cena_trocas_3_pergunta.mp3": {
       "hash": "86ef17d77a",
       "texto": "Dar a mão à moça? (não há réis nisto — só o fôlego que ela leva)"
+    },
+    "assets/audio/vozes/beata_beata_promessa_promessa_ostra_resposta.mp3": {
+      "hash": "22fbecbbed",
+      "texto": "A ostra fica na areia molhada. A onda seguinte a cobre e descobre. A terceira a leva."
+    },
+    "assets/audio/vozes/fe_caboclo_fe_caboclo_fe_monte.mp3": {
+      "hash": "e23e8216da",
+      "texto": "O monte debaixo da gameleira é concha, milhões, e quem juntou não deixou nome. Quem é do caboclo paga o monte: cata ostra nas pedras da maré, ali perto das pedras da ponta da praia, e põe as suas conchas em cima das deles. Seis bastam para a primeira vez. Não é oferenda. É continuar uma coisa que começou antes de todo mundo."
+    },
+    "assets/audio/vozes/fe_caboclo_fe_caboclo_fe_monte_resposta.mp3": {
+      "hash": "993b43a4c2",
+      "texto": "Seis conchas no alto do monte. Não se veem, de tanta que já tem. Você desce a mão pela raiz. O corpo não afrouxa; fica mais duro. É o que esta fé promete."
+    },
+    "assets/audio/vozes/fe_candomble_fe_candomble_fe_mesa.mp3": {
+      "hash": "96afab7fe9",
+      "texto": "Terreiro não se entra de mão vazia, e a primeira mesa é sua. Folha da serra, peixe da maré e cana da roça: o que o mato dá, o que a água dá e o que a mão plantou. Três ervas, dois peixes, duas canas. Leve tudo junto ao terreiro. Lá se aprende em roda; ninguém aprende sozinho."
+    },
+    "assets/audio/vozes/fe_candomble_fe_candomble_fe_mesa_resposta.mp3": {
+      "hash": "b837a51db1",
+      "texto": "Você deixa tudo no chão de barro batido, e alguém que você não viu recolhe. Não se agradece. A mesa é para a casa, e a casa é de todos."
+    },
+    "assets/audio/vozes/fe_catolica_fe_catolica_arremate.mp3": {
+      "hash": "9a207b2800",
+      "texto": "Andou os quatro. Ninguém viu você andar, e todo mundo ficou sabendo. É assim que a católica funciona aqui: devagar, e para todo mundo junto."
+    },
+    "assets/audio/vozes/fe_catolica_fe_catolica_fe_romaria.mp3": {
+      "hash": "e08ba57501",
+      "texto": "Agora que é da igreja, tem uma coisa que todo católico daqui faz uma vez: anda os quatro. O cruzeiro diante da igreja, o altar lá dentro, a capela velha da rua do mirante e o cemitério. Não é reza — é passar, tirar o chapéu e seguir. Quem andou os quatro, o arraial passa a contar como gente daqui."
+    },
+    "assets/audio/vozes/quirino_fala_1.mp3": {
+      "hash": "77be746699",
+      "texto": "Mestre Quirino, do saveiro. Encosto aqui no dia catorze de cada estação: o que o arraial produziu no mês, eu levo pra Salvador."
+    },
+    "assets/audio/vozes/quirino_fala_2.mp3": {
+      "hash": "8aebddd08f",
+      "texto": "Piaçava é o que Salvador mais gasta: vassoura, corda de navio, cobertura de casa. Fibra comprida e bem seca, que eu pago bem."
+    },
+    "assets/audio/vozes/quirino_fala_3.mp3": {
+      "hash": "59ecd746ee",
+      "texto": "Fui eu que trouxe você da capital, lembra? O mar estava manso. Hoje também."
+    },
+    "assets/audio/vozes/quirino_mestre_saveiro_luz_luz_com_quirino_resposta.mp3": {
+      "hash": "60b647ab12",
+      "texto": "O Ladislau falou. Pois eu vi, sim. Não era barco, não era fogo de pescador. Andava contra o vento e parou em cima do lugar onde a Senhora da Boa Viagem afundou — todo mestre desta baía sabe onde é. Eu não bebo, moço. E não volto lá de noite."
+    },
+    "assets/audio/vozes/quirino_saveiro_saveiro_vender_resposta.mp3": {
+      "hash": "56dac1ee9e",
+      "texto": "Fibra comprida, bem tirada... foi o Benedito que te ensinou, que ele não arranca pela raiz. Trinta e quatro réis o feixe, que a venda te dá catorze. Toda estação eu volto no dia catorze: dez feixes de piaçava eu levo sempre — e o que a sua roça der no mês, também."
+    },
+    "assets/audio/vozes/quirino_zefa_zefa_saveiro_resposta.mp3": {
+      "hash": "cab7be4045",
+      "texto": "O neto da Dona Zefa? Veio cedinho, com a avó do lado. Me deu esta carta pro primo, lá em Salvador, e ficou em terra. Disse que vai um dia, mas no dia dele, e não no de ninguém. A velha voltou pra casa mais leve do que ele. Saveiro eu levo; escolha, cada um carrega a sua."
+    },
+    "assets/audio/vozes/rendeira_rendeira_toalha_toalha_na_mesa_resposta.mp3": {
+      "hash": "16a87bf44b",
+      "texto": "A toalha aberta na mesa, branca de todo. Na borda, em ponto cheio, o nome dele. A casa ficou mais arrumada do que você."
     }
   }
 }

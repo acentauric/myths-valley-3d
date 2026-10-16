@@ -18,8 +18,9 @@ extends "res://tests/suite/caso.gd"
 ##      fila dá ao chinês tempo de leitura de chinês (`FilaDeFalas.duracao`: um ideograma vale umas duas letras e meia).
 ##   3. O MOTOR LÊ O QUE ESTÁ ESCRITO (`IdiomaMenu.campo_no_idioma`), nos quatro idiomas, e a fala que ainda não
 ##      tem `texto_zh` cai no inglês, não no português.
-##   4. CADA UM TEM A SUA VOZ: Pedro, os oito antigos e os catorze novos têm `voz` ({id, nome, modelo}) e nenhum
-##      id de voz se repete entre quem fala; quem fala só no balão (o Quirino) não tem voz nem áudio.
+##   4. CADA UM TEM A SUA VOZ: Pedro, os oito antigos (o Quirino também, desde 15/10/2026) e os catorze novos têm
+##      `voz` ({id, nome, modelo}) e nenhum id de voz se repete entre quem fala; quem fala só no balão, se houver
+##      (`SEM_VOZ`), não tem voz nem áudio.
 ##   5. TODA FALA DE QUEM TEM VOZ TEM O ÁUDIO: o arquivo existe em assets/audio/vozes, tem o `.import`, o Godot o
 ##      carrega, e ele dura o que o texto pede (nem cortado, nem com silêncio demais); nenhum nome se repete.
 ##      A ÚNICA DÍVIDA ACEITA é a declarada: o morador com `voz_pendente` (e a razão escrita, como o `mudo_motivo`)
@@ -41,8 +42,8 @@ const LISTAS := ["saudacoes", "falas", "saudacoes_noite", "falas_noite", "falas_
 ## Os catorze moradores que ganharam voz e texto em chinês juntos.
 const NOVOS := ["padre", "sacristao", "beata", "mercador", "guarda", "pescador", "marisqueira", "lavadeira",
 	"rendeira", "quituteira", "carpinteiro", "menino", "menina", "mestre_saveiro"]
-## Quem fala só no balão: a voz dele é decisão de crédito (e não estava entre os catorze).
-const SEM_VOZ := ["quirino"]
+## Quem fala só no balão: a voz é decisão de crédito. Vazia desde que o Mestre Quirino ganhou a dele (15/10/2026, Bill).
+const SEM_VOZ := []
 ## O chinês cabe no balão: de 4 a 140 caracteres; a saudação, no máximo o que o balão curto leva.
 const ZH_TAMANHO := Vector2i(4, 140)
 const ZH_SAUDACAO_MAXIMO := 60
@@ -633,7 +634,7 @@ func _fechar() -> void:
 	_conferir(_vozes_no_vale >= 9 or falhas > 0,
 		"só %d voz(es) conferida(s) no vale: algum caminho do portão não rodou" % _vozes_no_vale)
 	if falhas == 0:
-		print("VOZES_DOS_MORADORES_OK: %d falantes com os quatro textos (pt, en, es, zh) em toda fala, o chinês em ideogramas e a saudação inteira no balão; o motor lê cada idioma e o chinês sem texto cai no inglês; cada um com a sua voz (nenhuma repetida) e o Quirino só no balão; %d áudios existem, importam e duram o que o texto pede; no vale %d vozes tocam pela fila (cumprimento e E de dia e de noite, menu em chinês e o Pedro de depois do tutorial), com a vez segura por elas e a voz calando com a fala; %d falas esperam o áudio, por `voz_pendente` declarado" % [_falantes, _audios_conferidos, _vozes_no_vale, _audios_pendentes])
+		print("VOZES_DOS_MORADORES_OK: %d falantes com os quatro textos (pt, en, es, zh) em toda fala, o chinês em ideogramas e a saudação inteira no balão; o motor lê cada idioma e o chinês sem texto cai no inglês; cada um com a sua voz (nenhuma repetida, o Quirino inclusive); %d áudios existem, importam e duram o que o texto pede; no vale %d vozes tocam pela fila (cumprimento e E de dia e de noite, menu em chinês e o Pedro de depois do tutorial), com a vez segura por elas e a voz calando com a fala; %d falas esperam o áudio, por `voz_pendente` declarado" % [_falantes, _audios_conferidos, _vozes_no_vale, _audios_pendentes])
 	else:
 		print("vozes_dos_moradores: %d falha(s)" % falhas)
 	quit(1 if falhas > 0 else 0)

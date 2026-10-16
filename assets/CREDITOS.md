@@ -75,6 +75,34 @@ moradores, só em português. O teto de crédito da chave de API acabou no meio 
 gerar fica declarado em `voz_pendente` no `data/npcs_3d.json` (e cobrado por
 `tests/vozes_dos_moradores.gd`), e as linhas deste registro valem para o lote inteiro.
 
+### Vozes das missões, das cenas e do restante do arraial (15/10/2026, #210, #248 e #59)
+
+Geradas em 15/10/2026 no ElevenLabs Text to Speech (Eleven v3), só em português, cada fala na voz de
+quem a diz, e normalizadas em −18 LUFS (`loudnorm`, 44,1 kHz, 128 kbps). São 267 arquivos em
+`assets/audio/vozes/`: 19 conversas, cumprimentos e a explicação do nado do Pedro **regerados** (o texto
+mudou na revisão de 08/10, depois da voz de 06/10 e de 10/10, #210) e 248 falas **novas**, que o jogo só
+mostrava no balão (#248 e #59). O texto, nos quatro idiomas, segue no balão e a voz segue em português. O
+mp3 entra no Git como as vozes de antes (não é LFS), com o `.import` ao lado.
+
+| Arquivos | O que são | Registro |
+| --- | --- | --- |
+| `assets/audio/vozes/<morador>_<fila>_<passo>.mp3`, `…_resposta.mp3`, `<morador>_<fila>_arremate.mp3` e `<morador>_<fila>_trancada.mp3` | 189 falas das filas de missão: o anúncio do passo, a resposta de quem recebe a entrega, o arremate e o aviso de fila trancada, cada uma na voz do morador que a diz (Dona Zefa, Tonho, Dona Filó, Dona Candinha, Damião, Cosme, Seu Benedito e os catorze moradores novos) | `data/missoes_*.json` (`audio`, `audio_resposta` e `trancada_audio`) |
+| `assets/audio/vozes/pedro_ponte_socorro_<n>.mp3` | as cinco falas do socorro da mungunzá, na voz do Pedro | `data/missoes_ponte.json` (`socorro[].audio`) |
+| `assets/audio/vozes/fazenda_cena_*.mp3` e `revoar_cena_*.mp3` | 45 falas e perguntas de cena do capítulo 6 (a fazenda) e do 7 (o revoar), na voz do Pedro e das mulheres da cena | `data/missoes_fazenda.json` e `data/missoes_revoar.json` |
+| `assets/audio/vozes/quirino_*.mp3` | o Mestre Quirino, que não tinha voz: as três conversas do E e as respostas das filas da Dona Zefa, do Seu Benedito e do Seu Ladislau | `data/npcs_3d.json` (`voz` e `falas[].audio`) |
+| `assets/audio/vozes/fe_*.mp3` | as três vozes da fé, que falam na caixa dos marcos: o anúncio da romaria, o arremate, a mesa da folha e o monte | `data/missoes_fe_*.json` (`voz` e `audio`) |
+
+As vozes de quem não era morador, todas da biblioteca do ElevenLabs: Mestre Quirino = Bill
+(`pqHfZKP75CvOlQylNhV4`); Voz do Cruzeiro = BDM Narrador pt-PT (`ap21crXwZx8GTimR53NV`); Voz do Terreiro
+= Alice (`Xb7hH8MSUJpSbSDYk0k2`); Voz da Gameleira = Adam (`pNInz6obpgDQGcFmaJgB`); a anciã = Matilda
+(`XrExE9yKIg1WjnnlVkGX`); a anfitriã mais velha = Bella (`hpp4J3VqNfWAUOO0d1Us`); a mulher da cama = Sarah
+(`EXAVITQu4vr4xnSDxMaL`); a moça da fazenda e a moça do revoar = Laura (`FGY2WhTYpPnrIDTdsKH5`, a mesma voz da
+Mariinha). Cada uma está no campo `voz` ({id, nome, modelo}) do arquivo de dados em que fala. Ficam por
+gerar: os trechos 5 a 7 da travessia (o texto mudou em 08/10 e a narração é refeita inteira) e a fala do
+passo do mirante (o texto passou a dizer oito tábuas, quatro pedras e duas cordas). O teste
+`tests/unidade/test_vozes_completas.gd` confere que toda fala falada tem voz, que o arquivo existe e que
+nenhum mp3 fica sem uso.
+
 ### Animações do Mixamo (08/10/2026, #190)
 
 | Arquivos | O que são | Registro |

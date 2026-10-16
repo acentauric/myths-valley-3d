@@ -101,6 +101,7 @@
         "tipo": "falar",
         "a_quem": "quirino",
         "raio": 4,
+        "audio_resposta": "quirino_zefa_zefa_saveiro_resposta",
         "resposta": "O neto da Dona Zefa? Veio cedinho, com a avó do lado. Me deu esta carta pro primo, lá em Salvador, e ficou em terra. Disse que vai um dia, mas no dia dele, e não no de ninguém. A velha voltou pra casa mais leve do que ele. Saveiro eu levo; escolha, cada um carrega a sua.",
         "resposta_en": "Dona Zefa's grandson? He came at first light, with his grandmother beside him. He gave me this letter for his cousin, over in Salvador, and stayed ashore. Said he'll go one day, but on his own day, not anyone else's. The old woman went home lighter than he did. A saveiro I can carry; a choice, everyone carries their own.",
         "resposta_es": "¿El nieto de doña Zefa? Vino tempranito, con la abuela al lado. Me dio esta carta para el primo, allá en Salvador, y se quedó en tierra. Dijo que va a ir un día, pero en su día, no en el de nadie. La vieja volvió a casa más liviana que él. El saveiro lo llevo yo; la decisión, cada uno carga la suya."

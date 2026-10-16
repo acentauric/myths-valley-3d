@@ -13,20 +13,23 @@ extends Node3D
 ##
 ## NA VEZ DELA (`fila_de_falas.gd`): a caixa abre quando a fala de quem estiver
 ## no balão acabar, e a vez só passa adiante quando a caixa fecha.
+##
+## COM A VOZ DELA (15/10/2026): cada voz da fé — a do Cruzeiro, a do Terreiro, a da Gameleira — tem a sua
+## (`voz` no arquivo da fila), e o `audio` do passo e do arremate toca na caixa, como a voz do Pedro.
 
 const FilaDeFalas = preload("res://scripts/prototipo_3d/fila_de_falas.gd")
 
 var dados: Dictionary = {}
 
 
-func narrar(_audio: String, texto: String, pedido: Dictionary = {}) -> void:
+func narrar(audio: String, texto: String, pedido: Dictionary = {}) -> void:
 	if texto.strip_edges() == "":
 		_avisar(pedido, "ao_terminar")
 		return
 	var fila := FilaDeFalas.da(self)
 	if fila == null:
 		_avisar(pedido, "ao_comecar")
-		_dizer(texto, 0, null, pedido)
+		_dizer(texto, 0, null, pedido, audio)
 		return
 	var fala := {
 		"falante": self, "texto": texto,
@@ -37,15 +40,15 @@ func narrar(_audio: String, texto: String, pedido: Dictionary = {}) -> void:
 	for gancho in ["ao_comecar", "ao_terminar"]:
 		if pedido.get(gancho) is Callable:
 			fala[gancho] = pedido[gancho]
-	fala["comecar"] = func(dada: Dictionary) -> void: _dizer(texto, int(dada.get("id", 0)), fila, {})
+	fala["comecar"] = func(dada: Dictionary) -> void: _dizer(texto, int(dada.get("id", 0)), fila, {}, audio)
 	fila.pedir(fala)
 
 
-## Abre a caixa e, quando ela fecha, devolve a vez à fila.
-func _dizer(texto: String, id: int, fila: Node, pedido: Dictionary) -> void:
+## Abre a caixa (com a voz, quando há) e, quando ela fecha, devolve a vez à fila.
+func _dizer(texto: String, id: int, fila: Node, pedido: Dictionary, audio: String = "") -> void:
 	var dialogo := get_node_or_null("/root/Dialogo")
 	if dialogo != null:
-		await dialogo.falar("", [texto])
+		await dialogo.falar("", [texto], [audio])
 	if fila != null and is_instance_valid(fila):
 		fila.soltar(id)
 	_avisar(pedido, "ao_terminar")

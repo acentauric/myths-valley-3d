@@ -26,6 +26,8 @@ const ConversaDoE = preload("res://tests/fixtures/conversa_do_e.gd")
 
 var falhas := 0
 var dialogo
+## As vozes que tocavam quando a caixa do marco abriu (#248): a voz da fé fala em voz.
+var _vozes_ouvidas: Array = []
 var vale
 var marcos
 var jogador
@@ -238,6 +240,7 @@ func _no_marco(marco: String, respostas: Array) -> void:
 func _calar(lidas: Array) -> void:
 	if dialogo.ativo and not marcos.ocupado() and dialogo._modo != dialogo.Modo.PERGUNTA:
 		lidas.append_array(dialogo._falas)
+		_vozes_ouvidas.append(dialogo.voz_tocando())
 		dialogo._fechar()
 
 

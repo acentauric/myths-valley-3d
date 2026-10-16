@@ -89,6 +89,8 @@ signal cena(nome: String)
 const IdiomaMenu = preload("res://scripts/prototipo_3d/idioma_menu.gd")
 const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
 const FilaDeFalas = preload("res://scripts/prototipo_3d/fila_de_falas.gd")
+## Onde moram as vozes (o `audio` de cada fala é o nome do mp3, sem a extensão).
+const PASTA_VOZES := "res://assets/audio/vozes/"
 const ServicoDoMorador = preload("res://scripts/prototipo_3d/servico_do_morador.gd")
 ## Toda cadeia viva entra neste grupo: é por ele que um morador pergunta se tem
 ## missão com o jogador antes de cumprimentar (`npc.gd`, `tem_missao`).
@@ -1618,6 +1620,27 @@ func _tentar_oferenda(passo: Dictionary, meta: Dictionary) -> void:
 	var resposta := str(meta.get("resposta", ""))
 	if resposta != "":
 		narrou.emit(resposta)
+		_dizer_a_resposta(str(meta.get("audio_resposta", "")))
+
+
+## A VOZ DA RESPOSTA DA OFERENDA (`audio_resposta`, 15/10/2026). A resposta é aviso do HUD, sem dono por perto (ver
+## `narrou`: a onda levando a ostra, a toalha aberta na mesa), então a voz também não vem de um corpo: toca solta,
+## no canal das vozes, enquanto o aviso está na tela. Sem o arquivo, o aviso segue mudo.
+var _voz_da_oferenda: AudioStreamPlayer = null
+
+
+func _dizer_a_resposta(nome: String) -> void:
+	var caminho := PASTA_VOZES + nome + ".mp3"
+	if nome == "" or not ResourceLoader.exists(caminho):
+		return
+	if _voz_da_oferenda == null:
+		_voz_da_oferenda = AudioStreamPlayer.new()
+		_voz_da_oferenda.name = "VozDaOferenda"
+		_voz_da_oferenda.bus = Audio.GERAL
+		add_child(_voz_da_oferenda)
+	_voz_da_oferenda.stream = load(caminho)
+	_voz_da_oferenda.volume_db = Audio.volume_vozes_db()
+	_voz_da_oferenda.play()
 
 
 ## A JANELA DE HORAS DA META, `"horas": [de, ate]` no relógio do vale (`Dia.hora`, 0 a 24): sem

@@ -111,12 +111,13 @@ falante("voce", "(sem nome: o que o jogador vê e sente)", null, "narração em 
 falante("documento", "(papel lido)", null, "documento");
 // AS VOZES DA FÉ não são moradores: o marco maior de cada fé fala a fila dela
 // (prototype._pendurar_as_filas_da_fe; Fe.FES[fe].marcos[0] → MarcosDaFe.NOMES_DOS_MARCOS).
-falante("fe_catolica", "Voz do Cruzeiro", null, "a fé católica");
-falante("fe_candomble", "Voz do Terreiro", null, "o candomblé");
-falante("fe_caboclo", "Voz da Gameleira", null, "a fé do caboclo");
+// A voz de cada um mora no arquivo da fila (`voz`: {id, nome, modelo}), como a dos moradores no npcs_3d.json.
+falante("fe_catolica", "Voz do Cruzeiro", ler("data/missoes_fe_catolica.json").voz, "a fé católica");
+falante("fe_candomble", "Voz do Terreiro", ler("data/missoes_fe_candomble.json").voz, "o candomblé");
+falante("fe_caboclo", "Voz da Gameleira", ler("data/missoes_fe_caboclo.json").voz, "a fé do caboclo");
 for (const [arq, chaves] of [["fazenda", ["anfitria", "moca"]], ["revoar", ["velha", "moca", "ancia"]]]) {
   const j = ler(`data/missoes_${arq}.json`);
-  for (const k of chaves) falante(`${arq}_${k}`, s((j[k] || {}).nome) || k, null, `personagem da cena (${arq})`);
+  for (const k of chaves) falante(`${arq}_${k}`, s((j[k] || {}).nome) || k, (j[k] || {}).voz, `personagem da cena (${arq})`);
 }
 const nomeDe = (id) => (FALANTES[id] ? FALANTES[id].nome : id);
 const textoDaVoz = (voz) => (voz ? `${s(voz.nome)} · ${s(voz.id)}${voz.modelo ? " · " + voz.modelo : ""}` : "");
@@ -325,7 +326,7 @@ for (const arquivo of ARQUIVOS_DAS_FILAS) {
   const base = { fase, quando, missao: nomeDaMissao };
   if (j.trancada) nova(Object.assign({}, base, campo(j, "trancada"), {
     id: `missao.${chave}.trancada`, _chave: [ordem, -1, 0, 0], personagem_id: dono, tipo: "Aviso de fila trancada",
-    gatilho: "E no dono enquanto a fila espera o que ela pede", fonte: `data/${arquivo} › trancada`,
+    gatilho: "E no dono enquanto a fila espera o que ela pede", audio: s(j.trancada_audio), fonte: `data/${arquivo} › trancada`,
   }));
   (j.passos || []).forEach((p, k) => {
     const meta = p.meta || {};
@@ -345,7 +346,7 @@ for (const arquivo of ARQUIVOS_DAS_FILAS) {
       nova(Object.assign({}, comum, campo(meta, "resposta"), {
         id: `missao.${chave}.${p.id}.resposta`, _chave: [ordem, k, 1, 0], personagem_id: quem, tipo: "Resposta do passo (E)",
         gatilho: meta.tipo === "levar" ? `E em ${nomeDe(quem)} com a carga na mochila` : meta.tipo === "oferendar" ? `E no lugar da oferenda, com a oferta na mochila` : `E em ${nomeDe(quem)}`,
-        fonte: `data/${arquivo} › passos[${k}] ${p.id} › meta.resposta`, _carga_textos: ["pt"],
+        audio: s(meta.audio_resposta), fonte: `data/${arquivo} › passos[${k}] ${p.id} › meta.resposta`, _carga_textos: ["pt"],
       }));
     }
     blocos.filter((b) => b[2] !== "antes").forEach((b, ib) => blocoDeCena(j, arquivo, chave, comum, b, [ordem, k, 2, ib]));
@@ -371,15 +372,15 @@ function blocoDeCena(j, arquivo, chave, comum, bloco, ordem) {
   if (nomeDoBloco === "trocas") {
     (dado || []).forEach((t, i) => {
       nova(Object.assign({}, comum, campo(t, "oferta"), { id: `missao.${chave}.cena.trocas.${i + 1}.oferta`, _chave: ordem.concat([i * 2]), quando,
-        personagem_id: quem, tipo: "Fala de cena", gatilho: "Caixa de fala da cena, com o vale parado", fonte: `data/${arquivo} › trocas[${i}].oferta` }));
+        personagem_id: quem, tipo: "Fala de cena", gatilho: "Caixa de fala da cena, com o vale parado", audio: s(t.audio_oferta), fonte: `data/${arquivo} › trocas[${i}].oferta` }));
       nova(Object.assign({}, comum, campo(t, "pergunta"), { id: `missao.${chave}.cena.trocas.${i + 1}.pergunta`, _chave: ordem.concat([i * 2 + 1]), quando,
-        personagem_id: quem, tipo: "Pergunta de cena (escolha do jogador)", gatilho: "Caixa de pergunta (Sim / Não)", fonte: `data/${arquivo} › trocas[${i}].pergunta` }));
+        personagem_id: quem, tipo: "Pergunta de cena (escolha do jogador)", gatilho: "Caixa de pergunta (Sim / Não)", audio: s(t.audio_pergunta), fonte: `data/${arquivo} › trocas[${i}].pergunta` }));
     });
     return;
   }
   if (dado && !Array.isArray(dado) && typeof dado === "object") {
     nova(Object.assign({}, comum, campo(dado, "texto"), { id: `missao.${chave}.cena.${nomeDoBloco}`, _chave: ordem.concat([0]), quando,
-      personagem_id: quem, tipo: "Pergunta de cena (escolha do jogador)", gatilho: "Caixa de pergunta (Sim / Não)", fonte: `data/${arquivo} › ${nomeDoBloco}` }));
+      personagem_id: quem, tipo: "Pergunta de cena (escolha do jogador)", gatilho: "Caixa de pergunta (Sim / Não)", audio: s(dado.audio), fonte: `data/${arquivo} › ${nomeDoBloco}` }));
     return;
   }
   (dado || []).forEach((f, i) => nova(Object.assign({}, comum, campo(f, "texto"), {

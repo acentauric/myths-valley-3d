@@ -72,6 +72,7 @@
         "quantos": 10,
         "a_quem": "quirino",
         "raio": 3.4,
+        "audio_resposta": "quirino_saveiro_saveiro_vender_resposta",
         "resposta": "Fibra comprida, bem tirada... foi o Benedito que te ensinou, que ele não arranca pela raiz. Trinta e quatro réis o feixe, que a venda te dá catorze. Toda estação eu volto no dia catorze: dez feixes de piaçava eu levo sempre — e o que a sua roça der no mês, também.",
         "resposta_en": "Long fiber, well cut... Benedito taught you, since he never pulls it out by the root. Thirty-four réis a bundle, where the store gives you fourteen. Every season I come back on the fourteenth: ten bundles of piassava I always take — and whatever your fields give that month, too.",
         "resposta_es": "Fibra larga, bien sacada... te enseñó Benedito, que él no la arranca de raíz. Treinta y cuatro réis el haz, donde la tienda te da catorce. Cada estación vuelvo el día catorce: diez haces de piasava me llevo siempre — y lo que tu roza dé en el mes, también."

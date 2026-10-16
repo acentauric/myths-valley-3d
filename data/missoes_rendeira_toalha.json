@@ -56,6 +56,7 @@
         "quantos": 1,
         "lugar": "casa_de_taipa",
         "raio": 6,
+        "audio_resposta": "rendeira_rendeira_toalha_toalha_na_mesa_resposta",
         "resposta": "A toalha aberta na mesa, branca de todo. Na borda, em ponto cheio, o nome dele. A casa ficou mais arrumada do que você.",
         "resposta_en": "The tablecloth spread on the table, all white. On the hem, in satin stitch, his name. The house is now tidier than you are.",
         "resposta_es": "El mantel abierto sobre la mesa, blanco del todo. En el borde, en punto lleno, su nombre. La casa quedó más ordenada que tú."
