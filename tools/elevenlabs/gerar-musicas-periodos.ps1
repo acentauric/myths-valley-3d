@@ -1,6 +1,6 @@
 ﻿# Musicas do vale 3D por periodo do dia, geradas no ElevenLabs (music_v2):
-# manha, tarde, entardecer, noite, madrugada e a trilha de tensao da mata fechada (cada periodo do
-# relogio tem a sua: o HUD anuncia os cinco, e a musica tem de mudar com eles).
+# manha, tarde, entardecer, noite, madrugada, a trilha de tensao da mata fechada e a do tubarao (cada
+# periodo do relogio tem a sua: o HUD anuncia os cinco, e a musica tem de mudar com eles).
 #
 #     .\tools\elevenlabs\gerar-musicas-periodos.ps1 [-Forcar]
 #
@@ -23,7 +23,10 @@ $musicas = @(
     @{ n = "musica_noite"; d = "quiet nocturnal Brazilian lullaby, sparse acoustic guitar notes, soft strings, mysterious calm night" },
     @{ n = "musica_entardecer"; d = "golden hour sunset by the bay, slow nostalgic Brazilian folk ballad, warm acoustic guitar under a bittersweet viola caipira melody, soft cello, unhurried, coastal village at dusk, no percussion" },
     @{ n = "musica_madrugada"; d = "deep pre-dawn stillness, hushed ambient score, slow evolving soft pads and a low cello drone, faint distant bell-like harmonics, cold misty air, empty and lonely, no guitar melody, no percussion" },
-    @{ n = "musica_mata";  d = "tense mysterious forest ambience score, low drones, distant ritual drums, sparse eerie flute, Brazilian folklore horror, subtle" }
+    @{ n = "musica_mata";  d = "tense mysterious forest ambience score, low drones, distant ritual drums, sparse eerie flute, Brazilian folklore horror, subtle" },
+    # A tensao do tubarao (#261): a camada que entra por cima da trilha do dia quando ele persegue. Enquanto este arquivo
+    # nao existe, o jogo toca musica_mata.mp3 no lugar (Audio.MUSICA_TUBARAO / faixa_da_tensao). Gerar so com o OK do autor.
+    @{ n = "musica_tubarao"; d = "pulsing menacing underwater horror score, slow heartbeat-like ostinato on deep atabaque drums, low sustained cello and double bass tension, distant berimbau, a slow crescendo that never resolves, Brazilian folklore 1887 Reconcavo, dark, no melody, no vocals" }
 )
 
 foreach ($m in $musicas) {
