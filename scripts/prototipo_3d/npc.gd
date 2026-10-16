@@ -1339,7 +1339,7 @@ func conversar() -> void:
 	var escolhida: Dictionary
 	if trancada != null:
 		_avisos_dados[str(trancada.name)] = true
-		escolhida = {"texto": str(trancada.dica_da_trancada()), "voz": null}
+		escolhida = {"texto": str(trancada.dica_da_trancada()), "voz": _voz_do_arquivo(str(trancada.audio_da_trancada()))}
 	else:
 		escolhida = _escolher_a_conversa()
 	var texto := str(escolhida.get("texto", ""))

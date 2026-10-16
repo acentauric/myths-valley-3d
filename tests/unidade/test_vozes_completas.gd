@@ -65,7 +65,6 @@ const NARRACAO_SEM_VOZ := {
 ## ("arraial:mirante_material"). Só encolhe: a que ganhou voz sai daqui (o teste reprova a pendência cumprida).
 const VOZ_PENDENTE := {
 	"arraial:mirante_material": "o passo diz 'oito tábuas, quatro pedras e duas cordas' desde que a obra baixou o custo (0241ea3), e a voz gerada ainda diz vinte, doze e seis: o passo fica sem voz até uma tomada com o texto certo",
-	"trancada": "o aviso de fila trancada do morador ainda não toca a voz (trancada_audio)",
 	"socorro": "o socorro da mungunzá ainda não toca a voz",
 	"cena": "as falas de cena da fazenda e do revoar ainda não tocam a voz",
 	"pergunta": "as perguntas de cena ainda não tocam a voz",

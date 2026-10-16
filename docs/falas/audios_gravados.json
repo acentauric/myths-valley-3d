@@ -1832,6 +1832,178 @@
     "assets/audio/vozes/zefa_zefa_zefa_saveiro.mp3": {
       "hash": "5b5d44953d",
       "texto": "No dia catorze o mestre Quirino encosta o saveiro no píer. Vá lá nesse dia e fale com ele — saveiro não espera ninguém."
+    },
+    "assets/audio/vozes/beata_beata_promessa_trancada.mp3": {
+      "hash": "b43870422f",
+      "texto": "Da minha promessa eu falo baixo, e só com quem reza comigo há tempo. Volte mais vezes, meu filho."
+    },
+    "assets/audio/vozes/beata_beata_trancada.mp3": {
+      "hash": "d456f98a98",
+      "texto": "Rezo de costas pro mar e de frente pra quem eu conheço, meu filho. Passe mais vezes na frente da igreja."
+    },
+    "assets/audio/vozes/benedito_carroca_trancada.mp3": {
+      "hash": "54f6b55228",
+      "texto": "A carroça espera. Volte depois de trabalhar a piaçava do saveiro e de ter o machado que o Pedro lhe dá na ponte."
+    },
+    "assets/audio/vozes/benedito_saveiro_trancada.mp3": {
+      "hash": "a8d8fb7793",
+      "texto": "Agora não, moço. Volte depois de acabar a lida de chegada com o Pedro, que aí lhe conto do saveiro."
+    },
+    "assets/audio/vozes/candinha_candinha_trancada.mp3": {
+      "hash": "604545c907",
+      "texto": "Ainda não é hora, moço. Volte depois de acabar o que o Pedro lhe ensina na chegada, que aí tem garapa pra fazer."
+    },
+    "assets/audio/vozes/carpinteiro_carpinteiro_canoa_trancada.mp3": {
+      "hash": "56bd3093db",
+      "texto": "Da canoa do Tonho eu falo com quem já me trouxe madeira e já me conhece. Volte."
+    },
+    "assets/audio/vozes/carpinteiro_carpinteiro_trancada.mp3": {
+      "hash": "aadf44a317",
+      "texto": "O mato só dá se a gente pede, e eu só peço a quem conheço. Volte quando o Tonico já souber o seu nome."
+    },
+    "assets/audio/vozes/cosme_capoeira_trancada.mp3": {
+      "hash": "c44d910048",
+      "texto": "Capoeira é roda de quem segue o candomblé. Volte depois de cumprir a mesa da folha no terreiro."
+    },
+    "assets/audio/vozes/cosme_roca_trancada.mp3": {
+      "hash": "4ec41d4016",
+      "texto": "Ainda não. Volte depois de plantar sua primeira roça com o Pedro, que eu quero ver o que a terra lhe devolve."
+    },
+    "assets/audio/vozes/damiao_coveiro_trancada.mp3": {
+      "hash": "e4b3293157",
+      "texto": "Ainda não posso lhe pedir nada. Volte depois que o Pedro terminar de lhe ensinar e lhe entregar o machado, na casa dele."
+    },
+    "assets/audio/vozes/filo_filo_trancada.mp3": {
+      "hash": "1a17f2da5e",
+      "texto": "Ainda não, meu bem. Volte depois de acabar a lida da chegada com o Pedro, que aí a gente conversa do meu pirão."
+    },
+    "assets/audio/vozes/guarda_guarda_ronda_trancada.mp3": {
+      "hash": "a041126cdb",
+      "texto": "Ronda é coisa de dois quando os dois se conhecem, moço. Por enquanto eu rondo sozinho."
+    },
+    "assets/audio/vozes/guarda_guarda_trancada.mp3": {
+      "hash": "adbbce9ce1",
+      "texto": "Meu serviço é saber quem chegou. Você chegou, eu sei. O resto é com o tempo, moço."
+    },
+    "assets/audio/vozes/lavadeira_lavadeira_rio_trancada.mp3": {
+      "hash": "d28e3cdffa",
+      "texto": "Do rio grande eu falo com quem já me trouxe lenha e já sentou na minha pedra. Volte."
+    },
+    "assets/audio/vozes/lavadeira_lavadeira_trancada.mp3": {
+      "hash": "f365dcf283",
+      "texto": "A sua roupa eu lavo de graça na primeira semana, mas pedido eu só faço a quem conheço. Volte, que a roupa conta a vida de quem veste."
+    },
+    "assets/audio/vozes/marisqueira_marisqueira_mare_trancada.mp3": {
+      "hash": "26a2c5c15a",
+      "texto": "A maré das cinco é pra quem eu conheço, e a carta mais ainda. Passe mais vezes, meu filho."
+    },
+    "assets/audio/vozes/marisqueira_marisqueira_trancada.mp3": {
+      "hash": "fdbac2ff91",
+      "texto": "Quem quer aprender vem às cinco, com balde e sem sapato. Antes disso, a gente se cumprimenta. Passe mais vezes, meu filho."
+    },
+    "assets/audio/vozes/menina_menina_roda_trancada.mp3": {
+      "hash": "474ba207fd",
+      "texto": "A roda é pra quem já bateu palma comigo muitas vezes. Volta quando a gente for amigo de verdade."
+    },
+    "assets/audio/vozes/menina_menina_trancada.mp3": {
+      "hash": "5ebe401dca",
+      "texto": "A mãe disse pra não falar com quem ela não conhece. Ela te conhece? Então volta quando conhecer."
+    },
+    "assets/audio/vozes/menino_menino_caminho_trancada.mp3": {
+      "hash": "4a2ab2fe2a",
+      "texto": "O caminho eu só conto pra amigo de verdade. Você ainda não é. Mas tá quase, tá quase."
+    },
+    "assets/audio/vozes/menino_menino_trancada.mp3": {
+      "hash": "cfe474eda6",
+      "texto": "Eu não falo com estranho. Minha mãe disse. Você é estranho ainda — mas tá quase."
+    },
+    "assets/audio/vozes/mercador_mercador_fiado_trancada.mp3": {
+      "hash": "7f19353108",
+      "texto": "O livro de fiado eu abro pra quem já tem nome nele, moço. Compre, converse, volte."
+    },
+    "assets/audio/vozes/mercador_mercador_trancada.mp3": {
+      "hash": "405359b911",
+      "texto": "Fiado é pra quem tem terra, e pedido é pra quem eu conheço. Compre alguma coisa, converse, volte."
+    },
+    "assets/audio/vozes/mestre_saveiro_mestre_saveiro_luz_trancada.mp3": {
+      "hash": "2f76ba20d1",
+      "texto": "Essa história eu conto com o vento a favor e a gente mais conhecida. Hoje o vento está contra."
+    },
+    "assets/audio/vozes/mestre_saveiro_mestre_saveiro_trancada.mp3": {
+      "hash": "818ef030db",
+      "texto": "Trinta anos de Recôncavo me ensinaram a não pedir nada a quem acabou de descer da prancha. Volte quando tiver andado mais por aqui."
+    },
+    "assets/audio/vozes/padre_padre_sino_trancada.mp3": {
+      "hash": "302cfe48d2",
+      "texto": "O que me tira o sono eu conto a quem senta no banco mais de uma vez, meu filho. Volte."
+    },
+    "assets/audio/vozes/padre_padre_trancada.mp3": {
+      "hash": "947247ab14",
+      "texto": "A porta da igreja está aberta mesmo pra quem não sabe rezar, meu filho. Entre, converse, e um dia eu lhe peço uma coisa."
+    },
+    "assets/audio/vozes/pedro_armas_trancada.mp3": {
+      "hash": "9325fd29bb",
+      "texto": "As armas do mato ficam para depois da chegada. Acabe primeiro a lida de hoje comigo, que aí eu lhe mostro o facão."
+    },
+    "assets/audio/vozes/pedro_arraial_trancada.mp3": {
+      "hash": "b1b66ef3d3",
+      "texto": "O mirante vem depois da ponte. Volte quando a ponte do rio estiver de pé."
+    },
+    "assets/audio/vozes/pedro_chapada_trancada.mp3": {
+      "hash": "43b781f743",
+      "texto": "A chapada vai esperar. Volte depois de colher a primeira roça, que sem colheita a conversa de terra fica no vazio."
+    },
+    "assets/audio/vozes/pedro_fe_trancada.mp3": {
+      "hash": "1637e6fdc7",
+      "texto": "A fé do arraial vem depois do mirante. Volte quando o mirante estiver de pé."
+    },
+    "assets/audio/vozes/pedro_lombada_trancada.mp3": {
+      "hash": "3a0ef1078a",
+      "texto": "Ainda não é a vez da lapa. Volte depois de juntar a lenha da ponte, que aí a gente fala da picareta."
+    },
+    "assets/audio/vozes/pedro_oficio_trancada.mp3": {
+      "hash": "b4136b0085",
+      "texto": "O ofício de quem fica vem depois da chegada. Acabe primeiro a lida de hoje comigo, que aí eu lhe ensino a pesca."
+    },
+    "assets/audio/vozes/pedro_ponte_trancada.mp3": {
+      "hash": "62554a1132",
+      "texto": "A ponte vem depois da chegada. Acabe primeiro a lida de hoje comigo, e aí eu lhe mostro o que o rio levou."
+    },
+    "assets/audio/vozes/pescador_pescador_madeira_trancada.mp3": {
+      "hash": "b0c8c9020a",
+      "texto": "O que a linha puxou do fundo eu mostro a quem lê e a quem eu conheço. Você lê, eu sei. Falta o resto."
+    },
+    "assets/audio/vozes/pescador_pescador_trancada.mp3": {
+      "hash": "81acd7b697",
+      "texto": "Se o vento virar enquanto você fala, eu paro de ouvir. Hoje virou. Volte outro dia, moço, e fale da pedra, não do mar."
+    },
+    "assets/audio/vozes/quituteira_quituteira_trancada.mp3": {
+      "hash": "1aa3ec2566",
+      "texto": "Fome não espera safra, mas pedido espera conhecer. Coma um beiju aí e volte amanhã, meu filho."
+    },
+    "assets/audio/vozes/rendeira_rendeira_toalha_trancada.mp3": {
+      "hash": "3056f54fab",
+      "texto": "A toalha é coisa de quem eu conheço de verdade, moço. Passe mais vezes, converse, e ela sai da gaveta."
+    },
+    "assets/audio/vozes/rendeira_rendeira_trancada.mp3": {
+      "hash": "0cd2698d46",
+      "texto": "Fale baixinho, moço, que eu conto os bilros. A gente mal se conhece; passe aqui mais vezes, que eu lhe peço uma coisa quando souber o seu nome."
+    },
+    "assets/audio/vozes/sacristao_sacristao_pedra_trancada.mp3": {
+      "hash": "21beb5ec6c",
+      "texto": "O que tem atrás do altar não é conversa de adro, moço. Quando a gente se conhecer melhor, e não tiver ninguém olhando."
+    },
+    "assets/audio/vozes/sacristao_sacristao_trancada.mp3": {
+      "hash": "da2bb0d268",
+      "texto": "A cadeira na sombra do adro é minha, moço, e a conversa comprida também é pra quem eu conheço. Passe pela porta da igreja mais vezes."
+    },
+    "assets/audio/vozes/tonho_tonho_trancada.mp3": {
+      "hash": "75d87f7a52",
+      "texto": "Agora não, moço. Volte depois que o Pedro lhe ensinar o serviço e lhe der o machado, que a rede é de madeira."
+    },
+    "assets/audio/vozes/zefa_zefa_trancada.mp3": {
+      "hash": "4075ecdebb",
+      "texto": "Agora não, meu filho. Acabe primeiro a lida de chegada com o Pedro e volte depois, que aí eu tenho o que lhe pedir."
     }
   }
 }
