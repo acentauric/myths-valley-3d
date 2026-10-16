@@ -178,6 +178,39 @@ func _run() -> void:
 	_conferir(vale.telas.aberta() == "", "o Esc da pergunta abriu '%s'" % vale.telas.aberta())
 	await _frames(3)
 
+	# --- 5b. A PERGUNTA COM VOZ (#248) ----------------------------------------------------------------------
+	# A pergunta de cena (as trocas da velha, o escudo da anciã) traz a voz de quem pergunta: toca ao abrir e cala
+	# quando a pergunta fecha. Sem voz, segue muda como as outras (a cama, o pacto).
+	resposta.clear()
+	var perguntar_com_voz := func() -> void:
+		resposta["sim"] = await dialogo.perguntar("", "Pegar a mão dela e levar o ouro?", "revoar_cena_trocas_1_pergunta")
+	perguntar_com_voz.call()
+	await _frames(3)
+	_conferir(dialogo.voz_tocando() == "revoar_cena_trocas_1_pergunta", "a pergunta com voz abriu muda (tocando: '%s')" % dialogo.voz_tocando())
+	await _tecla(KEY_D)
+	await _tecla(KEY_E)
+	await _frames(3)
+	_conferir(resposta.get("sim", null) == false, "a pergunta com voz não respondeu Não com D e E (%s)" % str(resposta.get("sim", "nada")))
+	_conferir(dialogo.voz_tocando() == "", "fechada a pergunta, a voz dela seguiu tocando ('%s')" % dialogo.voz_tocando())
+	resposta.clear()
+	perguntar.call()
+	await _frames(3)
+	_conferir(dialogo.voz_tocando() == "", "a pergunta sem voz abriu com uma voz ('%s')" % dialogo.voz_tocando())
+	await _tecla(KEY_D)
+	await _tecla(KEY_E)
+	await _frames(3)
+	# E as linhas: a lista de falas do dado vira a lista de vozes, na ordem, "" para a muda.
+	var linhas := [{"texto": "a", "audio": "benedito_fala_2"}, {"texto": "b"}, "solta", {"texto": "c", "audio": "tonho_fala_1"}]
+	_conferir(dialogo.vozes_das(linhas) == ["benedito_fala_2", "", "", "tonho_fala_1"], "vozes_das não deu as vozes das linhas na ordem: %s" % str(dialogo.vozes_das(linhas)))
+	dialogo.falar("", ["a", "b"], dialogo.vozes_das(linhas))
+	await _frames(3)
+	_conferir(dialogo.voz_tocando() == "benedito_fala_2", "a primeira linha com voz abriu muda (tocando: '%s')" % dialogo.voz_tocando())
+	await _esperar(dialogo.CARENCIA_DE_ABERTURA + 0.05)
+	await _tecla(KEY_E)
+	_conferir(dialogo.voz_tocando() == "", "a segunda linha, sem voz, abriu com a voz da primeira ('%s')" % dialogo.voz_tocando())
+	dialogo._fechar()
+	await _frames(3)
+
 	# --- 6. A TRAVA DO MARTELO -----------------------------------------------
 	dialogo.falar("", ["um", "dois", "três"])
 	await _frames(3)

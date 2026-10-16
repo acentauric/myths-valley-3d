@@ -4,6 +4,7 @@
   "nome": "A ponte do rio grande",
   "nome_en": "The bridge over the big river",
   "nome_es": "El puente del río grande",
+  "trancada_audio": "pedro_ponte_trancada",
   "trancada": "A ponte vem depois da chegada. Acabe primeiro a lida de hoje comigo, e aí eu lhe mostro o que o rio levou.",
   "trancada_en": "The bridge comes after your arrival. Finish today's work with me first, and then I'll show you what the river took.",
   "trancada_es": "El puente viene después de la llegada. Termina primero la faena de hoy conmigo, y entonces te muestro lo que se llevó el río.",
@@ -176,26 +177,31 @@
   ],
   "socorro": [
     {
+      "audio": "pedro_ponte_socorro_1",
       "texto": "Para. Olha pra sua cara. Você não bota mais esse machado no ombro hoje.",
       "texto_en": "Stop. Look at your face. You're not putting that axe on your shoulder again today.",
       "texto_es": "Para. Mírate la cara. Hoy ya no te echas ese hacha al hombro."
     },
     {
+      "audio": "pedro_ponte_socorro_2",
       "texto": "Minha avó fez mungunzá de manhã e mandou trazer a panela inteira. Milho branco, leite de coco e canela, da panela de ferro.",
       "texto_en": "My grandmother made mungunzá this morning and sent the whole pot. White corn, coconut milk and cinnamon, from the iron pot.",
       "texto_es": "Mi abuela hizo mungunzá en la mañana y mandó traer la olla entera. Maíz blanco, leche de coco y canela, de la olla de hierro."
     },
     {
+      "audio": "pedro_ponte_socorro_3",
       "texto": "Tem seis cuias aí. Come uma agora e as outras quando o braço pesar de novo: o I abre a mochila, e o F em cima da cuia come.",
       "texto_en": "There are six bowls there. Eat one now and the others when your arm gets heavy again: I opens the backpack, and F on the bowl eats it.",
       "texto_es": "Ahí hay seis cuencos. Come uno ahora y los otros cuando el brazo vuelva a pesar: la I abre la mochila, y la F sobre el cuenco lo come."
     },
     {
+      "audio": "pedro_ponte_socorro_4",
       "texto": "Isso sustenta o corpo até a ponte subir. Dá pra fechar tudo hoje, se você não parar.",
       "texto_en": "That keeps the body going until the bridge is up. You can finish it all today, if you don't stop.",
       "texto_es": "Eso sostiene el cuerpo hasta que el puente suba. Se puede terminar todo hoy, si no paras."
     },
     {
+      "audio": "pedro_ponte_socorro_5",
       "texto": "Só que é hoje, viu? Amanhã a força da panela acaba, e o corpo volta a pesar. Mungunzá de vó dá o dia, não dá a semana.",
       "texto_en": "But just for today, all right? Tomorrow the pot's strength runs out, and the body gets heavy again. Grandma's mungunzá gives you the day, not the week.",
       "texto_es": "Pero es solo hoy, ¿eh? Mañana la fuerza de la olla se acaba, y el cuerpo vuelve a pesar. El mungunzá de la abuela da para el día, no para la semana."

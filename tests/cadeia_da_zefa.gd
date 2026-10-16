@@ -283,6 +283,7 @@ func _run() -> void:
 		cosme.narrou.connect(func(texto: String) -> void: do_cosme.append(texto))
 	jogador.global_position = cosme.global_position + Vector3(1.0, 0.0, 0.8)
 	await _frames(3)
+	_calar_a_fila(jogo)
 	await _falar_com(cosme)
 	var fechou := await _ate(func() -> bool: return cadeia.missao > no_neto, SEGUNDOS_POR_PASSO)
 	_conferir(fechou, "com o E no Cosme, o passo não fechou")
@@ -354,6 +355,7 @@ func _run() -> void:
 		var veio: bool = await maos.esperar(func() -> bool: return saveiro.presente(), 20.0)
 		_conferir(veio, "no dia do saveiro (%d), às 10 h, o mestre Quirino não chegou ao píer" % int(saveiro.dia))
 		var quirino: Node3D = saveiro.comprador
+		_calar_a_fila(jogo)
 		await maos.e_no_morador(quirino, "o mestre Quirino, no dia do saveiro")
 		fechou_o_pier = await _ate(func() -> bool: return cadeia.missao > no_pier, SEGUNDOS_POR_PASSO)
 		_conferir(fechou_o_pier, "no dia do saveiro, o E no mestre Quirino não fechou o último passo da Dona Zefa")
@@ -387,6 +389,19 @@ func _run() -> void:
 		"recarregar esqueceu a conversa com o Cosme")
 
 	_fechar()
+
+
+## CALA QUEM AINDA FALA, como o jogador que andou até o próximo e já leu: as falas de missão têm voz (15/10/2026, #248) e
+## passam de 40 s, e a resposta de quem recebe espera a vez na fila de falas. O portão é da cadeia, e não da vez de cada um.
+func _calar_a_fila(jogo) -> void:
+	var fila := get_first_node_in_group("fila_de_falas")
+	if fila == null:
+		return
+	for morador in jogo.get("moradores"):
+		fila.calar_falante(morador)
+	var guia = jogo.get("pedro")
+	if guia != null:
+		fila.calar_falante(guia)
 
 
 ## O E AO LADO DE QUEM SE FALA, pelo caminho do jogo (`tecla_dos_moradores.gd`):

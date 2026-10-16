@@ -24,6 +24,10 @@ extends "res://tests/suite/caso.gd"
 ## Os dois se provam jogando o que o jogador faz: o E no morador (`tecla_dos_moradores`) e o
 ## relógio do jogo andando (`tests/fixtures/relogio_de_jogo.gd`: espera em segundos de JOGO).
 ##
+## A VOZ DO AVISO (#248, 15/10/2026): o aviso de cada fila trancada tem a voz do dono dela (`trancada_audio`, ao lado do
+## `trancada` no arquivo da fila), e o aviso que chega à fila de falas traz esse mp3: a seção 1 confere nos sete
+## e a 1b no aviso da chapada do Pedro. Tire a `voz` do aviso de `npc.conversar` e as duas reprovam.
+##
 ## COMO SE FALSIFICA: apague o `if trancada != null` de `npc.conversar` e a seção 1 reprova;
 ## tire de `npc._fila_que_avisa` o `or ... == "abrir"` e a 1b reprova (e o `tests/saudacao.gd` também);
 ## faça `GuiaPedro._repete_o_aviso` devolver true e a 1b reprova de novo (o Pedro repete a chapada);
@@ -136,6 +140,7 @@ func _run() -> void:
 		var falou: bool = await relogio.ate(func() -> bool:
 			return fila.falando(morador) and str(fila.atual().get("texto", "")) == aviso, 14.0)
 		_conferir(falou, "o E em '%s', de fila trancada, não disse '%s' (disse: '%s')" % [quem, aviso, str(fila.atual().get("texto", ""))])
+		_conferir_a_voz_do_aviso(str(par[1]), cadeia, fila.atual().get("voz"))
 		fila.calar_falante(morador)
 		await _quadros(2)
 
@@ -229,6 +234,7 @@ func _run() -> void:
 	var avisou: bool = await relogio.ate(func() -> bool:
 		return fila.falando(pedro) and str(fila.atual().get("texto", "")) == aviso_da_chapada, 14.0)
 	_conferir(avisou, "o E no Pedro, sem fila por abrir nem andando, não disse o aviso da chapada (disse: '%s')" % str(fila.atual().get("texto", "")))
+	_conferir_a_voz_do_aviso("pedro_chapada", da_chapada, fila.atual().get("voz"))
 	fila.calar_falante(pedro)
 	await _quadros(2)
 	_conferir(pedro._dica_da_fila_trancada() == "", "o Pedro já deu o aviso da chapada e ainda o tem a dar: ele o repete")
@@ -330,6 +336,14 @@ func _fechar() -> void:
 func _passos(quantos: int) -> void:
 	for i in range(quantos):
 		await physics_frame
+
+
+## O aviso que a fila de falas tem no ar traz o mp3 do `trancada_audio` da fila (e o mp3 existe).
+func _conferir_a_voz_do_aviso(fila_trancada: String, cadeia, voz) -> void:
+	var nome := str(cadeia.trancada_audio)
+	_conferir(nome != "", "a fila '%s' escreveu o aviso e não deu a voz dele (`trancada_audio` no arquivo dela)" % fila_trancada)
+	_conferir(voz is AudioStream and (voz as AudioStream).resource_path == "res://assets/audio/vozes/%s.mp3" % nome,
+		"o aviso da fila trancada '%s' não trouxe a voz '%s' à fila de falas (trouxe %s)" % [fila_trancada, nome, str((voz as AudioStream).resource_path) if voz is AudioStream else "nenhuma"])
 
 
 func _quadros(quantos: int) -> void:

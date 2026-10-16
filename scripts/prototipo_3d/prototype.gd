@@ -1207,9 +1207,11 @@ func _conferir_o_socorro() -> void:
 		return
 	ponte.registrar_evento("socorro")
 	var linhas: Array = []
+	var vozes: Array = []
 	for fala in (Jogo.dados("res://data/missoes_ponte.json").get("socorro", []) as Array):
 		linhas.append(str(IdiomaMenu.campo(fala, "texto", "")))
-	Dialogo.falar(str(pedro.dados.get("nome", "Pedro")) if pedro != null else "Pedro", linhas)
+		vozes.append(str((fala as Dictionary).get("audio", "")))
+	Dialogo.falar(str(pedro.dados.get("nome", "Pedro")) if pedro != null else "Pedro", linhas, vozes)
 	Inventario.adicionar("mungunza", CUIAS_DE_MUNGUNZA)
 	Audio.efeito("pegar")
 

@@ -166,6 +166,15 @@ func falar(nome: String, falas: Array, vozes: Array = [], interfaces: Array = []
 	await terminou
 
 
+## A VOZ DE CADA LINHA de uma lista de falas do dado (cada uma um objeto com `audio` ao lado do `texto`), na ordem:
+## é o que `falar` pede em `vozes`. Linha sem `audio` dá "" (muda).
+func vozes_das(falas: Array) -> Array:
+	var vozes: Array = []
+	for fala in falas:
+		vozes.append(str((fala as Dictionary).get("audio", "")) if fala is Dictionary else "")
+	return vozes
+
+
 ## A voz que está tocando agora, ou "" (para o portão).
 func voz_tocando() -> String:
 	if _voz == null or not _voz.playing or _voz.stream == null:
@@ -173,12 +182,13 @@ func voz_tocando() -> String:
 	return _voz.stream.resource_path.get_file().get_basename()
 
 
-## Pergunta de sim ou não. Esquerda escolhe Sim, direita escolhe Não.
-func perguntar(nome: String, pergunta: String) -> bool:
+## Pergunta de sim ou não. Esquerda escolhe Sim, direita escolhe Não. `voz`, quando vem, é a voz de quem pergunta
+## (o nome do mp3 em PASTA_VOZES): toca ao abrir a pergunta e cala quando ela fecha.
+func perguntar(nome: String, pergunta: String, voz: String = "") -> bool:
 	await _esperar_a_vez()
 	_abrir(nome, Modo.PERGUNTA)
 	_falas = [Jogo.texto(pergunta)]
-	_vozes = []
+	_vozes = [voz] if voz != "" else []
 	_interfaces = []
 	_indice = 0
 	# NASCE SEM ESCOLHA FEITA. `_escolha` continua em "Sim" só como valor de

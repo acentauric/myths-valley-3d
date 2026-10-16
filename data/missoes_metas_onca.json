@@ -16,7 +16,7 @@
       "resumo_es": "Lleva un cuero de jaguar a doña Zefa",
       "lugar": "casa_da_zefa",
       "raio": 8.0,
-      "audio": "",
+      "audio": "zefa_metas_onca_meta_onca",
       "texto": "Duas onças, menino? O penedo nunca ficou tanto tempo quieto. Me traz um couro, que eu costuro o teu patuá — com oração dentro, do jeito que a minha mãe costurava.",
       "texto_en": "Two jaguars, child? The rock has never been quiet this long. Bring me a hide and I'll sew your patuá, with a prayer inside, the way my mother sewed them.",
       "texto_es": "¿Dos jaguares, muchacho? El peñasco nunca estuvo tanto tiempo quieto. Tráeme un cuero, que te coso el patuá, con oración adentro, como lo cosía mi madre.",
@@ -26,6 +26,7 @@
         "quantos": 1,
         "a_quem": "zefa",
         "raio": 3.4,
+        "audio_resposta": "zefa_metas_onca_meta_onca_resposta",
         "resposta": "Couro de onça de verdade, de roseta. Vem cá que eu fecho a costura: pendura no pescoço e não tira nem para dormir. Bicho nenhum chega perto de quem derruba duas — e agora tem a oração também.",
         "resposta_en": "A real jaguar hide, with rosettes. Come here and I'll close the stitching: hang it around your neck and don't take it off even to sleep. No beast comes near someone who felled two — and now you have the prayer too.",
         "resposta_es": "Cuero de jaguar de verdad, con rosetas. Ven acá que cierro la costura: cuélgalo al cuello y no te lo quites ni para dormir. Ningún bicho se acerca a quien derriba dos, y ahora tienes la oración también."

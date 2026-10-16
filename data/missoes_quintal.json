@@ -90,6 +90,7 @@
         "tipo": "falar",
         "a_quem": "cosme",
         "raio": 3.4,
+        "audio_resposta": "cosme_quintal_capataz_resposta",
         "resposta": "Um dia de roçado? Fechado. Amanhã, antes do sol, eu passo no teu roçado e deixo a enxada falar. O que eu tirar da terra eu deixo na tua porta — e você me paga com um prato, que pra isso serve vizinho.",
         "resposta_en": "A day in the field? Done. Tomorrow, before the sun, I'll stop by your field and let the hoe do the talking. Whatever I pull from the earth I'll leave at your door — and you pay me with a plate, that's what neighbors are for.",
         "resposta_es": "¿Un día de roza? Hecho. Mañana, antes del sol, paso por tu roza y dejo que la azada hable. Lo que saque de la tierra lo dejo en tu puerta, y tú me pagas con un plato, que para eso sirve el vecino."

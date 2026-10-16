@@ -196,7 +196,7 @@ abaixo dizem quando cada uma começa.
 | 1 | `canteiro_material` | O prumo e o serrote | Junte 8 tábuas e 12 lenhas para o canteiro | o material na mochila | — | **pronta** (`canteiro_material`, `missoes_arraial.json`: a mesa do prumo é provisória, ao lado da bancada da oficina) |
 | 2 | `canteiro_obra` | Riscar antes de levantar | No canteiro de obras, faça a prancheta (E) | obra `canteiro_prancheta` feita; abate 10% do mirante | 3 beijus | **pronta** (`canteiro_obra`: o E na mesa abre a aba de obras dela; o material do mirante passa a ser a conta de hoje, `da_obra`) |
 | 3 | `mirante_ver` | O que ninguém consertou | Suba a estrada do mirante e veja o que sobrou dele | chegou ao mirante | — | **pronta** (`missoes_arraial.json`) |
-| 4 | `mirante_material` | Tabuado, pedra e corda | Junte o material do mirante | a conta de hoje (20 tábuas, 12 pedras, 6 cordas, menos 10% com a prancheta) | — | **pronta** |
+| 4 | `mirante_material` | Tabuado, pedra e corda | Junte o material do mirante | a conta de hoje (8 tábuas, 4 pedras, 2 cordas desde 10/10/2026, menos 10% com a prancheta) | — | **pronta** |
 | 5 | `mirante_obra` | De pé, outra vez | Levante o mirante (E) | obra `mirante_levantar` feita; vista do alto | 1.200 réis (vaquinha) e 1 pirão | **pronta** |
 
 ### 3.2 A fé (Dona Zefa) — fecha a fila do arraial

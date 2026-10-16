@@ -196,7 +196,7 @@ func _ver_se_chama() -> void:
 	if pedro == null or jogador == null or jogador.global_position.distance_to(pedro.global_position) > 5.0:
 		return
 	_cadeia.registrar_evento("chamou")
-	Dialogo.falar(_nome_do_pedro(), _falas("chamado"))
+	Dialogo.falar(_nome_do_pedro(), _falas("chamado"), _vozes("chamado"))
 
 
 ## O PORTÃO SE ABRE (a `cena` do passo da ida): o Pedro fala do portão que não
@@ -213,7 +213,7 @@ func o_portao_se_abre() -> void:
 	# Quem ficou para trás no caminho chega junto: o Pedro está no portão quando fala.
 	if pedro != null and jogador != null and pedro.global_position.distance_to(jogador.global_position) > 6.0:
 		pedro.global_position = _mundo.ground_position(jogador.global_position + Vector3(1.4, 0, 0.8), 0.05)
-	await Dialogo.falar(_nome_do_pedro(), _falas("ida_fim"))
+	await Dialogo.falar(_nome_do_pedro(), _falas("ida_fim"), _vozes("ida_fim"))
 	var narracao = _vale.get("narracao")
 	if jogador != null:
 		jogador.set_physics_process(false)
@@ -243,7 +243,7 @@ func chegou_ao_patio() -> void:
 	if _cadeia == null:
 		return
 	_cadeia.registrar_evento("patio")
-	await Dialogo.falar(_nome_do_pedro(), _falas("chegada_fim"))
+	await Dialogo.falar(_nome_do_pedro(), _falas("chegada_fim"), _vozes("chegada_fim"))
 
 
 ## O CHAMADO AOS CORAJOSOS (a `cena` do passo do chamado; #114, fatia 6.2 do
@@ -258,9 +258,9 @@ func o_chamado_aos_corajosos() -> void:
 	_cadeia.espera = 1000.0
 	_cadeia.registrar_evento("corajosos")
 	await _narrar(_falas("silencio"))
-	await Dialogo.falar(_nome("anfitria"), _falas("chamado_aos_corajosos"))
+	await Dialogo.falar(_nome("anfitria"), _falas("chamado_aos_corajosos"), _vozes("chamado_aos_corajosos"))
 	await _narrar(_falas("de_pe"))
-	await Dialogo.falar(_nome_do_pedro(), _falas("pedro_vai"))
+	await Dialogo.falar(_nome_do_pedro(), _falas("pedro_vai"), _vozes("pedro_vai"))
 	_cadeia.espera = minf(espera_antes, 0.8) if espera_antes > 0.0 else 0.8
 	_em_cena = false
 
@@ -279,11 +279,11 @@ func a_porta_estreita() -> void:
 	_cadeia.espera = 1000.0
 	_cadeia.registrar_evento("porta_estreita")
 	await _narrar(_falas("subida"))
-	await Dialogo.falar(_nome("moca"), _falas("desafio"))
+	await Dialogo.falar(_nome("moca"), _falas("desafio"), _vozes("desafio"))
 	await _narrar(_falas("cerco"))
-	await Dialogo.falar(_nome("anfitria"), _falas("so_um"))
+	await Dialogo.falar(_nome("anfitria"), _falas("so_um"), _vozes("so_um"))
 	await _narrar(_falas("porta"))
-	await Dialogo.falar(_nome_do_pedro(), _falas("pedro_fica"))
+	await Dialogo.falar(_nome_do_pedro(), _falas("pedro_fica"), _vozes("pedro_fica"))
 	_cadeia.espera = minf(espera_antes, 0.8) if espera_antes > 0.0 else 0.8
 	_em_cena = false
 
@@ -363,6 +363,11 @@ func _falas(chave: String) -> Array:
 	for fala in (Jogo.dados(ARQUIVO).get(chave, []) as Array):
 		linhas.append(str(IdiomaMenu.campo(fala, "texto", "")))
 	return linhas
+
+
+## A voz de cada fala da mesma lista (o `audio` ao lado do `texto`), na ordem das falas.
+func _vozes(chave: String) -> Array:
+	return Dialogo.vozes_das(Jogo.dados(ARQUIVO).get(chave, []) as Array)
 
 
 # --- o lugar ----------------------------------------------------------------------

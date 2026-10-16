@@ -176,6 +176,9 @@ var nome_da_missao := ""
 ## O QUE O DONO DIZ NO E ENQUANTO A FILA ESTÁ TRANCADA (`dica_da_trancada`): o que fazer antes,
 ## "volte depois de ...", nos três idiomas (`trancada`, `trancada_en`, `trancada_es`).
 var trancada_texto := ""
+## A VOZ DESSE AVISO (`trancada_audio` no arquivo da fila): o nome do mp3 em assets/audio/vozes/, ou "".
+## Quem o diz é o dono da fila (`npc.conversar`), com a voz dele.
+var trancada_audio := ""
 
 
 ## Lê os passos do arquivo, já no idioma escolhido.
@@ -218,6 +221,7 @@ func carregar(caminho: String) -> bool:
 	principal = bool(dado.get("principal", false))
 	nome_da_missao = str(IdiomaMenu.campo(dado, "nome", ""))
 	trancada_texto = str(IdiomaMenu.campo(dado, "trancada", ""))
+	trancada_audio = str(dado.get("trancada_audio", ""))
 	arremate = dado.get("arremate", {}).duplicate()
 	arremate["texto"] = str(IdiomaMenu.campo(arremate, "texto"))
 	return not passos.is_empty()
@@ -1827,3 +1831,8 @@ func dica_da_trancada() -> String:
 	if avisa_a_trancada.is_valid() and not bool(avisa_a_trancada.call()):
 		return ""
 	return trancada_texto if esta_trancada() else ""
+
+
+## A voz do aviso da fila trancada (`trancada_audio`): "" quando não há aviso a dar agora, como `dica_da_trancada`.
+func audio_da_trancada() -> String:
+	return trancada_audio if dica_da_trancada() != "" else ""
