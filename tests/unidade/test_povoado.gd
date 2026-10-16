@@ -426,12 +426,14 @@ func test_o_amanhecer_entrega_na_mochila_e_conta_o_dia_depois() -> void:
 
 	# TERRA QUE NÃO É DO JOGADOR não rende nem conta. O ofício fica guardado.
 	_em_branco()
-	_por_para_trabalhar({"cosme": "roca"})
+	# (O Cosme na ROÇA seguiria no roçado do jogador: por isso a prova é com a farinha, que só a terra
+	# da Zefa recebe.)
+	_por_para_trabalhar({"cosme": "farinha"})
 	terras.posses.erase("terreno_zefa")
 	relogio.dormir()
-	conferir(inventario.quantidade("mandioca") == 0, "o morador rendeu em terra que deixou de ser do jogador")
-	conferir(povoado.dias_de("cosme", "roca") == 0, "contou dia de serviço em terra que deixou de ser do jogador")
-	conferir(terrenos.trabalho_de("cosme") == "roca", "o combinado devia ficar guardado")
+	conferir(inventario.quantidade("farinha") == 0, "o morador rendeu em terra que deixou de ser do jogador")
+	conferir(povoado.dias_de("cosme", "farinha") == 0, "contou dia de serviço em terra que deixou de ser do jogador")
+	conferir(terrenos.trabalho_de("cosme") == "farinha", "o combinado devia ficar guardado")
 
 
 func test_o_que_nao_cabe_na_mochila_espera_no_paiol() -> void:

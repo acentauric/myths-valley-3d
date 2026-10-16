@@ -126,10 +126,44 @@ func terreno_de(morador: String) -> String:
 	return ""
 
 
-## O lote onde ele mora é do jogador?
+## Quem trabalha num lote SEM morar nele: o Cosme no roçado do jogador (o dia de roçado do segundo
+## tutorial é a primeira designação deste sistema, #9). `trabalhadores` no lote.
+func trabalhadores_de(lote: String) -> Array:
+	return Terras.dados(lote).get("trabalhadores", [])
+
+
+## Os lotes onde o morador pode ser posto para trabalhar, na ordem de preferência: o que ele mora e
+## depois os que o recebem de fora.
+func lotes_de(morador: String) -> Array:
+	var lista: Array = []
+	var casa := terreno_de(morador)
+	if casa != "":
+		lista.append(casa)
+	var lotes: Dictionary = Jogo.dados(Terras.ARQUIVO).get("lotes", {})
+	for id in lotes:
+		if str(id) != casa and trabalhadores_de(str(id)).has(morador):
+			lista.append(str(id))
+	return lista
+
+
+## Em que lote DO JOGADOR o morador faria aquele ofício, ou "". O lote pode limitar os ofícios que
+## recebe (`oficios`, lista vazia = todos): o roçado do jogador só recebe roçado.
+func lote_do_trabalho(morador: String, id: String) -> String:
+	for lote in lotes_de(morador):
+		if not Terras.meu(str(lote)):
+			continue
+		var aceitos: Array = Terras.dados(str(lote)).get("oficios", [])
+		if aceitos.is_empty() or aceitos.has(id):
+			return str(lote)
+	return ""
+
+
+## O morador tem algum lote que é do jogador para trabalhar?
 func em_terra_minha(morador: String) -> bool:
-	var lote := terreno_de(morador)
-	return lote != "" and Terras.meu(lote)
+	for lote in lotes_de(morador):
+		if Terras.meu(str(lote)):
+			return true
+	return false
 
 
 # --- pôr para trabalhar ----------------------------------------------------------------
@@ -152,16 +186,15 @@ func trabalhos_de(morador: String) -> Array:
 ## escolhe o texto, nos idiomas do jogo):
 ##
 ##   oficio_desconhecido   o ofício não existe nos dados
-##   sem_lote              o morador não vive em lote nenhum que o vale venda
-##   terra_alheia          o lote dele ainda não é do jogador
+##   sem_lote              o morador não vive nem trabalha em lote nenhum que o vale venda
+##   terra_alheia          nenhum lote dele que receba esse ofício é do jogador ainda
 ##   idoso                 serviço braçal e o morador é idoso
 func impedimento(morador: String, id: String) -> String:
 	if not existe(id):
 		return "oficio_desconhecido"
-	var lote := terreno_de(morador)
-	if lote == "":
+	if lotes_de(morador).is_empty():
 		return "sem_lote"
-	if not Terras.meu(lote):
+	if lote_do_trabalho(morador, id) == "":
 		return "terra_alheia"
 	if e_idoso(morador) and e_bracal(id):
 		return "idoso"
@@ -186,8 +219,8 @@ func lavradores(terreno: String) -> Array:
 	var lista: Array = []
 	if not Terras.meu(terreno):
 		return lista
-	for morador in moradores_de(terreno):
-		if trabalho_de(str(morador)) == "roca":
+	for morador in moradores_de(terreno) + trabalhadores_de(terreno):
+		if trabalho_de(str(morador)) == "roca" and lote_do_trabalho(str(morador), "roca") == terreno 				and not lista.has(str(morador)):
 			lista.append(str(morador))
 	return lista
 
@@ -206,6 +239,47 @@ func trabalhando() -> Dictionary:
 			continue
 		quem[str(morador)] = id
 	return quem
+
+
+# --- a tela e o posto ------------------------------------------------------------------
+
+## Quem a aba Trabalho lista: os moradores dos lotes que são do jogador (na ordem em que os lotes
+## aparecem nos dados) e quem já foi posto para trabalhar, mesmo que more fora (o Cosme no roçado).
+func moradores_meus() -> Array:
+	var lista: Array = []
+	var lotes: Dictionary = Jogo.dados(Terras.ARQUIVO).get("lotes", {})
+	for lote in lotes:
+		if not Terras.meu(str(lote)):
+			continue
+		for morador in moradores_de(str(lote)):
+			if not lista.has(str(morador)):
+				lista.append(str(morador))
+	for morador in trabalhando():
+		if not lista.has(str(morador)):
+			lista.append(str(morador))
+	return lista
+
+
+## Hora de trabalho: da manhã ao fim da tarde. De noite e ao entardecer o morador volta à rotina dele.
+func em_horario_de_trabalho() -> bool:
+	return Dia.periodo() in ["manha", "tarde"]
+
+
+## O posto onde o morador faz o ofício dele hoje, como [âncora, deslocamento], ou [] se ele não está
+## trabalhando, ou se o lote não diz onde (aí ele segue a rotina e a mochila recebe do mesmo jeito).
+## O lote é que sabe onde se faz cada coisa: `postos` em data/terras_3d.json, por ofício.
+func posto_de_trabalho(morador: String) -> Array:
+	var id := trabalho_de(morador)
+	if id == NADA or not pode(morador, id):
+		return []
+	var lote := lote_do_trabalho(morador, id)
+	var posto = Terras.dados(lote).get("postos", {}).get(id, [])
+	return (posto as Array) if posto is Array else []
+
+
+## O gesto do ofício no posto (a ação da rotina que o `npc.gd` conhece: capinar, rachar...).
+func acao_do_oficio(id: String) -> String:
+	return str(oficio(id).get("acao", ""))
 
 
 # --- o amanhecer -----------------------------------------------------------------------

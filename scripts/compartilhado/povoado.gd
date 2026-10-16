@@ -175,6 +175,22 @@ func contar_o_dia() -> void:
 	mudou.emit()
 
 
+## UM DIA DE SERVIÇO QUE NÃO PASSOU PELO AMANHECER: o dia de roçado que o Cosme faz no segundo tutorial
+## (`capataz_manha`) paga na hora, mas é o mesmo serviço do sistema (#9): conta na perícia dele e
+## rende pela mesma conta. Devolve os dias de serviço dele naquele ofício.
+func registrar_dia(morador: String, oficio: String) -> int:
+	_somar_dia(morador, oficio)
+	mudou.emit()
+	return dias_de(morador, oficio)
+
+
+## O que um dia de serviço daquele ofício paga, de uma quantidade-base: a base vezes o rendimento do
+## morador (perícia, amizade, obras) e o talento do patrão, arredondado, e nunca menos que a base.
+func pagamento(morador: String, oficio: String, base: int) -> int:
+	var fator := rendimento(morador, oficio) * (1.0 + Talentos.bonus("rendimento_do_morador"))
+	return maxi(base, roundi(float(base) * fator))
+
+
 # --- o arraial -------------------------------------------------------------------------
 
 func obra_do_arraial_feita(obra: String) -> bool:

@@ -1,9 +1,12 @@
 {
   "observacao": "#9: compra e posse por lote, sem tilemap. Preços e vizinhança de GeradorMundo.TERRENOS/VIZINHOS do 2D (62c0f14b). Os contornos são cadastrais por âncora real: roçado acompanha a grade 6x4 de 1.2u; Zefa e chapada adaptam as áreas 12x16 e 14x16 em escala de 2u, sem deslocar casas, cercas, rio ou KML. Revisão geográfica ampla permanece #22. Só depois de conhecer a chapada; missões e presentes têm prioridade sobre a oferta. TRABALHO NAS TERRAS COMPRADAS (#9): 'moradores' diz quem vive em cada lote, 'idosos' e 'ritmo_do_idoso' dizem quem não faz serviço de braço e quanto rende, e 'oficios' traz os seis ofícios (nome e resumo nos idiomas do jogo, 'bracal', e 'rende' por dia). Quem lê é scripts/compartilhado/terrenos.gd; a conta de quanto cada um rende é do povoado.gd (data/povoado_3d.json).",
   "lotes": {
-    "rocado": {"nome": "Seu roçado", "nome_en": "Your field", "nome_es": "Tu parcela", "dono": "", "ancora": "Lavoura", "tamanho": [7.2, 4.8], "preco": 0, "vizinhos": []},
-    "terreno_zefa": {"nome": "Terra da Dona Zefa", "nome_en": "Dona Zefa's land", "nome_es": "Tierra de doña Zefa", "dono": "zefa", "ancora": "Casa da Zefa", "tamanho": [24, 32], "preco": 1800, "vizinhos": ["rocado"], "moradores": ["zefa", "cosme"]},
-    "terreno_benedito": {"nome": "Chapada do Seu Benedito", "nome_en": "Seu Benedito's plateau", "nome_es": "Meseta del señor Benedito", "dono": "benedito", "ancora": "Chapada", "tamanho": [28, 32], "preco": 2600, "vizinhos": ["terreno_zefa"], "moradores": ["benedito"]}
+    "rocado": {"nome": "Seu roçado", "nome_en": "Your field", "nome_es": "Tu parcela", "dono": "", "ancora": "Lavoura", "tamanho": [7.2, 4.8], "preco": 0, "vizinhos": [], "trabalhadores": ["cosme"], "oficios": ["roca"],
+      "postos": {"roca": ["Roçado", [-2.6, 0, 4.4]]}},
+    "terreno_zefa": {"nome": "Terra da Dona Zefa", "nome_en": "Dona Zefa's land", "nome_es": "Tierra de doña Zefa", "dono": "zefa", "ancora": "Casa da Zefa", "tamanho": [24, 32], "preco": 1800, "vizinhos": ["rocado"], "moradores": ["zefa", "cosme"],
+      "postos": {"roca": ["Roçado", [-2.6, 0, 4.4]], "lenha": ["Casa da Zefa", [-4.2, 0, 2.6]], "farinha": ["Casa da Zefa", [-2.0, 0, 3.6]], "artesanato": ["Casa da Zefa", [-1.2, 0, 3.4]], "criacao": ["Casa da Zefa", [2.6, 0, 4.0]]}},
+    "terreno_benedito": {"nome": "Chapada do Seu Benedito", "nome_en": "Seu Benedito's plateau", "nome_es": "Meseta del señor Benedito", "dono": "benedito", "ancora": "Chapada", "tamanho": [28, 32], "preco": 2600, "vizinhos": ["terreno_zefa"], "moradores": ["benedito"],
+      "postos": {"farinha": ["Casa de Carro Quebrado", [1.2, 0, 3.8]], "artesanato": ["Casa de Carro Quebrado", [-3.6, 0, 3.0]], "criacao": ["Casa de Carro Quebrado", [0.9, 0, 3.6]]}}
   },
   "idosos": ["benedito", "zefa", "filo"],
   "ritmo_do_idoso": 0.5,
@@ -20,35 +23,35 @@
       "resumo": "Capina, ara e planta o terreno. É serviço de sol e lombo.",
       "resumo_en": "Weeds, plows and plants the plot. Work for the sun and the back.",
       "resumo_es": "Desmaleza, ara y siembra el terreno. Es trabajo de sol y de lomo.",
-      "bracal": true, "rende": {"mandioca": 2}
+      "acao": "capinar", "bracal": true, "rende": {"mandioca": 2}
     },
     "lenha": {
       "nome": "Corte de lenha", "nome_en": "Woodcutting", "nome_es": "Corte de leña",
       "resumo": "Derruba e racha pau na mata da divisa.",
       "resumo_en": "Fells and splits timber in the woods along the boundary.",
       "resumo_es": "Derriba y parte leña en el monte del lindero.",
-      "bracal": true, "rende": {"lenha": 2}
+      "acao": "rachar", "bracal": true, "rende": {"lenha": 2}
     },
     "farinha": {
       "nome": "Casa de farinha", "nome_en": "Flour house", "nome_es": "Casa de harina",
       "resumo": "Rala, prensa e torra a mandioca. Trabalho de banco e paciência.",
       "resumo_en": "Grates, presses and toasts the cassava. Work for a bench and a lot of patience.",
       "resumo_es": "Ralla, prensa y tuesta la mandioca. Trabajo de banco y paciencia.",
-      "bracal": false, "rende": {"farinha": 2}
+      "acao": "carregar", "bracal": false, "rende": {"farinha": 2}
     },
     "artesanato": {
       "nome": "Cestaria e corda", "nome_en": "Basketry and rope", "nome_es": "Cestería y soga",
       "resumo": "Trança piaçava e palha. Rende corda e cesto sem sair da sombra.",
       "resumo_en": "Braids piassava fiber and straw. Yields rope and baskets without leaving the shade.",
       "resumo_es": "Trenza piasaba y paja. Da soga y canastos sin salir de la sombra.",
-      "bracal": false, "rende": {"corda": 1}
+      "acao": "renda", "bracal": false, "rende": {"corda": 1}
     },
     "criacao": {
       "nome": "Criação de quintal", "nome_en": "Backyard livestock", "nome_es": "Cría de patio",
       "resumo": "Galinha, bode, horta de tempero. Anda pouco e cuida de muito.",
       "resumo_en": "Chickens, goats, a herb garden. Walks little and tends a lot.",
       "resumo_es": "Gallinas, cabras, huerta de hierbas. Anda poco y cuida mucho.",
-      "bracal": false, "rende": {"ovo": 2}
+      "acao": "recolher", "bracal": false, "rende": {"ovo": 2}
     }
   },
   "pergunta": "Comprar %s por %d réis? A casa e a rotina de quem mora continuam.",

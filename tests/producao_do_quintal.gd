@@ -4,20 +4,22 @@ extends "res://tests/suite/caso.gd"
 ##
 ##     .\tools\prototipo_3d\testar.ps1 -Teste producao_do_quintal
 ##
-## Sem o vale: a conta do serviço (`servico_do_morador.gd`), a postura adiantada
+## Sem o vale: a conta do serviço (`povoado.gd`, a mesma da aba Trabalho, #9), a postura adiantada
 ## (`curral_vale.gd`) e a recompensa do passo com `trabalho_do` (`cadeia_de_missoes.gd`).
 ##
 ##   1. O RENDIMENTO: a Palavra de patrão traz 50% a mais (4 mandiocas viram 6, 2 lenhas viram
 ##      3); o Empreiteiro soma 25% e a fé do Curimba, 50%; sem talento, a base.
-##   2. A PERÍCIA: sem o Mestre de ofício um dia de serviço é um dia de prática e o ofício não
-##      está aprendido; com ele o mesmo dia conta por dois e o ofício vem — e traz um quarto a
-##      mais.
-##   3. O PASSO DO COSME paga pela conta: o mesmo passo, três combinações de talento, três
+##   2. A PERÍCIA: sem o Mestre de ofício um dia de serviço é um dia de prática; com ele o mesmo
+##      dia conta por dois. Doze dias de roçado levam o Cosme a "jeitoso" (x1,35) e o dia de
+##      roçado passa a pagar mais (4 mandiocas viram 5, 2 lenhas viram 3).
+##   3. O PASSO DO COSME é a primeira designação: põe o Cosme na roça (`Terrenos`), conta o dia na
+##      perícia dele e paga pela conta: o mesmo passo, três combinações de talento, três
 ##      mochilas. Um passo sem `trabalho_do` não passa pela conta.
 ##   4. A POSTURA ADIANTADA: sem o Trato do curral o dia de postura é o de hoje; com ele, a
 ##      partir das 17h é o de amanhã, e antes disso o de hoje.
 ##   5. O GALINHEIRO LÊ O CAMPO: `tem_pastoreio` é verdade com o Curral e falso sem.
-##   6. O SAVE: os dias de prática vão e voltam.
+##   6. O SAVE ANTIGO: os dias de prática da vaga antiga viram dias de roçado na perícia, sem
+##      rebaixar quem já tem mais, e o curral não guarda mais `servico`.
 ##
 ## FALSIFICAR: `-- --sem-rendimento` e `-- --sem-pericia` tiram o talento no meio do portão, e
 ## ele tem que reprovar.
@@ -49,7 +51,9 @@ func _conferir(ok: bool, texto: String) -> void:
 func _zerar() -> void:
 	root.get_node("Talentos").destravados.clear()
 	root.get_node("Fe").ativa = ""
-	ServicoDoMorador.limpar()
+	root.get_node("Povoado").pericia.clear()
+	root.get_node("Povoado").sobra.clear()
+	root.get_node("Terrenos").trabalho.clear()
 	root.get_node("Inventario").espacos.fill({})
 
 
@@ -60,14 +64,15 @@ func _run() -> void:
 	sem_rendimento = "--sem-rendimento" in OS.get_cmdline_user_args()
 	sem_pericia = "--sem-pericia" in OS.get_cmdline_user_args()
 
+	var povoado := root.get_node("Povoado")
 	# --- 1. O RENDIMENTO --------------------------------------------------------------------
 	_zerar()
-	_conferir(ServicoDoMorador.pagamento(4, talentos.bonus("rendimento_do_morador"), false) == 4, "sem talento o pagamento não é a base")
+	_conferir(povoado.pagamento("cosme", "roca", 4) == 4, "sem talento o pagamento não é a base")
 	_dar_talento("palavra_de_patrao", sem_rendimento)
 	var rendimento: float = talentos.bonus("rendimento_do_morador")
 	_conferir(is_equal_approx(rendimento, 0.5), "a Palavra de patrão não dá 50%%: %s" % str(rendimento))
-	_conferir(ServicoDoMorador.pagamento(4, rendimento, false) == 6, "quatro mandiocas não viram seis com a Palavra de patrão")
-	_conferir(ServicoDoMorador.pagamento(2, rendimento, false) == 3, "duas lenhas não viram três com a Palavra de patrão")
+	_conferir(povoado.pagamento("cosme", "roca", 4) == 6, "quatro mandiocas não viram seis com a Palavra de patrão")
+	_conferir(povoado.pagamento("cosme", "roca", 2) == 3, "duas lenhas não viram três com a Palavra de patrão")
 	talentos.destravados.append("empreiteiro")
 	_conferir(is_equal_approx(talentos.bonus("rendimento_do_morador"), 0.75), "o Empreiteiro não soma 25%%: %s" % str(talentos.bonus("rendimento_do_morador")))
 	talentos.destravados.clear()
@@ -77,21 +82,22 @@ func _run() -> void:
 	_conferir(is_equal_approx(talentos.bonus("rendimento_do_morador"), 0.5), "o Curimba não rende 50%% ao patrão: %s" % str(talentos.bonus("rendimento_do_morador")))
 	fe.ativa = ""
 	fe._espelhar()
-	_conferir(ServicoDoMorador.pagamento(1, -3.0, false) == 1, "rendimento negativo tirou da base")
+	_conferir(povoado.pagamento("cosme", "roca", 1) >= 1, "o pagamento ficou abaixo da base")
 
 	# --- 2. A PERÍCIA --------------------------------------------------------------------------
 	_zerar()
-	_conferir(ServicoDoMorador.registrar_dia("cosme", talentos.bonus("pericia_do_morador")) == 1 and not ServicoDoMorador.aprendeu("cosme"),
-		"um dia de serviço sem perícia já ensinou o ofício")
-	_conferir(ServicoDoMorador.registrar_dia("cosme", talentos.bonus("pericia_do_morador")) == 2 and ServicoDoMorador.aprendeu("cosme"),
-		"dois dias de serviço sem perícia não ensinaram o ofício")
+	_conferir(povoado.registrar_dia("cosme", "roca") == 1, "um dia de serviço sem perícia não contou um")
+	_conferir(povoado.registrar_dia("cosme", "roca") == 2, "dois dias de serviço sem perícia não contaram dois")
+	_conferir(povoado.dias_de("tonho", "roca") == 0, "o ofício do Cosme ensinou o Tonho")
+	_conferir(povoado.dias_de("cosme", "farinha") == 0, "o roçado do Cosme ensinou a farinha")
+	for i in 10:
+		povoado.registrar_dia("cosme", "roca")
+	_conferir(povoado.dias_de("cosme", "roca") == 12, "doze dias de serviço não contaram doze")
+	_conferir(povoado.pagamento("cosme", "roca", 4) == 5 and povoado.pagamento("cosme", "roca", 2) == 3,
+		"o Cosme jeitoso não traz mais no dia de roçado (4→5, 2→3)")
 	_zerar()
 	_dar_talento("mestre_de_oficio", sem_pericia)
-	_conferir(ServicoDoMorador.registrar_dia("cosme", talentos.bonus("pericia_do_morador")) == 2 and ServicoDoMorador.aprendeu("cosme"),
-		"com o Mestre de ofício um dia de serviço não conta por dois")
-	_conferir(ServicoDoMorador.pagamento(4, 0.0, true) == 5 and ServicoDoMorador.pagamento(2, 0.0, true) == 3,
-		"o ofício aprendido não traz um quarto a mais (4→5, 2→3)")
-	_conferir(not ServicoDoMorador.aprendeu("tonho"), "o ofício do Cosme ensinou o Tonho")
+	_conferir(povoado.registrar_dia("cosme", "roca") == 2, "com o Mestre de ofício um dia de serviço não conta por dois")
 
 	# --- 3. O PASSO DO COSME ----------------------------------------------------------------------
 	var ganhos := {}
@@ -106,12 +112,14 @@ func _run() -> void:
 		fila.set_process(false)
 		fila._pagar(PASSO)
 		ganhos[caso] = [inventario.quantidade("mandioca"), inventario.quantidade("lenha")]
+		_conferir(root.get_node("Terrenos").trabalho_de("cosme") == "roca", "o dia de roçado não pôs o Cosme na roça (%s)" % caso)
+		_conferir(root.get_node("Povoado").dias_de("cosme", "roca") == (2 if caso == "palavra_e_mestre" else 1), "o dia de roçado não contou na perícia (%s)" % caso)
 		fila.queue_free()
 		await process_frame
 	_conferir(ganhos["nenhum"] == [4, 2], "sem talento o Cosme não traz 4 e 2: %s" % str(ganhos["nenhum"]))
 	_conferir(ganhos["palavra"] == [6, 3], "com a Palavra de patrão o Cosme não traz 6 e 3: %s" % str(ganhos["palavra"]))
-	# Palavra (50%) e ofício aprendido no primeiro dia (25%): 4 × 1,75 = 7 e 2 × 1,75 = 3,5 → 4.
-	_conferir(ganhos["palavra_e_mestre"] == [7, 4], "com a Palavra e o Mestre de ofício o Cosme não traz 7 e 4: %s" % str(ganhos["palavra_e_mestre"]))
+	# O Mestre de ofício conta dois dias de serviço, e dois dias ainda são de aprendiz: a mesma mochila.
+	_conferir(ganhos["palavra_e_mestre"] == [6, 3], "com a Palavra e o Mestre de ofício o Cosme não traz 6 e 3: %s" % str(ganhos["palavra_e_mestre"]))
 	# Um passo SEM `trabalho_do` não passa pela conta, nem com os talentos.
 	_zerar()
 	talentos.destravados.append("palavra_de_patrao")
@@ -120,7 +128,7 @@ func _run() -> void:
 	comum.set_process(false)
 	comum._pagar({"id": "comum", "recompensa": {"mandioca": 4, "lenha": 2}})
 	_conferir(inventario.quantidade("mandioca") == 4 and inventario.quantidade("lenha") == 2, "um passo comum passou pelo rendimento do morador")
-	_conferir(ServicoDoMorador.dias.is_empty(), "um passo comum contou dia de serviço")
+	_conferir(root.get_node("Povoado").pericia.is_empty() and root.get_node("Terrenos").trabalho.is_empty(), "um passo comum pôs alguém para trabalhar")
 	comum.queue_free()
 
 	# --- 4. A POSTURA ADIANTADA -----------------------------------------------------------------------
@@ -141,16 +149,16 @@ func _run() -> void:
 	_conferir(curral.tem_pastoreio(), "com o Curral o galinheiro não tem pastoreio")
 	curral.queue_free()
 
-	# --- 6. O SAVE -------------------------------------------------------------------------------------------
+	# --- 6. O SAVE ANTIGO -------------------------------------------------------------------------------
 	_zerar()
-	ServicoDoMorador.registrar_dia("cosme", 0.0)
-	var estado := ServicoDoMorador.estado_para_salvar()
-	ServicoDoMorador.limpar()
-	_conferir(ServicoDoMorador.dias.is_empty(), "limpar não zerou os dias")
-	ServicoDoMorador.restaurar(estado)
-	_conferir(int(ServicoDoMorador.dias.get("cosme", 0)) == 1, "os dias de serviço não voltaram do save")
-	ServicoDoMorador.restaurar({})
-	_conferir(ServicoDoMorador.dias.is_empty(), "restaurar vazio manteve os dias")
+	ServicoDoMorador.migrar({"cosme": 5, "tonho": 0}, povoado)
+	_conferir(povoado.dias_de("cosme", "roca") == 5, "os dias da vaga antiga não viraram dias de roçado")
+	_conferir(povoado.dias_de("tonho", "roca") == 0, "dia zero virou dia de roçado")
+	ServicoDoMorador.migrar({"cosme": 2}, povoado)
+	_conferir(povoado.dias_de("cosme", "roca") == 5, "a vaga antiga rebaixou a perícia do Cosme")
+	var curral_novo = CurralVale.new()
+	_conferir(not curral_novo.estado_para_salvar().has("servico"), "o curral ainda guarda os dias de serviço")
+	curral_novo.free()
 
 	_zerar()
 	await process_frame

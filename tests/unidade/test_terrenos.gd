@@ -138,11 +138,15 @@ func test_os_dados_do_trabalho_fecham() -> void:
 func test_so_trabalha_quem_mora_em_terra_comprada() -> void:
 	# Antes de comprar: a terra é da Dona Zefa, e o Cosme mora nela.
 	conferir(not terras.meu("terreno_zefa"), "o teste devia partir sem a terra da Zefa")
-	conferir(not terrenos.mandar_trabalhar("cosme", "roca"), "o Cosme foi para a roça em terra que não é do jogador")
-	conferir(terrenos.impedimento("cosme", "roca") == "terra_alheia",
-		"o motivo devia ser 'terra_alheia' e foi '%s'" % terrenos.impedimento("cosme", "roca"))
+	conferir(not terrenos.mandar_trabalhar("cosme", "lenha"), "o Cosme foi cortar lenha em terra que não é do jogador")
+	conferir(terrenos.impedimento("cosme", "lenha") == "terra_alheia",
+		"o motivo devia ser 'terra_alheia' e foi '%s'" % terrenos.impedimento("cosme", "lenha"))
 	conferir(terrenos.trabalho_de("cosme") == "nada" and terrenos.trabalho.is_empty(), "a recusa deixou rastro no trabalho")
-	# O roçado do jogador é dele, mas ninguém mora nele: não há quem mandar.
+	# MAS O ROÇADO DO JOGADOR RECEBE O COSME: o dia de roçado do segundo tutorial é a primeira designação.
+	conferir(terrenos.impedimento("cosme", "roca") == "", "o Cosme não pode lavrar o roçado do jogador")
+	conferir(terrenos.lote_do_trabalho("cosme", "roca") == "rocado", "o roçado do jogador não recebe o Cosme")
+	conferir(terrenos.lote_do_trabalho("cosme", "farinha") == "", "o roçado do jogador recebeu farinha")
+	# Ninguém MORA no roçado do jogador.
 	conferir(terrenos.impedimento("pedro", "roca") == "sem_lote", "o Pedro não mora em lote nenhum")
 	conferir(terrenos.impedimento("fantasma", "farinha") == "sem_lote", "quem não existe não mora em lote nenhum")
 	conferir(terrenos.impedimento("cosme", "queijo") == "oficio_desconhecido", "ofício que não existe foi aceito")
@@ -153,6 +157,7 @@ func test_so_trabalha_quem_mora_em_terra_comprada() -> void:
 		conferir(terrenos.mandar_trabalhar("cosme", id), "o Cosme, em terra comprada, não pôde fazer '%s'" % id)
 		conferir(terrenos.trabalho_de("cosme") == id, "o trabalho do Cosme devia ser '%s'" % id)
 	conferir(terrenos.mandar_trabalhar("cosme", "roca"), "o Cosme não voltou para a roça")
+	conferir(terrenos.lote_do_trabalho("cosme", "roca") == "terreno_zefa", "comprada a terra, a casa dele é o primeiro lote do trabalho")
 	conferir(terrenos.lavradores("terreno_zefa") == ["cosme"], "os lavradores da Zefa: %s" % str(terrenos.lavradores("terreno_zefa")))
 	conferir(terrenos.trabalhando() == {"cosme": "roca"}, "trabalhando() devia ser só o Cosme na roça: %s" % str(terrenos.trabalhando()))
 
@@ -169,11 +174,63 @@ func test_so_trabalha_quem_mora_em_terra_comprada() -> void:
 	conferir(terrenos.mandar_trabalhar("cosme", "roca"), "o Cosme não voltou à roça")
 	terras.posses.erase("terreno_zefa")
 	conferir(terrenos.trabalhando().has("benedito"), "a terra do Benedito não saiu do jogador, e ele parou de trabalhar")
-	conferir(not terrenos.trabalhando().has("cosme"), "o Cosme segue trabalhando em terra que deixou de ser do jogador")
 	conferir(terrenos.lavradores("terreno_zefa").is_empty(), "a roça de terra alheia ainda tem lavrador")
+	conferir(terrenos.lavradores("rocado") == ["cosme"], "sem a terra da Zefa o Cosme devia seguir no roçado do jogador: %s" % str(terrenos.lavradores("rocado")))
+	# Ofício que só a terra da Zefa recebia: o combinado fica guardado, mas não vale.
+	conferir(terrenos.mandar_trabalhar("cosme", "farinha") == false, "o Cosme foi à farinha sem a terra da Zefa")
+	terras.posses["terreno_zefa"] = true
+	conferir(terrenos.mandar_trabalhar("cosme", "farinha"), "o Cosme não foi à farinha com a terra da Zefa")
+	terras.posses.erase("terreno_zefa")
+	conferir(not terrenos.trabalhando().has("cosme"), "o Cosme segue na farinha em terra que deixou de ser do jogador")
+	terrenos.trabalho["cosme"] = "roca"
 	conferir(terrenos.trabalho_de("cosme") == "roca", "o combinado devia ficar guardado, para valer se a terra voltar")
 	terras.posses["terreno_zefa"] = true
 	conferir(terrenos.trabalhando().get("cosme", "") == "roca", "o combinado não voltou com a terra")
+
+
+# --- 2b. o posto e a lista da tela ------------------------------------------------------
+
+func test_cada_oficio_tem_posto_e_gesto_no_lote() -> void:
+	var lotes: Dictionary = jogo.dados(terras.ARQUIVO).get("lotes", {})
+	for id in terrenos.oficios():
+		if str(id) != "nada":
+			conferir(terrenos.acao_do_oficio(str(id)) != "", "o ofício '%s' não diz o gesto no posto" % id)
+	for lote in lotes:
+		var postos: Dictionary = (lotes[lote] as Dictionary).get("postos", {})
+		for id in postos:
+			conferir(terrenos.existe(str(id)) and str(id) != "nada", "o lote '%s' tem posto para o ofício '%s', que não existe" % [lote, id])
+			var posto: Array = postos[id]
+			conferir(posto.size() == 2 and str(posto[0]) != "" and (posto[1] as Array).size() == 3, "o posto '%s' de '%s' não é âncora + deslocamento" % [id, lote])
+		# Todo ofício que o lote recebe tem posto nele: quem for posto lá precisa de onde trabalhar.
+		for morador in terrenos.moradores_de(str(lote)):
+			for id in terrenos.trabalhos_de(str(morador)):
+				if str(id) != "nada":
+					conferir(postos.has(str(id)), "'%s' pode fazer '%s' em '%s' e o lote não diz onde" % [morador, id, lote])
+		for morador in terrenos.trabalhadores_de(str(lote)):
+			for id in (lotes[lote] as Dictionary).get("oficios", []):
+				conferir(postos.has(str(id)), "'%s' trabalha '%s' em '%s' e o lote não diz onde" % [morador, id, lote])
+
+
+func test_o_posto_so_existe_com_o_combinado_valendo() -> void:
+	conferir(terrenos.posto_de_trabalho("cosme").is_empty(), "o Cosme sem ofício tem posto de trabalho")
+	terrenos.mandar_trabalhar("cosme", "roca")
+	var posto: Array = terrenos.posto_de_trabalho("cosme")
+	conferir(posto.size() == 2 and str(posto[0]) == "Roçado", "o posto do Cosme na roça devia ser o Roçado: %s" % str(posto))
+	terras.comprar("terreno_zefa")
+	terrenos.mandar_trabalhar("cosme", "lenha")
+	conferir(str(terrenos.posto_de_trabalho("cosme")[0]) == "Casa da Zefa", "o posto da lenha devia ser na casa da Zefa")
+	terras.posses.erase("terreno_zefa")
+	conferir(terrenos.posto_de_trabalho("cosme").is_empty(), "o posto vale sem a terra")
+
+
+func test_a_lista_da_tela_so_traz_quem_esta_em_terra_do_jogador() -> void:
+	conferir(terrenos.moradores_meus().is_empty(), "a lista de quem trabalha devia começar vazia: %s" % str(terrenos.moradores_meus()))
+	terrenos.mandar_trabalhar("cosme", "roca")
+	conferir(terrenos.moradores_meus() == ["cosme"], "o Cosme na roça devia aparecer sozinho: %s" % str(terrenos.moradores_meus()))
+	terras.comprar("terreno_zefa")
+	conferir(terrenos.moradores_meus() == ["zefa", "cosme"], "comprada a terra, moram a Zefa e o Cosme: %s" % str(terrenos.moradores_meus()))
+	terras.comprar("terreno_benedito")
+	conferir(terrenos.moradores_meus() == ["zefa", "cosme", "benedito"], "depois da chapada entra o Benedito: %s" % str(terrenos.moradores_meus()))
 
 
 # --- 3. idoso não pega no braço --------------------------------------------------------
