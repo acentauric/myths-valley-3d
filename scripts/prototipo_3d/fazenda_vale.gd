@@ -376,8 +376,9 @@ func _levantar() -> void:
 		portao.position.y += limites.position.y * (1.0 - fator)
 		portao.scale.y *= fator
 		_altura_do_portao = limites.size.y * fator
-	# A GUARITA, de pedra velha, ao lado.
-	var na_guarita: Vector3 = _mundo.ground_position(_portao + GUARITA)
+	# A GUARITA, de pedra velha, ao lado: na âncora "Guarita da fazenda" do mundo (#25), que é o portão mais o
+	# deslocamento GUARITA (a mesma conta, para o marco e o modelo não se separarem).
+	var na_guarita: Vector3 = _mundo.ancoras.get("Guarita da fazenda", _mundo.ground_position(_portao + GUARITA))
 	var guarita := CatalogoAssets.instanciar("guarita_fazenda", self, na_guarita, 1.0, GIRO_DA_GUARITA)
 	if guarita != null:
 		CatalogoAssets.colisao("guarita_fazenda", guarita, self, na_guarita, 1.0, GIRO_DA_GUARITA)

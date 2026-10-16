@@ -1766,6 +1766,8 @@ func _build_farm() -> void:
 	ancoras["Portão da fazenda"] = ground_position(_u(FazendaVale.PORTAO_M))
 	ancoras["Pátio da fazenda"] = ground_position(_u(FazendaVale.PATIO_M))
 	ancoras["Casarão"] = ground_position(_u(FazendaVale.CASARAO_M))
+	# A GUARITA do capítulo 6, de pedra velha, "sem porta nem janela", a leste do portão (#25): a âncora é o
+	# lugar onde o `fazenda_vale` a ergue (o portão mais o deslocamento GUARITA), e não uma conta à parte.
 	ancoras["Lavoura"] = ground_position(_na_casa("Casa de taipa", LAVOURA_NA_CASA))
 	ancoras["LavouraFrente"] = ancoras.get("Casa de taipaFrente", Vector3.BACK)
 	var canteiro := ground_position(_na_casa("Casa de taipa", CANTEIRO_NA_CASA))

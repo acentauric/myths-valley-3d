@@ -64,6 +64,8 @@ const DE_PARA := {
 	# A FAZENDA DO CONVITE, do outro lado do rio grande (`fazenda_vale.gd`,
 	# data/missoes_fazenda.json): o portão baixo e o pé da escadaria do casarão.
 	"portao_da_fazenda": "Portão da fazenda",
+	# A guarita de pedra velha ao lado do portão, "sem porta nem janela" (capítulo 6, #25).
+	"guarita_da_fazenda": "Guarita da fazenda",
 	"patio_da_fazenda": "Pátio da fazenda",
 	"casarao": "Casarão",
 	"poco": "Poço",

@@ -6,7 +6,8 @@ extends "res://tests/unidade/base.gd"
 ##     .\tools\prototipo_3d\testar.ps1 -Teste contrato_dos_lugares
 const CONTRATO := ["praca", "igreja", "venda", "pier", "ponte_da_vila",
 	"ponte_do_rio_grande", "expansao", "lapa", "cabra_do_alto", "lombada",
-	"portao_da_fazenda", "patio_da_fazenda", "casarao", "poco", "mirante",
+	"portao_da_fazenda", "guarita_da_fazenda", "patio_da_fazenda", "casarao",
+	"ruinas_do_palacete", "torre_da_capela", "estatua_da_coruja", "poco", "mirante",
 	"cemiterio", "cruzeiro", "capela_estrada", "terreiro", "gameleira",
 	"rocado", "lavoura", "casa_de_taipa", "casa_da_estrada", "fogueira",
 	"oficina", "canteiro", "pedras", "casa_do_pedro", "casa_da_zefa",

@@ -10,7 +10,8 @@ extends "res://tests/suite/caso.gd"
 ##
 ##   1. O LUGAR: o portão e o pátio resolvem do outro lado do rio grande, o portão
 ##      é baixo como no capítulo 6, está fechado, e nenhum tronco atravessa a
-##      fazenda.
+##      fazenda. A guarita tem âncora (`guarita_da_fazenda`, #25): ao lado do portão,
+##      a leste, com o modelo em cima dela.
 ##   2. O DIA ESPERA: com a ponte por fazer e a fé por escolher, a manhã não o
 ##      marca; com as duas, marca — e o arraial está sentado no pátio, a festa está
 ##      posta e o Pedro está na porta de casa.
@@ -90,6 +91,24 @@ func _run() -> void:
 	_conferir(fazenda.altura_do_portao() > 0.3 and fazenda.altura_do_portao() < 1.3,
 		"o portão tem %.2f de altura, e no capítulo 6 \"não chega a um\"" % fazenda.altura_do_portao())
 	_conferir(not fazenda.portao_aberto(), "o portão da fazenda começa aberto")
+	# A GUARITA TEM ÂNCORA (#25: "âncoras do casarão, da guarita, do portão e das ruínas"): `guarita_da_fazenda` resolve, fica
+	# ao lado do portão pelo deslocamento GUARITA do `fazenda_vale` (a leste e rente a ele), e o modelo da guarita está em
+	# cima dela. Sem a âncora a guarita só existia como constante relativa ao portão, e nada a achava pelo contrato.
+	var guarita: Vector3 = lugares.ponto("guarita_da_fazenda")
+	_conferir(guarita.is_finite(), "a guarita da fazenda não resolve (guarita_da_fazenda)")
+	if guarita.is_finite():
+		var ao_lado := Vector2(guarita.x - portao.x, guarita.z - portao.z)
+		_conferir(ao_lado.distance_to(Vector2(fazenda.GUARITA.x, fazenda.GUARITA.z)) < 0.01,
+			"a guarita fica a (%.2f, %.2f) do portão, e o `fazenda_vale` a põe a (%.2f, %.2f)" % [ao_lado.x, ao_lado.y, fazenda.GUARITA.x, fazenda.GUARITA.z])
+		_conferir(ao_lado.x > 1.0 and ao_lado.x < 12.0 and absf(ao_lado.y) < 3.0, "a guarita não está ao lado do portão, a leste: (%.2f, %.2f)" % [ao_lado.x, ao_lado.y])
+		var modelo := _peca_do_catalogo(fazenda, "guarita_fazenda")
+		_conferir(modelo != null, "o vale não tem o modelo da guarita da fazenda")
+		if modelo != null:
+			# O pé do modelo é o meio da pegada dele (`CatalogoAssets.instanciar`): o nó fica deslocado dele.
+			var caixa: AABB = modelo.get_meta("limites")
+			var pe := modelo.global_position + Vector3(caixa.get_center().x, 0.0, caixa.get_center().z).rotated(Vector3.UP, modelo.rotation.y)
+			var fora := Vector2(pe.x - guarita.x, pe.z - guarita.z).length()
+			_conferir(fora < 0.5, "o modelo da guarita está a %.2f m da âncora dela" % fora)
 	var regiao = mundo.get("_region")
 	var atravessa := 0
 	for tronco in regiao._tree_trunks:
@@ -344,6 +363,14 @@ func _fechar_a_fala() -> void:
 		dialogo._fechar()
 		await process_frame
 	await _quadros(3)
+
+
+## O nó da peça do catálogo (`CatalogoAssets.instanciar` grava a chave em `peca`) que está sob `pai`.
+func _peca_do_catalogo(pai: Node, chave: String) -> Node3D:
+	for filho in pai.get_children():
+		if filho is Node3D and filho.has_meta("peca") and String(filho.get_meta("peca")) == chave:
+			return filho
+	return null
 
 
 func _fechar() -> void:
