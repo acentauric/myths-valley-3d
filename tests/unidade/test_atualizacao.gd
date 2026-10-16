@@ -13,15 +13,21 @@ extends "res://tests/unidade/base.gd"
 ##   - deixar o `.old` e a pasta de extração para trás;
 ##   - (#231) o limite de tamanho ficar abaixo do jogo: o manifesto com o tamanho REAL da última build
 ##     registrada (data/atualizador_builds.json) e com o dobro dele tem de passar, e build grande
-##     demais ou sem espaço em disco vira FALHOU com o motivo e a oferta do site, nunca EM_DIA.
+##     demais ou sem espaço em disco vira FALHOU com o motivo e a oferta do site, nunca EM_DIA;
+##   - (#231) o download do zip de 1,2 GB morrer no minuto 5 com a conexão boa: não há prazo total,
+##     só o tempo sem chegar byte novo, e quem para de receber vê a falha com a saída de tentar de novo.
+##
+## O formato do zip (os extras que passam) fica em tests/unidade/test_zip_do_atualizador.gd.
 
 var Atualizacao: GDScript
+var IdiomaMenu: GDScript
 
 
 func before_all() -> void:
 	super.before_all()
 	# load() e não preload: o script tem de ser lido já com os autoloads de pé.
 	Atualizacao = load("res://scripts/autoload/atualizacao.gd")
+	IdiomaMenu = load("res://scripts/prototipo_3d/idioma_menu.gd")
 
 
 func test_manifesto() -> void:
@@ -38,6 +44,14 @@ func test_nunca_em_silencio() -> void:
 
 func test_espaco_em_disco() -> void:
 	_espaco_em_disco()
+
+
+func test_download_sem_teto_de_tempo() -> void:
+	_download_sem_teto_de_tempo()
+
+
+func test_download_que_para_de_chegar() -> void:
+	_download_que_para_de_chegar()
 
 
 func test_hash() -> void:
@@ -176,6 +190,89 @@ func _espaco_em_disco() -> void:
 	_conferir(not Atualizacao.mesmo_disco("user://x", "D:/jogo"), "caminho sem unidade foi tomado por mesmo disco")
 	_conferir(Atualizacao.extraido_estimado({"bytes": 1000}) == 1500 and Atualizacao.extraido_estimado({"bytes": 1000, "extraido": 1300}) == 1300, "a estimativa do jogo extraído saiu errada")
 	_conferir(Atualizacao.tamanho_legivel(int(1.5 * gb)) == "1.50 GB" and Atualizacao.tamanho_legivel(480 * 1024 * 1024) == "480 MB", "o tamanho legível saiu errado")
+
+
+## O DOWNLOAD NÃO TEM PRAZO TOTAL. O `timeout` do HTTPRequest vale para a requisição inteira: com 300 s,
+## o zip de 1,2 GB morria no minuto 5 para quem tem menos de uns 32 Mbps, com a conexão boa e andando.
+## O pedido sai com `timeout` 0 e a vigia só desiste quando nenhum byte novo chega por TEMPO_SEM_PROGRESSO.
+func _download_sem_teto_de_tempo() -> void:
+	var zip_real := 1200 * 1024 * 1024
+	var instancia: Node = Atualizacao.new()
+	instancia.manifesto = _manifesto_de(9999, zip_real)
+	var pedido: HTTPRequest = instancia._preparar_download("user://atualizacao/atualizacao.zip")
+	_conferir(pedido.timeout == 0.0, "o download ficou com prazo total de %.0f s: o zip de 1,2 GB morre no meio para quem tem menos de uns 32 Mbps" % pedido.timeout)
+	_conferir(pedido.download_file == "user://atualizacao/atualizacao.zip" and pedido.max_redirects == 0 and pedido.body_size_limit == zip_real,
+		"o pedido do download perdeu a configuração que já tinha (arquivo, redirecionamento, tamanho)")
+	# Sem linha própria: na linha própria a leitura do corpo bloqueia num pedaço inteiro, a vigia não vê os bytes
+	# de uma conexão que parou, e `cancel_request()` trava o jogo até o servidor fechar (medido no Godot 4.7.2).
+	_conferir(not pedido.use_threads, "o download voltou para a linha própria do HTTPRequest: uma conexão parada trava o jogo no cancelamento e a vigia não vê os bytes")
+	pedido.free()
+	instancia.free()
+	# O tempo sem progresso é a única régua: tem de ser curto para quem perdeu a rede e longo para a conexão que engasga.
+	_conferir(Atualizacao.TEMPO_SEM_PROGRESSO >= 30.0 and Atualizacao.TEMPO_SEM_PROGRESSO <= 120.0, "TEMPO_SEM_PROGRESSO (%s s) está fora do que aguenta uma conexão que engasga sem deixar o jogador esperando à toa" % Atualizacao.TEMPO_SEM_PROGRESSO)
+	# A regra pura: byte novo zera o relógio, a falta de byte soma o quadro.
+	_conferir(Atualizacao.tempo_parado(1000, 1000, 10.0, 0.5) == 10.5, "sem byte novo o tempo parado devia somar o quadro")
+	_conferir(Atualizacao.tempo_parado(1001, 1000, 59.0, 0.5) == 0.0, "um byte novo devia zerar o tempo parado")
+	_conferir(Atualizacao.tempo_parado(0, 0, 0.0, 1.0) == 1.0, "antes do primeiro byte o tempo parado também conta")
+
+
+## O download que anda devagar não morre; o que para de receber desiste, apaga o arquivo pela metade e
+## diz o motivo, sem mandar o jogador ao site (tentar de novo resolve quando a conexão volta).
+func _download_que_para_de_chegar() -> void:
+	var zip_real := 1200 * 1024 * 1024
+	var destino := _pasta_limpa("vigia").path_join("atualizacao.zip")
+	var vigia := func(bytes: int) -> Node:
+		var instancia: Node = Atualizacao.new()
+		instancia.manifesto = _manifesto_de(9999, zip_real)
+		instancia.estado = Atualizacao.Estado.BAIXANDO
+		instancia._http = instancia._preparar_download(destino)
+		instancia.add_child(instancia._http)
+		instancia._destino_do_download = destino
+		instancia._baixado_visto = bytes
+		_gravar(destino, "metade do zip")
+		return instancia
+
+	# 1. Devagar mas andando: um byte a cada 55 s por uma hora. O teto fixo de 300 s já teria matado.
+	var andando: Node = vigia.call(0)
+	var desistiu := false
+	for passo in 66:
+		desistiu = desistiu or andando._vigiar_download(55.0, passo + 1)
+	_conferir(not desistiu and andando.estado == Atualizacao.Estado.BAIXANDO and andando._http != null, "o download que anda devagar (66 passos de 55 s, uma hora) foi dado por parado")
+	_conferir(FileAccess.file_exists(destino), "o arquivo do download que anda foi apagado")
+	# 2. Parou: o tempo sem byte novo passa de TEMPO_SEM_PROGRESSO, e só aí desiste.
+	var cedo: bool = andando._vigiar_download(Atualizacao.TEMPO_SEM_PROGRESSO - 1.0, 66)
+	_conferir(not cedo and andando.estado == Atualizacao.Estado.BAIXANDO, "desistiu antes de %s s sem byte novo" % Atualizacao.TEMPO_SEM_PROGRESSO)
+	var tarde: bool = andando._vigiar_download(1.0, 66)
+	_conferir(tarde, "não desistiu depois de %s s sem byte novo" % Atualizacao.TEMPO_SEM_PROGRESSO)
+	_conferir(andando.estado == Atualizacao.Estado.FALHOU, "o download parado não virou FALHOU (estado %d)" % andando.estado)
+	_conferir(not andando.so_pelo_site, "o download parado mandou o jogador ao site: tentar de novo é a saída")
+	_conferir(andando._http == null, "o pedido parado ficou pendurado")
+	_conferir(not FileAccess.file_exists(destino), "o arquivo pela metade ficou no disco")
+	_conferir(str(andando.erro).contains("9999") and str(andando.erro).contains("%d" % int(Atualizacao.TEMPO_SEM_PROGRESSO)), "o motivo não diz a build nem os segundos: '%s'" % andando.erro)
+	andando.free()
+	# 3. Nunca chegou um byte (a conexão nem abriu): a vigia também pega.
+	var muda: Node = vigia.call(0)
+	_conferir(not muda._vigiar_download(Atualizacao.TEMPO_SEM_PROGRESSO - 1.0, 0), "desistiu cedo demais de um download que ainda nem começou")
+	_conferir(muda._vigiar_download(2.0, 0) and muda.estado == Atualizacao.Estado.FALHOU, "um download que nunca recebeu byte não foi dado por parado")
+	muda.free()
+	# 4. Um byte no meio do silêncio zera a espera: engasgou e voltou. Dois silêncios de 50 s, um byte entre
+	# eles, não somam 100 s; só um silêncio inteiro de TEMPO_SEM_PROGRESSO desiste.
+	var engasgou: Node = vigia.call(0)
+	_conferir(not engasgou._vigiar_download(50.0, 10), "desistiu com os primeiros bytes chegando")
+	_conferir(not engasgou._vigiar_download(50.0, 10), "desistiu com 50 s de silêncio")
+	_conferir(not engasgou._vigiar_download(5.0, 11), "desistiu com um byte novo chegando")
+	_conferir(not engasgou._vigiar_download(50.0, 11) and engasgou.estado == Atualizacao.Estado.BAIXANDO, "somou os dois silêncios (50 s + 50 s) apesar do byte que chegou entre eles")
+	_conferir(engasgou._vigiar_download(11.0, 11) and engasgou.estado == Atualizacao.Estado.FALHOU, "um silêncio de %s s depois do último byte não derrubou o download" % (Atualizacao.TEMPO_SEM_PROGRESSO + 1.0))
+	engasgou.free()
+
+
+## O aviso novo existe nos três idiomas e não é cópia do português.
+func test_aviso_do_download_parado_nos_idiomas() -> void:
+	var chave := "O download da Build %d parou: nenhum dado chegou em %d segundos. Confira a conexão e tente de novo."
+	for dicionario in [IdiomaMenu.EN, IdiomaMenu.ES]:
+		var texto := str(dicionario.get(chave, ""))
+		_conferir(not texto.is_empty() and texto != chave, "o aviso do download parado falta em inglês ou espanhol, ou é cópia do português")
+		_conferir(texto.count("%d") == 2, "a tradução do aviso do download parado não tem os dois %%d: '%s'" % texto)
 
 
 func _manifesto_de(build: int, bytes: int) -> Dictionary:

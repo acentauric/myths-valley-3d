@@ -38,19 +38,31 @@ New-Item -ItemType Directory -Path build/windows -Force
 & 'C:\Tools\Godot\Godot_v4.7.2-stable_win64_console.exe' --headless --path . --export-release 'Windows Desktop' build/windows/MythsValley3D.exe
 ```
 
-Os builds e zips ficam em `D:\myths-valley-builds` (o disco C: enche; confira
-`Get-PSDrive C` antes).
+Os builds e zips ficam em `build/`, dentro do projeto (fora do Git; o disco C: enche, então
+confira `Get-PSDrive C` antes e apague o que já subiu para o site).
+
+## Zipar
+
+```powershell
+python .\tools\prototipo_3d\zipar_build.py build\windows build\MythsValley3D-v0.<N>.0-build<N>-windows.zip
+```
+
+O zip sai **sem extras**, e o script o confere contra o atualizador antes de deixá-lo no destino.
+Não use `tar -a -c`: o `tar.exe` do Windows grava extras (`0x5455` + `0x7875`) que o atualizador da
+Build 11 recusa (#231). O porquê e o resto do fechamento estão em
+[Fechar uma build](../projeto/FECHAR_BUILD.md).
 
 ## Conferir o resultado
 
 ```powershell
 .\tools\prototipo_3d\conferir_icone_do_exe.ps1 -Exe build/windows/MythsValley3D.exe
-.\tools\prototipo_3d\conferir_fechamento_de_build.ps1 -Zip D:\myths-valley-builds\<zip>
+.\tools\prototipo_3d\conferir_fechamento_de_build.ps1 -Zip build\<zip>
 ```
 
 O primeiro tira o ícone do executável e o compara com o `icone.ico`: reprova o ícone
 genérico do Godot (rcedit ausente ou mal apontado). O segundo confere o tamanho do zip
-contra os limites do atualizador (#231).
+contra os limites do atualizador e o formato dele (os extras) contra o atualizador de toda
+build anterior que o enxerga e contra o código desta árvore (#231).
 
 À vista: o Explorer mostra o M dourado no `MythsValley3D.exe`, e a janela, a barra de
 tarefas e o Alt+Tab mostram o mesmo ícone. Se o Explorer ainda mostrar o antigo, é o cache

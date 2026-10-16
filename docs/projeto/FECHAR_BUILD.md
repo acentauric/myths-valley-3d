@@ -48,13 +48,39 @@ Tags que já existem (retroativas, criadas em 10/10/2026): `v0.1.0` e `v0.2.0`
    .\tools\prototipo_3d\conferir_icone_do_exe.ps1 -Exe build/windows/MythsValley3D.exe
    ```
 
-   Zipe a pasta `build/windows` como `MythsValley3D-v0.<N>.0-build<N>-windows.zip`, dentro
-   da pasta do projeto (`build/` está fora do Git). Confira `Get-PSDrive C` antes.
-5. **Conferir e registrar o tamanho:**
+   **Zipe com o script do projeto, e não com `tar -a -c` nem "Enviar para → Pasta compactada":**
+
+   ```powershell
+   python .\tools\prototipo_3d\zipar_build.py build\windows build\MythsValley3D-v0.<N>.0-build<N>-windows.zip
+   ```
+
+   O zip fica dentro da pasta do projeto (`build/` está fora do Git); confira `Get-PSDrive C`
+   antes. O script grava o zip **sem extras** (o `MythsValley3D.exe` na raiz, deflate, sem
+   ZIP64, como as Builds 8 a 10) e o confere antes de deixá-lo no destino: se algum atualizador
+   o recusaria, o zip não é gravado e o script sai com 1.
+
+   Por que não o `tar`: o `tar.exe` do Windows grava os extras `0x5455` + `0x7875` (carimbos e
+   dono Unix), e o atualizador das Builds 9, 10 e 11 só deixa passar `0x5455` e `0x000a`. O zip da
+   própria Build 11 saiu assim, e a 11 o recusaria ("pacote com nome ou conteúdo não permitido",
+   #231). Quem tem a build N baixa a **mais nova** publicada e a confere com a regra da N: o zip
+   novo precisa passar na regra de toda build anterior que o enxerga. A Build 12 passou a aceitar
+   `0x5455`, `0x7875` e `0x000a` (com a estrutura de cada um conferida), mas isso só vale para quem
+   já tem a 12.
+5. **Conferir e registrar o fechamento:**
    `.\tools\prototipo_3d\conferir_fechamento_de_build.ps1 -Zip <zip> -Registrar`.
-   Ele avisa se quem tem a build anterior não vai se atualizar sozinho (o limite do zip
-   que a build antiga leva embutido); nesse caso o site precisa dizer "baixe esta build
-   pelo site uma vez". Commite o `data/atualizador_builds.json`.
+   Ele confere:
+   - o **tamanho**: reprova o zip ou o executável acima dos limites do código, e avisa se quem
+     tem a build anterior não vai se atualizar sozinho (o limite do zip que a build antiga leva
+     embutido); nesse caso o site precisa dizer "baixe esta build pelo site uma vez";
+   - o **formato** do zip (os extras): contra o atualizador de toda build anterior que o enxerga
+     (`extras_aceitos` em `data/atualizador_builds.json`) e contra o código desta árvore, pela
+     cópia em Python da regra (`zipar_build.py --conferir`) e pelo `Atualizacao.conferir_zip` de
+     verdade, num Godot sem janela (`conferir_zip_do_atualizador.gd`). Reprovado, **não publique**:
+     zipe de novo com o `zipar_build.py`.
+
+   Com `-Registrar` ele grava a build (tamanhos, limites e os extras que o atualizador dela aceita)
+   em `data/atualizador_builds.json`: commite o arquivo. Para ensaiar o zip de uma build como se
+   fosse de outra, `-Build <N>`.
 6. **Levar à `main` e marcar:**
 
    ```powershell
@@ -73,7 +99,13 @@ Tags que já existem (retroativas, criadas em 10/10/2026): `v0.1.0` e `v0.2.0`
      `versao`, `build`, `data`, e a plataforma `windows` ganha `arquivo`, `url`,
      `tamanho` e `sha256` (`Get-FileHash <zip> -Algorithm SHA256`);
    - commite e faça o deploy. O manifesto
-     (`https://mythsvalley.app.br/api/jogo/atualizacao`) passa a oferecer a build nova.
+     (`https://mythsvalley.app.br/api/jogo/atualizacao`) passa a oferecer a build nova;
+   - **prove a atualização ponta a ponta** (a build anterior atualizando-se para esta): numa pasta
+     limpa, extraia o zip da build anterior publicada e rode, a partir dela,
+     `.\MythsValley3D.exe --log-file atualizar.log -- --atualizar-agora` (o comando troca o
+     executável da pasta: use uma cópia). O `atualizar.log` tem de dizer
+     `ATUALIZACAO_PRONTA: Build <N> instalada`; `ATUALIZACAO_FALHOU: <motivo>` traz o que o
+     atualizador recusou. Guarde o log na issue.
 8. **De volta à `develop`:** `versao_atual` vira `0.<N+1>.0-dev`, com o `build_numero` em
    `N`.
 
