@@ -26,6 +26,21 @@ def _tem(nome):
     return os.path.exists(os.path.join(VOZES, nome + ".mp3"))
 
 
+def _letras_de_fabrica():
+    """A letra de fábrica de cada atalho, lida da tabela DEFINICOES de scripts/prototipo_3d/atalhos.gd."""
+    codigo = open(os.path.join(RAIZ, "scripts", "prototipo_3d", "atalhos.gd"), encoding="utf-8").read()
+    return {m.group(1): m.group(2) for m in re.finditer(r'"(\w+)":\s*\{[^}]*"padrao":\s*KEY_([A-Z])', codigo)}
+
+
+LETRAS = _letras_de_fabrica()
+
+
+def _falado(texto):
+    """O texto como a voz o diz: a tecla que o texto cita pela ação ({tecla:mochila}, #254) sai na letra de FÁBRICA
+    do atalho. A voz é gerada uma vez, com as letras de fábrica; o que o jogador lê, no jogo, segue as teclas dele."""
+    return re.sub(r"\{tecla:(\w+)\}", lambda m: LETRAS.get(m.group(1), m.group(1)), texto)
+
+
 def listar():
     itens = []
     for caminho in sorted(glob.glob(os.path.join(RAIZ, "data", "missoes_*.json"))):
@@ -38,15 +53,15 @@ def listar():
             pid = str(passo.get("id", ""))
             texto = str(passo.get("tts") or passo.get("texto") or "")
             if texto and str(passo.get("audio", "")) == "" and "audio" in passo:
-                itens.append({"arquivo": arquivo, "tipo": "passo", "id": pid, "audio": "pedro_%s_%s" % (base, pid), "texto": texto})
+                itens.append({"arquivo": arquivo, "tipo": "passo", "id": pid, "audio": "pedro_%s_%s" % (base, pid), "texto": _falado(texto)})
             meta = passo.get("meta", {})
             if meta.get("resposta") and meta.get("a_quem") == "pedro" and not meta.get("audio_resposta"):
                 itens.append({"arquivo": arquivo, "tipo": "resposta", "id": pid, "audio": "pedro_%s_%s_resposta" % (base, pid),
-                              "texto": str(meta.get("tts_resposta") or meta["resposta"])})
+                              "texto": _falado(str(meta.get("tts_resposta") or meta["resposta"]))})
         arremate = dados.get("arremate") or {}
         if arremate.get("texto") and arremate.get("narra", True) is not False and not arremate.get("audio"):
             itens.append({"arquivo": arquivo, "tipo": "arremate", "id": "", "audio": "pedro_%s_arremate" % base,
-                          "texto": str(arremate.get("tts") or arremate["texto"])})
+                          "texto": _falado(str(arremate.get("tts") or arremate["texto"]))})
     return itens
 
 

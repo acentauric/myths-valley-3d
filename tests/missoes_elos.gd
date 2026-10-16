@@ -32,6 +32,8 @@ extends "res://tests/suite/caso.gd"
 const VALE_NOVO := true
 
 const Jogada = preload("res://tests/fixtures/jogada.gd")
+## O resumo escrito no dado cita a tecla com a marca `{tecla:acao}` (#254); a régua mede o que o jogador lê, com as letras dele.
+const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
 const RelogioDeJogo = preload("res://tests/fixtures/relogio_de_jogo.gd")
 
 ## As horas que cobrem os períodos do dia dos moradores (manhã, tarde, entardecer, noite, madrugada).
@@ -329,7 +331,7 @@ func _dados_dos_passos() -> void:
 				_conferir(BancadasVale.OBRAS.has(construcao), "%s: o sítio '%s' não está em `BancadasVale.OBRAS`" % [onde, construcao])
 				var com_e: bool = BancadasVale.com_e().has(construcao)
 				for sufixo in ["", "_en", "_es"]:
-					var resumo := str(passo.get("resumo" + sufixo, ""))
+					var resumo := Atalhos.resolver(str(passo.get("resumo" + sufixo, "")))
 					var rotulo := "%s, resumo%s '%s'" % [onde, sufixo, resumo]
 					_conferir(resumo.contains("[E]") or resumo.contains("(E)") or resumo.contains("[J]"), "%s: não diz a tecla que faz a obra" % rotulo)
 					_conferir(resumo.length() <= LETRAS_DO_RESUMO, "%s: tem %d letras, e o HUD aceita %d" % [rotulo, resumo.length(), LETRAS_DO_RESUMO])

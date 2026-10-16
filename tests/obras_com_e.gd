@@ -35,6 +35,8 @@ extends "res://tests/suite/caso.gd"
 ## volte o resumo do poço para "Conserte o poço com a Dona Zefa" (a 0 reprova).
 
 const FocoDoE = preload("res://scripts/prototipo_3d/foco_do_e.gd")
+## O resumo escrito no dado cita a tecla com a marca `{tecla:acao}` (#254); a régua mede o que o jogador lê, com as letras dele.
+const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
 
 ## Os cinco sítios. `fila`: a cadeia que tem o passo ("guia" é a chegada do Pedro,
 ## que não mora em `_cadeias`); `ancora`: onde o sítio fica; `distancia` e `angulo`
@@ -316,7 +318,7 @@ func _resumos_dos_passos_de_obra() -> void:
 				continue
 			vistos += 1
 			for sufixo in ["", "_en", "_es"]:
-				var resumo := str(passo.get("resumo" + sufixo, ""))
+				var resumo := Atalhos.resolver(str(passo.get("resumo" + sufixo, "")))
 				var onde := "%s, passo '%s', resumo%s" % [arquivo, passo.get("id", "?"), sufixo]
 				_conferir(resumo.contains("[E]") or resumo.contains("(E)") or resumo.contains("[J]"),
 					"%s não diz a tecla que faz a obra: '%s'" % [onde, resumo])

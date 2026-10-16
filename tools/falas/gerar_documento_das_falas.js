@@ -45,7 +45,12 @@ const DESPEJO = I_DESPEJO >= 0 ? ARGS[I_DESPEJO + 1] : "";
 const ler = (rel) => JSON.parse(fs.readFileSync(path.join(RAIZ, rel), "utf8"));
 const lerTexto = (rel) => fs.readFileSync(path.join(RAIZ, rel), "utf8");
 const existe = (rel) => fs.existsSync(path.join(RAIZ, rel));
-const s = (v) => (v === undefined || v === null ? "" : String(v));
+// As teclas que o texto cita pela ação, `{tecla:mochila}` (#254), saem aqui na letra de FÁBRICA do atalho (a tabela
+// DEFINICOES de scripts/prototipo_3d/atalhos.gd): o documento diz o que o jogador lê sem ter trocado tecla nenhuma, e o
+// texto resolvido é o mesmo de antes da marca (a comparação com o texto gravado não acusa mudança que não houve).
+const LETRAS_DE_FABRICA = {};
+for (const m of fs.readFileSync(path.join(RAIZ, "scripts/prototipo_3d/atalhos.gd"), "utf8").matchAll(/"(\w+)":\s*\{[^}]*"padrao":\s*KEY_([A-Z])/g)) LETRAS_DE_FABRICA[m[1]] = m[2];
+const s = (v) => (v === undefined || v === null ? "" : String(v)).replace(/\{tecla:(\w+)\}/g, (_, acao) => LETRAS_DE_FABRICA[acao] || acao);
 const semAcento = (t) => s(t).normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 const hash = (t) => crypto.createHash("sha1").update(s(t).trim(), "utf8").digest("hex").slice(0, 10);
 

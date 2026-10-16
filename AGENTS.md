@@ -113,6 +113,13 @@ luz, som ou moradores do 3D.
   constante não há como traduzir. `tests/idiomas.gd` cobra, inclusive contra
   tradução que é cópia do português; o que ainda falta fica declarado em
   `FALTAM_TRADUCAO`, com a razão escrita.
+- **Texto que cita uma tecla que o jogador pode trocar** (o mapa, a mochila, o
+  diário, o interagir...) escreve a AÇÃO, `{tecla:mochila}`, `{tecla:painel}`,
+  `{tecla:interagir}` (a chave de `Atalhos.DEFINICOES`), e não a letra: o
+  `IdiomaMenu.campo` a troca pela letra que o jogador tem, e a fala não mente ao
+  lado da plaqueta. `tests/unidade/test_teclas_no_texto.gd` reprova letra à mão
+  nas filas de missão (o E fica de fora fora da cadeia do Pedro; o F de dentro da
+  mochila é fixo). A voz gerada diz a letra de fábrica.
 - **Moradores e voz:** postos e falas em `data/npcs_3d.json`;
   missões do Pedro em `data/missoes_guia.json`, executadas por
   `cadeia_de_missoes.gd` e apresentadas por `guia_pedro.gd`; vozes pt-BR do ElevenLabs em

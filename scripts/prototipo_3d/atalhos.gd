@@ -113,6 +113,30 @@ static func letra(acao: String) -> String:
 	return OS.get_keycode_string(tecla(acao))
 
 
+## A TECLA DE QUEM JOGA NO TEXTO (#254). Texto de jogador que cita uma tecla escreve `{tecla:acao}` (`acao` é uma chave
+## de `DEFINICOES`: "mochila", "painel", "interagir"...), e esta função troca cada marca pela letra de agora. O Pedro dizia
+## "o I abre a mochila" de qualquer jeito, e com a mochila no M a fala mentia ao lado da plaqueta. `IdiomaMenu.campo`, por
+## onde passa todo texto traduzido dos dados, já a chama; marca de uma ação que a tabela não tem fica como está (o portão de
+## dados `teclas_no_texto` a reprova). Sem nenhuma marca devolve o texto como veio.
+static func resolver(texto: String) -> String:
+	if not texto.contains("{tecla:"):
+		return texto
+	var saida := texto
+	var inicio := saida.find("{tecla:")
+	while inicio >= 0:
+		var fim := saida.find("}", inicio)
+		if fim < 0:
+			break
+		var acao := saida.substr(inicio + 7, fim - inicio - 7)
+		if DEFINICOES.has(acao):
+			var letra_da_acao := letra(acao)
+			saida = saida.substr(0, inicio) + letra_da_acao + saida.substr(fim + 1)
+			inicio = saida.find("{tecla:", inicio + letra_da_acao.length())
+		else:
+			inicio = saida.find("{tecla:", fim)
+	return saida
+
+
 ## Rótulo do AJUSTAR com a letra de fábrica entre parênteses: "Ler / interagir (E)".
 static func rotulo(acao: String) -> String:
 	if acao == "apoios":

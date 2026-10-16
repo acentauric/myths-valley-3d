@@ -6,6 +6,9 @@ extends RefCounted
 ## a entrada no vale. Textos ainda pendentes usam o português como fallback.
 ## Dados usam *_en / *_es; chinês aceita *_zh e usa *_en onde faltar.
 
+## As teclas citadas num texto (`{tecla:mochila}`) saem na letra de quem joga (`campo`, #254). Sem `class_name`: carrega-se com `preload`.
+const Atalhos = preload("res://scripts/prototipo_3d/atalhos.gd")
+
 const ARQUIVO := "user://preferencias_visuais.cfg"
 const LOCALES := ["pt_BR", "en", "es", "zh_CN"]
 const ROTULOS := ["Português", "English", "Español", "中文"]
@@ -1167,9 +1170,12 @@ static func restaurar_jogo() -> void:
 	TranslationServer.set_locale(LOCALES[0])
 
 
-## Campo no idioma do menu: *_en / *_es / *_zh, com fallback inglês para chinês.
+## Campo no idioma do menu: *_en / *_es / *_zh, com fallback inglês para chinês. Texto que cita uma tecla escreve
+## `{tecla:acao}` (a chave do atalho: "mochila", "painel", "interagir"...), e sai com a letra que o jogador tem agora (#254):
+## o Pedro dizia "o I abre a mochila" mesmo com a mochila no M.
 static func campo(dados: Dictionary, chave: String, padrao: Variant = "") -> Variant:
-	return campo_no_idioma(dados, chave, indice(), padrao)
+	var valor: Variant = campo_no_idioma(dados, chave, indice(), padrao)
+	return Atalhos.resolver(valor) if valor is String else valor
 
 
 ## Prévia de texto sem alterar o locale nem a preferência salva.

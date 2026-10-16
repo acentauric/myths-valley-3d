@@ -130,15 +130,15 @@
       "titulo": "De pé outra vez",
       "titulo_en": "Standing again",
       "titulo_es": "En pie otra vez",
-      "resumo": "Levante a ponte: [E] ou [J] › Obras, ao pé dela",
-      "resumo_en": "Raise the bridge: [E] or [J] › Works, at its foot",
-      "resumo_es": "Levanta el puente: [E] o [J] › Obras, al pie de él",
+      "resumo": "Levante a ponte: [{tecla:interagir}] ou [{tecla:painel}] › Obras, ao pé dela",
+      "resumo_en": "Raise the bridge: [{tecla:interagir}] or [{tecla:painel}] › Works, at its foot",
+      "resumo_es": "Levanta el puente: [{tecla:interagir}] o [{tecla:painel}] › Obras, al pie de él",
       "lugar": "ponte_do_rio_grande",
       "raio": 9,
       "audio": "pedro_ponte_ponte",
-      "texto": "Material pronto. Agora é carregar até o rio. Chegue à cabeceira da ponte com tudo nas costas e aperte E — ou abra o J, na aba de obras: o conserto está lá. Esteio novo no meio, o tabuado amarrado, e a cerca vai pro chão.",
-      "texto_en": "The material is ready. Now carry it to the river. Get to the bridgehead with it all on your back and press E — or open J, on the works tab: the repair is there. New posts in the middle, the planking lashed down, and the fence comes down.",
-      "texto_es": "El material está listo. Ahora hay que cargarlo hasta el río. Llega a la cabecera del puente con todo a cuestas y pulsa E, o abre la J, en la pestaña de obras: el arreglo está ahí. Pilotes nuevos en el medio, el tablado amarrado, y la cerca al suelo.",
+      "texto": "Material pronto. Agora é carregar até o rio. Chegue à cabeceira da ponte com tudo nas costas e aperte {tecla:interagir} — ou abra o {tecla:painel}, na aba de obras: o conserto está lá. Esteio novo no meio, o tabuado amarrado, e a cerca vai pro chão.",
+      "texto_en": "The material is ready. Now carry it to the river. Get to the bridgehead with it all on your back and press {tecla:interagir} — or open {tecla:painel}, on the works tab: the repair is there. New posts in the middle, the planking lashed down, and the fence comes down.",
+      "texto_es": "El material está listo. Ahora hay que cargarlo hasta el río. Llega a la cabecera del puente con todo a cuestas y pulsa {tecla:interagir}, o abre la {tecla:painel}, en la pestaña de obras: el arreglo está ahí. Pilotes nuevos en el medio, el tablado amarrado, y la cerca al suelo.",
       "meta": {
         "tipo": "obra",
         "construcao": "ponte",
@@ -186,9 +186,9 @@
       "texto_es": "Mi abuela hizo mungunzá en la mañana y mandó traer la olla entera. Maíz blanco, leche de coco y canela, de la olla de hierro."
     },
     {
-      "texto": "Tem seis cuias aí. Come uma agora e as outras quando o braço pesar de novo: o I abre a mochila, e o F em cima da cuia come.",
-      "texto_en": "There are six bowls there. Eat one now and the others when your arm gets heavy again: I opens the backpack, and F on the bowl eats it.",
-      "texto_es": "Ahí hay seis cuencos. Come uno ahora y los otros cuando el brazo vuelva a pesar: la I abre la mochila, y la F sobre el cuenco lo come."
+      "texto": "Tem seis cuias aí. Come uma agora e as outras quando o braço pesar de novo: o {tecla:mochila} abre a mochila, e o F em cima da cuia come.",
+      "texto_en": "There are six bowls there. Eat one now and the others when your arm gets heavy again: {tecla:mochila} opens the backpack, and F on the bowl eats it.",
+      "texto_es": "Ahí hay seis cuencos. Come uno ahora y los otros cuando el brazo vuelva a pesar: la {tecla:mochila} abre la mochila, y la F sobre el cuenco lo come."
     },
     {
       "texto": "Isso sustenta o corpo até a ponte subir. Dá pra fechar tudo hoje, se você não parar.",
