@@ -20,6 +20,47 @@ RODANDO = re.compile(r'\.\.\. rodando: (.*?)\s+\(faltam (\d+) na fila\)')
 INICIO = time.time()
 
 
+def tempos_anteriores():
+    """Segundos de cada caso na rodada anterior (suite-*.json, e o cache.json dos portões antigos
+    para quem não está lá), lidos uma vez ao subir: o testar.ps1 só os troca quando um Godot acaba."""
+    tempos = {}
+    try:
+        cache = json.loads((LOG.parent / 'cache.json').read_text(encoding='utf-8-sig'))
+        for nome, v in cache.get('portoes', {}).items():
+            if isinstance(v, dict) and v.get('duracao'):
+                tempos[nome] = float(v['duracao'])
+    except Exception:
+        pass
+    for p in sorted(LOG.parent.glob('suite-*.json')):
+        try:
+            for c in json.loads(p.read_text(encoding='utf-8-sig')).get('casos', []):
+                tempos[c['nome']] = float(c['segundos'])
+        except Exception:
+            pass
+    return tempos
+
+
+TEMPOS = tempos_anteriores()
+
+
+def estimar_restante(feitos, rodando, total):
+    """Segundos que faltam: a média, na rodada anterior, dos casos que ainda não rodaram, vezes os que faltam,
+    corrigida pelo ritmo desta rodada (esta máquina hoje contra a anterior). Sem histórico, a média de agora."""
+    faltam = total - len(feitos)
+    if not feitos or faltam <= 0:
+        return None
+    feitos_nomes = {f['nome'] for f in feitos}
+    medidos = [(f['seg'], TEMPOS[f['nome']]) for f in feitos if f['nome'] in TEMPOS and TEMPOS[f['nome']] > 0]
+    ritmo = sum(a for a, _ in medidos) / sum(b for _, b in medidos) if len(medidos) >= 5 else 1.0
+    pendentes = [s for n, s in TEMPOS.items() if n not in feitos_nomes]
+    if len(pendentes) >= max(5, faltam // 3):
+        media = sum(pendentes) / len(pendentes) * ritmo
+    else:
+        media = sum(f['seg'] for f in feitos) / len(feitos)
+    ja_correndo = sum(int(r['seg'].rstrip('s')) for r in rodando if str(r.get('seg', '')).rstrip('s').isdigit())
+    return max(0, int(media * faltam - min(ja_correndo, media)))
+
+
 def ler():
     if not LOG.exists():
         return ''
@@ -60,7 +101,8 @@ def estado():
     # há mais de 45 s sem a linha final quer dizer que a bateria foi interrompida.
     parado_ha = int(time.time() - LOG.stat().st_mtime) if texto else 0
     return {'titulo': TITULO, 'total': total, 'feitos': feitos, 'rodando': rodando, 'fila': fila,
-            'fim': fim, 'tem_log': bool(texto), 'parado_ha': parado_ha if not fim and parado_ha > 45 else 0,
+            'fim': fim, 'tem_log': bool(texto), 'restante_seg': None if fim else estimar_restante(feitos, rodando, total),
+'parado_ha': parado_ha if not fim and parado_ha > 45 else 0,
             'inicio_painel': LOG.stat().st_ctime if LOG.exists() else INICIO}
 
 

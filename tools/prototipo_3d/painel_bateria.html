@@ -47,6 +47,7 @@ tr.novo{animation:entra 1.2s ease}@keyframes entra{from{background:rgba(232,196,
     <div class="v"><b id="n-ok">0</b>passaram</div>
     <div class="r"><b id="n-ruins">0</b>falharam</div>
     <div><b id="n-rodando">0</b><span id="n-fila">rodando</span></div>
+    <div><b id="n-resta">—</b><span id="n-termina">restantes</span></div>
   </div>
   <div class="estado" id="estado">Esperando o log da bateria…</div>
   <section id="sec-falhas" hidden><h2>Falhas</h2><ul class="falhas" id="falhas"></ul></section>
@@ -89,13 +90,23 @@ function render(e) {
   } else if (!e.tem_log) {
     est.textContent = 'Esperando o log da bateria…';
   } else {
-    let eta = '';
-    if (feitos && total > feitos) {
-      const decorrido = (Date.now() / 1000) - e.inicio_painel;
-      const resto = decorrido / feitos * (total - feitos);
-      eta = ` · ~${Math.max(1, Math.round(resto / 60))} min restantes`;
-    }
-    est.textContent = (feitos ? 'Rodando' : 'Preparando os testes') + eta;
+    est.textContent = feitos ? 'Rodando' : 'Preparando os testes';
+  }
+
+  // O TEMPO QUE FALTA: o servidor estima pelos tempos da rodada anterior (restante_seg); sem ele,
+  // a conta de agora: o tempo decorrido dividido pelos feitos, vezes os que faltam.
+  let resto = null;
+  if (!e.fim && !parou && feitos && total > feitos) {
+    resto = e.restante_seg != null ? e.restante_seg : ((Date.now() / 1000) - e.inicio_painel) / feitos * (total - feitos);
+  }
+  if (resto === null) {
+    $('n-resta').textContent = e.fim ? '0' : '—';
+    $('n-termina').textContent = e.fim ? 'terminou' : 'restantes';
+  } else {
+    const min = Math.max(1, Math.round(resto / 60));
+    $('n-resta').textContent = min >= 60 ? `${Math.floor(min / 60)}h${String(min % 60).padStart(2, '0')}` : `${min} min`;
+    const fim = new Date(Date.now() + resto * 1000).toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit'});
+    $('n-termina').textContent = `restantes · termina ~${fim}`;
   }
 
   $('sec-falhas').hidden = !ruins.length;
