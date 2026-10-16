@@ -284,25 +284,16 @@ func _ready() -> void:
 	# no meio, acima da barra de mão. Por orientação do autor (07/10) ele mora no
 	# CANTO SUPERIOR ESQUERDO, na coluna da missão: logo abaixo do quadro da tarefa
 	# (e das informações da casa, quando abertas), com a largura dele, quebrando a
-	# linha e crescendo para baixo — na identidade do vale, como a caixa de fala: a
-	# laca, o filete de ouro, a Cormorant. O rodapé fica só com o minimapa e a mão.
-	var estilo_do_aviso := StyleBoxFlat.new()
-	estilo_do_aviso.bg_color = Color(Identidade.LACA, 0.94)
-	estilo_do_aviso.border_color = Color(Identidade.OURO, 0.75)
-	estilo_do_aviso.set_border_width_all(1)
-	estilo_do_aviso.set_corner_radius_all(6)
-	estilo_do_aviso.content_margin_left = 14.0
-	estilo_do_aviso.content_margin_right = 14.0
-	estilo_do_aviso.content_margin_top = 6.0
-	estilo_do_aviso.content_margin_bottom = 6.0
-	estilo_do_aviso.shadow_color = Color(0, 0, 0, 0.35)
-	estilo_do_aviso.shadow_size = 5
+	# linha e crescendo para baixo. Depois (10/10/2026) desceu para o centro de baixo, acima da barra
+	# de mão, e na Build 11 o autor viu que ele não era igual ao aviso de espera ("Pedro voltou para te
+	# buscar"): serifada, caixa mais alta. Agora os dois — e os recados de baixo — saem do mesmo molde
+	# (`_estilo_do_aviso`, `_rotulo_de_aviso`), o do aviso de espera (#249).
 	_notice_panel = PanelContainer.new()
 	_notice_panel.name = "Aviso"
 	_notice_panel.add_to_group(PopupsDoMundo.GRUPO_HUD)
 	_notice_panel.set_meta("popup_prioridade", PopupsDoMundo.PRIORIDADE_AVISO)
 	_notice_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_notice_panel.add_theme_stylebox_override("panel", estilo_do_aviso)
+	_notice_panel.add_theme_stylebox_override("panel", _estilo_do_aviso())
 	_root.add_child(_notice_panel)
 	# Âncora no canto de cima; a altura nominal é a de uma linha e o painel cresce
 	# para baixo até o texto caber. A posição vertical vem de `_posicionar_aviso`.
@@ -325,11 +316,9 @@ func _ready() -> void:
 	_quem_fala.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TITULO, 600, 1))
 	_quem_fala.visible = false
 	coluna_do_aviso.add_child(_quem_fala)
-	_notice_label = _label(_notice, 16, Identidade.TEXTO)
-	_notice_label.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TEXTO, 600))
+	_notice_label = _rotulo_de_aviso()
+	_notice_label.text = _notice
 	_notice_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	# Centrado: o aviso mora no centro de baixo (10/10/2026).
-	_notice_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_notice_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	coluna_do_aviso.add_child(_notice_label)
 
@@ -851,12 +840,15 @@ func _layout_notice() -> void:
 		# rótulo mora dentro da caixa, e ela acompanha a altura dele.
 		# O AVISO FICA NO CENTRO DE BAIXO (10/10/2026), acima da barra de mão: no canto de cima ele
 		# disputava lugar com a fala. Mede-se pelo texto, até LARGURA_DO_AVISO.
-		var font := _notice_label.get_theme_font("font")
+		var margens := _margens_do_aviso(_notice_panel)
 		var maxima := minf(LARGURA_DO_AVISO, maxf(160.0, _root.get_viewport_rect().size.x * 0.68 / Tela.escala_componente("avisos")))
-		var largura := minf(font.get_string_size(_notice, HORIZONTAL_ALIGNMENT_LEFT, -1, _notice_label.get_theme_font_size("font_size")).x + 60.0, maxima)
+		var largura := _largura_do_aviso(_notice_label, margens, maxima)
 		_notice_panel.offset_right = _notice_panel.offset_left + largura
-		# Volta à altura de uma linha: o painel cresce de novo até o texto novo caber.
-		_notice_panel.offset_bottom = _notice_panel.offset_top + 30.0
+		# O RÓTULO SABE A LARGURA NOVA ANTES DE O AVISO SE MEDIR (#249). O contêiner só lhe dá a largura no fim do
+		# quadro: medido já, ele contava as linhas na largura do aviso de antes, e "Modo corrida desativado ao
+		# parar", depois de "Modo corrida ativado", dava duas — a caixa guardava essa altura, e sobrava uma linha em
+		# branco embaixo. Dita a largura aqui, a altura que o texto pede é a de agora (`_posicionar_aviso`).
+		_notice_label.size.x = largura - margens
 		_posicionar_aviso()
 
 
@@ -871,9 +863,10 @@ func _posicionar_aviso() -> void:
 	if not is_instance_valid(_notice_panel) or not is_instance_valid(_heading):
 		return
 	# A coluna de baixo: o aviso de espera embaixo, o aviso por cima dele, e os "✓" acima de tudo.
-	# A largura é a que `_layout_notice` mediu pelo texto; a altura, a que o texto pede.
+	# A largura é a que `_layout_notice` mediu pelo texto; a altura, a que o CONTEÚDO pede agora (o mínimo da caixa),
+	# e não a que a caixa já tinha: a que sobrou de um aviso mais comprido ficava para sempre (#249).
 	var largura_logica := _notice_panel.offset_right - _notice_panel.offset_left
-	var altura_logica := maxf(_notice_panel.size.y, 30.0)
+	var altura_logica := maxf(_notice_panel.get_combined_minimum_size().y, 30.0)
 	var tamanho := Vector2(largura_logica, altura_logica) * Tela.escala_componente("avisos")
 	# A vaga do aviso de espera fica sempre reservada embaixo dele: o aviso não pula quando ela
 	# aparece ou some.
@@ -967,18 +960,8 @@ func _criar_aviso_de_espera() -> void:
 	_espera_panel.name = "AvisoDeEspera"
 	_espera_panel.set_meta("popup_prioridade", PopupsDoMundo.PRIORIDADE_AVISO)
 	_espera_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var estilo := StyleBoxFlat.new()
-	estilo.bg_color = Color(0.055, 0.085, 0.075, 0.9)
-	estilo.set_corner_radius_all(10)
-	estilo.set_border_width_all(1)
-	estilo.border_color = Color(GOLD, 0.7)
-	estilo.content_margin_left = 20.0
-	estilo.content_margin_right = 20.0
-	estilo.content_margin_top = 8.0
-	estilo.content_margin_bottom = 9.0
-	_espera_panel.add_theme_stylebox_override("panel", estilo)
-	_espera_label = _label("", 15, INK)
-	_espera_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_espera_panel.add_theme_stylebox_override("panel", _estilo_do_aviso())
+	_espera_label = _rotulo_de_aviso()
 	_espera_panel.add_child(_espera_label)
 	_root.add_child(_espera_panel)
 	Tela.vincular_componente(_espera_panel, "avisos", Vector2(0.5, 0))
@@ -995,6 +978,50 @@ func _criar_aviso_de_espera() -> void:
 
 ## A altura reservada ao aviso de espera ("Pedro voltou para te buscar"), sob o aviso de baixo.
 const VAGA_DA_ESPERA := 8.0
+
+
+## O MOLDE DOS AVISOS DE BAIXO (#249): o aviso do modo corrida e do que se recebeu, o de espera ("Pedro voltou
+## para te buscar") e os recados (a recusa, o "✓ tarefa") têm a mesma cara. A referência é a do aviso de espera:
+## a sans do HUD em 15, creme, numa caixa de laca escura com filete de ouro, canto de 10 e margens de 20 por 8/9.
+## Antes o aviso do alto da pilha era outro: Cormorant em 16, margens de 14 por 6, canto de 6 e sombra.
+const TAMANHO_DO_AVISO := 15
+## A folga que a largura do aviso ganha sobre a do texto: sem ela, meio pixel de arredondamento quebrava a última palavra.
+const FOLGA_DO_TEXTO := 6.0
+## O vão entre dois recados empilhados.
+const VAO_ENTRE_RECADOS := 4.0
+
+
+func _estilo_do_aviso() -> StyleBoxFlat:
+	var estilo := StyleBoxFlat.new()
+	estilo.bg_color = Color(0.055, 0.085, 0.075, 0.9)
+	estilo.set_corner_radius_all(10)
+	estilo.set_border_width_all(1)
+	estilo.border_color = Color(GOLD, 0.7)
+	estilo.content_margin_left = 20.0
+	estilo.content_margin_right = 20.0
+	estilo.content_margin_top = 8.0
+	estilo.content_margin_bottom = 9.0
+	return estilo
+
+
+## O rótulo dos avisos de baixo: a fonte de leitura do HUD (com as reservas da identidade e do chinês), centrado.
+func _rotulo_de_aviso() -> Label:
+	var rotulo := _label("", TAMANHO_DO_AVISO, INK)
+	rotulo.add_theme_font_override("font", Identidade.fonte_do_hud())
+	rotulo.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	return rotulo
+
+
+## O que a caixa de um aviso gasta dos lados (as margens de dentro, somadas): o painel, ou o próprio rótulo com a caixa.
+func _margens_do_aviso(caixa: Control) -> float:
+	var estilo: StyleBox = caixa.get_theme_stylebox("panel" if caixa is PanelContainer else "normal")
+	return estilo.get_minimum_size().x
+
+
+## A largura que o texto do `rotulo` pede numa linha, com as margens da caixa e uma folga, até `maxima`.
+func _largura_do_aviso(rotulo: Label, margens: float, maxima: float) -> float:
+	var natural := rotulo.get_theme_font("font").get_string_size(rotulo.text, HORIZONTAL_ALIGNMENT_LEFT, -1, rotulo.get_theme_font_size("font_size")).x
+	return minf(natural + margens + FOLGA_DO_TEXTO, maxima)
 
 
 ## O pé da coluna de baixo: acima da barra de mão e do nome do item sobre ela, com um respiro.
@@ -1129,13 +1156,18 @@ var _avisos_de_tarefa: Array[Label] = []
 func _mostrar_proxima_tarefa() -> void:
 	if _fila_de_tarefas.is_empty():
 		return
-	var aviso := _label("", 16, GOLD)
+	# Os recados de baixo (o "✓ tarefa" e as recusas) têm a cara dos outros avisos de baixo (#249): o rótulo
+	# continua sendo um Label, mas com a caixa do molde (`_estilo_do_aviso`) no lugar do ouro solto.
+	var aviso := _rotulo_de_aviso()
 	aviso.name = "TarefaConcluida"
-	aviso.add_theme_font_override("font", Identidade.fonte(Identidade.FONTE_TITULO, 600, 1))
-	aviso.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	aviso.add_theme_stylebox_override("normal", _estilo_do_aviso())
+	aviso.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	aviso.z_index = 100
-	Identidade.sombra_texto(aviso)
 	aviso.text = _fila_de_tarefas[0]
+	# NA ÁRVORE (#249): desde 10/10, quando o recado único virou a pilha, o rótulo era criado, medido e posto, mas nunca
+	# entrava no HUD, e nem o "✓ tarefa" nem a recusa ("Precisa de Foice.") apareciam. Os portões liam o texto de um
+	# nó solto e passavam.
+	_root.add_child(aviso)
 	_risco_da_tarefa = aviso
 	_avisos_de_tarefa.append(aviso)
 	_arrumar_avisos_de_tarefa()
@@ -1160,23 +1192,30 @@ func _mostrar_proxima_tarefa() -> void:
 			_mostrar_proxima_tarefa())
 
 
-## Empilha os avisos de baixo para cima, o mais antigo embaixo, acima da barra de mão.
+## Empilha os avisos de baixo para cima, o mais antigo embaixo, acima da barra de mão. Cada recado tem a largura do
+## texto (até 720) e a altura das linhas dele, como a caixa do aviso de espera, e fica no meio da tela.
 func _arrumar_avisos_de_tarefa() -> void:
-	var largura := minf(720.0, _root.size.x - 40.0)
+	var maxima := minf(720.0, _root.size.x - 40.0)
 	var base := _altura_da_coluna_de_baixo()
 	if is_instance_valid(_espera_panel) and _espera_panel.visible:
 		base = minf(base, _espera_panel.position.y - 6.0)
 	if is_instance_valid(_notice_panel) and _notice_panel.visible:
 		base = minf(base, _retangulo_em_tela(_notice_panel).position.y - 6.0)
-	for i in _avisos_de_tarefa.size():
-		var aviso := _avisos_de_tarefa[i]
-		aviso.size = Vector2(largura, 24.0)
-		aviso.position = Vector2((_root.size.x - largura) * 0.5, base - 24.0 * (i + 1) - 4.0 * i)
+	var y := base
+	for aviso in _avisos_de_tarefa:
+		var largura := _largura_do_aviso(aviso, _margens_do_aviso(aviso), maxima)
+		# Dita a largura (a primeira linha), o rótulo conta as linhas nela, e o mínimo dele é a altura do recado
+		# (a segunda): o `size` se prende ao mínimo de ANTES da largura nova, e por isso são duas.
+		aviso.size = Vector2(largura, 0.0)
+		aviso.size = Vector2(largura, aviso.get_combined_minimum_size().y)
+		y -= aviso.size.y
+		aviso.position = Vector2(roundf((_root.size.x - largura) * 0.5), y)
+		y -= VAO_ENTRE_RECADOS
 
 
 ## Para o portão: o risco da tarefa concluída que está à vista ("" sem nenhum).
 func tarefa_concluida_a_vista() -> String:
-	return str(_risco_da_tarefa.text) if _risco_da_tarefa != null and _risco_da_tarefa.visible else ""
+	return str(_risco_da_tarefa.text) if is_instance_valid(_risco_da_tarefa) and _risco_da_tarefa.is_visible_in_tree() else ""
 
 
 ## O ALTO DA TELA DIZ A TAREFA (#83), e só ela: o nome da missão, o resumo do
