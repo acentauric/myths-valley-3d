@@ -302,6 +302,9 @@ func _varrer(no, campos: Array, onde: String) -> int:
 						% [onde, quem, campo, sufixo])
 
 	for chave in no:
+		# A voz de quem fala ({id, nome, modelo}) é cadastro do ElevenLabs, e não texto de jogador: o nome dela não se traduz.
+		if chave == "voz":
+			continue
 		achados += _varrer(no[chave], campos, onde)
 	return achados
 

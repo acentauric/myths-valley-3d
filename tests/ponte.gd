@@ -191,6 +191,8 @@ func _run() -> void:
 	_conferir(await _ate(func() -> bool: return inv.quantidade("mungunza") == 6, 3.0),
 		"sem fôlego no meio da lenha, a mungunzá da mãe do Pedro não veio: %d cuia(s)" % inv.quantidade("mungunza"))
 	_conferir(dialogo.ativo, "a mungunzá veio sem a fala do Pedro na caixa")
+	# COM A VOZ DELE (#248): a primeira linha do socorro toca ao abrir a caixa.
+	_conferir(dialogo.voz_tocando() == "pedro_ponte_socorro_1", "o socorro abriu sem a voz do Pedro (tocando: '%s')" % dialogo.voz_tocando())
 	var ate_fechar := Time.get_ticks_msec() + 4000
 	while dialogo.ativo and Time.get_ticks_msec() < ate_fechar:
 		dialogo._fechar()

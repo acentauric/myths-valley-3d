@@ -219,8 +219,8 @@ func o_quarto() -> void:
 	var i := 0
 	for troca in (Jogo.dados(ARQUIVO).get("trocas", []) as Array):
 		i += 1
-		await Dialogo.falar(_nome("velha"), [str(IdiomaMenu.campo(troca, "oferta", ""))])
-		var aceitou: bool = await Dialogo.perguntar(_nome("velha"), str(IdiomaMenu.campo(troca, "pergunta", "")))
+		await Dialogo.falar(_nome("velha"), [str(IdiomaMenu.campo(troca, "oferta", ""))], [str(troca.get("audio_oferta", ""))])
+		var aceitou: bool = await Dialogo.perguntar(_nome("velha"), str(IdiomaMenu.campo(troca, "pergunta", "")), str(troca.get("audio_pergunta", "")))
 		if aceitou:
 			aceitas += 1
 			_cadeia.registrar_evento("troca:%d" % i)
@@ -247,7 +247,7 @@ func a_fuga() -> void:
 	_segurar()
 	_cadeia.registrar_evento("fuga")
 	await _narrar(_falas("fuga"))
-	await Dialogo.falar(_nome("moca"), _falas("perdao"))
+	await Dialogo.falar(_nome("moca"), _falas("perdao"), _vozes("perdao"))
 	await _narrar(_falas("revoar"))
 	_arraial_para_as_ruinas()
 	_soltar()
@@ -260,9 +260,9 @@ func o_relato() -> void:
 	_segurar()
 	_cadeia.registrar_evento("relato")
 	await _narrar(_falas("noite"))
-	await Dialogo.falar(_nome("ancia"), _falas("relato"))
+	await Dialogo.falar(_nome("ancia"), _falas("relato"), _vozes("relato"))
 	await _narrar(_falas("senhor"))
-	await Dialogo.falar(_nome_do_pedro(), _falas("pedro_torre"))
+	await Dialogo.falar(_nome_do_pedro(), _falas("pedro_torre"), _vozes("pedro_torre"))
 	_soltar()
 
 
@@ -275,7 +275,7 @@ func a_fera_vem() -> void:
 	await _narrar(_falas("chamado"))
 	_nascer_a_fera()
 	_montar_o_espirito()
-	await Dialogo.falar(_nome_do_pedro(), _falas("pedro_embate"))
+	await Dialogo.falar(_nome_do_pedro(), _falas("pedro_embate"), _vozes("pedro_embate"))
 	_soltar()
 
 
@@ -391,9 +391,9 @@ func _libertar() -> void:
 	if _em_cena or _cadeia.aconteceu("libertou"):
 		return
 	_em_cena = true
-	await Dialogo.falar(_nome("ancia"), _falas("pedido"))
+	await Dialogo.falar(_nome("ancia"), _falas("pedido"), _vozes("pedido"))
 	var pergunta := str(IdiomaMenu.campo(Jogo.dados(ARQUIVO).get("pergunta_escudo", {}), "texto", ""))
-	var deixa: bool = await Dialogo.perguntar(_nome("ancia"), pergunta)
+	var deixa: bool = await Dialogo.perguntar(_nome("ancia"), pergunta, str((Jogo.dados(ARQUIVO).get("pergunta_escudo", {}) as Dictionary).get("audio", "")))
 	if deixa:
 		if Equipamento.em_uso("escudo_de_safira"):
 			Equipamento.desequipar("maos")
@@ -833,6 +833,11 @@ func _falas(chave: String) -> Array:
 	for fala in (Jogo.dados(ARQUIVO).get(chave, []) as Array):
 		linhas.append(str(IdiomaMenu.campo(fala, "texto", "")))
 	return linhas
+
+
+## A voz de cada fala da mesma lista (o `audio` ao lado do `texto`), na ordem das falas.
+func _vozes(chave: String) -> Array:
+	return Dialogo.vozes_das(Jogo.dados(ARQUIVO).get(chave, []) as Array)
 
 
 ## O nome de quem fala, na língua do jogo ("velha", "moca", "ancia").

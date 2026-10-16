@@ -136,6 +136,7 @@ func _run() -> void:
 	await _ate(func() -> bool: return jornada.espera <= 0.0, 12.0)
 	jogador.teleportar(pedro.global_position + Vector3(1.0, 0.1, 0.6), 0.0)
 	_conferir(await _ate(func() -> bool: return dialogo.ativo, 4.0), "perto do Pedro, a caixa não abriu com o chamado")
+	_conferir_a_voz("fazenda_cena_chamado_1")
 	_conferir(jornada.aconteceu("chamou"), "o chamado não ficou lembrado na fila")
 	await _fechar_a_fala()
 
@@ -155,6 +156,7 @@ func _run() -> void:
 	jogador.teleportar(mundo.ground_position(portao + Vector3(0, 0, 3.0), 0.1), 0.0)
 	_conferir(await _ate(func() -> bool: return jornada.missao >= 1, 6.0), "chegar ao portão não fechou a ida")
 	_conferir(await _ate(func() -> bool: return dialogo.ativo, 4.0), "no portão, o Pedro não falou do portão")
+	_conferir_a_voz("fazenda_cena_ida_fim_1")
 	await _fechar_a_fala()
 	_conferir(await _ate(func() -> bool: return narracao.tocando(), 4.0), "a voz do mundo não narrou a chegada")
 	var primeira := ""
@@ -177,6 +179,7 @@ func _run() -> void:
 	jogador.teleportar(mundo.ground_position(patio, 0.1), PI)
 	_conferir(await _ate(func() -> bool: return jornada.missao >= 2, 6.0), "chegar ao pé da escadaria não fechou o passo do pátio")
 	_conferir(await _ate(func() -> bool: return dialogo.ativo, 4.0), "no pé da escadaria, o Pedro não falou")
+	_conferir_a_voz("fazenda_cena_chegada_fim_1")
 	_conferir(jornada.aconteceu("patio"), "o pátio não ficou lembrado na fila")
 	await _fechar_a_fala()
 
@@ -198,11 +201,13 @@ func _run() -> void:
 	await _pular_a_narracao(narracao)
 	_conferir(await _ate(func() -> bool: return dialogo.ativo, 6.0), "a anfitriã não falou da escadaria")
 	_conferir(dialogo._falas.size() > 0 and str(dialogo._falas[0]).contains("Bem-vindos"), "a anfitriã não deu as boas-vindas: '%s'" % (str(dialogo._falas[0]) if dialogo._falas.size() > 0 else ""))
+	_conferir_a_voz("fazenda_cena_chamado_aos_corajosos_1")
 	await _fechar_a_fala()
 	_conferir(await _ate(func() -> bool: return narracao.tocando(), 6.0), "a voz do mundo não contou os homens de pé")
 	await _pular_a_narracao(narracao)
 	_conferir(await _ate(func() -> bool: return dialogo.ativo, 6.0), "o Pedro não disse que vai")
 	_conferir(dialogo._falas.size() > 0 and str(dialogo._falas[0]).contains("Eu vou"), "o Pedro não disse 'Eu vou': '%s'" % (str(dialogo._falas[0]) if dialogo._falas.size() > 0 else ""))
+	_conferir_a_voz("fazenda_cena_pedro_vai_1")
 	await _fechar_a_fala()
 	_conferir(jornada.aconteceu("corajosos"), "o chamado aos corajosos não ficou lembrado na fila")
 	_conferir(await _ate(func() -> bool: return not fazenda._em_cena, 4.0), "a cena do chamado não terminou")
@@ -336,6 +341,11 @@ func _pular_a_narracao(narracao) -> void:
 		narracao.pular()
 		await _quadros(3)
 	await _quadros(3)
+
+
+## A voz da linha que abriu a caixa é a do arquivo (#248): a cena da fazenda fala em voz.
+func _conferir_a_voz(esperada: String) -> void:
+	_conferir(dialogo.voz_tocando() == esperada, "a caixa abriu sem a voz '%s' (tocando: '%s')" % [esperada, dialogo.voz_tocando()])
 
 
 func _fechar_a_fala() -> void:

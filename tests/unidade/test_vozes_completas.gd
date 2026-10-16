@@ -65,12 +65,16 @@ const NARRACAO_SEM_VOZ := {
 ## ("arraial:mirante_material"). Só encolhe: a que ganhou voz sai daqui (o teste reprova a pendência cumprida).
 const VOZ_PENDENTE := {
 	"arraial:mirante_material": "o passo diz 'oito tábuas, quatro pedras e duas cordas' desde que a obra baixou o custo (0241ea3), e a voz gerada ainda diz vinte, doze e seis: o passo fica sem voz até uma tomada com o texto certo",
-	"socorro": "o socorro da mungunzá ainda não toca a voz",
-	"cena": "as falas de cena da fazenda e do revoar ainda não tocam a voz",
-	"pergunta": "as perguntas de cena ainda não tocam a voz",
 	"fe": "as vozes da fé ainda não tocam a voz",
 	"oferenda": "a resposta da oferenda é aviso do HUD e ainda não toca a voz",
 	"quirino": "o mestre Quirino ainda não tem voz",
+}
+
+## Quem fala fora do npcs_3d.json declara a voz no arquivo em que fala: um bloco `voz` ({id, nome, modelo}) no objeto
+## dele (a anfitriã, a moça, a mulher da cama, a anciã). O Pedro fala com a voz do guia, que mora no npcs_3d.json.
+const VOZES_DE_FORA := {
+	"res://data/missoes_fazenda.json": ["anfitria", "moca"],
+	"res://data/missoes_revoar.json": ["velha", "moca", "ancia"],
 }
 
 var _campos: Array = []
@@ -151,6 +155,55 @@ func test_os_detectores_reprovam_o_que_devem() -> void:
 	conferir(_textos_que_mudaram(sem_foto, gravados).size() == 1, "o detector de texto não achou a voz sem o texto guardado no registro")
 
 
+## Quem fala fora do npcs_3d.json diz de que voz é a fala dele (o nome, o id e o modelo do ElevenLabs).
+func test_quem_fala_fora_do_npcs_declara_a_voz() -> void:
+	for arquivo in VOZES_DE_FORA:
+		var dados: Dictionary = _ler(arquivo)
+		for quem in VOZES_DE_FORA[arquivo]:
+			var bloco = dados.get(quem)
+			var voz = (bloco as Dictionary).get("voz") if bloco is Dictionary else null
+			conferir(_voz_valida(voz), "%s: '%s' fala e não declara a voz ({id, nome, modelo: eleven_v3}): %s" % [arquivo.get_file(), quem, str(voz)])
+	conferir(not _voz_valida({"id": "curto", "nome": "X", "modelo": "eleven_v3"}) and not _voz_valida({"id": "pqHfZKP75CvOlQylNhV4", "nome": "", "modelo": "eleven_v3"})
+		and not _voz_valida({"id": "pqHfZKP75CvOlQylNhV4", "nome": "Bill", "modelo": "outro"}) and not _voz_valida(null), "o detector de voz declarada aceitou uma voz sem id, sem nome, de outro modelo ou nenhuma")
+
+
+## O Dialogo junta a voz de cada fala do dado na lista que `falar` pede, na ordem (#248).
+func test_o_dialogo_junta_as_vozes_das_falas() -> void:
+	var dialogo = root.get_node_or_null("/root/Dialogo")
+	conferir(dialogo != null, "o autoload Dialogo não existe")
+	if dialogo == null:
+		return
+	var linhas := [{"texto": "a", "audio": "benedito_fala_2"}, {"texto": "b"}, "solta", {"texto": "c", "audio": "tonho_fala_1"}]
+	conferir(dialogo.vozes_das(linhas) == ["benedito_fala_2", "", "", "tonho_fala_1"], "vozes_das não deu as vozes das linhas, na ordem: %s" % str(dialogo.vozes_das(linhas)))
+	conferir(dialogo.vozes_das([]).is_empty(), "vozes_das de uma lista vazia não deu uma lista vazia")
+
+
+## A caixa das cenas da fazenda e do revoar recebe as vozes: toda chamada `Dialogo.falar(..., _falas("bloco"))` de um
+## bloco falado passa `_vozes("bloco")`. Sem isto a voz está no dado e a cena fala muda (a fala de cena tem o
+## suporte no código, e o teste de dados sozinho não o vê).
+func test_a_caixa_das_cenas_recebe_as_vozes() -> void:
+	var cenas := {
+		"res://scripts/prototipo_3d/fazenda_vale.gd": "res://data/missoes_fazenda.json",
+		"res://scripts/prototipo_3d/revoar_vale.gd": "res://data/missoes_revoar.json",
+	}
+	var chamadas := 0
+	for script in cenas:
+		var fonte := FileAccess.get_file_as_string(script)
+		var dados: Dictionary = _ler(cenas[script])
+		for linha in fonte.split("\n"):
+			if not (linha.contains("Dialogo.falar(") and linha.contains('_falas("')):
+				continue
+			chamadas += 1
+			var bloco := linha.get_slice('_falas("', 1).get_slice('"', 0)
+			conferir(linha.contains('_vozes("%s")' % bloco), "%s: a caixa do bloco '%s' abre sem as vozes: %s" % [script.get_file(), bloco, linha.strip_edges()])
+			var falas: Array = dados.get(bloco, [])
+			conferir(not falas.is_empty(), "%s: o bloco '%s' não está em %s" % [script.get_file(), bloco, cenas[script].get_file()])
+			for i in falas.size():
+				conferir(str((falas[i] as Dictionary).get("audio", "")) != "", "%s: a linha %d do bloco '%s' não tem `audio`" % [cenas[script].get_file(), i, bloco])
+	# Oito na fazenda e cinco no revoar (as perguntas e as trocas têm a chamada própria).
+	conferir(chamadas >= 13, "só %d chamada(s) de caixa de cena achadas no código: a varredura não está pegando" % chamadas)
+
+
 # --- os detectores -------------------------------------------------------------------------------------
 
 ## Os campos de áudio que não têm mp3, nem `.import`, nem recurso que o Godot carregue.
@@ -189,6 +242,13 @@ func _textos_que_mudaram(campos: Array, gravados: Dictionary) -> Array:
 		elif str(entrada.get("hash", "")) != _hash(str(campo["texto"])):
 			ruins.append("%s: a voz '%s' foi gerada com outro texto" % [campo["onde"], campo["audio"]])
 	return ruins
+
+
+## {id, nome, modelo}, como o npcs_3d.json guarda a voz de cada morador.
+static func _voz_valida(voz) -> bool:
+	if not (voz is Dictionary):
+		return false
+	return str(voz.get("id", "")).length() >= 15 and str(voz.get("nome", "")) != "" and str(voz.get("modelo", "")) == "eleven_v3"
 
 
 func _nomes_usados(campos: Array) -> Dictionary:

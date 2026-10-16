@@ -32,6 +32,8 @@ var vale
 var jogador
 var pedro
 var dialogo
+## A voz que tocava quando cada caixa de fala ou de pergunta abriu (#248): a cena fala em voz.
+var _ouvidas: Array = []
 var narracao
 var revoar
 var fila
@@ -275,6 +277,15 @@ func _run() -> void:
 	var destino_do_pedro = pedro.get("_destino_avulso")
 	_conferir(not (destino_do_pedro is Vector3 and (destino_do_pedro as Vector3).is_finite()), "no fim do capítulo o Pedro continua preso nas ruínas")
 
+	# --- 9b. AS CENAS FALAM EM VOZ (#248) ---------------------------------------------------------------------
+	# A primeira linha de cada caixa toca a voz do arquivo: as três ofertas e as três perguntas da velha, o perdão da
+	# moça, o relato da anciã, o Pedro na torre e no embate, o pedido da anciã e a pergunta do escudo.
+	for voz in ["revoar_cena_trocas_1_oferta", "revoar_cena_trocas_1_pergunta", "revoar_cena_trocas_2_oferta",
+			"revoar_cena_trocas_2_pergunta", "revoar_cena_trocas_3_oferta", "revoar_cena_trocas_3_pergunta",
+			"revoar_cena_perdao_1", "revoar_cena_relato_1", "revoar_cena_pedro_torre_1", "revoar_cena_pedro_embate_1",
+			"revoar_cena_pedido_1", "revoar_cena_pergunta_escudo"]:
+		_conferir(_ouvidas.has(voz), "a cena do revoar não tocou a voz '%s' (ouvidas: %s)" % [voz, str(_ouvidas)])
+
 	# --- 10. A LÍNGUA E O SAVE ----------------------------------------------------------------------------------
 	var dados = JSON.parse_string(FileAccess.get_file_as_string("res://data/missoes_revoar.json"))
 	for troca in (dados as Dictionary).get("trocas", []):
@@ -302,6 +313,7 @@ func _tocar_a_cena(ate: Callable, respostas: Array, teto_ms: int) -> Dictionary:
 			vozes += 1
 			await _pular_a_narracao()
 		elif dialogo.ativo and dialogo._modo == dialogo.Modo.PERGUNTA:
+			_ouvidas.append(dialogo.voz_tocando())
 			var sim: bool = bool(respostas[perguntas]) if perguntas < respostas.size() else false
 			perguntas += 1
 			dialogo._escolha = sim
@@ -309,6 +321,7 @@ func _tocar_a_cena(ate: Callable, respostas: Array, teto_ms: int) -> Dictionary:
 			dialogo._fechar()
 			await _quadros(3)
 		elif dialogo.ativo:
+			_ouvidas.append(dialogo.voz_tocando())
 			falas += 1
 			await _fechar_a_fala()
 		else:
