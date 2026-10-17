@@ -179,9 +179,11 @@ func _run() -> void:
 	var estado: Dictionary = vale.estado_para_salvar()
 	_conferir((estado.get("curral", {}) as Dictionary).get("ovos", -1) == 6, "o save não leva os ovos do ninho: %s" % str(estado.get("curral")))
 	_conferir(int((estado.get("lavoura", {}) as Dictionary).get("colheitas", -1)) == 6, "o save não leva a conta das colheitas: %s" % str((estado.get("lavoura", {}) as Dictionary).get("colheitas")))
-	# O DIA DE SERVIÇO DO COSME vai no save com o ninho (servico_do_morador.gd): a manhã do capataz contou um.
-	_conferir(int(((estado.get("curral", {}) as Dictionary).get("servico", {}) as Dictionary).get("cosme", 0)) == 1,
-		"o save não leva o dia de serviço do Cosme: %s" % str((estado.get("curral", {}) as Dictionary).get("servico")))
+	# O DIA DE SERVIÇO DO COSME é perícia do `Povoado` (#9), que vai no save pela tabela do `Salvamento`
+	# ("Povoado": pericia): a manhã do capataz contou um dia de roçado. O curral não guarda mais `servico`.
+	var povoado := root.get_node("Povoado")
+	_conferir(povoado.dias_de("cosme", "roca") == 1, "a manhã do capataz não contou o dia de roçado do Cosme: %d" % povoado.dias_de("cosme", "roca"))
+	_conferir(not (estado.get("curral", {}) as Dictionary).has("servico"), "o curral ainda guarda o serviço, que agora é do Povoado")
 	curral.restaurar({"ovos": 2, "dia_da_postura": relogio.dia_absoluto()})
 	_conferir(curral.ovos == 2, "restaurar o ninho não trouxe os dois ovos")
 
