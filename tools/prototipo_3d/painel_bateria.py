@@ -17,6 +17,7 @@ PAGINA = Path(__file__).with_name('painel_bateria.html')
 
 LINHA = re.compile(r'^\[\s*(\d+)/(\d+)\]\s+(ok|FALHOU|TRAVOU|NAO ABRE)\s+(\S+)\s+(\d+)s\s*(.*)$')
 RODANDO = re.compile(r'\.\.\. rodando: (.*?)\s+\(faltam (\d+) na fila\)')
+PARALELO = re.compile(r'suite dividida em (\d+) Godots')
 INICIO = time.time()
 
 
@@ -57,8 +58,9 @@ def estimar_restante(feitos, rodando, total):
         media = sum(pendentes) / len(pendentes) * ritmo
     else:
         media = sum(f['seg'] for f in feitos) / len(feitos)
-    ja_correndo = sum(int(r['seg'].rstrip('s')) for r in rodando if str(r.get('seg', '')).rstrip('s').isdigit())
-    return max(0, int(media * faltam - min(ja_correndo, media)))
+    ja_correndo = sum(min(int(r['seg'].rstrip('s')), media) for r in rodando if str(r.get('seg', '')).rstrip('s').isdigit())
+    # Com N Godots ao mesmo tempo, o trabalho que falta se divide entre os que estão rodando.
+    return max(0, int((media * faltam - ja_correndo) / max(1, len(rodando))))
 
 
 def ler():
@@ -75,33 +77,44 @@ def ler():
 
 def estado():
     texto = ler()
-    total, feitos, rodando, fila, fim = 0, [], [], None, ''
+    total, feitos, rodando, fila, fim, paralelo = 0, [], [], None, '', 1
     m = re.search(r'bateria: (\d+) etapa', texto)
     if m:
         total = int(m.group(1))
-    for l in texto.splitlines():
+    # Com -Paralelo N, cada Godot escreve a SUA linha "... rodando: caso 30s (faltam X na fila)", e o X é do
+    # pedaço dele. Então quem roda é cada caso visto rodando há pouco (nas últimas linhas) e ainda sem resultado,
+    # e a fila é o total menos os feitos e os que rodam.
+    vistos_rodando = {}
+    linhas = texto.splitlines()
+    for i, l in enumerate(linhas):
         a = LINHA.match(l)
         if a:
             feitos.append({'status': a.group(3), 'nome': a.group(4), 'seg': int(a.group(5)), 'msg': a.group(6).strip()})
             total = int(a.group(2))
+            vistos_rodando.pop(a.group(4), None)
             continue
         r = RODANDO.search(l)
         if r:
-            rodando = []
             for x in r.group(1).split(','):
                 partes = x.strip().rsplit(' ', 1)
                 if partes and partes[0]:
-                    rodando.append({'nome': partes[0], 'seg': partes[1] if len(partes) > 1 else ''})
-            fila = int(r.group(2))
+                    vistos_rodando[partes[0]] = (i, partes[1] if len(partes) > 1 else '')
         if 'reprovado(s)' in l or 'BATERIA OK' in l or 'casos rodados passaram' in l or 'PUSH' in l:
             fim = l.strip()
+        p = PARALELO.search(l)
+        if p:
+            paralelo = int(p.group(1))
+    # Cada Godot escreve a cada ~15 s: o que não aparece nas últimas 6 linhas por Godot já não roda (caiu ou acabou).
+    recente = len(linhas) - 6 * max(1, paralelo)
     nomes = {f['nome'] for f in feitos}
-    rodando = [x for x in rodando if x['nome'] not in nomes]
+    rodando = [{'nome': n, 'seg': s} for n, (i, s) in vistos_rodando.items() if i >= recente and n not in nomes]
+    if total and (rodando or feitos):
+        fila = max(0, total - len(feitos) - len(rodando))
     # O testar.ps1 escreve no log a cada ~15 s enquanto há teste rodando: log parado
     # há mais de 45 s sem a linha final quer dizer que a bateria foi interrompida.
     parado_ha = int(time.time() - LOG.stat().st_mtime) if texto else 0
     return {'titulo': TITULO, 'total': total, 'feitos': feitos, 'rodando': rodando, 'fila': fila,
-            'fim': fim, 'tem_log': bool(texto), 'restante_seg': None if fim else estimar_restante(feitos, rodando, total),
+            'fim': fim, 'tem_log': bool(texto), 'restante_seg': None if fim else estimar_restante(feitos, rodando, total), 'paralelo': paralelo,
 'parado_ha': parado_ha if not fim and parado_ha > 45 else 0,
             'inicio_painel': LOG.stat().st_ctime if LOG.exists() else INICIO}
 
