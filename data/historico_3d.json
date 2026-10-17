@@ -1,7 +1,40 @@
 {
- "versao_atual": "0.12.0-dev",
- "build_numero": 11,
+ "versao_atual": "0.12.0",
+ "build_numero": 12,
  "entradas": [
+  {
+   "data": "16/10/2026",
+   "estado": "EM DESENVOLVIMENTO",
+   "estado_en": "IN DEVELOPMENT",
+   "estado_es": "EN DESARROLLO",
+   "titulo": "Build 12: Moradores com voz e trabalho na roça",
+   "titulo_en": "Build 12: Villagers with voices and work in the fields",
+   "titulo_es": "Build 12: Vecinos con voz y trabajo en la roza",
+   "mudancas": [
+    "*Vozes*: 141 falas de missão, 43 avisos de \"volte depois\" e 50 falas das cenas da fazenda e do revoar.",
+    "*Trabalho na roça*: depois do dia de roçado, o Cosme segue trabalhando, e o que ele rende cai na mochila a cada amanhecer.",
+    "*Tubarão*: uma música de tensão cresce quando ele persegue e some quando o perigo passa.",
+    "*Igreja e janelas*: some o quadrado branco sobre a porta da igreja, e a janela acesa da casa de taipa ganha vidro e moldura.",
+    "*HUD*: botão da mochila no canto, um só botão de FPS e o balão abaixo da faixa de cinema.",
+    "*Atualização*: o download da build nova aguenta conexão lenta e só desiste se parar de chegar dado."
+   ],
+   "mudancas_en": [
+    "*Voices*: 141 quest lines, the 43 \"come back later\" notices and 50 lines from the farm, flight and Pedro's rescue scenes are now voiced.",
+    "*Field work*: after the day of clearing, Cosme keeps working, and what he yields lands in your backpack every dawn.",
+    "*Shark*: tension music swells while it chases you and fades when the danger is over.",
+    "*Church and windows*: the white square over the church door is gone, and the lit window of the wattle house gets glass and a frame.",
+    "*HUD*: a backpack button in the corner, one FPS button, and speech below the cinema bar.",
+    "*Updates*: downloading a new build survives slow connections and only gives up if data stops arriving."
+   ],
+   "mudancas_es": [
+    "*Voces*: 141 frases de misión, 43 avisos de \"vuelve después\" y 50 frases de la hacienda y del vuelo.",
+    "*Trabajo en la roza*: tras el día de roza, Cosme sigue trabajando, y lo que rinde cae en la mochila cada amanecer.",
+    "*Tiburón*: una música de tensión crece cuando te persigue y se apaga cuando pasa el peligro.",
+    "*Iglesia y ventanas*: se va el cuadrado blanco de la iglesia y la ventana encendida gana marco.",
+    "*HUD*: botón de la mochila en la esquina, un solo botón de FPS y el globo bajo la franja de cine.",
+    "*Actualización*: la descarga de la build nueva aguanta conexiones lentas y solo se rinde si dejan de llegar datos."
+   ]
+  },
   {
    "data": "10/10/2026",
    "estado": "EM DESENVOLVIMENTO",

@@ -1,5 +1,35 @@
 # Histórico de mudanças — Myths' Valley 3D
 
+## Build #12 — 16/10/2026
+
+- **Vozes** (#210, #248, #59): 141 falas de missão, os 43 avisos de fila trancada e 50 falas
+  das cenas (fazenda, revoar, perguntas da velha e da anciã, socorro do Pedro) ganham voz em
+  português; 19 vozes que ainda diziam o texto antigo voltam a dizer o que o balão mostra, e o
+  mirante deixa de prometer vinte tábuas.
+- **Trabalho nas terras** (#9, parcial): autoloads `Terrenos` e `Povoado` com o ofício de cada
+  morador, o idoso fora do serviço de braço, a produção por dia (perícia, amizade, obras do
+  arraial, talentos, idade), a entrega na mochila ao amanhecer, o paiol e o save por vaga. O dia
+  de roçado do Cosme é a primeira designação. A aba Trabalho e o morador no posto ficam para a
+  próxima build (branch `wip/lane-a`).
+- **Tubarão** (#261): a música de tensão entra por cima da trilha do dia quando ele persegue,
+  cresce com a proximidade e sai em cinco segundos.
+- **Mundo** (#257, #228): a igreja perde o quadrado branco sobre a porta; o vidro aceso da casa de
+  taipa ganha moldura, textura e o giro da casa; a gameleira da praia fica provada no vale
+  (tamanho, pano, colisão e navegação). Ferramenta `fotografar_lugar.gd` para conferir a olho.
+- **Interface** (#246, #249, #254): o balão de fala do canto fica abaixo da faixa de cinema e
+  desliza ao canto quando a cena acaba; os avisos de baixo têm uma caixa e um estilo, e o ✓ da
+  tarefa e as recusas voltam a aparecer; a coluna do canto ganha o botão da mochila, o FPS tem um
+  botão só e as plaquetas acompanham o remapeamento. Os testes de atalhos só rodam no perfil do
+  runner.
+- **Atualização** (#231): o download espera enquanto chegam bytes e só desiste após 1 minuto sem
+  dado (antes morria aos 5 minutos); o atualizador aceita os zips do `tar.exe`; o fechamento zipa
+  com `zipar_build.py` e confere o zip contra o atualizador de cada build anterior.
+- **Exportar para o site**: as espécies da mata voltam a sair e o `_fonte` registra caminhos
+  relativos. A ponte do testador manda o resumo de cada sessão ao painel do site.
+- Ficaram fora, guardados em `wip/lane-a`, `-b`, `-c`, `-d` e `-f`: o morador no posto de
+  trabalho, a âncora da guarita da fazenda, as vozes do Quirino e da fé, as plaquetas de tecla no
+  texto e o tubarão na borda do mar aberto.
+
 ## Build #11 — 10/10/2026
 
 - **O vale é só Tripo (#58).** O estilo procedural saiu do jogo: a opção "Estilo visual" de AJUSTAR
