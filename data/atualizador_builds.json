@@ -31,6 +31,18 @@
                                                      "0x000a"
                                                  ],
                               "nota":  "O zip da 11 saiu do tar.exe do Windows com os extras 0x5455 + 0x7875, e o atualizador da própria 11 só aceita 0x5455 e 0x000a: ele recusaria um zip assim (#231). Os zips seguintes saem de tools/prototipo_3d/zipar_build.py, sem extras."
+                          },
+                   "12":  {
+                              "zip_bytes":  1246755345,
+                              "exe_bytes":  1560191856,
+                              "max_zip":  4294967296,
+                              "max_extraido":  6442450944,
+                              "extras_aceitos":  [
+                                                     "0x5455",
+                                                     "0x7875",
+                                                     "0x000a"
+                                                 ],
+                              "nota":  ""
                           }
                }
 }
